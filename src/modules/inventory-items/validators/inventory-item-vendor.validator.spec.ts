@@ -7,55 +7,54 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
-import { VENDOR_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorValidator } from './inventory-item-vendor.validator';
 
+const P = `t${Date.now()}`;
+
 describe('inventory item vendor validator', () => {
     let testingUtil: InventoryItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: InventoryItemVendorValidator;
     let vendorRepo: Repository<InventoryItemVendor>;
 
+    let vendors: InventoryItemVendor[];
+
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
-        validator = module.get<InventoryItemVendorValidator>(
-            InventoryItemVendorValidator,
-        );
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+        validator = module.get<InventoryItemVendorValidator>(InventoryItemVendorValidator);
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+
+        ({ vendors } = await testingUtil.seedVendors(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await vendorRepo.delete(vendors.map((v) => v.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // Create Validation Tests
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create: no validation errors', async () => {
         const dto: CreateInventoryItemVendorDto = plainToInstance(CreateInventoryItemVendorDto, {
-            name: 'New Vendor Name',
+            name: `${P}-new-vendor`,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateInventoryItemVendorDto = plainToInstance(CreateInventoryItemVendorDto, {
-            name: VENDOR_A,
+            name: vendors[0].name,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -65,43 +64,19 @@ describe('inventory item vendor validator', () => {
         );
     });
 
-    // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const vendorToUpdate = await vendorRepo.findOne({
-            where: { name: VENDOR_A },
-        });
-        if (!vendorToUpdate) {
-            throw new Error('vendor not found');
-        }
-
         const dto: UpdateInventoryItemVendorDto = plainToInstance(UpdateInventoryItemVendorDto, {
-            name: 'Updated Vendor Name',
+            name: `${P}-updated-vendor`,
         });
-
-        const errors = await validator.validateDto(
-            dto,
-            vendorToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, vendors[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const vendors = await vendorRepo.find();
-        if (vendors.length < 2) {
-            throw new Error('Not enough vendors for test');
-        }
-
-        const vendorToUpdate = vendors[0];
-        const existingVendor = vendors[1];
-
         const dto: UpdateInventoryItemVendorDto = plainToInstance(UpdateInventoryItemVendorDto, {
-            name: existingVendor.name,
+            name: vendors[1].name,
         });
-
-        const errors = await validator.validateDto(
-            dto,
-            vendorToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, vendors[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

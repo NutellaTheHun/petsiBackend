@@ -7,51 +7,53 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
-import { SIZE_ONE } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemSizeValidator } from './menu-item-size.validator';
 
+const P = `t${Date.now()}`;
+
 describe('menu item size validator', () => {
     let testingUtil: MenuItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let validator: MenuItemSizeValidator;
     let sizeRepo: Repository<MenuItemSize>;
 
+    let sizes: MenuItemSize[];
+
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
-
         validator = module.get<MenuItemSizeValidator>(MenuItemSizeValidator);
-
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ sizes } = await testingUtil.seedSizes(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // Create Validation Tests
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create: no validation errors', async () => {
         const dto: CreateMenuItemSizeDto = plainToInstance(CreateMenuItemSizeDto, {
-            name: 'New Size Name',
+            name: `${P}-new-size`,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateMenuItemSizeDto = plainToInstance(CreateMenuItemSizeDto, {
-            name: SIZE_ONE,
+            name: sizes[0].name,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -61,35 +63,19 @@ describe('menu item size validator', () => {
         );
     });
 
-    // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const sizeToUpdate = await sizeRepo.findOne({ where: { name: SIZE_ONE } });
-        if (!sizeToUpdate) {
-            throw new Error('size not found');
-        }
-
         const dto: UpdateMenuItemSizeDto = plainToInstance(UpdateMenuItemSizeDto, {
-            name: 'Updated Size Name',
+            name: `${P}-updated-name`,
         });
-
-        const errors = await validator.validateDto(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizes[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length < 2) {
-            throw new Error('Not enough sizes for test');
-        }
-
-        const sizeToUpdate = sizes[0];
-        const existingSize = sizes[1];
-
         const dto: UpdateMenuItemSizeDto = plainToInstance(UpdateMenuItemSizeDto, {
-            name: existingSize.name,
+            name: sizes[1].name,
         });
-
-        const errors = await validator.validateDto(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizes[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

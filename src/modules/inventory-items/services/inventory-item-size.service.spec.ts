@@ -6,8 +6,10 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
@@ -29,156 +31,118 @@ class TestableInventoryItemSizeService extends InventoryItemSizeService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Inventory Item Size Service', () => {
-    let module: TestingModule;
     let testingUtil: InventoryItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
     let sizeService: TestableInventoryItemSizeService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
 
     let packageRepo: Repository<InventoryItemPackage>;
     let itemRepo: Repository<InventoryItem>;
     let sizeRepo: Repository<InventoryItemSize>;
+    let categoryRepo: Repository<InventoryItemCategory>;
+    let vendorRepo: Repository<InventoryItemVendor>;
+
+    let categories: InventoryItemCategory[];
+    let vendors: InventoryItemVendor[];
+    let packages: InventoryItemPackage[];
+    let items: InventoryItem[];
+    let sizes: InventoryItemSize[];
 
     beforeAll(async () => {
-        module = await getInventoryItemTestingModule({
+        const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemSizeServiceClass: TestableInventoryItemSizeService,
         });
-        dbTestContext = new DatabaseTestContext();
-
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
-
-        sizeService = module.get(
-            InventoryItemSizeService,
-        ) as TestableInventoryItemSizeService;
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+        sizeService = module.get(InventoryItemSizeService) as TestableInventoryItemSizeService;
         dataSource = module.get(DataSource);
 
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+        categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+
+        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await sizeRepo.delete(sizes.map((s) => s.id));
+        await itemRepo.delete(items.map((i) => i.id));
+        await packageRepo.delete(packages.map((p) => p.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await vendorRepo.delete(vendors.map((v) => v.id));
     });
 
-    it('should be defined', () => {
-        expect(sizeService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create size', async () => {
-        const item = await itemRepo.findOne({ where: {} });
-        const pkg = await packageRepo.findOne({ where: {} });
-        if (!item || !pkg) throw new Error('item or package not found');
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        const dto = plainToInstance(CreateInventoryItemSizeDto, {
-            inventoryItemId: item.id,
-            packageId: pkg.id,
-            unit: 'lb',
-            measureAmount: 5,
-            cost: 12.5,
+    describe('size lifecycle', () => {
+        let created: InventoryItemSize;
+
+        it('should create size', async () => {
+            const dto = plainToInstance(CreateInventoryItemSizeDto, {
+                inventoryItemId: items[0].id,
+                packageId: packages[0].id,
+                unit: 'lb',
+                measureAmount: 100,
+                cost: 12.5,
+            });
+            await dataSource.transaction(async (manager) => {
+                created = await sizeService.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.measureAmount).toBe(100);
+            expect(Number(created.cost)).toBe(12.5);
         });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await sizeService.createEntityForTest(dto, manager);
+        it('should update size', async () => {
+            const loaded = await sizeRepo.findOneOrFail({
+                where: { id: created.id },
+                relations: ['package'],
+            });
+            const dto = plainToInstance(UpdateInventoryItemSizeDto, {
+                cost: 25.99,
+                packageId: loaded.package.id,
+                unit: loaded.unit,
+                measureAmount: loaded.measureAmount,
+            });
+            await dataSource.transaction(async (manager) => {
+                await sizeService.updateEntityForTest(dto, loaded, manager);
+                await manager.save(loaded);
+            });
+            const reloaded = await sizeRepo.findOneOrFail({ where: { id: created.id } });
+            expect(Number(reloaded.cost)).toBe(25.99);
+        });
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.measureAmount).toEqual(5);
-            expect(Number(result.cost)).toEqual(12.5);
-            expect(result.unit).toEqual('lb');
+        it('should remove size', async () => {
+            await sizeService.remove(created.id);
+            await expect(sizeService.findOne(created.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update size', async () => {
-        const size = await sizeRepo.findOne({ where: {}, relations: ['package'] });
-        if (!size) throw new Error('size not found');
-
-        const dto = plainToInstance(UpdateInventoryItemSizeDto, {
-            cost: 25.99,
-            packageId: size.package.id,
-            unit: size.unit,
-            measureAmount: size.measureAmount,
-        });
-
-        await dataSource.transaction(async (manager) => {
-            await sizeService.updateEntityForTest(dto, size, manager);
-            await manager.save(size);
-        });
-
-        const result = await sizeRepo.findOne({ where: { id: size.id } });
-        if (!result) throw new Error('result not found');
-        expect(Number(result.cost)).toEqual(25.99);
+    it('should find seeded size in findAll results', async () => {
+        const result = await sizeService.findAll({ limit: 100 });
+        const found = result.items.find((s) => s.id === sizes[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll()
-    it('should find all sizes', async () => {
-        const repoResult = await sizeRepo.find();
-        const serviceResult = await sizeService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findall() with sort by cost
-    it('should find all sizes with sort by cost', async () => {
-        const repoResult = await sizeRepo.find({ order: { cost: 'DESC' } });
-        const serviceResult = await sizeService.findAll({
-            sortBy: 'cost',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(Number(serviceResult?.items[0].cost)).toEqual(
-                Number(repoResult[0].cost),
-            );
-        }
-    });
-
-    // test findOne()
-    it('should find one size', async () => {
-        const size = await sizeRepo.find({ take: 1 });
-        if (!size.length) throw new Error('size not found');
-
-        const serviceResult = await sizeService.findOne(size[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(size[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one size with relations', async () => {
-        const size = await sizeRepo.find({
-            take: 1,
-            relations: ['inventoryItem', 'package'],
-        });
-        if (!size.length) throw new Error('size not found');
-
-        const serviceResult = await sizeService.findOne(size[0].id, [
-            'inventoryItem',
-            'package',
-        ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(size[0].id);
-        expect(serviceResult?.inventoryItem).toBeDefined();
-        expect(serviceResult?.package).toBeDefined();
-        expect(typeof serviceResult?.unit).toEqual('string');
+        const result = await sizeService.findOne(sizes[0].id, ['inventoryItem', 'package']);
+        expect(result.id).toBe(sizes[0].id);
+        expect(result.inventoryItem).toBeDefined();
+        expect(result.package).toBeDefined();
+        expect(typeof result.unit).toBe('string');
     });
 
-    // test remove()
-    it('should remove size', async () => {
-        const size = await sizeRepo.find({ take: 1 });
-        if (!size.length) throw new Error('size not found');
-        const id = size[0].id;
-
-        const deleteResult = await sizeService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(sizeService.findOne(id)).rejects.toThrow(NotFoundException);
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(sizeService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
     });
 });

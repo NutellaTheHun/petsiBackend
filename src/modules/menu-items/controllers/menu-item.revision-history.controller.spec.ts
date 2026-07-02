@@ -14,49 +14,68 @@ import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemController } from './menu-item.controller';
 import { RevisionHistoryService } from '../../revision-history/revision-history.service';
 
+const P = `t${Date.now()}`;
+
 describe('menu item revision history (controller)', () => {
     let testingUtil: MenuItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let module: TestingModule;
     let controller: MenuItemController;
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
 
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+
     beforeAll(async () => {
         module = await getMenuItemTestingModule({ mockRevisionHistory: false });
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
-
         controller = module.get<MenuItemController>(MenuItemController);
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
+            await testingUtil.seedItems(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await itemRepo.delete([
+            ...fixedContainerItems.map((i) => i.id),
+            ...varContainerItems.map((i) => i.id),
+            ...singleItems.map((i) => i.id),
+        ]);
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
         await module.close();
+    });
+
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     it('creates revisions on create/update and records revert', async () => {
         const rhs = module.get(RevisionHistoryService);
         expect(typeof (rhs as any).listRevisions).toEqual('function');
 
-        const [cat] = await categoryRepo.find({ take: 1 });
-        if (!cat) throw new Error('category not found');
-        const sizeIds = (await sizeRepo.find({ take: 2 })).map((s) => s.id);
-        if (sizeIds.length < 1) throw new Error('sizes not found');
-
         const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'Revision History Menu Item',
-            categoryId: cat.id,
+            name: `${P}-revision-item`,
+            categoryId: categories[0].id,
             type: MENU_ITEM_TYPES.SINGLE,
-            sizeIds,
+            sizeIds: [sizes[0].id, sizes[1].id],
         });
 
         const created = await controller.create(dto);
+        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+
         const afterCreate = await rhs.listRevisions('menu_item', created.id);
         expect(afterCreate.length).toBeGreaterThanOrEqual(1);
         expect(afterCreate[0].revisionNumber).toEqual(1);
@@ -72,7 +91,7 @@ describe('menu item revision history (controller)', () => {
                 'containerMenuItems.containedItemSize',
             ],
         });
-        const updateDto = menuItemToUpdateDto(row, { name: 'Revision History Menu Item v2' });
+        const updateDto = menuItemToUpdateDto(row, { name: `${P}-revision-item-v2` });
         await controller.update(created.id, updateDto);
 
         const afterUpdate = await rhs.listRevisions('menu_item', created.id);
@@ -81,7 +100,7 @@ describe('menu item revision history (controller)', () => {
         expect(afterUpdate[0].changeLog.kind).toEqual('updated');
 
         const reverted = await controller.revertMenuItem(created.id, 1);
-        expect(reverted.name).toEqual('Revision History Menu Item');
+        expect(reverted.name).toEqual(`${P}-revision-item`);
 
         const afterRevert = await rhs.listRevisions('menu_item', created.id);
         expect(afterRevert[0].revisionNumber).toEqual(3);
@@ -90,21 +109,16 @@ describe('menu item revision history (controller)', () => {
 
     it('serves changeLog and payload in detail endpoint', async () => {
         const rhs = module.get(RevisionHistoryService);
-        expect(typeof (rhs as any).listRevisions).toEqual('function');
-
-        const [cat] = await categoryRepo.find({ take: 1 });
-        if (!cat) throw new Error('category not found');
-        const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
-        if (!sizeIds.length) throw new Error('sizes not found');
 
         const created = await controller.create(
             plainToInstance(CreateMenuItemDto, {
-                name: 'Revision Detail Menu Item',
-                categoryId: cat.id,
+                name: `${P}-revision-detail-item`,
+                categoryId: categories[0].id,
                 type: MENU_ITEM_TYPES.SINGLE,
-                sizeIds,
+                sizeIds: [sizes[0].id],
             }),
         );
+        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
 
         const revisions = await rhs.listRevisions('menu_item', created.id);
         if (!revisions.length) throw new Error('expected menu item to have revisions');
@@ -119,4 +133,3 @@ describe('menu item revision history (controller)', () => {
         expect(rev.payload).toBeDefined();
     });
 });
-

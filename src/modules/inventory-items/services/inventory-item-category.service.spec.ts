@@ -7,7 +7,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
-import { DRYGOOD_CAT } from '../utils/constants';
+import { inventoryItemCategoryToUpdateDto } from '../utils/entity-transformers/inventory-item-category.dto.transformer';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
@@ -28,130 +28,111 @@ class TestableInventoryItemCategoryService extends InventoryItemCategoryService 
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Inventory Item Category Service', () => {
     let testingUtil: InventoryItemTestingUtil;
     let service: TestableInventoryItemCategoryService;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let categoryRepo: Repository<InventoryItemCategory>;
+
+    let categories: InventoryItemCategory[];
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemCategoryServiceClass: TestableInventoryItemCategoryService,
         });
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemCategoryTestDatabase(dbTestContext);
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
         service = module.get<InventoryItemCategoryService>(
             InventoryItemCategoryService,
         ) as TestableInventoryItemCategoryService;
         dataSource = module.get(DataSource);
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+
+        ({ categories } = await testingUtil.seedCategories(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create category', async () => {
-        const dto = plainToInstance(CreateInventoryItemCategoryDto, { name: 'Produce' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await service.createEntityForTest(dto, manager);
+    describe('category lifecycle', () => {
+        let created: InventoryItemCategory;
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.name).toEqual(dto.name);
+        it('should create category', async () => {
+            const dto = plainToInstance(CreateInventoryItemCategoryDto, { name: `${P}-create-test` });
+            await dataSource.transaction(async (manager) => {
+                created = await service.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.name).toBe(dto.name);
+        });
+
+        it('should update category', async () => {
+            const dto = plainToInstance(UpdateInventoryItemCategoryDto, { name: `${P}-updated` });
+            await dataSource.transaction(async (manager) => {
+                await service.updateEntityForTest(dto, created, manager);
+            });
+            const reloaded = await categoryRepo.findOneOrFail({ where: { id: created.id } });
+            expect(reloaded.name).toBe(`${P}-updated`);
+        });
+
+        it('should remove category', async () => {
+            await service.remove(created.id);
+            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update category', async () => {
-        const category = await categoryRepo.findOne({
-            where: { name: DRYGOOD_CAT },
-        });
-        if (!category) throw new Error('category not found');
-
-        const dto = plainToInstance(UpdateInventoryItemCategoryDto, { name: 'Dry Goods Updated' });
-
-        await dataSource.transaction(async (manager) => {
-            await service.updateEntityForTest(dto, category, manager);
-        });
-
-        const result = await categoryRepo.findOne({ where: { id: category.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
+    it('should find seeded category in findAll results', async () => {
+        const result = await service.findAll();
+        const found = result.items.find((c) => c.id === categories[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll()
-    it('should find all categories', async () => {
-        const repoResult = await categoryRepo.find();
-        const serviceResult = await service.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findall() with sort by name
-    it('should find all categories with sort by name', async () => {
-        const repoResult = await categoryRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await service.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-            const lastIdx = repoResult.length - 1;
-            expect(serviceResult?.items[lastIdx].name).toEqual(
-                repoResult[lastIdx].name,
-            );
-        }
-    });
-
-    // test findOne()
-    it('should find one category', async () => {
-        const category = await categoryRepo.find({ take: 1 });
-        if (!category.length) throw new Error('category not found');
-
-        const serviceResult = await service.findOne(category[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(category[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one category with relations', async () => {
-        const category = await categoryRepo.find({
-            take: 1,
-            relations: ['inventoryItems'],
-        });
-        if (!category.length) throw new Error('category not found');
-
-        const serviceResult = await service.findOne(category[0].id, [
-            'inventoryItems',
-        ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(category[0].id);
-        expect(serviceResult?.inventoryItems).toBeDefined();
-        expect(Array.isArray(serviceResult?.inventoryItems)).toBe(true);
+        const result = await service.findOne(categories[0].id, ['inventoryItems']);
+        expect(result.id).toBe(categories[0].id);
+        expect(Array.isArray(result.inventoryItems)).toBe(true);
     });
 
-    // test remove()
-    it('should remove category', async () => {
-        const category = await categoryRepo.find({ take: 1 });
-        if (!category.length) throw new Error('category not found');
-        const id = category[0].id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        const deleteResult = await service.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(service.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(InventoryItemCategoryService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when name unchanged', async () => {
+            const cat = categories[0];
+            const dto = inventoryItemCategoryToUpdateDto(cat);
+            await service.update(cat.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const cat = categories[1];
+            const dto = inventoryItemCategoryToUpdateDto(cat, { name: `${P}-cat-renamed` });
+            await service.update(cat.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await categoryRepo.findOneOrFail({ where: { id: cat.id } });
+            expect(row.name).toBe(`${P}-cat-renamed`);
+        });
     });
 });

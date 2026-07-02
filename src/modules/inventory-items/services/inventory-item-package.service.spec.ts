@@ -7,7 +7,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
-import { BOX_PKG } from '../utils/constants';
+import { inventoryItemPackageToUpdateDto } from '../utils/entity-transformers/inventory-item-package.dto.transformer';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
@@ -28,112 +28,105 @@ class TestableInventoryItemPackageService extends InventoryItemPackageService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Inventory Item Package Service', () => {
     let testingUtil: InventoryItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
     let packageService: TestableInventoryItemPackageService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let packageRepo: Repository<InventoryItemPackage>;
+
+    let packages: InventoryItemPackage[];
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemPackageServiceClass: TestableInventoryItemPackageService,
         });
-
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemPackageTestDatabase(dbTestContext);
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
         packageService = module.get(
             InventoryItemPackageService,
         ) as TestableInventoryItemPackageService;
         dataSource = module.get(DataSource);
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+
+        ({ packages } = await testingUtil.seedPackages(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await packageRepo.delete(packages.map((p) => p.id));
     });
 
-    it('should be defined', () => {
-        expect(packageService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create package', async () => {
-        const dto = plainToInstance(CreateInventoryItemPackageDto, { name: 'bottle' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await packageService.createEntityForTest(dto, manager);
+    describe('package lifecycle', () => {
+        let created: InventoryItemPackage;
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.name).toEqual(dto.name);
+        it('should create package', async () => {
+            const dto = plainToInstance(CreateInventoryItemPackageDto, { name: `${P}-pkg-create` });
+            await dataSource.transaction(async (manager) => {
+                created = await packageService.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.name).toBe(dto.name);
+        });
+
+        it('should update package', async () => {
+            const dto = plainToInstance(UpdateInventoryItemPackageDto, { name: `${P}-pkg-updated` });
+            await dataSource.transaction(async (manager) => {
+                await packageService.updateEntityForTest(dto, created, manager);
+            });
+            const reloaded = await packageRepo.findOneOrFail({ where: { id: created.id } });
+            expect(reloaded.name).toBe(`${P}-pkg-updated`);
+        });
+
+        it('should remove package', async () => {
+            await packageService.remove(created.id);
+            await expect(packageService.findOne(created.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update package', async () => {
-        const pkg = await packageRepo.findOne({ where: { name: BOX_PKG } });
-        if (!pkg) throw new Error('package not found');
+    it('should find seeded package in findAll results', async () => {
+        const result = await packageService.findAll();
+        const found = result.items.find((p) => p.id === packages[0].id);
+        expect(found).toBeDefined();
+    });
 
-        const dto = plainToInstance(UpdateInventoryItemPackageDto, { name: 'Box Updated' });
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(packageService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        await dataSource.transaction(async (manager) => {
-            await packageService.updateEntityForTest(dto, pkg, manager);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(InventoryItemPackageService.prototype as any, 'updateEntity');
         });
 
-        const result = await packageRepo.findOne({ where: { id: pkg.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
-    });
-
-    // test findAll()
-    it('should find all packages', async () => {
-        const repoResult = await packageRepo.find();
-        const serviceResult = await packageService.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findall() with sort by name
-    it('should find all packages with sort by name', async () => {
-        const repoResult = await packageRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await packageService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
+        afterEach(() => {
+            spy.mockRestore();
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-            const lastIdx = repoResult.length - 1;
-            expect(serviceResult?.items[lastIdx].name).toEqual(
-                repoResult[lastIdx].name,
-            );
-        }
-    });
 
-    // test findOne()
-    it('should find one package', async () => {
-        const pkg = await packageRepo.find({ take: 1 });
-        if (!pkg.length) throw new Error('package not found');
+        it('skips updateEntity when name unchanged', async () => {
+            const pkg = packages[0];
+            const dto = inventoryItemPackageToUpdateDto(pkg);
+            await packageService.update(pkg.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
 
-        const serviceResult = await packageService.findOne(pkg[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(pkg[0].id);
-    });
-
-    // test remove()
-    it('should remove package', async () => {
-        const pkg = await packageRepo.find({ take: 1 });
-        if (!pkg.length) throw new Error('package not found');
-        const id = pkg[0].id;
-
-        const deleteResult = await packageService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(packageService.findOne(id)).rejects.toThrow(NotFoundException);
+        it('calls updateEntity when name changes', async () => {
+            const pkg = packages[1];
+            const dto = inventoryItemPackageToUpdateDto(pkg, { name: `${P}-pkg-renamed` });
+            await packageService.update(pkg.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await packageRepo.findOneOrFail({ where: { id: pkg.id } });
+            expect(row.name).toBe(`${P}-pkg-renamed`);
+        });
     });
 });

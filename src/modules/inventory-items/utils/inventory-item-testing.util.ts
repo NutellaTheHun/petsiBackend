@@ -319,6 +319,126 @@ export class InventoryItemTestingUtil {
         await this.itemRepo.deleteAll();
     }
 
+    // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
+    // These do not register cleanup — callers are responsible for deleting by ID.
+
+    public async seedVendors(P: string = ''): Promise<{ vendors: InventoryItemVendor[] }> {
+        const vendors: InventoryItemVendor[] = [];
+        for (const name of this.vendorNames) {
+            const entityName = P ? `${P}-${name}` : name;
+            const entity = await this.vendorBuilder.reset().name(entityName).build();
+            vendors.push(await this.vendorRepo.save(entity));
+        }
+        return { vendors };
+    }
+
+    public async seedPackages(P: string = ''): Promise<{ packages: InventoryItemPackage[] }> {
+        const packages: InventoryItemPackage[] = [];
+        for (const name of this.packageNames) {
+            const entityName = P ? `${P}-${name}` : name;
+            const entity = await this.packageBuilder.reset().name(entityName).build();
+            packages.push(await this.packageRepo.save(entity));
+        }
+        return { packages };
+    }
+
+    public async seedCategories(P: string = ''): Promise<{ categories: InventoryItemCategory[] }> {
+        const categories: InventoryItemCategory[] = [];
+        for (const name of this.categoryNames) {
+            const entityName = P ? `${P}-${name}` : name;
+            const entity = await this.categoryBuilder.reset().categoryName(entityName).build();
+            categories.push(await this.categoryRepo.save(entity));
+        }
+        return { categories };
+    }
+
+    /**
+     * categoryNames order: [OTHER_CAT, DRYGOOD_CAT, DAIRY_CAT, FOOD_CAT]
+     * items order: [foodA, foodB, foodC, dryA, dryB, dryC, otherA, otherB, otherC]
+     */
+    public async seedItems(P: string = ''): Promise<{
+        categories: InventoryItemCategory[];
+        vendors: InventoryItemVendor[];
+        items: InventoryItem[];
+    }> {
+        const { categories } = await this.seedCategories(P);
+        const { vendors } = await this.seedVendors(P);
+
+        const otherCat = categories[0];
+        const dryGoodCat = categories[1];
+        const foodCat = categories[3];
+
+        const items: InventoryItem[] = [];
+        for (let i = 0; i < this.foodItemNames.length; i++) {
+            const name = P ? `${P}-${this.foodItemNames[i]}` : this.foodItemNames[i];
+            const entity = await this.itemBuilder
+                .reset()
+                .name(name)
+                .categoryById(foodCat.id)
+                .vendorById(vendors[i % vendors.length].id)
+                .build();
+            items.push(await this.itemRepo.save(entity));
+        }
+        for (let i = 0; i < this.dryItemNames.length; i++) {
+            const name = P ? `${P}-${this.dryItemNames[i]}` : this.dryItemNames[i];
+            const entity = await this.itemBuilder
+                .reset()
+                .name(name)
+                .categoryById(dryGoodCat.id)
+                .vendorById(vendors[i % vendors.length].id)
+                .build();
+            items.push(await this.itemRepo.save(entity));
+        }
+        for (let i = 0; i < this.otherItemNames.length; i++) {
+            const name = P ? `${P}-${this.otherItemNames[i]}` : this.otherItemNames[i];
+            const entity = await this.itemBuilder
+                .reset()
+                .name(name)
+                .categoryById(otherCat.id)
+                .vendorById(vendors[i % vendors.length].id)
+                .build();
+            items.push(await this.itemRepo.save(entity));
+        }
+
+        return { categories, vendors, items };
+    }
+
+    /**
+     * 2 sizes per item (18 total for 9 items).
+     * sizes[0] and sizes[1] share the same inventoryItem (items[0]).
+     */
+    public async seedSizes(P: string = ''): Promise<{
+        categories: InventoryItemCategory[];
+        vendors: InventoryItemVendor[];
+        packages: InventoryItemPackage[];
+        items: InventoryItem[];
+        sizes: InventoryItemSize[];
+    }> {
+        const { categories, vendors, items } = await this.seedItems(P);
+        const { packages } = await this.seedPackages(P);
+
+        const sizes: InventoryItemSize[] = [];
+        let unitIdx = 0;
+        let pkgIdx = 0;
+        let costVal = 0;
+
+        for (const item of items) {
+            for (let s = 0; s < 2; s++) {
+                const entity = await this.sizeBuilder
+                    .reset()
+                    .inventoryItemById(item.id)
+                    .unit(this.unitValues[unitIdx++ % this.unitValues.length])
+                    .packageById(packages[pkgIdx++ % packages.length].id)
+                    .costByValue(costVal++)
+                    .measureAmount(1)
+                    .build();
+                sizes.push(await this.sizeRepo.save(entity));
+            }
+        }
+
+        return { categories, vendors, packages, items, sizes };
+    }
+
     /**
      * - Create's inventoryItemSize dtos for create method of an inventory item with an uneven distribution of properties.
      * - Distribution of units is normal
