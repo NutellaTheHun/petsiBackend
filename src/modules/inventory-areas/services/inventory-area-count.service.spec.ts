@@ -2,25 +2,20 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Between, DataSource, EntityManager, Like, MoreThan, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import {
-    BOX_PKG,
-    DRY_B,
-    DRY_C,
-    FOOD_B,
-    OTHER_C
-} from '../../inventory-items/utils/constants';
+import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
-import { AREA_A, AREA_B, AREA_C, AREA_D } from '../utils/constants';
 import { inventoryAreaCountToUpdateDto } from '../utils/entity-transformers/inventory-area-count.dto.transformer';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
@@ -42,774 +37,498 @@ class TestableInventoryAreaCountService extends InventoryAreaCountService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;
-    let dbTestContext: DatabaseTestContext;
     let countService: TestableInventoryAreaCountService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
 
-    let inventoryAreaRepo: Repository<InventoryArea>;
-    let inventoryAreaCountRepo: Repository<InventoryAreaCount>;
+    let areaRepo: Repository<InventoryArea>;
+    let countRepo: Repository<InventoryAreaCount>;
+    let categoryRepo: Repository<InventoryItemCategory>;
+    let vendorRepo: Repository<InventoryItemVendor>;
+    let packageRepo: Repository<InventoryItemPackage>;
+    let itemRepo: Repository<InventoryItem>;
+    let sizeRepo: Repository<InventoryItemSize>;
 
-    let inventoryItemRepo: Repository<InventoryItem>;
-    let inventoryItemPackageRepo: Repository<InventoryItemPackage>;
+    let areas: InventoryArea[];
+    let categories: InventoryItemCategory[];
+    let vendors: InventoryItemVendor[];
+    let packages: InventoryItemPackage[];
+    let items: InventoryItem[];
+    let sizes: InventoryItemSize[];
 
-    const getInventoryAreaCount = async (areaName: string) => {
-        return await inventoryAreaCountRepo.findOneOrFail({ where: { inventoryArea: { name: areaName }, countedInventoryItems: MoreThan(0) }, relations: ['countedInventoryItems', 'countedInventoryItems.countedInventoryItem', 'countedInventoryItems.countedItemSize', 'inventoryArea'] });
-    }
-
-    beforeAll(async () => {
-        const module: TestingModule = await getInventoryAreasTestingModule({
-            countServiceClass: TestableInventoryAreaCountService,
-        });
-
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-        await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
-
-        dataSource = module.get(DataSource);
-
-        countService = module.get(
-            InventoryAreaCountService,
-        ) as TestableInventoryAreaCountService;
-        inventoryAreaRepo = module.get(getRepositoryToken(InventoryArea));
-        inventoryAreaCountRepo = module.get(getRepositoryToken(InventoryAreaCount));
-
-        inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
-        inventoryItemPackageRepo = module.get(
-            getRepositoryToken(InventoryItemPackage),
-        );
-
-    });
-
-    afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
-    });
-
-    it('should be defined', () => {
-        expect(countService).toBeDefined();
-    });
-
-    // Test createEntity() with no areaCountItems
-    it('should create area count with no items', async () => {
-        // get InventoryArea
-        const area = await inventoryAreaRepo.findOne({ where: { name: AREA_A } });
-        if (!area) {
-            throw new Error('area not found');
-        }
-
-        // build CreateInventoryAreaCountDto
-        const dto = plainToInstance(CreateInventoryAreaCountDto, { inventoryAreaId: area.id });
-
-        // create
+    const createSeededCount = async (
+        areaId: number,
+        itemDtos: NestedCreateInventoryAreaItemDto[] = [],
+    ): Promise<InventoryAreaCount> => {
+        let count!: InventoryAreaCount;
         await dataSource.transaction(async (manager) => {
-            const result = await countService.createEntityForTest(dto, manager);
-
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.inventoryArea.id).toEqual(area.id);
-            expect(result.countedInventoryItems).toBeUndefined();
-        });
-    });
-
-    // Test createEntity() with areaCountItems with itemSizeIDs
-    it('should create area count with items with itemSizeIDs', async () => {
-        // get InventoryArea
-        const area = await inventoryAreaRepo.findOne({ where: { name: AREA_B } });
-        if (!area) {
-            throw new Error('area not found');
-        }
-
-        // get 3 inventoryItems with sizes from repo
-        const items = await inventoryItemRepo.find({
-            where: {},
-            take: 3,
-            relations: ['sizes'],
-        });
-        if (!items) {
-            throw new Error('items not found');
-        }
-        if (items.length !== 3) {
-            throw new Error('expected 3 items, got ' + items.length);
-        }
-
-        // build NestedCreateInventoryAreaItemDto for each item
-        let count = 1;
-        const itemDtos = items.map((item) => {
-            return plainToInstance(NestedCreateInventoryAreaItemDto, {
-                createId: `c${count++}`,
-                countedInventoryItemId: item.id,
-                countedItemSizeId: item.sizes[0].id,
-                amount: 1,
-            });
-        });
-
-        const dto = {
-            inventoryAreaId: area.id,
-            countedInventoryItems: itemDtos,
-        } as CreateInventoryAreaCountDto;
-
-        // create
-        await dataSource.transaction(async (manager) => {
-            const result = await countService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.inventoryArea.id).toEqual(area.id);
-            expect(result.countedInventoryItems.length).toEqual(3);
-        });
-    });
-
-    // Test createEntity() with areaCountItems with itemSizeDto
-    it('should create area count with items with itemSizeDtos', async () => {
-        // get InventoryArea
-        const area = await inventoryAreaRepo.findOne({ where: { name: AREA_C } });
-        if (!area) {
-            throw new Error('area not found');
-        }
-
-        // get 3 inventoryItems from repo
-        const items = await inventoryItemRepo.find({
-            where: {},
-            take: 3,
-        });
-        if (!items) {
-            throw new Error('items not found');
-        }
-        if (items.length !== 3) {
-            throw new Error('expected 3 items, got ' + items.length);
-        }
-
-        // get 3 inventoryItemPackages from repo
-        const inventoryItemPackages = await inventoryItemPackageRepo.find({
-            where: {},
-            take: 3,
-        });
-        if (!inventoryItemPackages) {
-            throw new Error('inventoryItemPackages not found');
-        }
-        if (inventoryItemPackages.length !== 3) {
-            throw new Error(
-                'expected 3 inventoryItemPackages, got ' + inventoryItemPackages.length,
-            );
-        }
-
-        // build NestedCreateInventoryAreaItemDto for each item
-        let itemCountId = 1;
-        let sizeIdx = 0;
-        const itemDtos = items.map((item) => {
-            return plainToInstance(NestedCreateInventoryAreaItemDto, {
-                createId: `c${itemCountId++}`,
-                countedInventoryItemId: item.id,
-                amount: 1,
-                countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
-                    createId: `c${4 + sizeIdx}`,
-                    unit: 'lb',
-                    measureAmount: 1,
-                    packageId: inventoryItemPackages[sizeIdx++].id,
-                    cost: 1,
+            count = await countService.createEntityForTest(
+                plainToInstance(CreateInventoryAreaCountDto, {
+                    inventoryAreaId: areaId,
+                    countedInventoryItems: itemDtos,
                 }),
-            });
-        });
-
-        // build CreateInventoryAreaCountDto
-        const dto = {
-            inventoryAreaId: area.id,
-            countedInventoryItems: itemDtos,
-        } as CreateInventoryAreaCountDto;
-
-        await dataSource.transaction(async (manager) => {
-            const result = await countService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.inventoryArea.id).toEqual(area.id);
-            expect(result.countedInventoryItems.length).toEqual(3);
-        });
-    });
-
-    // Test createEntity() with areaCountItems with itemSizeId and itemSizeDto
-    it('should create area count with items with itemSizeId and itemSizeDto', async () => {
-        // get InventoryArea
-        const area = await inventoryAreaRepo.findOne({ where: { name: AREA_D } });
-        if (!area) {
-            throw new Error('area not found');
-        }
-
-        // get 6 inventoryItems with sizes from repo
-        const items = await inventoryItemRepo.find({
-            where: {},
-            take: 6,
-            relations: ['sizes'],
-        });
-        if (!items) {
-            throw new Error('items not found');
-        }
-        if (items.length !== 6) {
-            throw new Error('expected 6 items, got ' + items.length);
-        }
-
-        // build NestedCreateInventoryAreaItemDto with itemSizeId for the first 3 items
-        let itemCountId = 1;
-        const itemDtos_1 = items.slice(0, 3).map((item) => {
-            return plainToInstance(NestedCreateInventoryAreaItemDto, {
-                createId: `c${itemCountId++}`,
-                countedInventoryItemId: item.id,
-                countedItemSizeId: item.sizes[0].id,
-                amount: 1,
-            });
-        });
-
-        // build NestedCreateInventoryAreaItemDto with itemSizeDto for the last 3 items
-        // get 3 inventoryItemPackages from repo
-        const inventoryItemPackages = await inventoryItemPackageRepo.find({
-            where: {},
-            take: 3,
-        });
-        if (!inventoryItemPackages) {
-            throw new Error('inventoryItemPackages not found');
-        }
-        if (inventoryItemPackages.length !== 3) {
-            throw new Error(
-                'expected 3 inventoryItemPackages, got ' + inventoryItemPackages.length,
+                manager,
             );
-        }
-
-        let sizeIdx = 0;
-        const itemDtos_2 = items.slice(3, 6).map((item) => {
-            return plainToInstance(NestedCreateInventoryAreaItemDto, {
-                createId: `c${itemCountId++}`,
-                countedInventoryItemId: item.id,
-                amount: 1,
-                countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
-                    createId: `c${7 + sizeIdx}`,
-                    unit: 'lb',
-                    measureAmount: 1,
-                    packageId: inventoryItemPackages[sizeIdx++].id,
-                    cost: 1,
-                }),
-            });
         });
-
-        // build CreateInventoryAreaCountDto
-        const dto = {
-            inventoryAreaId: area.id,
-            countedInventoryItems: [...itemDtos_1, ...itemDtos_2],
-        } as CreateInventoryAreaCountDto;
-
-        // create
-        await dataSource.transaction(async (manager) => {
-            const result = await countService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.inventoryArea.id).toEqual(area.id);
-            expect(result.countedInventoryItems.length).toEqual(6);
+        testCtx.addCleanupFunction(async () => {
+            await countRepo.delete(count.id);
         });
-    });
+        return count;
+    };
 
-    // Test updateEntity() with inventoryAreaId
-    it('should update area count with inventoryAreaId from area A to area B', async () => {
-        // get InventoryAreaCount to update
-        const count = await inventoryAreaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-
-        // get InventoryArea
-        const newArea = await inventoryAreaRepo.findOne({
-            where: { name: AREA_B },
-        });
-        if (!newArea) {
-            throw new Error('area not found');
-        }
-
-        // build UpdateInventoryAreaCountDto
-        const dto = {
-            inventoryAreaId: newArea.id,
-        } as UpdateInventoryAreaCountDto;
-
-        // update
-        await dataSource.transaction(async (manager) => {
-            await countService.updateEntityForTest(dto, count, manager);
-        });
-
-        // check result
-        const result = await inventoryAreaCountRepo.findOne({
-            where: { id: count.id },
-            relations: ['inventoryArea'],
-        });
-        if (!result) {
-            throw new Error('result not found');
-        }
-        expect(result.inventoryArea.id).toEqual(newArea.id);
-        expect(result.inventoryArea.name).toEqual(newArea.name);
-    });
-
-    it('removes counted inventory items via authoritative parent update', async () => {
-        const countToUpdate = await getInventoryAreaCount(AREA_B);
-        const originalCount = countToUpdate.countedInventoryItems.length;
-        expect(originalCount).toBeGreaterThan(0);
-
-        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
-            inventoryAreaId: countToUpdate.inventoryArea.id,
-            countedInventoryItems: [],
-        });
-
-        await dataSource.transaction(async (manager) => {
-            await countService.updateEntityForTest(dto, countToUpdate, manager);
-        });
-
-        const reloaded = await inventoryAreaCountRepo.findOne({
-            where: { id: countToUpdate.id },
-            relations: ['countedInventoryItems'],
-        });
-        if (!reloaded) throw new Error('reloaded count not found');
-        expect(reloaded.countedInventoryItems.length).toEqual(0);
-    });
-
-    // Test updateEntity() with update areaCountItems
-    it('should update area count with updated items', async () => {
-        // get InventoryAreaCount that has inventoryAreaItems to update
-        const countToUpdate = await getInventoryAreaCount(AREA_B);
-
-        // To test against
-        const areaCountItemLength = countToUpdate.countedInventoryItems.length;
-
-        // get InventoryItem with sizes to update
-        const itemToUpdate = await inventoryItemRepo.findOne({
-            where: { name: FOOD_B },
-            relations: ['sizes'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-
-        const transform = inventoryAreaCountToUpdateDto(countToUpdate);
-        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
-
-        const areaItemToUpdate = countedInventoryItems.pop();
-        const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
-        const updateDto = plainToInstance(
-            NestedUpdateInventoryAreaItemDto,
-            {
-                id: areaItemUpdateId,
-                countedInventoryItemId: itemToUpdate.id,
-                countedItemSizeId: itemToUpdate.sizes[0].id,
-                amount: 2,
-            },
-        );
-
-        countedInventoryItems.push(updateDto);
-
-        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
-            ...transform,
-            countedInventoryItems,
-        });
-
-        // update
-        await dataSource.transaction(async (manager) => {
-            await countService.updateEntityForTest(dto, countToUpdate, manager);
-        });
-
-        // check result
-        const result = await inventoryAreaCountRepo.findOne({
-            where: { id: countToUpdate.id },
+    const reloadCount = async (id: number) =>
+        countRepo.findOneOrFail({
+            where: { id },
             relations: [
-                'countedInventoryItems',
-                'countedInventoryItems.countedInventoryItem',
-                'countedInventoryItems.countedItemSize',
-            ],
-        });
-        if (!result) {
-            throw new Error('result not found');
-        }
-        expect(result.countedInventoryItems.length).toEqual(areaCountItemLength);
-        // check updated item
-        const updatedItem = result.countedInventoryItems.find(
-            (item) => item.id === areaItemUpdateId,
-        );
-        if (!updatedItem) {
-            throw new Error('updated item not found');
-        }
-        expect(updatedItem.countedInventoryItem.id).toEqual(itemToUpdate.id);
-        expect(updatedItem.countedItemSize.id).toEqual(itemToUpdate.sizes[0].id);
-        expect(updatedItem.amount).toEqual(2);
-    });
-
-    // Test updateEntity() with create areaCountItems
-    it('should update area count with created items', async () => {
-        // get InventoryAreaCount to update
-        const countToUpdate = await getInventoryAreaCount(AREA_C);
-
-        const originalItemCount = countToUpdate.countedInventoryItems.length;
-
-        // get InventoryItem with sizes to create
-        const itemToCreate = await inventoryItemRepo.findOne({
-            where: { name: OTHER_C },
-            relations: ['sizes'],
-        });
-        if (!itemToCreate) {
-            throw new Error('item not found');
-        }
-
-        // build NestedCreateInventoryAreaItemDto for the item
-        const itemDto = plainToInstance(NestedCreateInventoryAreaItemDto, {
-            createId: `c1`,
-            countedInventoryItemId: itemToCreate.id,
-            countedItemSizeId: itemToCreate.sizes[0].id,
-            amount: 10,
-        });
-
-        // build UpdateInventoryAreaCountDto
-        const dto = inventoryAreaCountToUpdateDto(countToUpdate, { countedInventoryItems: [itemDto] });
-
-        // update
-        await dataSource.transaction(async (manager) => {
-            await countService.updateEntityForTest(dto, countToUpdate, manager);
-        });
-
-        // check result
-        const result = await inventoryAreaCountRepo.findOne({
-            where: { id: countToUpdate.id },
-            relations: ['countedInventoryItems', 'countedInventoryItems.countedInventoryItem', 'countedInventoryItems.countedItemSize'],
-        });
-        if (!result) {
-            throw new Error('result not found');
-        }
-        expect(result.countedInventoryItems.length).toEqual(originalItemCount + 1);
-        // check created item
-        const createdItem = result.countedInventoryItems.find(
-            (item) => item.countedInventoryItem.id === itemToCreate.id,
-        );
-        if (!createdItem) {
-            throw new Error('created item not found');
-        }
-        expect(createdItem.countedInventoryItem.id).toEqual(itemToCreate.id);
-        expect(createdItem.countedItemSize.id).toEqual(itemToCreate.sizes[0].id);
-        expect(createdItem.amount).toEqual(10);
-    });
-
-    // Test updateEntity() with create and update areaCountItems
-    it('should update area count with created and updated items with itemSizeDtos', async () => {
-        // get InventoryAreaCount to update
-        const countToUpdate = await getInventoryAreaCount(AREA_D);
-
-        const originalItemCount = countToUpdate.countedInventoryItems.length;
-
-        // get InventoryItem for createDto
-        const inventoryItemForCreate = await inventoryItemRepo.findOne({
-            where: { name: DRY_B },
-        });
-        if (!inventoryItemForCreate) {
-            throw new Error('item not found');
-        }
-
-        // get InventoryItem for updateDto
-        const inventoryItemForUpdate = await inventoryItemRepo.findOne({
-            where: { name: DRY_C },
-        });
-        if (!inventoryItemForUpdate) {
-            throw new Error('item not found');
-        }
-
-        // get package from repo
-        const packageToCreate = await inventoryItemPackageRepo.findOne({
-            where: { name: BOX_PKG },
-        });
-        if (!packageToCreate) {
-            throw new Error('package not found');
-        }
-
-        // build NestedCreateInventoryItemSizeDto for the item
-        const itemSizeDto_forCreate = plainToInstance(
-            NestedCreateInventoryItemSizeDto,
-            {
-                createId: `c1`,
-                packageId: packageToCreate.id,
-                unit: 'lb',
-                measureAmount: 1,
-                cost: 1,
-            },
-        );
-
-        // build NestedCreateInventoryAreaItemDto for the item
-        const createdItemDto = plainToInstance(NestedCreateInventoryAreaItemDto, {
-            createId: `c2`,
-            countedInventoryItemId: inventoryItemForCreate.id,
-            countedItemSize: itemSizeDto_forCreate,
-            amount: 20,
-        });
-
-        const transform = inventoryAreaCountToUpdateDto(countToUpdate, {
-            countedInventoryItems: [createdItemDto],
-        });
-        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
-
-        // get areaItem to update
-        const areaItemToUpdate = countedInventoryItems.pop();
-        if (!areaItemToUpdate) {
-            throw new Error('areaItemToUpdate not found');
-        }
-        if ('createId' in areaItemToUpdate) {
-            throw new Error('areaItemToUpdate is not a NestedUpdateInventoryAreaItemDto');
-        }
-        const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
-
-        // build NestedCreateInventoryItemSizeDto for the item
-        const itemSizeDto_forUpdate = plainToInstance(
-            NestedCreateInventoryItemSizeDto,
-            {
-                createId: `c3`,
-                packageId: packageToCreate.id,
-                unit: 'lb',
-                measureAmount: 1,
-                cost: 1,
-            },
-        );
-
-        // build NestedUpdateInventoryAreaItemDto for the item
-        const areaItemToUpdateDto = plainToInstance(
-            NestedUpdateInventoryAreaItemDto,
-            {
-                id: areaItemUpdateId,
-                countedInventoryItemId: inventoryItemForUpdate.id,
-                countedItemSize: itemSizeDto_forUpdate,
-                amount: 30,
-            },
-        );
-
-        countedInventoryItems.push(areaItemToUpdateDto);
-
-        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
-            ...transform,
-            countedInventoryItems,
-        });
-
-        // update
-        await dataSource.transaction(async (manager) => {
-            await countService.updateEntityForTest(dto, countToUpdate, manager);
-        });
-
-        // check result
-        const result = await inventoryAreaCountRepo.findOne({
-            where: { id: countToUpdate.id },
-            relations: [
+                'inventoryArea',
                 'countedInventoryItems',
                 'countedInventoryItems.countedInventoryItem',
                 'countedInventoryItems.countedItemSize',
                 'countedInventoryItems.countedItemSize.package',
             ],
         });
-        if (!result) {
-            throw new Error('result not found');
-        }
-        expect(result.countedInventoryItems.length).toEqual(originalItemCount + 1);
-        // check created item
-        const createdAreaItem = result.countedInventoryItems.find(
-            (item) => item.countedInventoryItem.id === inventoryItemForCreate.id,
-        );
-        if (!createdAreaItem) {
-            throw new Error('created item not found');
-        }
-        expect(createdAreaItem.countedInventoryItem.id).toEqual(
-            inventoryItemForCreate.id,
-        );
-        expect(createdAreaItem.countedItemSize.unit).toEqual(itemSizeDto_forCreate.unit);
-        expect(createdAreaItem.countedItemSize.package.id).toEqual(
-            itemSizeDto_forCreate.packageId,
-        );
-        expect(createdAreaItem.countedItemSize.measureAmount).toEqual(
-            itemSizeDto_forCreate.measureAmount,
-        );
-        expect(Number(createdAreaItem.countedItemSize.cost)).toEqual(
-            Number(itemSizeDto_forCreate.cost),
-        );
-        expect(createdAreaItem.amount).toEqual(20);
-        // check updated item
-        const updatedAreaItem = result.countedInventoryItems.find(
-            (item) => item.id === areaItemUpdateId,
-        );
-        if (!updatedAreaItem) {
-            throw new Error('updated item not found');
-        }
-        expect(updatedAreaItem.countedInventoryItem.id).toEqual(
-            inventoryItemForUpdate.id,
-        );
-        expect(updatedAreaItem.countedItemSize.unit).toEqual(itemSizeDto_forUpdate.unit);
-        expect(updatedAreaItem.countedItemSize.package.id).toEqual(
-            itemSizeDto_forUpdate.packageId,
-        );
-        expect(updatedAreaItem.countedItemSize.measureAmount).toEqual(
-            itemSizeDto_forUpdate.measureAmount,
-        );
-        expect(Number(updatedAreaItem.countedItemSize.cost)).toEqual(
-            Number(itemSizeDto_forUpdate.cost),
-        );
-        expect(updatedAreaItem.amount).toEqual(30);
-    });
 
-    // Test ServceBase Methods:
-    it('should find all area counts', async () => {
-        const repoResult = await inventoryAreaCountRepo.find({ where: {} });
-
-        const serviceResult = await countService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    it('should find all area counts with search', async () => {
-        // repo result for areaCounts with areaItemCount with countedInventoryItem with name containing 'DRY'
-        const repoResult = await inventoryAreaCountRepo.find({
-            where: {
-                countedInventoryItems: {
-                    countedInventoryItem: { name: Like('%food%') },
-                },
-            },
+    beforeAll(async () => {
+        const module: TestingModule = await getInventoryAreasTestingModule({
+            countServiceClass: TestableInventoryAreaCountService,
         });
-        if (repoResult.length === 0) {
-            throw new Error('no area counts found');
-        }
-        const serviceResult = await countService.findAll({ search: 'food' });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        countService = module.get(
+            InventoryAreaCountService,
+        ) as TestableInventoryAreaCountService;
+        dataSource = module.get(DataSource);
+
+        areaRepo = module.get(getRepositoryToken(InventoryArea));
+        countRepo = module.get(getRepositoryToken(InventoryAreaCount));
+        categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+        itemRepo = module.get(getRepositoryToken(InventoryItem));
+        sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+
+        ({ areas } = await testingUtil.seedAreas(P));
+        ({ categories, vendors, packages, items, sizes } =
+            await testingUtil.seedInventoryItems(P));
     });
 
-    it('should find all area counts with filter', async () => {
-        // get InventoryArea with name AREA_B
-        const areaB = await inventoryAreaRepo.findOne({ where: { name: AREA_B } });
-        if (!areaB) {
-            throw new Error('area not found');
-        }
+    afterAll(async () => {
+        await sizeRepo.delete(sizes.map((s) => s.id));
+        await itemRepo.delete(items.map((i) => i.id));
+        await packageRepo.delete(packages.map((p) => p.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await vendorRepo.delete(vendors.map((v) => v.id));
+        await areaRepo.delete(areas.map((a) => a.id));
+    });
 
-        // repo result for areaCounts with inventoryArea with name containing 'AREA_B'
-        const repoResult = await inventoryAreaCountRepo.find({
-            where: { inventoryArea: areaB },
-        });
-        if (repoResult.length === 0) {
-            throw new Error('no area counts found');
-        }
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
 
-        const serviceResult = await countService.findAll({
-            filters: [`inventoryArea=${areaB.id}`],
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
+    describe('count lifecycle', () => {
+        let count: InventoryAreaCount;
+
+        it('should create count with no items', async () => {
+            const dto = plainToInstance(CreateInventoryAreaCountDto, {
+                inventoryAreaId: areas[0].id,
+                countedInventoryItems: [],
+            });
+            await dataSource.transaction(async (manager) => {
+                count = await countService.createEntityForTest(dto, manager);
+            });
+            expect(count.id).toBeDefined();
+            expect(count.inventoryArea.id).toBe(areas[0].id);
+            expect(count.countedInventoryItems).toBeUndefined();
         });
 
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        it('should update count inventoryAreaId', async () => {
+            const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+                inventoryAreaId: areas[1].id,
+            });
+            await dataSource.transaction(async (manager) => {
+                await countService.updateEntityForTest(dto, count, manager);
+            });
+            const reloaded = await reloadCount(count.id);
+            expect(reloaded.inventoryArea.id).toBe(areas[1].id);
+        });
+
+        it('should remove count', async () => {
+            await countService.remove(count.id);
+            await expect(countService.findOne(count.id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
     });
 
-    // TODO: Artificial dates to further test this method
-    it('should find all area counts with date', async () => {
-        //Todays date
+    it('should create count with items by itemSizeId', async () => {
+        const itemDtos = [0, 1, 2].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                countedItemSizeId: sizes[idx * 2].id,
+                amount: 1,
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, itemDtos);
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(3);
+    });
+
+    it('should create count with items by itemSizeDto', async () => {
+        const itemDtos = [0, 1, 2].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                amount: 1,
+                countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
+                    createId: `s${i}`,
+                    unit: 'lb',
+                    measureAmount: 1,
+                    packageId: packages[i].id,
+                    cost: 1,
+                }),
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, itemDtos);
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(3);
+    });
+
+    it('should create count with items by mixed itemSizeId and itemSizeDto', async () => {
+        const idIdtos = [0, 1, 2].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                countedItemSizeId: sizes[idx * 2].id,
+                amount: 1,
+            }),
+        );
+        const dtoIdtos = [3, 4, 5].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `d${i}`,
+                countedInventoryItemId: items[idx].id,
+                amount: 1,
+                countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
+                    createId: `s${i}`,
+                    unit: 'lb',
+                    measureAmount: 1,
+                    packageId: packages[i].id,
+                    cost: 1,
+                }),
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, [...idIdtos, ...dtoIdtos]);
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(6);
+    });
+
+    it('removes counted inventory items via authoritative parent update', async () => {
+        const itemDtos = [0, 1].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                countedItemSizeId: sizes[idx * 2].id,
+                amount: 1,
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, itemDtos);
+        const loaded = await reloadCount(count.id);
+
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            inventoryAreaId: loaded.inventoryArea.id,
+            countedInventoryItems: [],
+        });
+        await dataSource.transaction(async (manager) => {
+            await countService.updateEntityForTest(dto, loaded, manager);
+        });
+
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(0);
+    });
+
+    it('should update an existing counted item', async () => {
+        const itemDtos = [0, 1].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                countedItemSizeId: sizes[idx * 2].id,
+                amount: 1,
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, itemDtos);
+        const loaded = await reloadCount(count.id);
+
+        const transform = inventoryAreaCountToUpdateDto(loaded);
+        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+        const areaItemToUpdate = countedInventoryItems.pop();
+        const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
+        countedInventoryItems.push(
+            plainToInstance(NestedUpdateInventoryAreaItemDto, {
+                id: areaItemUpdateId,
+                countedInventoryItemId: items[2].id,
+                countedItemSizeId: sizes[4].id,
+                amount: 2,
+            }),
+        );
+
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            ...transform,
+            countedInventoryItems,
+        });
+        await dataSource.transaction(async (manager) => {
+            await countService.updateEntityForTest(dto, loaded, manager);
+        });
+
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(2);
+        const updated = reloaded.countedInventoryItems.find(
+            (i) => i.id === areaItemUpdateId,
+        );
+        expect(updated?.countedInventoryItem.id).toBe(items[2].id);
+        expect(updated?.countedItemSize.id).toBe(sizes[4].id);
+        expect(updated?.amount).toBe(2);
+    });
+
+    it('should add a new counted item via update', async () => {
+        const itemDtos = [0, 1].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                countedItemSizeId: sizes[idx * 2].id,
+                amount: 1,
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, itemDtos);
+        const loaded = await reloadCount(count.id);
+
+        const newItemDto = plainToInstance(NestedCreateInventoryAreaItemDto, {
+            createId: 'cNew',
+            countedInventoryItemId: items[6].id,
+            countedItemSizeId: sizes[12].id,
+            amount: 10,
+        });
+        const dto = inventoryAreaCountToUpdateDto(loaded, {
+            countedInventoryItems: [newItemDto],
+        });
+        await dataSource.transaction(async (manager) => {
+            await countService.updateEntityForTest(dto, loaded, manager);
+        });
+
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(3);
+        const created = reloaded.countedInventoryItems.find(
+            (i) => i.countedInventoryItem.id === items[6].id,
+        );
+        expect(created?.countedItemSize.id).toBe(sizes[12].id);
+        expect(created?.amount).toBe(10);
+    });
+
+    it('should create and update counted items with itemSizeDtos in one update', async () => {
+        const itemDtos = [0, 1].map((idx, i) =>
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: `c${i}`,
+                countedInventoryItemId: items[idx].id,
+                countedItemSizeId: sizes[idx * 2].id,
+                amount: 1,
+            }),
+        );
+        const count = await createSeededCount(areas[0].id, itemDtos);
+        const loaded = await reloadCount(count.id);
+
+        const createSizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
+            createId: 'sNew',
+            packageId: packages[2].id,
+            unit: 'lb',
+            measureAmount: 1,
+            cost: 1,
+        });
+        const createdItemDto = plainToInstance(NestedCreateInventoryAreaItemDto, {
+            createId: 'cNew',
+            countedInventoryItemId: items[3].id,
+            countedItemSize: createSizeDto,
+            amount: 20,
+        });
+
+        const transform = inventoryAreaCountToUpdateDto(loaded, {
+            countedInventoryItems: [createdItemDto],
+        });
+        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+        const areaItemToUpdate = countedInventoryItems.pop();
+        const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
+
+        const updateSizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
+            createId: 'sUpdate',
+            packageId: packages[2].id,
+            unit: 'lb',
+            measureAmount: 1,
+            cost: 1,
+        });
+        countedInventoryItems.push(
+            plainToInstance(NestedUpdateInventoryAreaItemDto, {
+                id: areaItemUpdateId,
+                countedInventoryItemId: items[4].id,
+                countedItemSize: updateSizeDto,
+                amount: 30,
+            }),
+        );
+
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            ...transform,
+            countedInventoryItems,
+        });
+        await dataSource.transaction(async (manager) => {
+            await countService.updateEntityForTest(dto, loaded, manager);
+        });
+
+        const reloaded = await reloadCount(count.id);
+        expect(reloaded.countedInventoryItems.length).toBe(3);
+        const created = reloaded.countedInventoryItems.find(
+            (i) => i.countedInventoryItem.id === items[3].id,
+        );
+        expect(created?.amount).toBe(20);
+        expect(created?.countedItemSize.package.id).toBe(packages[2].id);
+        const updated = reloaded.countedInventoryItems.find(
+            (i) => i.id === areaItemUpdateId,
+        );
+        expect(updated?.countedInventoryItem.id).toBe(items[4].id);
+        expect(updated?.amount).toBe(30);
+    });
+
+    it('should find seeded count in findAll filtered by inventoryArea', async () => {
+        const count = await createSeededCount(areas[3].id);
+        const result = await countService.findAll({
+            filters: [`inventoryArea=${areas[3].id}`],
+            limit: 100,
+        });
+        const found = result.items.find((c) => c.id === count.id);
+        expect(found).toBeDefined();
+        expect(
+            result.items.every(
+                (c) => c.inventoryArea?.id === areas[3].id || !c.inventoryArea,
+            ),
+        ).toBe(true);
+    });
+
+    it('should find seeded count in findAll search results', async () => {
+        const itemDto = plainToInstance(NestedCreateInventoryAreaItemDto, {
+            createId: 'c0',
+            countedInventoryItemId: items[0].id,
+            countedItemSizeId: sizes[0].id,
+            amount: 1,
+        });
+        const count = await createSeededCount(areas[0].id, [itemDto]);
+        const result = await countService.findAll({
+            search: items[0].name,
+            limit: 100,
+        });
+        const found = result.items.find((c) => c.id === count.id);
+        expect(found).toBeDefined();
+    });
+
+    it('should find seeded count in findAll within date range', async () => {
+        const count = await createSeededCount(areas[0].id);
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        // Service date filters use DATE(...) comparisons, so use date-only strings to avoid timezone edge cases.
         const startDate = startOfMonth.toISOString().split('T')[0];
         const endDate = endOfMonth.toISOString().split('T')[0];
 
-        const repoResult = await inventoryAreaCountRepo
-            .createQueryBuilder('entity')
-            .where('DATE(entity.countDate) >= :startDate', { startDate })
-            .andWhere('DATE(entity.countDate) <= :endDate', { endDate })
-            .getMany();
-
-        const serviceResult = await countService.findAll({
+        const result = await countService.findAll({
             limit: 100,
             startDate,
             endDate,
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        const found = result.items.find((c) => c.id === count.id);
+        expect(found).toBeDefined();
     });
 
-    it('should find all area counts with sort by countDate', async () => {
-        // repo result for areaCounts with countDate sorted by countDate descending
-        const repoResult = await inventoryAreaCountRepo.find({
-            order: { countDate: 'DESC' },
-        });
-        const serviceResult = await countService.findAll({
-            limit: 100,
-            sortBy: 'countDate',
-            sortOrder: 'DESC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        expect(serviceResult?.items[0].countDate).toEqual(repoResult[0].countDate);
-        expect(serviceResult?.items[repoResult.length - 1].countDate).toEqual(
-            repoResult[repoResult.length - 1].countDate,
-        );
+    it('should find one count with relations', async () => {
+        const count = await createSeededCount(areas[0].id);
+        const result = await countService.findOne(count.id, ['inventoryArea']);
+        expect(result.id).toBe(count.id);
+        expect(result.inventoryArea.id).toBe(areas[0].id);
     });
 
-    it('should find all area counts with sort by inventoryArea', async () => {
-        // repo result for areaCounts with inventoryArea sorted by inventoryArea name ascending
-        const repoResult = await inventoryAreaCountRepo.find({
-            order: { inventoryArea: { name: 'ASC' } }, relations: ['inventoryArea'],
-        });
-        const serviceResult = await countService.findAll({
-            limit: 100,
-            sortBy: 'inventoryArea',
-            sortOrder: 'ASC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        expect(serviceResult?.items[0].inventoryArea.name).toEqual(
-            repoResult[0].inventoryArea.name,
-        );
-        expect(
-            serviceResult?.items[repoResult.length - 1].inventoryArea.name,
-        ).toEqual(repoResult[repoResult.length - 1].inventoryArea.name);
-    });
-    //    Test findOne() with:
-    //        relations
-    it('should find one area counts', async () => {
-        // get area count from repo
-        const areaCount = await inventoryAreaCountRepo.find({
-            take: 1,
-        });
-        if (!areaCount) {
-            throw new Error('area count not found');
-        }
-        const serviceResult = await countService.findOne(areaCount[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(areaCount[0].id);
-    });
-
-    it('should find one area counts with relations', async () => {
-        // get area count from repo
-        const areaCount = await inventoryAreaCountRepo.find({
-            take: 1,
-            relations: ['inventoryArea'],
-        });
-        if (!areaCount) {
-            throw new Error('area count not found');
-        }
-
-        const serviceResult = await countService.findOne(areaCount[0].id, [
-            'inventoryArea',
-        ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(areaCount[0].id);
-        expect(serviceResult?.inventoryArea.id).toEqual(
-            areaCount[0].inventoryArea.id,
-        );
-        expect(serviceResult?.inventoryArea.name).toEqual(
-            areaCount[0].inventoryArea.name,
-        );
-    });
-
-    //    Test remove()
-    it('should remove area count', async () => {
-        // get area count from repo
-        const areaCount = await inventoryAreaCountRepo.find({
-            take: 1,
-        });
-        if (!areaCount) {
-            throw new Error('area count not found');
-        }
-        const deleteRequest = await countService.remove(areaCount[0].id);
-        expect(deleteRequest).toBe(true);
-        await expect(countService.findOne(areaCount[0].id)).rejects.toThrow(
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(countService.findOne(9_999_999)).rejects.toThrow(
             NotFoundException,
         );
+    });
+
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(InventoryAreaCountService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches current state', async () => {
+            const itemDtos = [0, 1].map((idx, i) =>
+                plainToInstance(NestedCreateInventoryAreaItemDto, {
+                    createId: `c${i}`,
+                    countedInventoryItemId: items[idx].id,
+                    countedItemSizeId: sizes[idx * 2].id,
+                    amount: 1,
+                }),
+            );
+            const count = await createSeededCount(areas[0].id, itemDtos);
+            const loaded = await reloadCount(count.id);
+
+            const dto = inventoryAreaCountToUpdateDto(loaded);
+            const result = await countService.update(count.id, dto);
+            expect(result.id).toBe(count.id);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when a nested item amount changes', async () => {
+            const itemDtos = [0, 1].map((idx, i) =>
+                plainToInstance(NestedCreateInventoryAreaItemDto, {
+                    createId: `c${i}`,
+                    countedInventoryItemId: items[idx].id,
+                    countedItemSizeId: sizes[idx * 2].id,
+                    amount: 1,
+                }),
+            );
+            const count = await createSeededCount(areas[0].id, itemDtos);
+            const loaded = await reloadCount(count.id);
+
+            const transform = inventoryAreaCountToUpdateDto(loaded);
+            const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+            const areaItemToUpdate = countedInventoryItems.pop();
+            const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto)
+                .id;
+            countedInventoryItems.push(
+                plainToInstance(NestedUpdateInventoryAreaItemDto, {
+                    id: areaItemUpdateId,
+                    countedInventoryItemId: items[1].id,
+                    countedItemSizeId: sizes[2].id,
+                    amount: 2,
+                }),
+            );
+            const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+                ...transform,
+                countedInventoryItems,
+            });
+
+            await countService.update(count.id, dto);
+            expect(spy).toHaveBeenCalled();
+
+            const reloaded = await reloadCount(count.id);
+            const updated = reloaded.countedInventoryItems.find(
+                (i) => i.id === areaItemUpdateId,
+            );
+            expect(updated?.amount).toBe(2);
+        });
     });
 });

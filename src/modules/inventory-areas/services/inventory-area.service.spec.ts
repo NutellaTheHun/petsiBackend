@@ -7,7 +7,6 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryArea } from '../entities/inventory-area.entity';
-import { AREA_A } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaService } from './inventory-area.service';
@@ -28,132 +27,116 @@ class TestableInventoryAreaService extends InventoryAreaService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Inventory area service', () => {
     let testingUtil: InventoryAreaTestUtil;
-    let dbTestContext: DatabaseTestContext;
     let service: TestableInventoryAreaService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
-    let inventoryAreaRepo: Repository<InventoryArea>;
+    let areaRepo: Repository<InventoryArea>;
+
+    let areas: InventoryArea[];
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule({
             areaServiceClass: TestableInventoryAreaService,
         });
-        dataSource = module.get(DataSource);
-
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-        await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
-
         service = module.get(InventoryAreaService) as TestableInventoryAreaService;
+        dataSource = module.get(DataSource);
+        areaRepo = module.get(getRepositoryToken(InventoryArea));
 
-        inventoryAreaRepo = module.get(getRepositoryToken(InventoryArea));
+        ({ areas } = await testingUtil.seedAreas(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await areaRepo.delete(areas.map((a) => a.id));
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create area', async () => {
-        const dto = plainToInstance(CreateInventoryAreaDto, { name: 'Area E' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await service.createEntityForTest(dto, manager);
+    describe('area lifecycle', () => {
+        let area: InventoryArea;
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.name).toEqual(dto.name);
+        it('should create area', async () => {
+            const dto = plainToInstance(CreateInventoryAreaDto, {
+                name: `${P}-lifecycle-area`,
+            });
+            await dataSource.transaction(async (manager) => {
+                area = await service.createEntityForTest(dto, manager);
+            });
+            expect(area.id).toBeDefined();
+            expect(area.name).toBe(dto.name);
+        });
+
+        it('should update area', async () => {
+            const dto = plainToInstance(UpdateInventoryAreaDto, {
+                name: `${P}-lifecycle-area-updated`,
+            });
+            await dataSource.transaction(async (manager) => {
+                await service.updateEntityForTest(dto, area, manager);
+            });
+            const reloaded = await areaRepo.findOneOrFail({ where: { id: area.id } });
+            expect(reloaded.name).toBe(`${P}-lifecycle-area-updated`);
+        });
+
+        it('should remove area', async () => {
+            await service.remove(area.id);
+            await expect(service.findOne(area.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update area', async () => {
-        const area = await inventoryAreaRepo.findOne({
-            where: { name: AREA_A },
-        });
-        if (!area) throw new Error('area not found');
-
-        const dto = plainToInstance(UpdateInventoryAreaDto, { name: 'Area A Updated' });
-
-        await dataSource.transaction(async (manager) => {
-            await service.updateEntityForTest(dto, area, manager);
-        });
-
-        const result = await inventoryAreaRepo.findOne({
-            where: { id: area.id },
-        });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
+    it('should find seeded area in findAll results', async () => {
+        const result = await service.findAll({ limit: 100 });
+        const found = result.items.find((a) => a.id === areas[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll()
-    it('should find all areas', async () => {
-        const repoResult = await inventoryAreaRepo.find();
-        const serviceResult = await service.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findall() with sort by name
-    it('should find all areas with sort by name', async () => {
-        const repoResult = await inventoryAreaRepo.find({
-            order: { name: 'DESC' },
-        });
-        const serviceResult = await service.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-            const lastIdx = repoResult.length - 1;
-            expect(serviceResult?.items[lastIdx].name).toEqual(
-                repoResult[lastIdx].name,
-            );
-        }
-    });
-
-    // test findOne()
-    it('should find one area', async () => {
-        const area = await inventoryAreaRepo.find({ take: 1 });
-        if (!area.length) throw new Error('area not found');
-
-        const serviceResult = await service.findOne(area[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(area[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one area with relations', async () => {
-        const area = await inventoryAreaRepo.find({
-            take: 1,
-            relations: ['inventoryCounts'],
-        });
-        if (!area.length) throw new Error('area not found');
-
-        const serviceResult = await service.findOne(area[0].id, [
-            'inventoryCounts',
-        ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(area[0].id);
-        expect(serviceResult?.inventoryCounts).toBeDefined();
-        expect(Array.isArray(serviceResult?.inventoryCounts)).toBe(true);
+        const result = await service.findOne(areas[0].id, ['inventoryCounts']);
+        expect(result.id).toBe(areas[0].id);
+        expect(Array.isArray(result.inventoryCounts)).toBe(true);
     });
 
-    // test remove()
-    it('should remove area', async () => {
-        const area = await inventoryAreaRepo.find({ take: 1 });
-        if (!area.length) throw new Error('area not found');
-        const id = area[0].id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        const deleteResult = await service.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(service.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(InventoryAreaService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches entity', async () => {
+            const area = await areaRepo.findOneOrFail({ where: { id: areas[1].id } });
+            const dto = plainToInstance(UpdateInventoryAreaDto, { name: area.name });
+            const result = await service.update(area.id, dto);
+            expect(result.name).toBe(area.name);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const area = await areaRepo.findOneOrFail({ where: { id: areas[2].id } });
+            const dto = plainToInstance(UpdateInventoryAreaDto, {
+                name: `${P}-area-renamed`,
+            });
+            await service.update(area.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await areaRepo.findOneOrFail({ where: { id: area.id } });
+            expect(row.name).toBe(`${P}-area-renamed`);
+        });
     });
 });

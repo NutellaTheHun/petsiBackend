@@ -7,51 +7,54 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryArea } from '../entities/inventory-area.entity';
-import { AREA_A, AREA_B } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaValidator } from './inventory-area.validator';
 
+const P = `t${Date.now()}`;
+
 describe('inventory area validator', () => {
     let testingUtil: InventoryAreaTestUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: InventoryAreaValidator;
     let areaRepo: Repository<InventoryArea>;
 
+    let areas: InventoryArea[];
+
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-        await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
-
         validator = module.get<InventoryAreaValidator>(InventoryAreaValidator);
-
         areaRepo = module.get(getRepositoryToken(InventoryArea));
+
+        ({ areas } = await testingUtil.seedAreas(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await areaRepo.delete(areas.map((a) => a.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // successfully validate createDto with no validation errors
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create: no validation errors', async () => {
         const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
-            name: 'New Area Name',
+            name: `${P}-new-area`,
         });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
-    // fail to validate create: name already exists
     it('fail validate create: name already exists', async () => {
         const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
-            name: AREA_A,
+            name: areas[0].name,
         });
 
         const errors = await validator.validateDto(dto, 'root');
@@ -63,33 +66,21 @@ describe('inventory area validator', () => {
         );
     });
 
-    // successfully validate updateDto with no validation errors
     it('successfully validate update: no validation errors', async () => {
-        const areaToUpdate = await areaRepo.findOne({ where: { name: AREA_A } });
-        if (!areaToUpdate) {
-            throw new Error('area not found');
-        }
-
         const dto: UpdateInventoryAreaDto = plainToInstance(UpdateInventoryAreaDto, {
-            name: 'Updated Area Name',
+            name: `${P}-updated-area`,
         });
 
-        const errors = await validator.validateDto(dto, areaToUpdate.id);
+        const errors = await validator.validateDto(dto, areas[0].id);
         expect(errors).toBeNull();
     });
 
-    // fail to validate update: name already exists
     it('fail validate update: name already exists', async () => {
-        const areaToUpdate = await areaRepo.findOne({ where: { name: AREA_A } });
-        if (!areaToUpdate) {
-            throw new Error('area not found');
-        }
-
         const dto: UpdateInventoryAreaDto = plainToInstance(UpdateInventoryAreaDto, {
-            name: AREA_B,
+            name: areas[1].name,
         });
 
-        const errors = await validator.validateDto(dto, areaToUpdate.id);
+        const errors = await validator.validateDto(dto, areas[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

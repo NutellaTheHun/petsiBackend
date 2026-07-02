@@ -4,6 +4,10 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
+import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
+import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
@@ -270,5 +274,92 @@ export class InventoryAreaTestUtil {
             }
         }
         return results;
+    }
+
+    // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
+    // These do not register cleanup — callers are responsible for deleting by ID.
+
+    public async seedAreas(P: string = ''): Promise<{ areas: InventoryArea[] }> {
+        const names = getAreaNames();
+        const areas: InventoryArea[] = [];
+        for (const name of names) {
+            const areaName = P ? `${P}-${name}` : name;
+            const entity = await this.areaBuilder.reset().areaName(areaName).build();
+            areas.push(await this.areaRepo.save(entity));
+        }
+        return { areas };
+    }
+
+    /**
+     * Delegates to InventoryItemTestingUtil.seedSizes(P) for the inventory item dependency chain.
+     */
+    public async seedInventoryItems(P: string = ''): Promise<{
+        categories: InventoryItemCategory[];
+        vendors: InventoryItemVendor[];
+        packages: InventoryItemPackage[];
+        items: InventoryItem[];
+        sizes: InventoryItemSize[];
+    }> {
+        return this.inventoryItemTestUtil.seedSizes(P);
+    }
+
+    /**
+     * areas order: [A, B, C, D].
+     * counts order: 1 for A, 1 for B, 2 for C, 3 for D (7 total).
+     */
+    public async seedCounts(P: string = ''): Promise<{
+        areas: InventoryArea[];
+        counts: InventoryAreaCount[];
+    }> {
+        const { areas } = await this.seedAreas(P);
+        const countsPerArea = [1, 1, 2, 3];
+
+        const counts: InventoryAreaCount[] = [];
+        for (let i = 0; i < areas.length; i++) {
+            for (let c = 0; c < countsPerArea[i]; c++) {
+                const entity = await this.areaCountBuilder
+                    .reset()
+                    .inventoryAreaById(areas[i].id)
+                    .build();
+                counts.push(await this.areaCountRepo.save(entity));
+            }
+        }
+        return { areas, counts };
+    }
+
+    /**
+     * 2 area items per count (14 total for 7 counts), round-robin over seeded inventory items.
+     * Each area item uses the first of the item's 2 seeded sizes (sizes[idx * 2]).
+     */
+    public async seedItemCounts(P: string = ''): Promise<{
+        areas: InventoryArea[];
+        counts: InventoryAreaCount[];
+        categories: InventoryItemCategory[];
+        vendors: InventoryItemVendor[];
+        packages: InventoryItemPackage[];
+        items: InventoryItem[];
+        sizes: InventoryItemSize[];
+        areaItems: InventoryAreaItem[];
+    }> {
+        const { areas, counts } = await this.seedCounts(P);
+        const { categories, vendors, packages, items, sizes } = await this.seedInventoryItems(P);
+
+        const areaItems: InventoryAreaItem[] = [];
+        let itemPtr = 0;
+        for (const count of counts) {
+            for (let j = 0; j < 2; j++) {
+                const idx = itemPtr++ % items.length;
+                const entity = await this.areaItemBuilder
+                    .reset()
+                    .parentInventoryCountById(count.id)
+                    .countedItemById(items[idx].id)
+                    .countedItemSizeById(sizes[idx * 2].id)
+                    .amount(1)
+                    .build();
+                areaItems.push(await this.areaItemRepo.save(entity));
+            }
+        }
+
+        return { areas, counts, categories, vendors, packages, items, sizes, areaItems };
     }
 }
