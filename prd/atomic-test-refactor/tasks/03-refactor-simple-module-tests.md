@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: []
 
 ---
@@ -35,10 +35,10 @@ Migrate spec files for three self-contained modules — `roles`, `users`, and `d
 
 ## Acceptance criteria
 
-- [ ] Each of the 7 spec files declares `const P = \`t${Date.now()}\``
-- [ ] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
-- [ ] `findAll` filter/search tests assert the prefixed entity appears in results (not a count comparison)
-- [ ] Change detector short-circuit tests live in service specs only
-- [ ] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
-- [ ] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
-- [ ] `npm run test` passes for all 7 spec files
+- [x] Each of the 7 spec files declares `const P = \`t${Date.now()}\``
+- [x] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
+- [x] `findAll` filter/search tests assert the prefixed entity appears in results (not a count comparison)
+- [x] Change detector short-circuit tests live in service specs only
+- [x] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
+- [x] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
+- [x] `npm run test` passes for all 7 spec files

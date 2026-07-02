@@ -51,4 +51,18 @@ export class RoleTestUtil {
         //await this.roleRepo.deleteAll();
         await this.roleRepo.query(`TRUNCATE TABLE role CASCADE`);
     }
+
+    // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
+    // These do not register cleanup — callers are responsible for deleting by ID.
+
+    public async seedRoles(P: string = ''): Promise<{ roles: Role[] }> {
+        const names = ['role-a', 'role-b', 'role-c'];
+        const roles: Role[] = [];
+        for (const name of names) {
+            const entityName = P ? `${P}-${name}` : name;
+            const entity = await this.roleBuilder.reset().roleName(entityName).build();
+            roles.push(await this.roleRepo.save(entity));
+        }
+        return { roles };
+    }
 }
