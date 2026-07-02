@@ -4,6 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/nested-update-template-menu-item.dto';
@@ -11,61 +13,85 @@ import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
-import { template_a } from '../utils/constants';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateValidator } from './template.validator';
 
+const P = `t${Date.now()}`;
+
 describe('template validator', () => {
     let testingUtil: TemplateTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: TemplateValidator;
     let templateRepo: Repository<Template>;
-    let menuItemRepo: Repository<MenuItem>;
-    let templateMenuItemRepo: Repository<TemplateMenuItem>;
+    let templateItemRepo: Repository<TemplateMenuItem>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+    let itemRepo: Repository<MenuItem>;
+
+    let templates: Template[];
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let templateMenuItems: TemplateMenuItem[];
 
     beforeAll(async () => {
         const module: TestingModule = await getTemplateTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-        await testingUtil.initTemplateMenuItemTestDatabase(dbTestContext);
-
         validator = module.get<TemplateValidator>(TemplateValidator);
 
         templateRepo = module.get(getRepositoryToken(Template));
-        menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        templateMenuItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+        templateItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        itemRepo = module.get(getRepositoryToken(MenuItem));
+
+        ({
+            templates,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            templateMenuItems,
+        } = await testingUtil.seedTemplateMenuItems(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
+        await templateRepo.delete(templates.map((t) => t.id));
+        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        await itemRepo.delete(allItems.map((i) => i.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const menuItems = await menuItemRepo.find({ where: {} });
-        if (menuItems.length < 2) {
-            throw new Error('not enough menu items for test');
-        }
-
         const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
-            name: 'New Template',
+            name: `${P}-new-template`,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItems[0].id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
-                    displayName: 'Item 2',
-                    menuItemId: menuItems[1].id,
+                    displayName: `${P}-item-2`,
+                    menuItemId: singleItems[1].id,
                     tablePosIndex: 2,
                 }),
             ],
@@ -77,11 +103,12 @@ describe('template validator', () => {
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
-            name: template_a,
+            name: templates[0].name,
             templateMenuItems: [],
         });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -90,24 +117,19 @@ describe('template validator', () => {
     });
 
     it('fail validate create: duplicate menu items on template menu items', async () => {
-        const menuItem = await menuItemRepo.findOne({ where: {} });
-        if (!menuItem) {
-            throw new Error('menu item not found');
-        }
-
         const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
-            name: 'New Template',
+            name: `${P}-new-template-dup-item`,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItem.id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
-                    displayName: 'Item 2',
-                    menuItemId: menuItem.id,
+                    displayName: `${P}-item-2`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 2,
                 }),
             ],
@@ -123,24 +145,19 @@ describe('template validator', () => {
     });
 
     it('fail validate create: duplicate table position on template items', async () => {
-        const menuItems = await menuItemRepo.find({ where: {} });
-        if (menuItems.length < 2) {
-            throw new Error('not enough menu items for test');
-        }
-
         const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
-            name: 'New Template',
+            name: `${P}-new-template-dup-pos`,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItems[0].id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
-                    displayName: 'Item 2',
-                    menuItemId: menuItems[1].id,
+                    displayName: `${P}-item-2`,
+                    menuItemId: singleItems[1].id,
                     tablePosIndex: 1,
                 }),
             ],
@@ -156,18 +173,13 @@ describe('template validator', () => {
     });
 
     it('fail validate create: nested template menu items validator errors: positional index cannot be less than 0', async () => {
-        const menuItem = await menuItemRepo.findOne({ where: {} });
-        if (!menuItem) {
-            throw new Error('menu item not found');
-        }
-
         const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
-            name: 'New Template',
+            name: `${P}-new-template-bad-pos`,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItem.id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: -1,
                 }),
             ],
@@ -184,36 +196,27 @@ describe('template validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const templateToUpdate = await templateRepo.findOne({
-            where: { name: template_a },
+        const templateToUpdate = await templateRepo.findOneOrFail({
+            where: { id: templates[0].id },
             relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
         });
-        if (!templateToUpdate) {
-            throw new Error('template not found');
-        }
-
-        const menuItems = await menuItemRepo.find();
-        if (menuItems.length < 2) {
-            throw new Error('not enough menu items for test');
-        }
 
         const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
-            name: 'Updated Template',
-            templateMenuItems:
-                [
-                    plainToInstance(NestedUpdateTemplateMenuItemDto, {
-                        id: templateToUpdate.templateMenuItems[0].id,
-                        tablePosIndex: 5,
-                        displayName: 'Updated Item',
-                        menuItemId: templateToUpdate.templateMenuItems[0].menuItem.id,
-                    }),
-                    plainToInstance(NestedCreateTemplateMenuItemDto, {
-                        createId: 'c1',
-                        displayName: 'New Item',
-                        menuItemId: menuItems[0].id,
-                        tablePosIndex: 6,
-                    }),
-                ]
+            name: `${P}-updated-template`,
+            templateMenuItems: [
+                plainToInstance(NestedUpdateTemplateMenuItemDto, {
+                    id: templateToUpdate.templateMenuItems[0].id,
+                    tablePosIndex: 500,
+                    displayName: `${P}-updated-item`,
+                    menuItemId: templateToUpdate.templateMenuItems[0].menuItem.id,
+                }),
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'c1',
+                    displayName: `${P}-new-item`,
+                    menuItemId: singleItems[2].id,
+                    tablePosIndex: 501,
+                }),
+            ],
         });
 
         const errors = await validator.validateDto(dto, templateToUpdate.id);
@@ -221,20 +224,12 @@ describe('template validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const templates = await templateRepo.find({ where: {} });
-        if (templates.length < 2) {
-            throw new Error('Not enough templates for test');
-        }
-
-        const templateToUpdate = templates[0];
-        const existingTemplate = templates[1];
-
         const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
-            name: existingTemplate.name,
+            name: templates[1].name,
             templateMenuItems: [],
         });
 
-        const errors = await validator.validateDto(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templates[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -244,37 +239,25 @@ describe('template validator', () => {
     });
 
     it('fail validate update: duplicate menu items on template menu items', async () => {
-        const templateToUpdate = await templateRepo.findOne({
-            where: { name: template_a },
-        });
-        if (!templateToUpdate) {
-            throw new Error('template not found');
-        }
-
-        const menuItem = await menuItemRepo.findOne({ where: {} });
-        if (!menuItem) {
-            throw new Error('menu item not found');
-        }
-
         const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
-            name: templateToUpdate.name,
+            name: templates[0].name,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItem.id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
-                    displayName: 'Item 2',
-                    menuItemId: menuItem.id,
+                    displayName: `${P}-item-2`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 2,
                 }),
             ],
         });
 
-        const errors = await validator.validateDto(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templates[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -284,37 +267,25 @@ describe('template validator', () => {
     });
 
     it('fail validate update: duplicate table position on template items', async () => {
-        const templateToUpdate = await templateRepo.findOne({
-            where: { name: template_a },
-        });
-        if (!templateToUpdate) {
-            throw new Error('template not found');
-        }
-
-        const menuItems = await menuItemRepo.find({ where: {} });
-        if (menuItems.length < 2) {
-            throw new Error('not enough menu items for test');
-        }
-
         const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
-            name: templateToUpdate.name,
+            name: templates[0].name,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItems[0].id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
-                    displayName: 'Item 2',
-                    menuItemId: menuItems[1].id,
+                    displayName: `${P}-item-2`,
+                    menuItemId: singleItems[1].id,
                     tablePosIndex: 1,
                 }),
             ],
         });
 
-        const errors = await validator.validateDto(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templates[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -324,31 +295,19 @@ describe('template validator', () => {
     });
 
     it('fail validate update: nested template menu items validator errors: positional index cannot be less than 0', async () => {
-        const templateToUpdate = await templateRepo.findOne({
-            where: { name: template_a },
-        });
-        if (!templateToUpdate) {
-            throw new Error('template not found');
-        }
-
-        const menuItem = await menuItemRepo.findOne({ where: {} });
-        if (!menuItem) {
-            throw new Error('menu item not found');
-        }
-
         const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
-            name: templateToUpdate.name,
+            name: templates[0].name,
             templateMenuItems: [
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
-                    displayName: 'Item 1',
-                    menuItemId: menuItem.id,
+                    displayName: `${P}-item-1`,
+                    menuItemId: singleItems[0].id,
                     tablePosIndex: -1,
                 }),
             ],
         });
 
-        const errors = await validator.validateDto(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templates[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

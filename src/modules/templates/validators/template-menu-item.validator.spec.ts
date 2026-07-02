@@ -4,6 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
@@ -13,78 +15,88 @@ import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemValidator } from './template-menu-item.validator';
 
+const P = `t${Date.now()}`;
+
 describe('template menu item validator', () => {
     let testingUtil: TemplateTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: TemplateMenuItemValidator;
-    let templateMenuItemRepo: Repository<TemplateMenuItem>;
     let templateRepo: Repository<Template>;
-    let menuItemRepo: Repository<MenuItem>;
+    let templateItemRepo: Repository<TemplateMenuItem>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+    let itemRepo: Repository<MenuItem>;
+
+    let templates: Template[];
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let templateMenuItems: TemplateMenuItem[];
 
     beforeAll(async () => {
         const module: TestingModule = await getTemplateTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-        await testingUtil.initTemplateMenuItemTestDatabase(dbTestContext);
+        validator = module.get<TemplateMenuItemValidator>(TemplateMenuItemValidator);
 
-        validator = module.get<TemplateMenuItemValidator>(
-            TemplateMenuItemValidator,
-        );
-
-        templateMenuItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
         templateRepo = module.get(getRepositoryToken(Template));
-        menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        templateItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        itemRepo = module.get(getRepositoryToken(MenuItem));
+
+        ({
+            templates,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            templateMenuItems,
+        } = await testingUtil.seedTemplateMenuItems(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
+        await templateRepo.delete(templates.map((t) => t.id));
+        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        await itemRepo.delete(allItems.map((i) => i.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const template = await templateRepo.findOne({ where: {} });
-        if (!template) {
-            throw new Error('template not found');
-        }
-        const menuItem = await menuItemRepo.findOne({ where: {} });
-        if (!menuItem) {
-            throw new Error('menu item not found');
-        }
-
         const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
-            displayName: 'Display Name',
+            displayName: `${P}-new-row`,
             tablePosIndex: 1,
-            menuItemId: menuItem.id,
-            parentTemplateId: template.id,
+            menuItemId: singleItems[0].id,
+            parentTemplateId: templates[0].id,
         });
 
-        const errors = await validator.validateDto(dto, 'root')
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: positional index cannot be less than 0', async () => {
-        const template = await templateRepo.findOne({ where: {} });
-        if (!template) {
-            throw new Error('template not found');
-        }
-        const menuItem = await menuItemRepo.findOne({ where: {} });
-        if (!menuItem) {
-            throw new Error('menu item not found');
-        }
-
         const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
-            displayName: 'Display Name',
+            displayName: `${P}-new-row-bad-pos`,
             tablePosIndex: -1,
-            menuItemId: menuItem.id,
-            parentTemplateId: template.id,
+            menuItemId: singleItems[0].id,
+            parentTemplateId: templates[0].id,
         });
 
-        const errors = await validator.validateDto(dto, 'root')
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -95,44 +107,24 @@ describe('template menu item validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({ where: {} });
-        if (!templateMenuItemToUpdate) {
-            throw new Error('template menu item not found');
-        }
-        const newMenuItem = await menuItemRepo.findOne({ where: {} });
-        if (!newMenuItem) {
-            throw new Error('new menu item not found');
-        }
-
         const dto: UpdateTemplateMenuItemDto = plainToInstance(UpdateTemplateMenuItemDto, {
-            tablePosIndex: 5,
-            menuItemId: newMenuItem.id,
-            displayName: 'Updated Display Name',
+            tablePosIndex: 500,
+            menuItemId: singleItems[1].id,
+            displayName: `${P}-updated-row`,
         });
 
-        const errors = await validator.validateDto(
-            dto,
-            templateMenuItemToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, templateMenuItems[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: positional index cannot be less than 0', async () => {
-        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({ where: {}, relations: ['menuItem'] });
-        if (!templateMenuItemToUpdate) {
-            throw new Error('template menu item not found');
-        }
-
         const dto: UpdateTemplateMenuItemDto = plainToInstance(UpdateTemplateMenuItemDto, {
             tablePosIndex: -1,
-            displayName: 'Updated Display Name',
-            menuItemId: templateMenuItemToUpdate.menuItem.id,
+            displayName: `${P}-updated-row-bad-pos`,
+            menuItemId: templateMenuItems[0].menuItem.id,
         });
 
-        const errors = await validator.validateDto(
-            dto,
-            templateMenuItemToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, templateMenuItems[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

@@ -2,15 +2,15 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
-import { templateMenuItemToUpdateDto } from '../utils/entity-transformers/template-menu-item.dto.transformer';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemService } from './template-menu-item.service';
@@ -30,161 +30,163 @@ class TestableTemplateMenuItemService extends TemplateMenuItemService {
         return this.updateEntity(dto, manager, entity);
     }
 }
+
+const P = `t${Date.now()}`;
+
 describe('Template menu item service', () => {
+    let testingUtil: TemplateTestingUtil;
     let templateItemService: TestableTemplateMenuItemService;
-    let testUtil: TemplateTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
-    let templateMenuItemRepo: Repository<TemplateMenuItem>;
+
     let templateRepo: Repository<Template>;
-    let menuItemRepo: Repository<MenuItem>;
-    let menuItemTestUtil: MenuItemTestingUtil;
+    let templateItemRepo: Repository<TemplateMenuItem>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+    let itemRepo: Repository<MenuItem>;
+
+    let templates: Template[];
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let templateMenuItems: TemplateMenuItem[];
 
     beforeAll(async () => {
         const module: TestingModule = await getTemplateTestingModule({
             templateMenuItemServiceClass: TestableTemplateMenuItemService,
         });
-        dbTestContext = new DatabaseTestContext();
-        testUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-        await testUtil.initTemplateMenuItemTestDatabase(dbTestContext);
-
-        templateItemService = module.get(TemplateMenuItemService) as TestableTemplateMenuItemService;
+        testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
+        templateItemService = module.get(
+            TemplateMenuItemService,
+        ) as TestableTemplateMenuItemService;
         dataSource = module.get(DataSource);
-        templateMenuItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+
         templateRepo = module.get(getRepositoryToken(Template));
-        menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await menuItemTestUtil.initMenuItemTestDatabase(dbTestContext);
+        templateItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        itemRepo = module.get(getRepositoryToken(MenuItem));
+
+        ({
+            templates,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            templateMenuItems,
+        } = await testingUtil.seedTemplateMenuItems(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
+        await templateRepo.delete(templates.map((t) => t.id));
+        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        await itemRepo.delete(allItems.map((i) => i.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(templateItemService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity() with CreateTemplateMenuItemDto
-    it('should create template menu item with CreateTemplateMenuItemDto', async () => {
-        const [t] = await templateRepo.find({ take: 1 });
-        const [m] = await menuItemRepo.find({ take: 1 });
-        if (!t || !m) throw new Error('fixtures not found');
-        const dto = plainToInstance(CreateTemplateMenuItemDto, {
-            displayName: 'NEW_ROW',
-            tablePosIndex: 999,
-            menuItemId: m.id,
-            parentTemplateId: t.id,
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
+    describe('template menu item lifecycle', () => {
+        let templateMenuItem: TemplateMenuItem;
+
+        it('should create template menu item', async () => {
+            const dto = plainToInstance(CreateTemplateMenuItemDto, {
+                displayName: `${P}-lifecycle-row`,
+                tablePosIndex: 50,
+                menuItemId: singleItems[2].id,
+                parentTemplateId: templates[0].id,
+            });
+            await dataSource.transaction(async (manager) => {
+                templateMenuItem = await templateItemService.createEntityForTest(
+                    dto,
+                    manager,
+                );
+            });
+            expect(templateMenuItem.id).toBeDefined();
+            expect(templateMenuItem.displayName).toBe(dto.displayName);
         });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await templateItemService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).toBeDefined();
-            expect(result.displayName).toEqual(dto.displayName);
+        it('should update template menu item', async () => {
+            const dto = plainToInstance(UpdateTemplateMenuItemDto, {
+                displayName: `${P}-lifecycle-row-updated`,
+                tablePosIndex: 51,
+                menuItemId: singleItems[3].id,
+            });
+            await dataSource.transaction(async (manager) => {
+                await templateItemService.updateEntityForTest(
+                    dto,
+                    templateMenuItem,
+                    manager,
+                );
+            });
+            const reloaded = await templateItemRepo.findOneOrFail({
+                where: { id: templateMenuItem.id },
+                relations: ['menuItem'],
+            });
+            expect(reloaded.displayName).toBe(dto.displayName);
+            expect(reloaded.tablePosIndex).toBe(dto.tablePosIndex);
+            expect(reloaded.menuItem.id).toBe(singleItems[3].id);
+        });
+
+        it('should remove template menu item', async () => {
+            await templateItemService.remove(templateMenuItem.id);
+            await expect(
+                templateItemService.findOne(templateMenuItem.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update template menu item', async () => {
-        const [existing] = await templateMenuItemRepo.find({ take: 1, relations: ['menuItem', 'parentTemplate'] });
-        if (!existing) throw new Error('template menu item not found');
-
-        const dto = templateMenuItemToUpdateDto(existing, { displayName: 'Updated', tablePosIndex: 2 });
-
-        await dataSource.transaction(async (manager) => {
-            await templateItemService.updateEntityForTest(dto, existing, manager);
-            await manager.save(existing);
-        });
-
-        const result = await templateMenuItemRepo.findOne({ where: { id: existing.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.displayName).toEqual(dto.displayName);
-        expect(result.tablePosIndex).toEqual(dto.tablePosIndex);
+    it('should find seeded template menu item in findAll results', async () => {
+        const result = await templateItemService.findAll({ limit: 100 });
+        const found = result.items.find((i) => i.id === templateMenuItems[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll()
-    it('should find all template menu items', async () => {
-        const repoResult = await templateMenuItemRepo.find();
-        const serviceResult = await templateItemService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
+    it('should find seeded template menu items filtered by parentTemplate', async () => {
+        const expectedIds = templateMenuItems
+            .filter((i) => i.parentTemplate.id === templates[0].id)
+            .map((i) => i.id)
+            .sort();
+        expect(expectedIds.length).toBeGreaterThan(0);
 
-    // test findAll() with search by name
-    it('should find all template menu items with search by name', async () => {
-        const serviceResult = await templateItemService.findAll({
-            search: 'test',
+        const result = await templateItemService.findAll({
+            filters: [`parentTemplate=${templates[0].id}`],
             limit: 100,
         });
-        expect(serviceResult).not.toBeNull();
+        expect(result.items.map((i) => i.id).sort()).toEqual(
+            expect.arrayContaining(expectedIds),
+        );
+        expect(
+            result.items.every(
+                (i) => i.parentTemplate?.id === templates[0].id || !i.parentTemplate,
+            ),
+        ).toBe(true);
     });
 
-    // test findAll() with sortBy tablePosIndex
-    it('should find all template menu items with sortBy tablePosIndex', async () => {
-        const serviceResult = await templateItemService.findAll({
-            sortBy: 'tablePosIndex',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-    });
-
-    // test findOne()
-    it('should find one template menu item', async () => {
-        const [t] = await templateMenuItemRepo.find({ take: 1 });
-        if (!t) throw new Error('template menu item not found');
-
-        const serviceResult = await templateItemService.findOne(t.id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(t.id);
-    });
-
-    // test findOne() with relations
     it('should find one template menu item with relations', async () => {
-        const [t] = await templateMenuItemRepo.find({ take: 1 });
-        if (!t) throw new Error('template menu item not found');
-
-        const serviceResult = await templateItemService.findOne(t.id, [
+        const result = await templateItemService.findOne(templateMenuItems[1].id, [
             'parentTemplate',
             'menuItem',
         ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(t.id);
-        expect(serviceResult?.parentTemplate).toBeDefined();
-        expect(serviceResult?.menuItem).toBeDefined();
+        expect(result.id).toBe(templateMenuItems[1].id);
+        expect(result.parentTemplate).toBeDefined();
+        expect(result.menuItem).toBeDefined();
     });
 
-    // test remove()
-    it('should remove template menu item', async () => {
-        const [t] = await templateMenuItemRepo.find({
-            where: { displayName: 'NEW_ROW' },
-        });
-        if (!t) {
-            const [alt] = await templateMenuItemRepo.find({ take: 1 });
-            if (!alt) throw new Error('template menu item not found');
-            const id = alt.id;
-            const deleteResult = await templateItemService.remove(id);
-            expect(deleteResult).toBe(true);
-            await expect(templateItemService.findOne(id)).rejects.toThrow(NotFoundException);
-            return;
-        }
-        const id = t.id;
-        const deleteResult = await templateItemService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(templateItemService.findOne(id)).rejects.toThrow(NotFoundException);
-    });
-
-    // test findAll() with filter by template
-    it('should find all template menu items with filter by template', async () => {
-        const template = await templateRepo.findOneOrFail({ where: { templateMenuItems: MoreThan(0) }, relations: ['templateMenuItems'] });
-        if (!template.templateMenuItems) throw new Error('template menu items not found');
-        const serviceResult = await templateItemService.findAll({
-            filters: [`parentTemplate=${template.id}`],
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(template.templateMenuItems.length);
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(templateItemService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

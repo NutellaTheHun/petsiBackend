@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [02-refactor-menu-items-tests.md]
 
 ---
@@ -37,12 +37,12 @@ Update calls to `MenuItemTestingUtil` methods to pass the `P` prefix received fr
 
 ## Acceptance criteria
 
-- [ ] `TemplateTestingUtil` passes `P` to `MenuItemTestingUtil` methods and accepts its own optional `P` parameter; backward compatible with `seed.service.ts`
-- [ ] Each of the 6 templates spec files declares `const P = \`t${Date.now()}\``
-- [ ] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
-- [ ] `findAll` filter/search tests assert the prefixed entity appears in results
-- [ ] Change detector short-circuit tests live in service specs only
-- [ ] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
-- [ ] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
-- [ ] `npm run test` passes for all templates spec files
-- [ ] `npm run seedTestDb` still succeeds
+- [x] `TemplateTestingUtil` passes `P` to `MenuItemTestingUtil` methods and accepts its own optional `P` parameter; backward compatible with `seed.service.ts`
+- [x] Each of the 6 templates spec files declares `const P = \`t${Date.now()}\``
+- [x] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
+- [x] `findAll` filter/search tests assert the prefixed entity appears in results
+- [x] Change detector short-circuit tests live in service specs only
+- [x] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test (template-menu-item controller's create/update endpoints are disabled — `throw new Error('Endpoint not available')` — so only the remove → findOne test applies there, matching the existing precedent in inventory-area-item.controller.spec.ts)
+- [x] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
+- [x] `npm run test` passes for all templates spec files
+- [x] `npm run seedTestDb` still succeeds
