@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [02-refactor-menu-items-tests.md]
 
 ---
@@ -37,12 +37,12 @@ Update calls to `MenuItemTestingUtil` methods to pass the `P` prefix received fr
 
 ## Acceptance criteria
 
-- [ ] `LabelTestingUtil` passes `P` to `MenuItemTestingUtil` methods and accepts its own optional `P` parameter; backward compatible with `seed.service.ts`
-- [ ] Each of the 6 labels spec files declares `const P = \`t${Date.now()}\``
-- [ ] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
-- [ ] `findAll` filter/search tests assert the prefixed entity appears in results
-- [ ] Change detector short-circuit tests live in service specs only
-- [ ] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
-- [ ] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
-- [ ] `npm run test` passes for all labels spec files
-- [ ] `npm run seedTestDb` still succeeds
+- [x] `LabelTestingUtil` passes `P` to `MenuItemTestingUtil` methods and accepts its own optional `P` parameter; backward compatible with `seed.service.ts`
+- [x] Each of the 6 labels spec files declares `const P = \`t${Date.now()}\``
+- [x] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
+- [x] `findAll` filter/search tests assert the prefixed entity appears in results
+- [x] Change detector short-circuit tests live in service specs only
+- [x] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
+- [x] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
+- [x] `npm run test` passes for all labels spec files
+- [x] `npm run seedTestDb` still succeeds
