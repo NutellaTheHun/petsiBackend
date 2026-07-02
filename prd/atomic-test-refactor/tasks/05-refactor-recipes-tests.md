@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [01-refactor-inventory-items-tests.md]
 
 ---
@@ -35,11 +35,11 @@ Update calls to `InventoryItemTestingUtil` methods to pass the `P` prefix receiv
 
 ## Acceptance criteria
 
-- [ ] `recipe-test.util.ts` passes `P` to `InventoryItemTestingUtil` methods and accepts its own optional `P` parameter
-- [ ] Each recipes spec file declares `const P = \`t${Date.now()}\``
-- [ ] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
-- [ ] `findAll` filter/search tests assert the prefixed entity appears in results
-- [ ] Change detector short-circuit tests live in service specs only
-- [ ] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
-- [ ] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
-- [ ] `npm run test` passes for all recipes spec files
+- [x] `recipe-test.util.ts` passes `P` to `InventoryItemTestingUtil` methods and accepts its own optional `P` parameter
+- [x] Each recipes spec file declares `const P = \`t${Date.now()}\``
+- [x] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
+- [x] `findAll` filter/search tests assert the prefixed entity appears in results
+- [x] Change detector short-circuit tests live in service specs only
+- [x] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test (recipe-sub-category and recipe-ingredient controllers have their create/update endpoints disabled — `throw new Error('Endpoint not available')`, not routed through the validator — so those two specs contain only the remove → findOne lifecycle test; see deviation note)
+- [x] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
+- [x] `npm run test` passes for all recipes spec files

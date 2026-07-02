@@ -8,53 +8,51 @@ import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-re
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
-import { REC_CAT_A } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
 
+const P = `t${Date.now()}`;
+
 describe('recipe sub category validator', () => {
     let testingUtil: RecipeTestUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: RecipeSubCategoryValidator;
     let subCategoryRepo: Repository<RecipeSubCategory>;
     let categoryRepo: Repository<RecipeCategory>;
 
+    let categories: RecipeCategory[];
+    let subCategories: RecipeSubCategory[];
+
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
-
-        validator = module.get<RecipeSubCategoryValidator>(
-            RecipeSubCategoryValidator,
-        );
-
+        validator = module.get<RecipeSubCategoryValidator>(RecipeSubCategoryValidator);
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
+
+        ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await subCategoryRepo.delete(subCategories.map((s) => s.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const parentCategory = await categoryRepo.findOne({
-            where: { name: REC_CAT_A },
-        });
-        if (!parentCategory) {
-            throw new Error('parent category not found');
-        }
-
         const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
-            name: 'New Sub Category',
-            parentCategoryId: parentCategory.id,
+            name: `${P}-new-sub-category`,
+            parentCategoryId: categories[0].id,
         });
 
         const errors = await validator.validateDto(dto, 'root');
@@ -62,16 +60,10 @@ describe('recipe sub category validator', () => {
     });
 
     it('fail validate create: name already exists within parent category', async () => {
-        const parentCategory = await categoryRepo.findOne({
-            where: { name: REC_CAT_A },
+        const parentCategory = await categoryRepo.findOneOrFail({
+            where: { id: categories[0].id },
             relations: ['subCategories'],
         });
-        if (!parentCategory) {
-            throw new Error('parent category not found');
-        }
-        if (!parentCategory.subCategories || parentCategory.subCategories.length === 0) {
-            throw new Error('subcategories not found');
-        }
 
         const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
             name: parentCategory.subCategories[0].name,
@@ -88,12 +80,7 @@ describe('recipe sub category validator', () => {
     });
 
     it('fail validate create: name cannot be the same as the parent category name', async () => {
-        const parentCategory = await categoryRepo.findOne({
-            where: { name: REC_CAT_A },
-        });
-        if (!parentCategory) {
-            throw new Error('parent category not found');
-        }
+        const parentCategory = categories[0];
 
         const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
             name: parentCategory.name,
@@ -111,52 +98,25 @@ describe('recipe sub category validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const subCategoryToUpdate = await subCategoryRepo.findOne({
-            where: {},
-            relations: ['parentCategory'],
-        });
-        if (!subCategoryToUpdate) {
-            throw new Error('subcategory not found');
-        }
+        const subCategoryToUpdate = subCategories[0];
 
         const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
-            name: 'Updated Sub Category Name',
+            name: `${P}-updated-sub-category-name`,
         });
 
-        const errors = await validator.validateDto(
-            dto,
-            subCategoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, subCategoryToUpdate.id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists within parent category', async () => {
-        const subCategoryToUpdate = await subCategoryRepo.findOne({
-            where: {},
-            relations: ['parentCategory', 'parentCategory.subCategories'],
-        });
-        if (!subCategoryToUpdate) {
-            throw new Error('subcategory not found');
-        }
-        if (!subCategoryToUpdate.parentCategory.subCategories || subCategoryToUpdate.parentCategory.subCategories.length < 2) {
-            throw new Error('not enough subcategories for test');
-        }
-
-        const existingSubCategory = subCategoryToUpdate.parentCategory.subCategories.find(
-            (sub) => sub.id !== subCategoryToUpdate.id,
-        );
-        if (!existingSubCategory) {
-            throw new Error('existing subcategory not found');
-        }
+        const subCategoryToUpdate = subCategories[0];
+        const existingSubCategory = subCategories[1];
 
         const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
             name: existingSubCategory.name,
         });
 
-        const errors = await validator.validateDto(
-            dto,
-            subCategoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, subCategoryToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -166,22 +126,14 @@ describe('recipe sub category validator', () => {
     });
 
     it('fail validate update: name cannot be the same as the parent category name', async () => {
-        const subCategoryToUpdate = await subCategoryRepo.findOne({
-            where: {},
-            relations: ['parentCategory'],
-        });
-        if (!subCategoryToUpdate) {
-            throw new Error('subcategory not found');
-        }
+        const subCategoryToUpdate = subCategories[0];
+        const parentCategory = categories[0];
 
         const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
-            name: subCategoryToUpdate.parentCategory.name,
+            name: parentCategory.name,
         });
 
-        const errors = await validator.validateDto(
-            dto,
-            subCategoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, subCategoryToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

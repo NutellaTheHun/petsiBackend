@@ -88,4 +88,8 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
             UpdateRecipeIngredientDto
         >;
     }
+
+    protected getUpdateDiffRelations(): string[] {
+        return ['ingredientInventoryItem', 'ingredientRecipe'];
+    }
 }

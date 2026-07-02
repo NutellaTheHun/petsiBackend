@@ -1,99 +1,90 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
-import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
+import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientController } from './recipe-ingredient.controller';
+
+const P = `t${Date.now()}`;
 
 describe('recipe ingredient controller', () => {
     let testingUtil: RecipeTestUtil;
-    let dbTestContext: DatabaseTestContext;
-    let module: TestingModule;
+    let testCtx: DatabaseTestContext;
     let controller: RecipeIngredientController;
-    let ingredientRepo: Repository<RecipeIngredient>;
     let recipeRepo: Repository<Recipe>;
+    let categoryRepo: Repository<RecipeCategory>;
+    let subCategoryRepo: Repository<RecipeSubCategory>;
+    let ingredientRepo: Repository<RecipeIngredient>;
+    let invCategoryRepo: Repository<InventoryItemCategory>;
+    let invVendorRepo: Repository<InventoryItemVendor>;
+    let invItemRepo: Repository<InventoryItem>;
+
+    let categories: RecipeCategory[];
+    let subCategories: RecipeSubCategory[];
+    let recipes: Recipe[];
+    let invCategories: InventoryItemCategory[];
+    let invVendors: InventoryItemVendor[];
+    let invItems: InventoryItem[];
+    let ingredients: RecipeIngredient[];
 
     beforeAll(async () => {
-        module = await getRecipeTestingModule();
-        dbTestContext = new DatabaseTestContext();
+        const module: TestingModule = await getRecipeTestingModule();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
-
         controller = module.get<RecipeIngredientController>(
             RecipeIngredientController,
         );
-        ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
         recipeRepo = module.get(getRepositoryToken(Recipe));
+        categoryRepo = module.get(getRepositoryToken(RecipeCategory));
+        subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+        ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
+        invCategoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        invItemRepo = module.get(getRepositoryToken(InventoryItem));
+
+        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
+            await testingUtil.seedIngredients(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await ingredientRepo.delete(ingredients.map((i) => i.id));
+        await recipeRepo.delete(recipes.map((r) => r.id));
+        await subCategoryRepo.delete(subCategories.map((s) => s.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await invItemRepo.delete(invItems.map((i) => i.id));
+        await invVendorRepo.delete(invVendors.map((v) => v.id));
+        await invCategoryRepo.delete(invCategories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    it('findAll returns items aligned with repository', async () => {
-        const repoRows = await ingredientRepo.find();
-        const result = await controller.findAll(undefined, 100);
-        expect(result.items.length).toEqual(repoRows.length);
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
-    it('findAll with sortBy ingredient returns non-empty list', async () => {
-        const result = await controller.findAll(
-            undefined,
-            100,
-            undefined,
-            'ingredient',
-            'DESC',
-            undefined,
-            undefined,
+    it('remove deletes an ingredient then findOne fails', async () => {
+        const toRemove = await ingredientRepo.save(
+            ingredientRepo.create({
+                parentRecipe: recipes[3],
+                ingredientInventoryItem: invItems[5],
+                quantity: 1,
+                unit: 'oz',
+            }),
         );
-        expect(result.items.length).toBeGreaterThan(0);
-    });
-
-    it('findAll with filter by parentRecipe matches ingredient count', async () => {
-        const recipe = await recipeRepo.findOneOrFail({
-            where: { ingredients: MoreThan(0) },
-            relations: ['ingredients'],
-        });
-        if (!recipe.ingredients) throw new Error('ingredients not found');
-        const result = await controller.findAll(
-            undefined,
-            100,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            [`parentRecipe=${recipe.id}`],
-        );
-        expect(result.items.length).toEqual(recipe.ingredients.length);
-    });
-
-    it('findOne returns a seeded ingredient', async () => {
-        const row = await ingredientRepo.findOne({ where: {} });
-        if (!row) throw new Error('no seeded ingredient');
-        const result = await controller.findOne(row.id);
-        expect(result.id).toEqual(row.id);
-    });
-
-    it('findOne throws NotFoundException for missing id', async () => {
-        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+        await controller.remove(toRemove.id);
+        await expect(controller.findOne(toRemove.id)).rejects.toThrow(
             NotFoundException,
         );
-    });
-
-    it('remove deletes a line then findOne fails', async () => {
-        const row = await ingredientRepo.findOne({ where: {} });
-        if (!row) throw new Error('no row to remove');
-        const id = row.id;
-        await controller.remove(id);
-        await expect(controller.findOne(id)).rejects.toThrow(NotFoundException);
     });
 
     it('remove throws NotFoundException when id does not exist', async () => {

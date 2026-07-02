@@ -4,6 +4,9 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { AppUnit } from '../../../common/units';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import {
     DRY_A,
     DRY_C,
@@ -478,5 +481,177 @@ export class RecipeTestUtil {
             }
         }
         return results;
+    }
+
+    // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
+    // These do not register cleanup — callers are responsible for deleting by ID.
+
+    /**
+     * 3 categories: A, B, C.
+     */
+    public async seedCategories(P: string = ''): Promise<{ categories: RecipeCategory[] }> {
+        const names = [CONSTANT.REC_CAT_A, CONSTANT.REC_CAT_B, CONSTANT.REC_CAT_C];
+        const categories: RecipeCategory[] = [];
+        for (const name of names) {
+            const entityName = P ? `${P}-${name}` : name;
+            const entity = await this.categorybuilder.reset().name(entityName).build();
+            categories.push(await this.categoryRepo.save(entity));
+        }
+        return { categories };
+    }
+
+    /**
+     * categories order: [A, B, C]. subCategories order: [sub1, sub2] under A, [sub3, sub4] under B.
+     */
+    public async seedSubCategories(P: string = ''): Promise<{
+        categories: RecipeCategory[];
+        subCategories: RecipeSubCategory[];
+    }> {
+        const { categories } = await this.seedCategories(P);
+        const names = [
+            CONSTANT.REC_SUBCAT_1,
+            CONSTANT.REC_SUBCAT_2,
+            CONSTANT.REC_SUBCAT_3,
+            CONSTANT.REC_SUBCAT_4,
+        ];
+        const parents = [categories[0], categories[0], categories[1], categories[1]];
+
+        const subCategories: RecipeSubCategory[] = [];
+        for (let i = 0; i < names.length; i++) {
+            const entityName = P ? `${P}-${names[i]}` : names[i];
+            const entity = await this.subCategoryBuilder
+                .reset()
+                .name(entityName)
+                .parentCategoryById(parents[i].id)
+                .build();
+            subCategories.push(await this.subCategoryRepo.save(entity));
+        }
+        return { categories, subCategories };
+    }
+
+    /**
+     * Delegates to InventoryItemTestingUtil.seedItems(P) for the ingredient dependency chain.
+     */
+    public async seedInventoryItems(P: string = ''): Promise<{
+        categories: InventoryItemCategory[];
+        vendors: InventoryItemVendor[];
+        items: InventoryItem[];
+    }> {
+        return this.inventoryItemTestUtil.seedItems(P);
+    }
+
+    /**
+     * recipes order: [A, B, C, D].
+     * - A: category A / sub1, not an ingredient.
+     * - B: category A / sub2, isIngredient = true (usable as a sub-recipe ingredient).
+     * - C: category B / sub3, not an ingredient.
+     * - D: uncategorized, not an ingredient.
+     */
+    public async seedRecipes(P: string = ''): Promise<{
+        categories: RecipeCategory[];
+        subCategories: RecipeSubCategory[];
+        recipes: Recipe[];
+    }> {
+        const { categories, subCategories } = await this.seedSubCategories(P);
+
+        const specs: {
+            name: string;
+            category: RecipeCategory | null;
+            subCategory: RecipeSubCategory | null;
+            isIngredient: boolean;
+            batchQty: number;
+            batchUnit: AppUnit;
+            servingQty: number;
+            servingUnit: AppUnit;
+            price: number;
+        }[] = [
+                { name: 'recipe-a', category: categories[0], subCategory: subCategories[0], isIngredient: false, batchQty: 1, batchUnit: 'lb', servingQty: 2, servingUnit: 'oz', price: 4.99 },
+                { name: 'recipe-b', category: categories[0], subCategory: subCategories[1], isIngredient: true, batchQty: 3, batchUnit: 'l', servingQty: 4, servingUnit: 'ml', price: 8.99 },
+                { name: 'recipe-c', category: categories[1], subCategory: subCategories[2], isIngredient: false, batchQty: 5, batchUnit: 'kg', servingQty: 6, servingUnit: 'g', price: 12.99 },
+                { name: 'recipe-d', category: null, subCategory: null, isIngredient: false, batchQty: 1, batchUnit: 'lb', servingQty: 2, servingUnit: 'oz', price: 4.99 },
+            ];
+
+        const recipes: Recipe[] = [];
+        for (const spec of specs) {
+            const entityName = P ? `${P}-${spec.name}` : spec.name;
+            let builder = this.recipeBuilder
+                .reset()
+                .name(entityName)
+                .isIngredient(spec.isIngredient)
+                .batchResultQuantity(spec.batchQty)
+                .batchResultUnit(spec.batchUnit)
+                .servingSizeQuantity(spec.servingQty)
+                .servingSizeUnit(spec.servingUnit)
+                .salesPrice(spec.price);
+            if (spec.category) {
+                builder = builder.categoryById(spec.category.id);
+            }
+            if (spec.subCategory) {
+                builder = builder.subCategoryById(spec.subCategory.id);
+            }
+            recipes.push(await this.recipeRepo.save(await builder.build()));
+        }
+
+        return { categories, subCategories, recipes };
+    }
+
+    /**
+     * ingredients order: [recipeA<-invItems[0], recipeA<-recipeB, recipeC<-invItems[3]].
+     * recipeB (isIngredient=true) and recipeD have no ingredients of their own.
+     */
+    public async seedIngredients(P: string = ''): Promise<{
+        categories: RecipeCategory[];
+        subCategories: RecipeSubCategory[];
+        recipes: Recipe[];
+        invCategories: InventoryItemCategory[];
+        invVendors: InventoryItemVendor[];
+        invItems: InventoryItem[];
+        ingredients: RecipeIngredient[];
+    }> {
+        const { categories, subCategories, recipes } = await this.seedRecipes(P);
+        const { categories: invCategories, vendors: invVendors, items: invItems } =
+            await this.seedInventoryItems(P);
+
+        const [recipeA, recipeB, recipeC] = recipes;
+
+        const ingredients: RecipeIngredient[] = [];
+
+        ingredients.push(
+            await this.ingredientRepo.save(
+                await this.ingredientBuilder
+                    .reset()
+                    .parentRecipeById(recipeA.id)
+                    .ingredientInventoryItemById(invItems[0].id)
+                    .quantity(0.5)
+                    .unit('oz')
+                    .build(),
+            ),
+        );
+
+        ingredients.push(
+            await this.ingredientRepo.save(
+                await this.ingredientBuilder
+                    .reset()
+                    .parentRecipeById(recipeA.id)
+                    .ingredientRecipeById(recipeB.id)
+                    .quantity(1)
+                    .unit('oz')
+                    .build(),
+            ),
+        );
+
+        ingredients.push(
+            await this.ingredientRepo.save(
+                await this.ingredientBuilder
+                    .reset()
+                    .parentRecipeById(recipeC.id)
+                    .ingredientInventoryItemById(invItems[3].id)
+                    .quantity(2)
+                    .unit('lb')
+                    .build(),
+            ),
+        );
+
+        return { categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients };
     }
 }
