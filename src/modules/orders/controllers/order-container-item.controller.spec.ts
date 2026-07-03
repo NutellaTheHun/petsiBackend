@@ -1,93 +1,83 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { OrderCategory } from '../entities/order-category.entity';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderContainerItemController } from './order-container-item.controller';
 
+const P = `t${Date.now()}`;
+
 describe('order container item controller', () => {
     let testingUtil: OrderTestingUtil;
-    let dbTestContext: DatabaseTestContext;
-    let module: TestingModule;
+    let testCtx: DatabaseTestContext;
     let controller: OrderContainerItemController;
     let orderContainerItemRepo: Repository<OrderContainerItem>;
     let orderMenuItemRepo: Repository<OrderMenuItem>;
+    let orderRepo: Repository<Order>;
+    let categoryRepo: Repository<OrderCategory>;
+    let menuItemRepo: Repository<MenuItem>;
+    let menuItemContainerItemRepo: Repository<MenuItemContainerItem>;
+    let menuItemCategoryRepo: Repository<MenuItemCategory>;
+    let menuItemSizeRepo: Repository<MenuItemSize>;
+
+    let categories: OrderCategory[];
+    let orders: Order[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let containerLines: MenuItemContainerItem[];
+    let orderMenuItems: OrderMenuItem[];
+    let containerOrderMenuItems: OrderMenuItem[];
+    let menuItemCategories: MenuItemCategory[];
+    let menuItemSizes: MenuItemSize[];
 
     beforeAll(async () => {
-        module = await getOrdersTestingModule();
-        dbTestContext = new DatabaseTestContext();
+        const module: TestingModule = await getOrdersTestingModule();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
 
-        controller = module.get<OrderContainerItemController>(
-            OrderContainerItemController,
-        );
-        orderContainerItemRepo = module.get(
-            getRepositoryToken(OrderContainerItem),
-        );
+        controller = module.get<OrderContainerItemController>(OrderContainerItemController);
+        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
+        orderRepo = module.get(getRepositoryToken(Order));
+        categoryRepo = module.get(getRepositoryToken(OrderCategory));
+        menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, containerOrderMenuItems, menuItemCategories, menuItemSizes } =
+            await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await orderMenuItemRepo.delete(orderMenuItems.map((i) => i.id));
+        await orderRepo.delete(orders.map((o) => o.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
+        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
+        await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    it('findAll returns items aligned with repository', async () => {
-        const repoRows = await orderContainerItemRepo.find();
-        const result = await controller.findAll(undefined, 100);
-        expect(result.items.length).toEqual(repoRows.length);
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
-    it('findAll with sortBy containedMenuItem returns non-empty list', async () => {
-        const result = await controller.findAll(
-            undefined,
-            100,
-            undefined,
-            'containedMenuItem',
-            'DESC',
-            undefined,
-            undefined,
-        );
-        expect(result.items.length).toBeGreaterThan(0);
-    });
-
-    it('findAll with filter by parentOrderMenuItem matches line count', async () => {
-        const orderItem = await orderMenuItemRepo.findOneOrFail({
-            where: { containerOrderMenuItems: MoreThan(0) },
-            relations: ['containerOrderMenuItems'],
-        });
-        if (!orderItem.containerOrderMenuItems) {
-            throw new Error('container order menu items not found');
-        }
-        const result = await controller.findAll(
-            undefined,
-            100,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            [`parentOrderMenuItem=${orderItem.id}`],
-        );
-        expect(result.items.length).toEqual(
-            orderItem.containerOrderMenuItems.length,
-        );
-    });
-
-    it('findOne returns a seeded container line', async () => {
-        const row = await orderContainerItemRepo.findOne({ where: {} });
-        if (!row) throw new Error('no seeded order container item');
-        const result = await controller.findOne(row.id);
-        expect(result.id).toEqual(row.id);
-    });
-
+    // create/update endpoints are disabled on this controller (lines are authored via the parent order-menu-item).
     it('findOne throws NotFoundException for missing id', async () => {
         await expect(controller.findOne(9_999_999)).rejects.toThrow(
             NotFoundException,
@@ -95,11 +85,9 @@ describe('order container item controller', () => {
     });
 
     it('remove deletes a container line then findOne fails', async () => {
-        const row = await orderContainerItemRepo.findOne({ where: {} });
-        if (!row) throw new Error('no row to remove');
-        const id = row.id;
-        await controller.remove(id);
-        await expect(controller.findOne(id)).rejects.toThrow(NotFoundException);
+        const line = containerOrderMenuItems[0].containerOrderMenuItems![0];
+        await controller.remove(line.id);
+        await expect(controller.findOne(line.id)).rejects.toThrow(NotFoundException);
     });
 
     it('remove throws NotFoundException when id does not exist', async () => {

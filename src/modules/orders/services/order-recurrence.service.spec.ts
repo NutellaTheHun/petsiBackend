@@ -4,9 +4,10 @@ import { plainToInstance } from 'class-transformer';
 import { rrulestr } from 'rrule';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
@@ -55,9 +56,11 @@ class TestableOrderRecurrenceService extends OrderRecurrenceService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('OrderRecurrenceService', () => {
     let testingUtil: OrderTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
 
     let recurrenceService: TestableOrderRecurrenceService;
@@ -67,7 +70,27 @@ describe('OrderRecurrenceService', () => {
 
     let categoryRepo: Repository<OrderCategory>;
     let menuItemRepo: Repository<MenuItem>;
-    let containerItemRepo: Repository<MenuItemContainerItem>;
+    let menuItemContainerItemRepo: Repository<MenuItemContainerItem>;
+    let menuItemCategoryRepo: Repository<MenuItemCategory>;
+    let menuItemSizeRepo: Repository<MenuItemSize>;
+
+    let categories: OrderCategory[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let containerLines: MenuItemContainerItem[];
+    let menuItemCategories: MenuItemCategory[];
+    let menuItemSizes: MenuItemSize[];
+
+    const linesFor = (menuItemId: number, sizeId: number) =>
+        containerLines.filter((l) => l.parentMenuItem.id === menuItemId && l.parentItemSize.id === sizeId);
+
+    const registerTemplateCleanup = (templateId: number) => {
+        testCtx.addCleanupFunction(async () => {
+            await orderRepo.delete({ templateOrderId: templateId } as any);
+            await orderRepo.delete(templateId);
+        });
+    };
 
     beforeAll(async () => {
         jest.setTimeout(120000);
@@ -75,29 +98,38 @@ describe('OrderRecurrenceService', () => {
             orderServiceClass: TestableOrderService,
             orderRecurrenceServiceClass: TestableOrderRecurrenceService,
         });
-        dbTestContext = new DatabaseTestContext();
         dataSource = module.get(DataSource);
 
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
 
         recurrenceService = module.get(OrderRecurrenceService);
-
         orderService = module.get(OrderService);
 
         orderRepo = module.get(getRepositoryToken(Order));
-
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ categories } = await testingUtil.seedCategories(P));
+        ({ singleItems, fixedContainerItems, varContainerItems, containerLines, menuItemCategories, menuItemSizes } = await testingUtil.seedMenuItems(P));
     }, 120000);
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
+        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
+        await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
     }, 120000);
 
-    it('should be defined', () => {
-        expect(recurrenceService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     it('should return the next occurence date from rrule', () => {
@@ -118,9 +150,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should handle the template fulfillment date: weekly past fulfillment advances to next occurence', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const past = new Date();
         past.setDate(past.getDate() - 10);
@@ -135,7 +166,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-weekly-past`,
             fulfillmentDate: past,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -151,6 +182,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule'],
@@ -170,9 +202,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should handle the template fulfillment date: weekly future fulfillment unchanged', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const future = new Date();
         future.setDate(future.getDate() + 7);
@@ -187,7 +218,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-weekly-future`,
             fulfillmentDate: future,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -203,6 +234,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule'],
@@ -215,9 +247,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should handle the template fulfillment date: monthly past fulfillment advances to next month', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const startDate = new Date();
         startDate.setMonth(startDate.getMonth() - 2);
@@ -233,7 +264,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-monthly-past`,
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -249,6 +280,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule'],
@@ -265,9 +297,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should handle the template fulfillment date: monthly future fulfillment unchanged', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const startDate = new Date();
         startDate.setMonth(startDate.getMonth() + 1);
@@ -282,7 +313,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-monthly-future`,
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -298,6 +329,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule'],
@@ -310,19 +342,10 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should clone the template order to the occurence date with new line item graphs', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const mi = await menuItemRepo.findOne({
-            where: { type: MENU_ITEM_TYPES.CONTAINER },
-            relations: ['sizes'],
-        });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
-
+        const cat = categories[0];
+        const mi = fixedContainerItems[0];
         const menuItemSize = mi.sizes[0];
-        const validContainerItems = await containerItemRepo.find({
-            where: { parentItemSize: { id: menuItemSize.id }, parentMenuItem: { id: mi.id } },
-            relations: ['containedMenuItem', 'containedItemSize'],
-        });
-        if (!validContainerItems?.length) throw new Error('valid container items not found');
+        const validContainerItems = linesFor(mi.id, menuItemSize.id);
 
         const containedItem = validContainerItems[0];
 
@@ -338,7 +361,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-clone-template`,
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -364,6 +387,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule', 'orderedItems', 'orderedItems.containerOrderMenuItems', 'category'],
@@ -402,9 +426,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should ensure generated orders for weekly template up to horizon', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const startDate = new Date();
         startDate.setHours(12, 0, 0, 0);
@@ -419,7 +442,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-ensure-generated`,
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -435,6 +458,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule', 'orderedItems'],
@@ -466,9 +490,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('generateRecurringOrders should fill horizon for all template orders like ensureGeneratedOrders', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const startDate = new Date();
         startDate.setHours(12, 0, 0, 0);
@@ -483,7 +506,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'generateRecurringOrders cron path',
+            recipient: `${P}-generate-cron-path`,
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -499,6 +522,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
 
         let templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
@@ -535,9 +559,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should remove future GENERATED occurences from startDate and keep MODIFIED', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const startDate = new Date();
         startDate.setHours(12, 0, 0, 0);
@@ -551,7 +574,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Remove future test',
+            recipient: `${P}-remove-future`,
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -567,6 +590,7 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule', 'orderedItems'],
@@ -603,9 +627,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('materializes occurences on template create within the same transaction', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const fulfillmentDate = new Date();
         fulfillmentDate.setHours(12, 0, 0, 0);
@@ -619,7 +642,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'On-create materialize test',
+            recipient: `${P}-on-create-materialize`,
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -637,6 +660,7 @@ describe('OrderRecurrenceService', () => {
 
         await dataSource.transaction(async (manager) => {
             const created = await orderService.createEntityForTest(dto, manager);
+            registerTemplateCleanup(created.id);
             const count = await manager.count(Order, {
                 where: {
                     templateOrderId: created.id,
@@ -649,16 +673,14 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('does not materialize when template has no recurrence schedule', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'No schedule template',
+            recipient: `${P}-no-schedule-template`,
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: cat.id,
-            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o1',
@@ -671,6 +693,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const childCount = await orderRepo.count({
             where: { templateOrderId: created.id },
         });
@@ -678,7 +701,7 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('does not materialize when template has no ordered items', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
+        const cat = categories[0];
         const fulfillmentDate = new Date();
         fulfillmentDate.setHours(12, 0, 0, 0);
         const daysOfWeek = [fulfillmentDate.getDay()];
@@ -691,7 +714,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'No items template',
+            recipient: `${P}-no-items-template`,
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -701,6 +724,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const childCount = await orderRepo.count({
             where: { templateOrderId: created.id },
         });
@@ -708,12 +732,11 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('does not create occurence rows for non-template orders', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Plain order',
+            recipient: `${P}-plain-order`,
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -728,6 +751,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const children = await orderRepo.find({
             where: { templateOrderId: created.id },
         });
@@ -735,9 +759,8 @@ describe('OrderRecurrenceService', () => {
     });
 
     it('should regenerate occurences after template update via order service', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const cat = categories[0];
+        const mi = singleItems[0];
 
         const fulfillmentDate = new Date();
         fulfillmentDate.setHours(12, 0, 0, 0);
@@ -751,7 +774,7 @@ describe('OrderRecurrenceService', () => {
         });
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Update regen test',
+            recipient: `${P}-update-regen-test`,
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
@@ -767,14 +790,14 @@ describe('OrderRecurrenceService', () => {
             recurrenceSchedule: recurrenceCreateDto,
         });
         const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        registerTemplateCleanup(created.id);
         const templateOrder = await orderRepo.findOneOrFail({
             where: { id: created.id },
             relations: ['recurrenceSchedule', 'orderedItems'],
         });
         if (!templateOrder.recurrenceSchedule) throw new Error('recurrence schedule not found');
 
-        const menuItem = await menuItemRepo.findOneOrFail({ where: {}, relations: ['sizes'] });
-        if (!menuItem?.sizes?.length) throw new Error('menu item sizes not found');
+        const menuItem = singleItems[1];
 
         const reloaded = await orderRepo.findOneOrFail({
             where: { id: templateOrder.id },

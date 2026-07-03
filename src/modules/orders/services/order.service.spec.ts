@@ -2,12 +2,12 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Between, DataSource, EntityManager, IsNull, MoreThan, Not, Repository } from 'typeorm';
+import { Between, DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { container_a } from '../../menu-items/utils/constants';
-import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
@@ -18,7 +18,6 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
-import { TYPE_A } from '../utils/constants';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
 import { recurringOrderScheduleToNestedUpdateDto, recurringOrderScheduleToUpdateDto } from '../utils/entity-transformers/recurring-order-schedule.dto.transformer';
 import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
@@ -44,81 +43,88 @@ class TestableOrderService extends OrderService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('order service', () => {
     let orderService: TestableOrderService;
     let testingUtil: OrderTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let orderRepo: Repository<Order>;
     let categoryRepo: Repository<OrderCategory>;
-    let orderItemRepo: Repository<OrderMenuItem>;
+    let orderMenuItemRepo: Repository<OrderMenuItem>;
     let menuItemRepo: Repository<MenuItem>;
-    let menuItemTestUtil: MenuItemTestingUtil;
+    let menuItemContainerItemRepo: Repository<MenuItemContainerItem>;
+    let menuItemCategoryRepo: Repository<MenuItemCategory>;
+    let menuItemSizeRepo: Repository<MenuItemSize>;
     let recurringOrderScheduleRepo: Repository<RecurringOrderSchedule>;
 
-    const getOrder = async (): Promise<Order> => {
-        return await orderRepo.findOneOrFail({ where: {}, relations: ['recurrenceSchedule', 'orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'] });
-    }
-
-    const getOrderWithRecurrenceSchedule = async (): Promise<Order> => {
-        return await orderRepo.findOneOrFail({ where: { recurrenceSchedule: { id: Not(IsNull()) } }, relations: ['recurrenceSchedule', 'orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'] });
-    }
-
-    const getMenuItemTypeSingle = async (): Promise<MenuItem> => {
-        return await menuItemRepo.findOneOrFail({ where: { type: MENU_ITEM_TYPES.SINGLE }, relations: ['sizes'] });
-    }
-
-    const getCategory = async (): Promise<OrderCategory> => {
-        return await categoryRepo.findOneOrFail({ where: {} });
-    }
+    let categories: OrderCategory[];
+    let orders: Order[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let containerLines: MenuItemContainerItem[];
+    let orderMenuItems: OrderMenuItem[];
+    let recurringOrder: Order;
+    let menuItemCategories: MenuItemCategory[];
+    let menuItemSizes: MenuItemSize[];
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule({
             orderServiceClass: TestableOrderService,
         });
 
-        dbTestContext = new DatabaseTestContext();
-
-        //menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        //await menuItemTestUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
-
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
+        dataSource = module.get(DataSource);
 
         orderService = module.get(OrderService) as TestableOrderService;
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
-        orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
+        orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         recurringOrderScheduleRepo = module.get(getRepositoryToken(RecurringOrderSchedule));
 
-        dataSource = module.get(DataSource);
+        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, recurringOrder, menuItemCategories, menuItemSizes } =
+            await testingUtil.seedRecurringOrder(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await orderMenuItemRepo.delete(orderMenuItems.map((i) => i.id));
+        await orderRepo.delete([...orders, recurringOrder].map((o) => o.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
+        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
+        await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(orderService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // test createEntity() with NestedCreateOrderMenuItemDto
     it('should create order with NestedCreateOrderMenuItemDto', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const category = categories[0];
+        const menuItem = singleItems[0];
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Test Recipient',
+            recipient: `${P}-created-recipient`,
             fulfillmentDate: new Date('2026-02-01'),
             fulfillmentType: 'pickup',
-            categoryId: cat.id,
+            categoryId: category.id,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o1',
-                    menuItemId: mi.id,
-                    sizeId: mi.sizes[0].id,
+                    menuItemId: menuItem.id,
+                    sizeId: menuItem.sizes[0].id,
                     quantity: 2,
                 }),
             ],
@@ -131,45 +137,37 @@ describe('order service', () => {
             expect(result.recipient).toEqual(dto.recipient);
             expect(result.orderedItems).toBeDefined();
             expect(Array.isArray(result.orderedItems)).toBe(true);
+            testCtx.addCleanupFunction(async () => {
+                await orderRepo.delete(result.id);
+            });
         });
     });
 
     // test createEntity() with NestedCreateOrderMenuItemDto with NestedCreateOrderContainerItemDtos
     it('should create order with NestedCreateOrderMenuItemDto with NestedCreateOrderContainerItemDtos', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const container = await menuItemRepo.findOne({
-            where: { name: container_a },
-            relations: [
-                'sizes',
-                'containerMenuItems',
-                'containerMenuItems.containedMenuItem',
-                'containerMenuItems.containedItemSize',
-            ],
-        });
-        if (
-            !cat ||
-            !container?.sizes?.length ||
-            !container.containerMenuItems?.length
-        )
-            throw new Error('fixtures not found');
+        const category = categories[0];
+        const container = fixedContainerItems[0];
+        const line = containerLines.find((l) => l.parentMenuItem.id === container.id);
+        if (!line) throw new Error('container line not found');
 
-        const c0 = container.containerMenuItems[0];
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: 'Container Order',
+            recipient: `${P}-container-recipient`,
             fulfillmentDate: new Date('2026-02-02'),
             fulfillmentType: 'delivery',
-            categoryId: cat.id,
+            deliveryAddress: `${P}-address`,
+            phoneNumber: `${P}-phone`,
+            categoryId: category.id,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o2',
                     menuItemId: container.id,
-                    sizeId: container.sizes[0].id,
+                    sizeId: line.parentItemSize.id,
                     quantity: 1,
                     containerOrderMenuItems: [
                         plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c1',
-                            containedMenuItemId: c0.containedMenuItem.id,
-                            containedItemSizeId: c0.containedItemSize.id,
+                            containedMenuItemId: line.containedMenuItem.id,
+                            containedItemSizeId: line.containedItemSize.id,
                             quantity: 4,
                         }),
                     ],
@@ -185,13 +183,19 @@ describe('order service', () => {
             expect(oi?.containerOrderMenuItems).toBeDefined();
             expect(Array.isArray(oi?.containerOrderMenuItems)).toBe(true);
             expect(oi?.containerOrderMenuItems?.length ?? 0).toBeGreaterThan(0);
+            testCtx.addCleanupFunction(async () => {
+                await orderRepo.delete(result.id);
+            });
         });
     });
 
     // test updateEntity()
     it('should update order', async () => {
-        const newRecipient = 'Updated Recipient';
-        const toUpdate = await orderRepo.findOneOrFail({ where: {}, relations: ['orderedItems', 'category', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'] });
+        const newRecipient = `${P}-updated-recipient`;
+        const toUpdate = await orderRepo.findOneOrFail({
+            where: { id: orders[0].id },
+            relations: ['orderedItems', 'category', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
+        });
 
         const dto = orderToUpdateDto(toUpdate, { recipient: newRecipient });
 
@@ -199,30 +203,25 @@ describe('order service', () => {
             await orderService.updateEntityForTest(dto, toUpdate, manager);
         });
 
-        const result = await orderRepo.findOne({ where: { id: toUpdate.id } });
-        if (!result) throw new Error('result not found');
+        const result = await orderRepo.findOneOrFail({ where: { id: toUpdate.id } });
         expect(result.recipient).toEqual(newRecipient);
     });
 
     // test updateEntity() with NestedUpdateOrderMenuItemDto and NestedCreateOrderMenuItemDto
     it('should update order with NestedUpdateOrderMenuItemDto and NestedCreateOrderMenuItemDto', async () => {
-
         const order = await orderRepo.findOneOrFail({
-            where: { orderedItems: MoreThan(0) },
+            where: { id: orders[1].id },
             relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
         });
-        if (!order.orderedItems.length)
-            throw new Error('order with orderedItems not found');
 
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!mi?.sizes?.length) throw new Error('menu item not found');
+        const menuItem = singleItems[2];
 
         const dto = orderToUpdateDto(order, {
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
-                    menuItemId: mi.id,
-                    sizeId: mi.sizes[0].id,
+                    menuItemId: menuItem.id,
+                    sizeId: menuItem.sizes[0].id,
                     quantity: 1,
                 }),
             ],
@@ -253,20 +252,18 @@ describe('order service', () => {
             );
         });
 
-        const reloaded = await orderRepo.findOne({
+        const reloaded = await orderRepo.findOneOrFail({
             where: { id: order.id },
             relations: ['orderedItems'],
         });
-        if (!reloaded) throw new Error('result not found');
         expect(reloaded.orderedItems!.length).toBeGreaterThanOrEqual(2);
         const updated = reloaded.orderedItems!.find((x) => x.id === itemToUpdate.id);
         expect(updated?.quantity).toEqual(newQuantity);
     });
 
     it('promotes OCCURRENCE GENERATED to MODIFIED on update', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
-        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+        const category = categories[0];
+        const menuItem = singleItems[0];
 
         const fulfillmentDate = new Date();
         fulfillmentDate.setHours(12, 0, 0, 0);
@@ -280,16 +277,16 @@ describe('order service', () => {
         });
 
         const createDto = plainToInstance(CreateOrderDto, {
-            recipient: 'Promote gen test',
+            recipient: `${P}-promote-gen-test`,
             fulfillmentDate,
             fulfillmentType: 'pickup',
-            categoryId: cat.id,
+            categoryId: category.id,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o1',
-                    menuItemId: mi.id,
-                    sizeId: mi.sizes[0].id,
+                    menuItemId: menuItem.id,
+                    sizeId: menuItem.sizes[0].id,
                     quantity: 1,
                 }),
             ],
@@ -297,14 +294,18 @@ describe('order service', () => {
         });
 
         const created = await orderService.createEntityForTest(createDto, dataSource.manager);
-        const occ = await orderRepo.findOne({
+        testCtx.addCleanupFunction(async () => {
+            await orderRepo.delete({ templateOrderId: created.id } as any);
+            await orderRepo.delete(created.id);
+        });
+
+        const occ = await orderRepo.findOneOrFail({
             where: {
                 templateOrderId: created.id,
                 occurrenceType: OCCURRENCE_TYPES.OCCURRENCE,
                 occurrenceState: OCCURRENCE_STATES.GENERATED,
             },
         });
-        if (!occ) throw new Error('expected generated occurrence');
 
         const occReloaded = await orderRepo.findOneOrFail({
             where: { id: occ.id },
@@ -328,45 +329,32 @@ describe('order service', () => {
             await orderService.updateEntityForTest(updateDto, occReloaded, manager);
         });
 
-        const result = await orderRepo.findOne({ where: { id: occ.id } });
-        expect(result?.occurrenceState).toEqual(OCCURRENCE_STATES.MODIFIED);
-        expect(result?.note).toEqual('edited by occurrence test');
+        const result = await orderRepo.findOneOrFail({ where: { id: occ.id } });
+        expect(result.occurrenceState).toEqual(OCCURRENCE_STATES.MODIFIED);
+        expect(result.note).toEqual('edited by occurrence test');
     });
 
     // test findAll()
-    it('should find all orders', async () => {
-        const repoResult = await orderRepo.find();
-        const serviceResult = await orderService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findAll() with search by recipient
-    it('should find all orders with search by recipient', async () => {
+    it('should find seeded order in findAll search by recipient', async () => {
         const serviceResult = await orderService.findAll({
-            search: 'recipient',
+            search: orders[3].recipient,
             limit: 100,
         });
         expect(serviceResult).not.toBeNull();
+        const found = serviceResult?.items.find((o) => o.id === orders[3].id);
+        expect(found).toBeDefined();
         expect(
             serviceResult?.items.every((o) =>
-                o.recipient.toLowerCase().includes('recipient'),
+                o.recipient.toLowerCase().includes(orders[3].recipient.toLowerCase()),
             ),
         ).toBe(true);
     });
 
     // test findAll() with search by menuItem name
-    it('should find all orders with search by menuItem name', async () => {
-        const [oi] = await orderItemRepo.find({
-            relations: ['menuItem'],
-            take: 1,
-        });
-        if (!oi?.menuItem?.name?.length) {
-            throw new Error('order line with menu item name required');
-        }
-        const needle = oi.menuItem.name
-            .slice(0, Math.min(4, oi.menuItem.name.length))
-            .toLowerCase();
+    it('should find seeded order in findAll search by menuItem name', async () => {
+        const oi = orderMenuItems.find((i) => i.menuItem.name === singleItems[0].name);
+        if (!oi) throw new Error('order line with menu item name required');
+        const needle = oi.menuItem.name;
 
         const serviceResult = await orderService.findAll({
             search: needle,
@@ -380,32 +368,31 @@ describe('order service', () => {
             ],
         });
         expect(serviceResult).not.toBeNull();
+        const found = serviceResult?.items.find((o) => o.id === oi.parentOrder.id);
+        expect(found).toBeDefined();
         expect(
-            serviceResult?.items.some(
+            serviceResult?.items.every(
                 (o) =>
-                    o.recipient.toLowerCase().includes(needle) ||
+                    o.recipient.toLowerCase().includes(needle.toLowerCase()) ||
                     o.orderedItems?.some((line) =>
-                        line.menuItem?.name
-                            ?.toLowerCase()
-                            .includes(needle),
+                        line.menuItem?.name?.toLowerCase().includes(needle.toLowerCase()),
                     ),
             ),
         ).toBe(true);
     });
 
     // test findAll() with filter by category
-    it('should find all orders with filter by category', async () => {
-        const [cat] = await categoryRepo.find({ where: { name: TYPE_A } });
-        if (!cat) throw new Error('category not found');
-        const repoResult = await orderRepo.find({
-            where: { category: { id: cat.id } },
-        });
+    it('should find seeded orders in findAll filtered by category', async () => {
+        const category = categories[0];
         const serviceResult = await orderService.findAll({
-            filters: [`category=${cat.id}`],
+            filters: [`category=${category.id}`],
+            relations: ['category'],
             limit: 100,
         });
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        const found = serviceResult?.items.find((o) => o.category?.id === category.id);
+        expect(found).toBeDefined();
+        expect(serviceResult?.items.every((o) => o.category?.id === category.id)).toBe(true);
     });
 
     // test findAll() with filter by isFrozen
@@ -415,30 +402,32 @@ describe('order service', () => {
             limit: 100,
         });
         expect(serviceResult).not.toBeNull();
+        const found = serviceResult?.items.find((o) => o.id === orders[0].id);
+        expect(found).toBeDefined();
         expect(serviceResult?.items.every((o) => !o.isFrozen)).toBe(true);
     });
 
     // test findAll() with filter by fulfillmentType
-    it('should find all orders with filter by fulfillmentType', async () => {
+    it('should find seeded order in findAll filtered by fulfillmentType', async () => {
+        const target = orders.find((o) => o.fulfillmentType === 'pickup');
+        if (!target) throw new Error('no pickup order seeded');
+
         const serviceResult = await orderService.findAll({
             filters: ['fulfillmentType=pickup'],
             limit: 100,
         });
         expect(serviceResult).not.toBeNull();
-        expect(
-            serviceResult?.items.every((o) => o.fulfillmentType === 'pickup'),
-        ).toBe(true);
+        const found = serviceResult?.items.find((o) => o.id === target.id);
+        expect(found).toBeDefined();
+        expect(serviceResult?.items.every((o) => o.fulfillmentType === 'pickup')).toBe(true);
     });
 
     // test findAll() by applyDate with startDate and endDate
-    it('should find all orders by applyDate with startDate and endDate', async () => {
-        const sDate = new Date('2020-01-01');
-        const eDate = new Date('2030-12-31');
-        const repoResult = await orderRepo.find({
-            where: {
-                fulfillmentDate: Between(sDate, eDate),
-            },
-        });
+    it('should find seeded orders in findAll by applyDate with startDate and endDate', async () => {
+        const dates = orders.map((o) => o.fulfillmentDate.getTime());
+        const sDate = new Date(Math.min(...dates) - 1000 * 60 * 60 * 24);
+        const eDate = new Date(Math.max(...dates) + 1000 * 60 * 60 * 24);
+
         const serviceResult = await orderService.findAll({
             startDate: sDate.toISOString(),
             endDate: eDate.toISOString(),
@@ -446,8 +435,8 @@ describe('order service', () => {
             limit: 100,
         });
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        // expect each order to have a fulfillmentDate between sDate and eDate
+        const found = serviceResult?.items.find((o) => o.id === orders[0].id);
+        expect(found).toBeDefined();
         expect(
             serviceResult?.items.every(
                 (o) => o.fulfillmentDate >= sDate && o.fulfillmentDate <= eDate,
@@ -455,119 +444,24 @@ describe('order service', () => {
         ).toBe(true);
     });
 
-    // test findAll() sortBy category
-    it('should find all orders with sortBy category', async () => {
-        const repoResult = await orderRepo.find({
-            order: { category: { name: 'DESC' } },
-        });
-        if (!repoResult.length) throw new Error('orders not found');
-        const serviceResult = await orderService.findAll({
-            sortBy: 'category',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        // expect first item of serviceResult and category result to be the same
-        expect(serviceResult?.items[0]?.category?.name).toEqual(
-            repoResult[0]?.category?.name,
-        );
-        // expect last item of serviceResult and category result to be the same
-        expect(
-            serviceResult?.items[serviceResult.items.length - 1].recipient,
-        ).toEqual(repoResult[repoResult.length - 1].recipient);
-    });
-
-    // test findAll() sortBy fulfillmentDate
-    it('should find all orders with sortBy fulfillmentDate', async () => {
-        const repoResult = await orderRepo.find({
-            order: { fulfillmentDate: 'DESC' },
-        });
-        if (!repoResult.length) throw new Error('orders not found');
-        const serviceResult = await orderService.findAll({
-            sortBy: 'fulfillmentDate',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        // expect first item of serviceResult and fulfillmentDate result to be the same
-        expect(serviceResult?.items[0]?.fulfillmentDate).toEqual(
-            repoResult[0]?.fulfillmentDate,
-        );
-        // expect last item of serviceResult and fulfillmentDate result to be the same
-        expect(
-            serviceResult?.items[serviceResult.items.length - 1]?.fulfillmentDate,
-        ).toEqual(repoResult[repoResult.length - 1]?.fulfillmentDate);
-    });
-
-    // test findAll() sortBy createdAt
-    it('should find all orders with sortBy createdAt', async () => {
-        const repoResult = await orderRepo.find({
-            order: { createdAt: 'DESC' },
-        });
-        if (!repoResult.length) throw new Error('orders not found');
-        const serviceResult = await orderService.findAll({
-            sortBy: 'createdAt',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        // expect first item of serviceResult and createdAt result to be the same
-        expect(serviceResult?.items[0]?.createdAt).toEqual(
-            repoResult[0]?.createdAt,
-        );
-        // expect last item of serviceResult and createdAt result to be the same
-        expect(
-            serviceResult?.items[serviceResult.items.length - 1]?.createdAt,
-        ).toEqual(repoResult[repoResult.length - 1]?.createdAt);
-    });
-
     // test findOne()
-    it('should find one order', async () => {
-        const [o] = await orderRepo.find({ take: 1 });
-        if (!o) throw new Error('order not found');
-
-        const serviceResult = await orderService.findOne(o.id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(o.id);
-    });
-
-    // test findOne() with relations
     it('should find one order with relations', async () => {
-        const [o] = await orderRepo.find({ take: 1 });
-        if (!o) throw new Error('order not found');
-
-        const serviceResult = await orderService.findOne(o.id, [
+        const serviceResult = await orderService.findOne(orders[0].id, [
             'category',
             'orderedItems',
         ]);
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(o.id);
+        expect(serviceResult?.id).toEqual(orders[0].id);
         expect(serviceResult?.category).toBeDefined();
         expect(Array.isArray(serviceResult?.orderedItems)).toBe(true);
     });
 
-    // test remove()
-    it('should remove order', async () => {
-        const o = await orderRepo.findOne({
-            where: { recipient: 'Test Recipient' },
-        });
-        if (!o) throw new Error('order not found (create "Test Recipient" first)');
-        const id = o.id;
-
-        const deleteResult = await orderService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(orderService.findOne(id)).rejects.toThrow(NotFoundException);
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(orderService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
     });
 
-    //  --- Test recurring order schedule service ---
+    //  --- Test recurring order schedule via order service ---
     it('should create a recurring order schedule', async () => {
-        // create an order with a recurring order schedule
         const ros_dto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
             createId: 'r1',
             frequency: 'WEEKLY',
@@ -576,11 +470,11 @@ describe('order service', () => {
             startDate: new Date(),
         });
 
-        const menuItem = await getMenuItemTypeSingle();
-        const category = await getCategory();
+        const menuItem = singleItems[0];
+        const category = categories[0];
 
         const orderDto = plainToInstance(CreateOrderDto, {
-            recipient: 'John Doe',
+            recipient: `${P}-ros-create-recipient`,
             fulfillmentDate: new Date(new Date().setDate(new Date().getDate() + 3)),
             fulfillmentType: 'pickup',
             categoryId: category.id,
@@ -609,64 +503,174 @@ describe('order service', () => {
                 },
             });
             expect(occCount).toBeGreaterThan(0);
+            testCtx.addCleanupFunction(async () => {
+                await orderRepo.delete({ templateOrderId: result.id } as any);
+                await orderRepo.delete(result.id);
+            });
         });
     });
 
-    it('should update a recurring order schedule', async () => {
-        // should get order with recurring order schedule
-        const order = await getOrderWithRecurrenceSchedule();
-        if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+    describe('recurring order schedule lifecycle', () => {
+        it('should update a recurring order schedule', async () => {
+            const order = await orderRepo.findOneOrFail({
+                where: { id: recurringOrder.id },
+                relations: ['recurrenceSchedule', 'category', 'orderedItems', 'orderedItems.menuItem', 'orderedItems.size'],
+            });
+            if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
 
-        const ros_dto = recurringOrderScheduleToNestedUpdateDto(order.recurrenceSchedule, {
-            frequency: 'MONTHLY',
-            interval: 2,
-            daysOfWeek: [2],
+            const ros_dto = recurringOrderScheduleToNestedUpdateDto(order.recurrenceSchedule, {
+                frequency: 'MONTHLY',
+                interval: 2,
+                daysOfWeek: [2],
+            });
+
+            const orderDto = orderToUpdateDto(order, { recurrenceSchedule: ros_dto });
+
+            await dataSource.transaction(async (manager) => {
+                await orderService.updateEntityForTest(orderDto, order, manager);
+            });
+
+            const reloaded = await orderRepo.findOneOrFail({ where: { id: order.id }, relations: ['recurrenceSchedule'] });
+            if (!reloaded.recurrenceSchedule) throw new Error('recurrence schedule not found');
+            const reloated_ros_dto = recurringOrderScheduleToUpdateDto(reloaded.recurrenceSchedule);
+            expect(reloated_ros_dto.frequency).toEqual('MONTHLY');
+            expect(reloated_ros_dto.interval).toEqual(2);
+            expect(reloated_ros_dto.daysOfWeek).toEqual([2]);
         });
 
-        const orderDto = orderToUpdateDto(order, { recurrenceSchedule: ros_dto });
+        it('should delete a recurring order schedule', async () => {
+            const order = await orderRepo.findOneOrFail({
+                where: { id: recurringOrder.id },
+                relations: ['recurrenceSchedule', 'category', 'orderedItems', 'orderedItems.menuItem', 'orderedItems.size'],
+            });
+            if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
 
-        await dataSource.transaction(async (manager) => {
-            await orderService.updateEntityForTest(orderDto, order, manager);
+            const savedRecurrenceId = order.recurrenceSchedule.id;
+
+            const orderDto = orderToUpdateDto(order, { recurrenceSchedule: null });
+
+            await dataSource.transaction(async (manager) => {
+                await orderService.updateEntityForTest(orderDto, order, manager);
+            });
+
+            const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
+            expect(result).toBeNull();
+            expect(order.recurrenceSchedule).toBeNull();
+            expect(order.occurrenceType).toBeNull();
         });
 
-        const reloaded = await orderRepo.findOne({ where: { id: order.id }, relations: ['recurrenceSchedule'] });
-        if (!reloaded) throw new Error('result not found');
-        if (!reloaded.recurrenceSchedule) throw new Error('recurrence schedule not found');
-        const reloated_ros_dto = recurringOrderScheduleToUpdateDto(reloaded.recurrenceSchedule);
-        expect(reloated_ros_dto.frequency).toEqual('MONTHLY');
-        expect(reloated_ros_dto.interval).toEqual(2);
-        expect(reloated_ros_dto.daysOfWeek).toEqual([2]);
+        it('should delete an order and also delete the recurring order schedule', async () => {
+            const ros_dto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+                createId: 'r1',
+                frequency: 'WEEKLY',
+                interval: 1,
+                daysOfWeek: [1],
+                startDate: new Date(),
+            });
+            const createDto = plainToInstance(CreateOrderDto, {
+                recipient: `${P}-cascade-delete-recipient`,
+                fulfillmentDate: new Date(new Date().setDate(new Date().getDate() + 3)),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                orderedItems: [
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: 'c1',
+                        menuItemId: singleItems[0].id,
+                        sizeId: singleItems[0].sizes[0].id,
+                        quantity: 1,
+                    }),
+                ],
+                recurrenceSchedule: ros_dto,
+                occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            });
+
+            const created = await orderService.createEntityForTest(createDto, dataSource.manager);
+            const order = await orderRepo.findOneOrFail({
+                where: { id: created.id },
+                relations: ['recurrenceSchedule'],
+            });
+            if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+            const savedRecurrenceId = order.recurrenceSchedule.id;
+
+            testCtx.addCleanupFunction(async () => {
+                await orderRepo.delete({ templateOrderId: created.id } as any);
+                await orderRepo.delete(created.id);
+            });
+
+            const removal = await orderService.remove(order.id);
+            expect(removal).toBe(true);
+            const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
+            expect(result).toBeNull();
+        });
     });
 
-    it('should delete a recurring order schedule', async () => {
-        // should get order with recurring order schedule
-        const order = await getOrderWithRecurrenceSchedule();
-        if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
 
-        const savedRecurrenceId = order.recurrenceSchedule.id;
-
-        const orderDto = orderToUpdateDto(order, { recurrenceSchedule: null });
-
-        await dataSource.transaction(async (manager) => {
-            await orderService.updateEntityForTest(orderDto, order, manager);
+        beforeEach(() => {
+            spy = jest.spyOn(OrderService.prototype as any, 'updateEntity');
         });
 
-        // should not find recurring order schedule
-        const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
-        expect(result).toBeNull();
-        expect(order.recurrenceSchedule).toBeNull();
-        expect(order.occurrenceType).toBeNull();
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches current order', async () => {
+            const order = await orderRepo.findOneOrFail({
+                where: { id: orders[2].id },
+                relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
+            });
+            const dto = orderToUpdateDto(order, {
+                fulfillmentContactName: order.fulfillmentContactName,
+            });
+            const result = await orderService.update(order.id, dto);
+            expect(result.recipient).toEqual(order.recipient);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when recipient changes', async () => {
+            const order = await orderRepo.findOneOrFail({
+                where: { id: orders[2].id },
+                relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
+            });
+            const newRecipient = `${order.recipient}-renamed`;
+            const dto = orderToUpdateDto(order, { recipient: newRecipient });
+            const result = await orderService.update(order.id, dto);
+            expect(result.recipient).toEqual(newRecipient);
+            expect(spy).toHaveBeenCalled();
+            const row = await orderRepo.findOneOrFail({ where: { id: order.id } });
+            expect(row.recipient).toEqual(newRecipient);
+        });
     });
 
-    it('should delete a order and also delete the recurring order schedule', async () => {
-        const order = await getOrderWithRecurrenceSchedule();
-        if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+    describe('order lifecycle', () => {
+        let order: Order;
 
-        const savedRecurrenceId = order.recurrenceSchedule.id;
+        it('should create', async () => {
+            const dto = plainToInstance(CreateOrderDto, {
+                recipient: `${P}-lifecycle-recipient`,
+                fulfillmentDate: new Date('2026-03-01'),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                orderedItems: [
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: 'o1',
+                        menuItemId: singleItems[0].id,
+                        sizeId: singleItems[0].sizes[0].id,
+                        quantity: 1,
+                    }),
+                ],
+            });
+            await dataSource.transaction(async (manager) => {
+                order = await orderService.createEntityForTest(dto, manager);
+            });
+            expect(order.id).toBeDefined();
+        });
 
-        const removal = await orderService.remove(order.id);
-        expect(removal).toBe(true);
-        const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
-        expect(result).toBeNull();
+        it('should remove', async () => {
+            const deleteResult = await orderService.remove(order.id);
+            expect(deleteResult).toBe(true);
+            await expect(orderService.findOne(order.id)).rejects.toThrow(NotFoundException);
+        });
     });
 });

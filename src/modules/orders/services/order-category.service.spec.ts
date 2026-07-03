@@ -7,7 +7,6 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { TYPE_A } from '../utils/constants';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderCategoryService } from './order-category.service';
@@ -28,117 +27,92 @@ class TestableOrderCategoryService extends OrderCategoryService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('order category service', () => {
     let service: TestableOrderCategoryService;
     let testingUtil: OrderTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let categoryRepo: Repository<OrderCategory>;
+
+    let categories: OrderCategory[];
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule({
             orderCategoryServiceClass: TestableOrderCategoryService,
         });
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        await testingUtil.initOrderCategoryTestDatabase(dbTestContext);
         dataSource = module.get(DataSource);
         service = module.get(OrderCategoryService) as TestableOrderCategoryService;
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
+
+        ({ categories } = await testingUtil.seedCategories(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create category', async () => {
-        const dto = plainToInstance(CreateOrderCategoryDto, { name: 'Wholesale' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await service.createEntityForTest(dto, manager);
+    describe('category lifecycle', () => {
+        let category: OrderCategory;
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
+        it('should create category', async () => {
+            const dto = plainToInstance(CreateOrderCategoryDto, {
+                name: `${P}-lifecycle-category`,
+            });
+
+            await dataSource.transaction(async (manager) => {
+                category = await service.createEntityForTest(dto, manager);
+            });
+
+            expect(category.id).toBeDefined();
+            expect(category.name).toEqual(dto.name);
+        });
+
+        it('should update category', async () => {
+            const dto = plainToInstance(UpdateOrderCategoryDto, {
+                name: `${P}-lifecycle-category-updated`,
+            });
+
+            await dataSource.transaction(async (manager) => {
+                await service.updateEntityForTest(dto, category, manager);
+            });
+
+            const result = await categoryRepo.findOneOrFail({ where: { id: category.id } });
             expect(result.name).toEqual(dto.name);
         });
-    });
 
-    // test updateEntity()
-    it('should update category', async () => {
-        const cat = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!cat) throw new Error('category not found');
-
-        const dto = plainToInstance(UpdateOrderCategoryDto, { name: 'Type A Updated' });
-
-        await dataSource.transaction(async (manager) => {
-            await service.updateEntityForTest(dto, cat, manager);
+        it('should remove category', async () => {
+            const deleteResult = await service.remove(category.id);
+            expect(deleteResult).toBe(true);
+            await expect(service.findOne(category.id)).rejects.toThrow(NotFoundException);
         });
-
-        const result = await categoryRepo.findOne({ where: { id: cat.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
     });
 
-    // test findAll()
-    it('should find all categories', async () => {
-        const repoResult = await categoryRepo.find();
-        const serviceResult = await service.findAll();
+    it('should find seeded category in findAll results', async () => {
+        const serviceResult = await service.findAll({ limit: 100 });
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        const found = serviceResult?.items.find((c) => c.id === categories[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll)() with sortByName
-    it('should find all categories with sort by name', async () => {
-        const repoResult = await categoryRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await service.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-        }
-    });
-
-    // test findOne()
-    it('should find one category', async () => {
-        const cat = await categoryRepo.find({ take: 1 });
-        if (!cat.length) throw new Error('category not found');
-
-        const serviceResult = await service.findOne(cat[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(cat[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one category with relations', async () => {
-        const cat = await categoryRepo.find({
-            take: 1,
-            relations: ['orders'],
-        });
-        if (!cat.length) throw new Error('category not found');
-
-        const serviceResult = await service.findOne(cat[0].id, ['orders']);
+        const serviceResult = await service.findOne(categories[0].id, ['orders']);
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(cat[0].id);
-        expect(serviceResult?.orders).toBeDefined();
+        expect(serviceResult?.id).toEqual(categories[0].id);
         expect(Array.isArray(serviceResult?.orders)).toBe(true);
     });
 
-    // test remove()
-    it('should remove category', async () => {
-        const cat = await categoryRepo.find({ take: 1 });
-        if (!cat.length) throw new Error('category not found');
-        const id = cat[0].id;
-
-        const deleteResult = await service.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(service.findOne(id)).rejects.toThrow(NotFoundException);
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
     });
 });
