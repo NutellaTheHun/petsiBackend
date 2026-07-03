@@ -10,78 +10,78 @@ import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { item_a, item_b, item_container_a, item_container_b, item_var_max_container_c, item_var_max_container_d } from '../utils/constants';
 import { menuItemToUpdateDto } from '../utils/entity-transformers/menu-item.dto.transfomer';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemValidator } from './menu-item.validator';
 
+const P = `t${Date.now()}`;
+
 describe('menu item validator', () => {
     let testingUtil: MenuItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let validator: MenuItemValidator;
 
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
+    let containerItemRepo: Repository<MenuItemContainerItem>;
     let configRepo: Repository<DynamicPropertyConfig>;
     let dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>;
 
-    let findCategory = async () => {
-        return await categoryRepo.findOneOrFail({ where: {} });
-    };
-
-    let findMenuItem = async (name: string) => {
-        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'containerMenuItems', 'category', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'] });
-    };
-
-    let findSize = async (name: string) => {
-        return await sizeRepo.findOneOrFail({ where: { name } });
-    };
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let containerLines: MenuItemContainerItem[];
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
-
         validator = module.get<MenuItemValidator>(MenuItemValidator);
-
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
         dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
 
-        dbTestContext.addCleanupFunction(async () => { await dynPropValueRepo.deleteAll(); });
-        dbTestContext.addCleanupFunction(async () => { await configRepo.deleteAll(); });
+        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
+            await testingUtil.seedContainerLines(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await containerItemRepo.delete(containerLines.map((l) => l.id));
+        await itemRepo.delete([
+            ...fixedContainerItems.map((i) => i.id),
+            ...varContainerItems.map((i) => i.id),
+            ...singleItems.map((i) => i.id),
+        ]);
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // Create Validation Tests
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create: no validation errors', async () => {
-        const category = await findCategory();
-
-        const sizes = await sizeRepo.find();
-        if (sizes.length < 2) {
-            throw new Error('not enough sizes for test');
-        }
-        const containedItem1 = await findMenuItem(item_a);
-        const containedItem2 = await findMenuItem(item_b);
+        const category = categories[0];
+        const containedItem1 = singleItems[0];
+        const containedItem2 = singleItems[1];
 
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Container Item',
+            name: `${P}-new-container`,
             type: MENU_ITEM_TYPES.CONTAINER,
             categoryId: category.id,
             sizeIds: sizes.map((s) => s.id),
@@ -89,14 +89,14 @@ describe('menu item validator', () => {
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem1.id,
-                    containedItemSizeId: containedItem1.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 2,
                     parentItemSizeId: sizes[0].id,
                 }),
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c2',
                     containedMenuItemId: containedItem2.id,
-                    containedItemSizeId: containedItem2.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 3,
                     parentItemSizeId: sizes[0].id,
                 }),
@@ -108,13 +108,8 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: name already exists', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length === 0) {
-            throw new Error('sizes not found');
-        }
-
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: item_a,
+            name: singleItems[0].name,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: null,
             sizeIds: [sizes[0].id],
@@ -130,14 +125,10 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: containerMenuItems and not set to type container', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length === 0) {
-            throw new Error('sizes not found');
-        }
-        const containedItem = await findMenuItem(item_a);
+        const containedItem = singleItems[0];
 
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Item',
+            name: `${P}-new-item`,
             type: MENU_ITEM_TYPES.SINGLE,
             sizeIds: sizes.map((s) => s.id),
             categoryId: null,
@@ -145,7 +136,7 @@ describe('menu item validator', () => {
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 2,
                     parentItemSizeId: sizes[0].id,
                 }),
@@ -162,14 +153,10 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: containerMenuItems errors: duplicate container item', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length === 0) {
-            throw new Error('sizes not found');
-        }
-        const containedItem = await findMenuItem(item_a);
+        const containedItem = singleItems[0];
 
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Container Item',
+            name: `${P}-new-container`,
             type: MENU_ITEM_TYPES.CONTAINER,
             sizeIds: sizes.map((s) => s.id),
             categoryId: null,
@@ -177,14 +164,14 @@ describe('menu item validator', () => {
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 2,
                     parentItemSizeId: sizes[0].id,
                 }),
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c2',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 3,
                     parentItemSizeId: sizes[0].id,
                 }),
@@ -201,24 +188,10 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: nested containerMenuItems validator errors: contained item not of type single', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length === 0) {
-            throw new Error('sizes not found');
-        }
-
-        const containerItem = await itemRepo.findOne({
-            where: { type: MENU_ITEM_TYPES.CONTAINER },
-            relations: ['sizes'],
-        });
-        if (!containerItem) {
-            throw new Error('container item not found');
-        }
-        if (!containerItem.sizes || containerItem.sizes.length === 0) {
-            throw new Error('container item sizes not found');
-        }
+        const containerItem = fixedContainerItems[0];
 
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Container Item',
+            name: `${P}-new-container`,
             type: MENU_ITEM_TYPES.CONTAINER,
             categoryId: null,
             sizeIds: sizes.map((s) => s.id),
@@ -226,7 +199,7 @@ describe('menu item validator', () => {
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containerItem.id,
-                    containedItemSizeId: containerItem.sizes[0].id,
+                    containedItemSizeId: sizes[2].id,
                     quantity: 2,
                     parentItemSizeId: sizes[0].id,
                 }),
@@ -237,28 +210,18 @@ describe('menu item validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'containerMenuItems', id: 'c1' },],
+            [{ prop: 'containerMenuItems', id: 'c1' }],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 
     it('fail validate create: nested containerMenuItems validator errors: contained item size not valid', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length === 0) {
-            throw new Error('sizes not found');
-        }
-        const containedItem = await findMenuItem(item_a);
-
-        const allSizes = await sizeRepo.find();
-        const invalidSize = allSizes.find(
-            (s) => !containedItem.sizes?.some((cs) => cs.id === s.id),
-        );
-        if (!invalidSize) {
-            throw new Error('invalid size not found');
-        }
+        const containedItem = singleItems[0];
+        // singleItems[0] has sizes[0] and sizes[1]; sizes[2] is invalid
+        const invalidSize = sizes[2];
 
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Container Item',
+            name: `${P}-new-container`,
             type: MENU_ITEM_TYPES.CONTAINER,
             categoryId: null,
             sizeIds: sizes.map((s) => s.id),
@@ -283,14 +246,10 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: nested containerMenuItems validator errors: quantity with value 0', async () => {
-        const sizes = await sizeRepo.find();
-        if (sizes.length === 0) {
-            throw new Error('sizes not found');
-        }
-        const containedItem = await findMenuItem(item_a);
+        const containedItem = singleItems[0];
 
         const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Container Item',
+            name: `${P}-new-container`,
             type: MENU_ITEM_TYPES.CONTAINER,
             categoryId: null,
             sizeIds: sizes.map((s) => s.id),
@@ -298,7 +257,7 @@ describe('menu item validator', () => {
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 0,
                     parentItemSizeId: sizes[0].id,
                 }),
@@ -314,37 +273,38 @@ describe('menu item validator', () => {
         );
     });
 
-    // Update Validation Tests
     it('successfully validate update with no validation errors', async () => {
-        const itemToUpdate = await findMenuItem(item_var_max_container_d);
-        if (!itemToUpdate.containerMenuItems) {
+        // varContainerItems[1] = container_d which has containerLines with singleItems[2] and singleItems[3]
+        const itemToUpdate = await itemRepo.findOneOrFail({
+            where: { id: varContainerItems[1].id },
+            relations: ['sizes', 'containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize', 'category'],
+        });
+        if (!itemToUpdate.containerMenuItems?.length) {
             throw new Error('item container menu items not found');
         }
-        const containedItem = await findMenuItem(item_a);
-        const newCategory = await findCategory();
+        const containedItem = singleItems[0];
 
         const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: 'Updated Item Name',
+            name: `${P}-updated-container`,
             type: MENU_ITEM_TYPES.CONTAINER,
-            categoryId: newCategory.id,
+            categoryId: categories[0].id,
             variableMaxAmount: 6,
             sizeIds: itemToUpdate.sizes.map((s) => s.id),
-            containerMenuItems:
-                [
-                    plainToInstance(NestedUpdateMenuItemContainerItemDto, {
-                        id: itemToUpdate.containerMenuItems[0].id,
-                        quantity: 6,
-                        containedMenuItemId: itemToUpdate.containerMenuItems[0].containedMenuItem.id,
-                        containedItemSizeId: itemToUpdate.containerMenuItems[0].containedItemSize.id,
-                    }),
-                    plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                        createId: 'c1',
-                        containedMenuItemId: containedItem.id,
-                        containedItemSizeId: containedItem.sizes[0].id,
-                        quantity: 6,
-                        parentItemSizeId: itemToUpdate.sizes[0].id,
-                    }),
-                ]
+            containerMenuItems: [
+                plainToInstance(NestedUpdateMenuItemContainerItemDto, {
+                    id: itemToUpdate.containerMenuItems[0].id,
+                    quantity: 6,
+                    containedMenuItemId: itemToUpdate.containerMenuItems[0].containedMenuItem.id,
+                    containedItemSizeId: itemToUpdate.containerMenuItems[0].containedItemSize.id,
+                }),
+                plainToInstance(NestedCreateMenuItemContainerItemDto, {
+                    createId: 'c1',
+                    containedMenuItemId: containedItem.id,
+                    containedItemSizeId: sizes[0].id,
+                    quantity: 6,
+                    parentItemSizeId: itemToUpdate.sizes[0].id,
+                }),
+            ],
         });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
@@ -352,40 +312,11 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const items = await itemRepo.find({
-            relations: [
-                'category',
-                'sizes',
-                'containerMenuItems',
-                'containerMenuItems.containedMenuItem',
-                'containerMenuItems.containedItemSize',
-            ],
+        const itemToUpdate = await itemRepo.findOneOrFail({
+            where: { id: singleItems[0].id },
+            relations: ['category', 'sizes', 'containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'],
         });
-        if (items.length < 2) {
-            throw new Error('Not enough items for test');
-        }
-
-        const itemToUpdate = items[0];
-        if (!itemToUpdate.category || !itemToUpdate.sizes || !itemToUpdate.containerMenuItems) {
-            throw new Error('item not found');
-        }
-        const existingItem = items[1];
-
-        const dto = menuItemToUpdateDto(itemToUpdate, { name: existingItem.name });
-
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: existingItem.name,
-            type: itemToUpdate.type,
-            categoryId: itemToUpdate.category?.id,
-            sizeIds: itemToUpdate.sizes.map((s) => s.id),
-            containerMenuItems: itemToUpdate.containerMenuItems.map((c) => plainToInstance(NestedUpdateMenuItemContainerItemDto, {
-                id: c.id,
-                quantity: c.quantity,
-                containedMenuItemId: c.containedMenuItem.id,
-                containedItemSizeId: c.containedItemSize.id,
-            })),
-            variableMaxAmount: itemToUpdate.variableMaxAmount,
-        });*/
+        const dto = menuItemToUpdateDto(itemToUpdate, { name: singleItems[1].name });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -398,43 +329,22 @@ describe('menu item validator', () => {
 
     it('fail validate update: containerMenuItems and not set to type container', async () => {
         const singleItem = await itemRepo.findOneOrFail({
-            where: { type: MENU_ITEM_TYPES.SINGLE },
+            where: { id: singleItems[0].id },
             relations: ['category', 'sizes'],
         });
-        if (!singleItem.category || !singleItem.sizes) {
-            throw new Error('single item not found');
-        }
-
-        const containedItem = await findMenuItem(item_a);
+        const containedItem = singleItems[1];
 
         const dto = menuItemToUpdateDto(singleItem, {
             containerMenuItems: [
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 2,
                     parentItemSizeId: singleItem.sizes[0].id,
                 }),
             ],
         });
-
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: singleItem.name,
-            type: singleItem.type,
-            categoryId: singleItem.category.id,
-            sizeIds: singleItem.sizes.map((s) => s.id),
-            variableMaxAmount: singleItem.variableMaxAmount,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: 2,
-                    parentItemSizeId: singleItem.sizes[0].id,
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, singleItem.id);
         expectValidationErrorSize(errors, 1);
@@ -446,54 +356,34 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: containerMenuItems errors: duplicate container item', async () => {
-        const containerItem = await findMenuItem(item_container_a);
-        if (!containerItem.category) {
-            throw new Error('container item category not found');
-        }
-        const containedItem = await findMenuItem(item_a);
+        const containerItem = await itemRepo.findOneOrFail({
+            where: { id: fixedContainerItems[0].id },
+            relations: ['category', 'sizes'],
+        });
+        const containedItem = singleItems[0];
 
-        const dto = menuItemToUpdateDto(containerItem, {
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: containerItem.name,
+            type: containerItem.type,
+            categoryId: containerItem.category?.id ?? null,
+            sizeIds: containerItem.sizes.map((s) => s.id),
             containerMenuItems: [
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 2,
                     parentItemSizeId: containerItem.sizes[0].id,
                 }),
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c2',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 3,
                     parentItemSizeId: containerItem.sizes[0].id,
                 }),
             ],
         });
-
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: containerItem.name,
-            type: containerItem.type,
-            categoryId: containerItem.category?.id,
-            sizeIds: containerItem.sizes.map((s) => s.id),
-            variableMaxAmount: containerItem.variableMaxAmount,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: 2,
-                    parentItemSizeId: containerItem.sizes[0].id,
-                }),
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c2',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: 3,
-                    parentItemSizeId: containerItem.sizes[0].id,
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, containerItem.id);
         expectValidationErrorSize(errors, 1);
@@ -505,40 +395,27 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: nested containerMenuItems validator errors: contained item not of type single', async () => {
-        const containerItem = await findMenuItem(item_container_b);
-        if (!containerItem.category) {
-            throw new Error('container item category not found');
-        }
-        const anotherContainer = await findMenuItem(item_container_a);
+        const containerItem = await itemRepo.findOneOrFail({
+            where: { id: fixedContainerItems[1].id },
+            relations: ['category', 'sizes'],
+        });
+        const anotherContainer = fixedContainerItems[0];
 
-        const dto = menuItemToUpdateDto(containerItem, {
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: containerItem.name,
+            type: containerItem.type,
+            categoryId: containerItem.category?.id ?? null,
+            sizeIds: containerItem.sizes.map((s) => s.id),
             containerMenuItems: [
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: anotherContainer.id,
-                    containedItemSizeId: anotherContainer.sizes[0].id,
+                    containedItemSizeId: sizes[2].id,
                     quantity: 2,
                     parentItemSizeId: containerItem.sizes[0].id,
                 }),
             ],
         });
-
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: containerItem.name,
-            type: containerItem.type,
-            categoryId: containerItem.category?.id,
-            sizeIds: containerItem.sizes.map((s) => s.id),
-            variableMaxAmount: containerItem.variableMaxAmount,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: anotherContainer.id,
-                    containedItemSizeId: anotherContainer.sizes[0].id,
-                    quantity: 2,
-                    parentItemSizeId: containerItem.sizes[0].id,
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, containerItem.id);
         expectValidationErrorSize(errors, 1);
@@ -550,24 +427,19 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: nested containerMenuItems validator errors: contained item size not valid', async () => {
-        const containerItem = await findMenuItem(item_container_a);
-        if (!containerItem.category) {
-            throw new Error('container item category not found');
-        }
-        if (!containerItem.containerMenuItems) {
-            throw new Error('container item container menu items not found');
-        }
+        const containerItem = await itemRepo.findOneOrFail({
+            where: { id: fixedContainerItems[0].id },
+            relations: ['category', 'sizes'],
+        });
+        const containedItem = singleItems[0];
+        // singleItems[0] has sizes[0] and sizes[1]; sizes[2] is invalid
+        const invalidSize = sizes[2];
 
-        const containedItem = await findMenuItem(item_a);
-
-        const allSizes = await sizeRepo.find();
-        const invalidSize = allSizes.find(
-            (s) => !containedItem.sizes?.some((cs) => cs.id === s.id),
-        );
-        if (!invalidSize) {
-            throw new Error('invalid size not found');
-        }
-        const dto = menuItemToUpdateDto(containerItem, {
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: containerItem.name,
+            type: containerItem.type,
+            categoryId: containerItem.category?.id ?? null,
+            sizeIds: containerItem.sizes.map((s) => s.id),
             containerMenuItems: [
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
@@ -578,24 +450,6 @@ describe('menu item validator', () => {
                 }),
             ],
         });
-
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-        const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: containerItem.name,
-            type: containerItem.type,
-            categoryId: containerItem.category?.id,
-            sizeIds: containerItem.sizes.map((s) => s.id),
-            variableMaxAmount: containerItem.variableMaxAmount,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: invalidSize.id,
-                    quantity: 2,
-                    parentItemSizeId: containerItem.sizes[0].id,
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, containerItem.id);
         expectValidationErrorSize(errors, 1);
@@ -607,44 +461,27 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: nested containerMenuItems validator errors: quantity with value 0', async () => {
-        const containerItem = await findMenuItem(item_container_a);
-        if (!containerItem.category) {
-            throw new Error('container item category not found');
-        }
-        if (!containerItem.containerMenuItems) {
-            throw new Error('container item container menu items not found');
-        }
-        const containedItem = await findMenuItem(item_a);
+        const containerItem = await itemRepo.findOneOrFail({
+            where: { id: fixedContainerItems[0].id },
+            relations: ['category', 'sizes'],
+        });
+        const containedItem = singleItems[0];
 
-        const dto = menuItemToUpdateDto(containerItem, {
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: containerItem.name,
+            type: containerItem.type,
+            categoryId: containerItem.category?.id ?? null,
+            sizeIds: containerItem.sizes.map((s) => s.id),
             containerMenuItems: [
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
                     quantity: 0,
                     parentItemSizeId: containerItem.sizes[0].id,
                 }),
             ],
         });
-
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-        const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: containerItem.name,
-            type: containerItem.type,
-            categoryId: containerItem.category?.id,
-            sizeIds: containerItem.sizes.map((s) => s.id),
-            variableMaxAmount: containerItem.variableMaxAmount,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: 0,
-                    parentItemSizeId: containerItem.sizes[0].id,
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, containerItem.id);
         expectValidationErrorSize(errors, 1);
@@ -656,46 +493,32 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: nested containerMenuItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {
-        const containerItem = await findMenuItem(item_var_max_container_c);
-        if (!containerItem.category) {
-            throw new Error('container item category not found');
-        }
-        if (!containerItem.variableMaxAmount) {
-            throw new Error('container item variable max amount not found');
-        }
+        const varContainer = await itemRepo.findOneOrFail({
+            where: { id: varContainerItems[0].id },
+            relations: ['category', 'sizes'],
+        });
+        if (!varContainer.variableMaxAmount) throw new Error('variable max amount not found');
 
-        const containedItem = await findMenuItem(item_a);
+        const containedItem = singleItems[0];
 
-        const dto = menuItemToUpdateDto(containerItem, {
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: varContainer.name,
+            type: varContainer.type,
+            categoryId: varContainer.category?.id ?? null,
+            variableMaxAmount: varContainer.variableMaxAmount,
+            sizeIds: varContainer.sizes.map((s) => s.id),
             containerMenuItems: [
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
                     containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: containerItem.variableMaxAmount + 1,
-                    parentItemSizeId: containerItem.sizes[0].id,
+                    containedItemSizeId: sizes[0].id,
+                    quantity: varContainer.variableMaxAmount + 1,
+                    parentItemSizeId: varContainer.sizes[0].id,
                 }),
             ],
         });
 
-        /*const dto: UpdateMenuItemDto = plainToInstance(UpdateMenuItemDto, {
-            name: containerItem.name,
-            type: containerItem.type,
-            categoryId: containerItem.category?.id,
-            sizeIds: containerItem.sizes.map((s) => s.id),
-            variableMaxAmount: containerItem.variableMaxAmount,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: containerItem.variableMaxAmount + 1,
-                    parentItemSizeId: containerItem.sizes[0].id,
-                }),
-            ],
-        });*/
-
-        const errors = await validator.validateDto(dto, containerItem.id);
+        const errors = await validator.validateDto(dto, varContainer.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -704,20 +527,19 @@ describe('menu item validator', () => {
         );
     });
 
-    // Dynamic Property Validation Tests
     it('successfully validate create: valid dynamicProperties entry passes validation', async () => {
         const config = await configRepo.save({
             holderEntityType: HolderEntityType.MenuItem,
             holderCategory: null,
-            propertyName: 'test-filepath-prop',
+            propertyName: `${P}-test-filepath-prop`,
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategory: null,
         });
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
-        const sizes = await sizeRepo.find();
         const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Item With Dynamic Prop',
+            name: `${P}-new-item-with-dp`,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: null,
             sizeIds: [sizes[0].id],
@@ -729,9 +551,8 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: dynamicProperties unknown configId returns validation error', async () => {
-        const sizes = await sizeRepo.find();
         const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Item Unknown Config',
+            name: `${P}-unknown-config-item`,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: null,
             sizeIds: [sizes[0].id],
@@ -748,23 +569,21 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: config holderCategoryId does not match menuItem category', async () => {
-        const categories = await categoryRepo.find();
-        if (categories.length < 2) throw new Error('not enough categories for test');
         const catA = categories[0];
         const catB = categories[1];
 
         const config = await configRepo.save({
             holderEntityType: HolderEntityType.MenuItem,
             holderCategory: catA,
-            propertyName: 'test-category-scoped-prop',
+            propertyName: `${P}-test-category-scoped-prop`,
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategory: null,
         });
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
-        const sizes = await sizeRepo.find();
         const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Item Category Mismatch',
+            name: `${P}-category-mismatch-item`,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: catB.id,
             sizeIds: [sizes[0].id],
@@ -781,8 +600,6 @@ describe('menu item validator', () => {
     });
 
     it('fail validate create: value entity does not belong to required valueEntityCategoryId', async () => {
-        const categories = await categoryRepo.find();
-        if (categories.length < 2) throw new Error('not enough categories for test');
         const catA = categories[0];
         const catB = categories[1];
 
@@ -791,15 +608,15 @@ describe('menu item validator', () => {
         const config = await configRepo.save({
             holderEntityType: HolderEntityType.MenuItem,
             holderCategory: null,
-            propertyName: 'test-entity-ref-prop',
+            propertyName: `${P}-test-entity-ref-prop`,
             valueType: ValueType.EntityReference,
             valueEntityType: 'menuItem',
             valueEntityCategory: catA,
         });
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
-        const sizes = await sizeRepo.find();
         const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'New Item Value Category Mismatch',
+            name: `${P}-value-cat-mismatch`,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: null,
             sizeIds: [sizes[0].id],
@@ -816,8 +633,6 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: changing categoryId when stale dynamic property value rows exist', async () => {
-        const categories = await categoryRepo.find();
-        if (categories.length < 2) throw new Error('not enough categories for test');
         const catA = categories[0];
         const catB = categories[1];
 
@@ -828,20 +643,21 @@ describe('menu item validator', () => {
         const config = await configRepo.save({
             holderEntityType: HolderEntityType.MenuItem,
             holderCategory: catA,
-            propertyName: 'test-stale-guard-prop',
+            propertyName: `${P}-test-stale-guard-prop`,
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategory: null,
         });
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
-        await dynPropValueRepo.save({
+        const dpValue = await dynPropValueRepo.save({
             menuItem: { id: menuItem.id },
             config: { id: config.id },
             valueText: '/some/file',
             valueEntity: null,
         });
+        testCtx.addCleanupFunction(async () => { await dynPropValueRepo.delete(dpValue.id); });
 
-        const sizes = await sizeRepo.find();
         const dto = plainToInstance(UpdateMenuItemDto, {
             name: menuItem.name,
             type: menuItem.type,

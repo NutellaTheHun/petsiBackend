@@ -1,12 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import { FOOD_A, FOOD_B, OTHER_B, OTHER_C } from '../../inventory-items/utils/constants';
-import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
@@ -14,15 +14,16 @@ import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
-import { REC_A, REC_B, REC_CAT_A, REC_CAT_B, REC_SUBCAT_1 } from '../utils/constants';
 import { recipeToUpdateDto } from '../utils/entity-transformers/recipe.dto.transformer';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeValidator } from './recipe.valdiator';
 
+const P = `t${Date.now()}`;
+
 describe('recipe validator', () => {
     let testingUtil: RecipeTestUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: RecipeValidator;
 
@@ -30,61 +31,62 @@ describe('recipe validator', () => {
     let categoryRepo: Repository<RecipeCategory>;
     let subCategoryRepo: Repository<RecipeSubCategory>;
     let ingredientRepo: Repository<RecipeIngredient>;
-    let inventoryItemRepo: Repository<InventoryItem>;
-    let menuItemRepo: Repository<MenuItem>;
+    let invCategoryRepo: Repository<InventoryItemCategory>;
+    let invVendorRepo: Repository<InventoryItemVendor>;
+    let invItemRepo: Repository<InventoryItem>;
 
-    const findRecipe = async (name: string) => {
-        return await recipeRepo.findOneOrFail({ where: { name }, relations: ['producedMenuItem', 'ingredients', 'category', 'subCategory', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'] });
-    }
-    const findCategory = async (name: string) => {
-        return await categoryRepo.findOneOrFail({ where: { name }, relations: ['subCategories'] });
-    }
-    const findSubCategory = async (name: string) => {
-        return await subCategoryRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findInventoryItem = async (name: string) => {
-        return await inventoryItemRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findMenuItem = async (name: string) => {
-        return await menuItemRepo.findOneOrFail({ where: { name } });
-    }
-
+    let categories: RecipeCategory[];
+    let subCategories: RecipeSubCategory[];
+    let recipes: Recipe[];
+    let invCategories: InventoryItemCategory[];
+    let invVendors: InventoryItemVendor[];
+    let invItems: InventoryItem[];
+    let ingredients: RecipeIngredient[];
 
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
-
         validator = module.get<RecipeValidator>(RecipeValidator);
 
         recipeRepo = module.get(getRepositoryToken(Recipe));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
-        inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
-        menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        invCategoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        invItemRepo = module.get(getRepositoryToken(InventoryItem));
+
+        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
+            await testingUtil.seedIngredients(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await ingredientRepo.delete(ingredients.map((i) => i.id));
+        await recipeRepo.delete(recipes.map((r) => r.id));
+        await subCategoryRepo.delete(subCategories.map((s) => s.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await invItemRepo.delete(invItems.map((i) => i.id));
+        await invVendorRepo.delete(invVendors.map((v) => v.id));
+        await invCategoryRepo.delete(invCategories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const category = await findCategory(REC_CAT_A);
-
-        const food_a = await findInventoryItem(FOOD_A);
-        const food_b = await findInventoryItem(FOOD_B);
+        const category = await categoryRepo.findOneOrFail({
+            where: { id: categories[0].id },
+            relations: ['subCategories'],
+        });
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -96,13 +98,13 @@ describe('recipe validator', () => {
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: food_a.id,
+                    ingredientInventoryItemId: invItems[0].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
-                    ingredientInventoryItemId: food_b.id,
+                    ingredientInventoryItemId: invItems[1].id,
                     quantity: 4,
                     unit: 'oz',
                 }),
@@ -114,9 +116,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: name already exists', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: REC_A,
+            name: recipes[0].name,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -135,15 +136,13 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: requires category if assigning sub-category', async () => {
-        const subCategory = await findSubCategory(REC_SUBCAT_1);
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-2`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
             servingSizeUnit: 'oz',
-            subCategoryId: subCategory.id,
+            subCategoryId: subCategories[0].id,
             isIngredient: false,
             ingredients: [],
         });
@@ -158,29 +157,15 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: invalid category / subcategory combination', async () => {
-        const categories = await categoryRepo.find({
-            relations: ['subCategories'],
-        });
-        if (categories.length < 2) {
-            throw new Error('not enough categories for test');
-        }
-
-        const category1 = categories[0];
-        const category2 = categories[1];
-        if (!category2.subCategories || category2.subCategories.length === 0) {
-            throw new Error('category2 subcategories not found');
-        }
-
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-3`,
             ingredients: [],
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
             servingSizeUnit: 'oz',
-            categoryId: category1.id,
-            subCategoryId: category2.subCategories[0].id,
+            categoryId: categories[0].id,
+            subCategoryId: subCategories[2].id,
             isIngredient: false,
         });
 
@@ -194,9 +179,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: batchResultUnit and batchResultQuantity must both be populated', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-4`,
             ingredients: [],
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -214,9 +198,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: servingSizeQuantity and servingSizeUnit must both be populated', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-5`,
             ingredients: [],
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
@@ -234,9 +217,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: serving size quantity cannot be 0', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-6`,
             ingredients: [],
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
@@ -255,9 +237,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: batch result quantity cannot be 0', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-7`,
             ingredients: [],
             batchResultQuantity: 0,
             batchResultUnit: 'lb',
@@ -276,9 +257,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: sales price cannot be 0', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-8`,
             ingredients: [],
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
@@ -298,10 +278,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: duplicate ingredients', async () => {
-        const inventoryItem = await findInventoryItem(FOOD_A);
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-9`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -310,13 +288,13 @@ describe('recipe validator', () => {
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientInventoryItemId: invItems[0].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
-                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientInventoryItemId: invItems[0].id,
                     quantity: 4,
                     unit: 'oz',
                 }),
@@ -333,9 +311,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: nested ingredients validator errors: missing reference for ingredient', async () => {
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-10`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -362,11 +339,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: nested ingredients validator errors: cannot provide both an inventory item and a recipe as an ingredient', async () => {
-        const inventoryItem = await findInventoryItem(FOOD_A);
-        const recipe = await findRecipe(REC_B);
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-11`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -375,8 +349,8 @@ describe('recipe validator', () => {
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
-                    ingredientRecipeId: recipe.id,
+                    ingredientInventoryItemId: invItems[0].id,
+                    ingredientRecipeId: recipes[1].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
@@ -392,13 +366,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: recipeIngredient isIngredient is false', async () => {
-        const recipe = await recipeRepo.findOne({ where: { isIngredient: false } });
-        if (!recipe) {
-            throw new Error('recipe not found');
-        }
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-12`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -407,7 +376,7 @@ describe('recipe validator', () => {
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientRecipeId: recipe.id,
+                    ingredientRecipeId: recipes[2].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
@@ -424,10 +393,8 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: nested ingredients validator errors: quantity cannot be 0', async () => {
-        const inventoryItem = await findInventoryItem(FOOD_A);
-
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
-            name: 'New Recipe',
+            name: `${P}-new-recipe-13`,
             batchResultQuantity: 5,
             batchResultUnit: 'lb',
             servingSizeQuantity: 2,
@@ -436,7 +403,7 @@ describe('recipe validator', () => {
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientInventoryItemId: invItems[0].id,
                     quantity: 0,
                     unit: 'oz',
                 }),
@@ -454,90 +421,44 @@ describe('recipe validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-        const inventoryItem = await findInventoryItem(OTHER_B);
-        const newCategory = await findCategory(REC_CAT_A);
-
-        const dto = recipeToUpdateDto(recipeToUpdate, {
-            name: 'Updated Recipe Name',
-            batchResultQuantity: 10,
-            batchResultUnit: 'g',
-            servingSizeQuantity: 2,
-            servingSizeUnit: 'oz',
-            isIngredient: false,
-            salesPrice: 15.99,
-            categoryId: newCategory.id,
-            subCategoryId: newCategory.subCategories[0].id,
-            ingredients:
-                [
-                    plainToInstance(NestedCreateRecipeIngredientDto, {
-                        createId: 'c1',
-                        ingredientInventoryItemId: inventoryItem.id,
-                        quantity: 5,
-                        unit: 'oz',
-                    }),
-                ]
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['producedMenuItem', 'ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe', 'category', 'subCategory'],
         });
 
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: 'Updated Recipe Name',
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            name: `${P}-updated-recipe-name`,
             batchResultQuantity: 10,
             batchResultUnit: 'g',
             servingSizeQuantity: 2,
             servingSizeUnit: 'oz',
-            producedMenuItemId: newProducedMenuItem.id,
             isIngredient: false,
             salesPrice: 15.99,
-            categoryId: newCategory.id,
-            subCategoryId: newCategory.subCategories[0].id,
-            ingredients:
-                [
-                    plainToInstance(UpdateRecipeIngredientDto, {
-                        id: recipeToUpdate.ingredients[0].id,
-                        quantity: 8,
-                        unit: recipeToUpdate.ingredients[0].unit,
-                    }),
-                    plainToInstance(CreateRecipeIngredientDto, {
-                        createId: 'c1',
-                        ingredientInventoryItemId: inventoryItem.id,
-                        quantity: 5,
-                        unit: 'oz',
-                    }),
-                ]
-        });*/
+            categoryId: categories[0].id,
+            subCategoryId: subCategories[0].id,
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    ingredientInventoryItemId: invItems[1].id,
+                    quantity: 5,
+                    unit: 'oz',
+                }),
+            ],
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-
-        const existingRecipe = await findRecipe(REC_B);
-
-        const dto = recipeToUpdateDto(recipeToUpdate, {
-            name: existingRecipe.name,
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
         });
 
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: existingRecipe.name,
-            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
-                id: ingredient.id,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
-                ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
-            })),
-            categoryId: recipeToUpdate?.category?.id ?? undefined,
-            subCategoryId: recipeToUpdate?.subCategory?.id ?? undefined,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-        });*/
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            name: recipes[1].name,
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -549,34 +470,15 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: requires category if assigning sub-category', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-
-        const subCategory = await findSubCategory(REC_SUBCAT_1);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             categoryId: null,
-            subCategoryId: subCategory.id,
+            subCategoryId: subCategories[0].id,
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            subCategoryId: subCategory.id,
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: null,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
-                id: ingredient.id,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
-                ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
-            })),
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -588,34 +490,15 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: invalid category / subcategory combination', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-        const category1 = await findCategory(REC_CAT_A);
-        const category2 = await findCategory(REC_CAT_B);
-
-        const dto = recipeToUpdateDto(recipeToUpdate, {
-            categoryId: category1.id,
-            subCategoryId: category2.subCategories[0].id,
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
         });
 
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            categoryId: category1.id,
-            subCategoryId: category2.subCategories[0].id,
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
-                id: ingredient.id,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
-                ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
-            })),
-        });*/
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            categoryId: categories[0].id,
+            subCategoryId: subCategories[2].id,
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -627,31 +510,14 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: batch result quantity cannot be 0', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             batchResultQuantity: 0,
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            batchResultQuantity: 0,
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
-                id: ingredient.id,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
-                ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
-            })),
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -663,31 +529,14 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: sales price cannot be 0', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             salesPrice: -1,
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            salesPrice: -1,
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
-                id: ingredient.id,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
-                ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
-            })),
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -699,53 +548,27 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: duplicate ingredients', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-
-        const inventoryItem = await findInventoryItem(OTHER_C);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientInventoryItemId: invItems[2].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c2',
-                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientInventoryItemId: invItems[2].id,
                     quantity: 4,
                     unit: 'oz',
                 }),
             ],
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            ingredients: [
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
-                    quantity: 3,
-                    unit: 'oz',
-                }),
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c2',
-                    ingredientInventoryItemId: inventoryItem.id,
-                    quantity: 4,
-                    unit: 'oz',
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -757,7 +580,10 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: nested ingredients validator errors: missing reference for ingredient', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -768,26 +594,6 @@ describe('recipe validator', () => {
                 }),
             ],
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            ingredients: [
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c1',
-                    quantity: 3,
-                    unit: 'oz',
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -801,44 +607,22 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: nested ingredients validator errors: cannot provide both an inventory item and a recipe as an ingredient', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-
-        const inventoryItem = await findInventoryItem(FOOD_A);
-        const ingredientRecipe = await findRecipe(REC_B);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
-                    ingredientRecipeId: ingredientRecipe.id,
+                    ingredientInventoryItemId: invItems[0].id,
+                    ingredientRecipeId: recipes[1].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
             ],
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            ingredients: [
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
-                    ingredientRecipeId: ingredientRecipe.id,
-                    quantity: 3,
-                    unit: 'oz',
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -850,40 +634,21 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: nested ingredients validator errors: quantity cannot be 0', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-        const inventoryItem = await findInventoryItem(OTHER_B);
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientInventoryItemId: invItems[1].id,
                     quantity: 0,
                     unit: 'oz',
                 }),
             ],
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            subCategoryId: recipeToUpdate?.subCategory?.id ?? undefined,
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate?.category?.id ?? undefined,
-            ingredients: [
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c1',
-                    ingredientInventoryItemId: inventoryItem.id,
-                    quantity: 0,
-                    unit: 'oz',
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -895,45 +660,21 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: recipeIngredient isIngredient is false', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-
-        const recipe = await recipeRepo.findOne({ where: { isIngredient: false, id: Not(recipeToUpdate.id) } });
-        if (!recipe) {
-            throw new Error('recipe not found');
-        }
-
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[0].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c1',
-                    ingredientRecipeId: recipe.id,
+                    ingredientRecipeId: recipes[2].id,
                     quantity: 3,
                     unit: 'oz',
                 }),
             ],
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            ingredients: [
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c1',
-                    ingredientRecipeId: recipe.id,
-                    quantity: 3,
-                    unit: 'oz',
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -945,8 +686,10 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: nested ingredients validator errors: recipe cannot add itself as an ingredient', async () => {
-        const recipeToUpdate = await findRecipe(REC_B);
-
+        const recipeToUpdate = await recipeRepo.findOneOrFail({
+            where: { id: recipes[1].id },
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+        });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -959,27 +702,6 @@ describe('recipe validator', () => {
             ],
             isIngredient: true,
         });
-
-        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
-            servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
-            isIngredient: recipeToUpdate.isIngredient,
-            salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
-            ingredients: [
-                plainToInstance(CreateRecipeIngredientDto, {
-                    createId: 'c1',
-                    ingredientRecipeId: recipeToUpdate.id,
-                    quantity: 3,
-                    unit: 'oz',
-                }),
-            ],
-        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);

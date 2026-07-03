@@ -7,54 +7,53 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
-import { CAT_RED } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemCategoryValidator } from './menu-item-category.validator';
 
+const P = `t${Date.now()}`;
+
 describe('menu item category validator', () => {
     let testingUtil: MenuItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
-
+    let testCtx: DatabaseTestContext;
     let validator: MenuItemCategoryValidator;
     let categoryRepo: Repository<MenuItemCategory>;
 
+    let categories: MenuItemCategory[];
+
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemCategoryTestDatabase(dbTestContext);
-
-        validator = module.get<MenuItemCategoryValidator>(
-            MenuItemCategoryValidator,
-        );
-
+        validator = module.get<MenuItemCategoryValidator>(MenuItemCategoryValidator);
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+
+        ({ categories } = await testingUtil.seedCategories(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // Create Validation Tests
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create: no validation errors', async () => {
         const dto: CreateMenuItemCategoryDto = plainToInstance(CreateMenuItemCategoryDto, {
-            name: 'New Category Name',
+            name: `${P}-new-category`,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateMenuItemCategoryDto = plainToInstance(CreateMenuItemCategoryDto, {
-            name: CAT_RED,
+            name: categories[0].name,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -64,43 +63,19 @@ describe('menu item category validator', () => {
         );
     });
 
-    // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const categoryToUpdate = await categoryRepo.findOne({
-            where: { name: CAT_RED },
-        });
-        if (!categoryToUpdate) {
-            throw new Error('category not found');
-        }
-
         const dto: UpdateMenuItemCategoryDto = plainToInstance(UpdateMenuItemCategoryDto, {
-            name: 'Updated Category Name',
+            name: `${P}-updated-name`,
         });
-
-        const errors = await validator.validateDto(
-            dto,
-            categoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, categories[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const categories = await categoryRepo.find();
-        if (categories.length < 2) {
-            throw new Error('Not enough categories for test');
-        }
-
-        const categoryToUpdate = categories[0];
-        const existingCategory = categories[1];
-
         const dto: UpdateMenuItemCategoryDto = plainToInstance(UpdateMenuItemCategoryDto, {
-            name: existingCategory.name,
+            name: categories[1].name,
         });
-
-        const errors = await validator.validateDto(
-            dto,
-            categoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, categories[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
@@ -120,5 +122,65 @@ export class TemplateTestingUtil {
 
     public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {
         await this.templateItemRepo.deleteAll();
+    }
+
+    // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
+    // These do NOT register cleanup — callers are responsible for deleting by ID.
+
+    public async seedTemplates(P: string = ''): Promise<{ templates: Template[] }> {
+        const names = getTestTemplateNames();
+        const templates: Template[] = [];
+        for (const name of names) {
+            const entityName = P ? `${P}-${name}` : name;
+            templates.push(await this.templateRepo.save({ name: entityName } as Template));
+        }
+        return { templates };
+    }
+
+    /**
+     * Delegates to MenuItemTestingUtil.seedItems(P) for the menu item dependency chain.
+     *
+     * 3 template menu item rows per seeded template, round-robin over the combined
+     * single/fixed-container/variable-container menu items.
+     */
+    public async seedTemplateMenuItems(P: string = ''): Promise<{
+        templates: Template[];
+        categories: MenuItemCategory[];
+        sizes: MenuItemSize[];
+        singleItems: MenuItem[];
+        fixedContainerItems: MenuItem[];
+        varContainerItems: MenuItem[];
+        templateMenuItems: TemplateMenuItem[];
+    }> {
+        const { templates } = await this.seedTemplates(P);
+        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
+            await this.menuItemTestUtil.seedItems(P);
+
+        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const templateMenuItems: TemplateMenuItem[] = [];
+        let idx = 0;
+        for (const template of templates) {
+            for (let i = 0; i < 3; i++) {
+                const item = allItems[idx % allItems.length];
+                const entity = {
+                    displayName: P ? `${P}-row${idx + 1}` : `row${idx + 1}`,
+                    menuItem: item,
+                    tablePosIndex: idx + 1,
+                    parentTemplate: template,
+                } as TemplateMenuItem;
+                templateMenuItems.push(await this.templateItemRepo.save(entity));
+                idx++;
+            }
+        }
+
+        return {
+            templates,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            templateMenuItems,
+        };
     }
 }

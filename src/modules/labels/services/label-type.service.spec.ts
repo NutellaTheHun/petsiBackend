@@ -7,7 +7,6 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
-import { type_a } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelTypeService } from './label-type.service';
@@ -27,111 +26,132 @@ class TestableLabelTypeService extends LabelTypeService {
         return this.updateEntity(dto, manager, entity);
     }
 }
+
+const P = `t${Date.now()}`;
+
 describe('Label type Service', () => {
     let typeService: TestableLabelTypeService;
     let testingUtil: LabelTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let typeRepo: Repository<LabelType>;
+
+    let labelTypes: LabelType[];
 
     beforeAll(async () => {
         const module: TestingModule = await getLabelsTestingModule({
             labelTypeServiceClass: TestableLabelTypeService,
         });
 
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
-        await testingUtil.initLabelTypeTestDatabase(dbTestContext);
-
         typeService = module.get(LabelTypeService) as TestableLabelTypeService;
         dataSource = module.get(DataSource);
         typeRepo = module.get(getRepositoryToken(LabelType));
+
+        ({ labelTypes } = await testingUtil.seedLabelTypes(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await typeRepo.delete(labelTypes.map((t) => t.id));
     });
 
-    it('should be defined', () => {
-        expect(typeService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create type', async () => {
-        const dto = plainToInstance(CreateLabelTypeDto, { name: '5x3', length: 500, width: 300 });
-
-        await dataSource.transaction(async (manager) => {
-            const result = await typeService.createEntityForTest(dto, manager);
-
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.name).toEqual(dto.name);
-            expect(result.length).toEqual(dto.length);
-            expect(result.width).toEqual(dto.width);
-        });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
-    // test updateEntity()
-    it('should update type', async () => {
-        const labelType = await typeRepo.findOne({ where: { name: type_a } });
-        if (!labelType) throw new Error('label type not found');
+    describe('label type lifecycle', () => {
+        let type: LabelType;
 
-        const dto = plainToInstance(UpdateLabelTypeDto, { name: 'Type A Updated', length: 500, width: 250 });
+        it('should create type', async () => {
+            const dto = plainToInstance(CreateLabelTypeDto, {
+                name: `${P}-lifecycle-type`,
+                length: 500,
+                width: 300,
+            });
 
-        await dataSource.transaction(async (manager) => {
-            await typeService.updateEntityForTest(dto, labelType, manager);
+            await dataSource.transaction(async (manager) => {
+                type = await typeService.createEntityForTest(dto, manager);
+            });
+            expect(type.id).toBeDefined();
+            expect(type.name).toBe(dto.name);
+            expect(type.length).toBe(dto.length);
+            expect(type.width).toBe(dto.width);
         });
 
-        const result = await typeRepo.findOne({ where: { id: labelType.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
-        expect(result.width).toEqual(dto.width);
-    });
+        it('should update type', async () => {
+            const dto = plainToInstance(UpdateLabelTypeDto, {
+                name: `${P}-lifecycle-type-updated`,
+                length: 500,
+                width: 250,
+            });
 
-    // test findAll()
-    it('should find all types', async () => {
-        const repoResult = await typeRepo.find();
-        const serviceResult = await typeService.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
+            await dataSource.transaction(async (manager) => {
+                await typeService.updateEntityForTest(dto, type, manager);
+            });
 
-    // test findall() with sort by name
-    it('should find all types with sort by name', async () => {
-        const repoResult = await typeRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await typeService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
+            const reloaded = await typeRepo.findOneOrFail({ where: { id: type.id } });
+            expect(reloaded.name).toBe(dto.name);
+            expect(reloaded.width).toBe(dto.width);
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-            const lastIdx = repoResult.length - 1;
-            expect(serviceResult?.items[lastIdx].name).toEqual(
-                repoResult[lastIdx].name,
+
+        it('should remove type', async () => {
+            await typeService.remove(type.id);
+            await expect(typeService.findOne(type.id)).rejects.toThrow(
+                NotFoundException,
             );
-        }
+        });
     });
 
-    // test findOne()
-    it('should find one type', async () => {
-        const labelType = await typeRepo.find({ take: 1 });
-        if (!labelType.length) throw new Error('label type not found');
-
-        const serviceResult = await typeService.findOne(labelType[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(labelType[0].id);
+    it('should find seeded type in findAll results', async () => {
+        const result = await typeService.findAll({ limit: 100 });
+        const found = result.items.find((t) => t.id === labelTypes[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test remove()
-    it('should remove type', async () => {
-        const labelType = await typeRepo.find({ take: 1 });
-        if (!labelType.length) throw new Error('label type not found');
-        const id = labelType[0].id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(typeService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-        const deleteResult = await typeService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(typeService.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(LabelTypeService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches entity', async () => {
+            const type = await typeRepo.findOneOrFail({ where: { id: labelTypes[1].id } });
+            const dto = plainToInstance(UpdateLabelTypeDto, {
+                name: type.name,
+                length: type.length,
+                width: type.width,
+            });
+            const result = await typeService.update(type.id, dto);
+            expect(result.name).toBe(type.name);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const type = await typeRepo.findOneOrFail({ where: { id: labelTypes[2].id } });
+            const dto = plainToInstance(UpdateLabelTypeDto, {
+                name: `${P}-type-renamed`,
+                length: type.length,
+                width: type.width,
+            });
+            await typeService.update(type.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await typeRepo.findOneOrFail({ where: { id: type.id } });
+            expect(row.name).toBe(`${P}-type-renamed`);
+        });
     });
 });

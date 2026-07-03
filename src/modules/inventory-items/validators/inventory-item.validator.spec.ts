@@ -10,107 +10,97 @@ import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-i
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { FOOD_A, FOOD_CAT, PACKAGE_PKG, VENDOR_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemValidator } from './inventory-item.validator';
 
+const P = `t${Date.now()}`;
+
 describe('inventory item validator', () => {
     let testingUtil: InventoryItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: InventoryItemValidator;
     let itemRepo: Repository<InventoryItem>;
-
     let categoryRepo: Repository<InventoryItemCategory>;
     let vendorRepo: Repository<InventoryItemVendor>;
     let packageRepo: Repository<InventoryItemPackage>;
+    let sizeRepo: Repository<InventoryItemSize>;
 
-    const findInventoryItem = async (name: string) => {
-        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package', 'category', 'vendor'] });
-    }
+    let categories: InventoryItemCategory[];
+    let vendors: InventoryItemVendor[];
+    let packages: InventoryItemPackage[];
+    let items: InventoryItem[];
+    let sizes: InventoryItemSize[];
 
-    const findInventoryItemCategory = async (name: string) => {
-        return await categoryRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findInventoryItemVendor = async (name: string) => {
-        return await vendorRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findInventoryItemPackage = async (name: string) => {
-        return await packageRepo.findOneOrFail({ where: { name } });
-    }
+    const loadItem = (id: number) =>
+        itemRepo.findOneOrFail({ where: { id }, relations: ['sizes', 'sizes.package', 'category', 'vendor'] });
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
         validator = module.get<InventoryItemValidator>(InventoryItemValidator);
-
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+        sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+
+        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await sizeRepo.delete(sizes.map((s) => s.id));
+        await itemRepo.delete(items.map((i) => i.id));
+        await packageRepo.delete(packages.map((p) => p.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await vendorRepo.delete(vendors.map((v) => v.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // Create Validation Tests
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create with no validation errors', async () => {
-        const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor(VENDOR_A);
-        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
-            name: 'New Item Name',
-            categoryId: category.id,
-            vendorId: vendor.id,
+            name: `${P}-new-item`,
+            categoryId: categories[3].id,
+            vendorId: vendors[0].id,
             sizes: [
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
-                    packageId: pkg.id,
+                    packageId: packages[0].id,
                     unit: 'lb',
                     measureAmount: 5,
                     cost: 10.99,
                 }),
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c2',
-                    packageId: pkg.id,
-                    unit: 'lb',
+                    packageId: packages[1].id,
+                    unit: 'oz',
                     measureAmount: 10,
                     cost: 20.99,
                 }),
             ],
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor(VENDOR_A);
-
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
-            name: FOOD_A,
-            categoryId: category.id,
-            vendorId: vendor.id,
+            name: items[0].name,
+            categoryId: categories[3].id,
+            vendorId: vendors[0].id,
             sizes: [],
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -121,25 +111,20 @@ describe('inventory item validator', () => {
     });
 
     it('fail validate create: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-        const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor(VENDOR_A);
-        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
-            name: 'New Item Name',
-            categoryId: category.id,
-            vendorId: vendor.id,
+            name: `${P}-new-item-2`,
+            categoryId: categories[3].id,
+            vendorId: vendors[0].id,
             sizes: [
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
-                    packageId: pkg.id,
+                    packageId: packages[0].id,
                     unit: 'lb',
                     measureAmount: 0,
                     cost: 10.99,
                 }),
             ],
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
@@ -149,25 +134,20 @@ describe('inventory item validator', () => {
     });
 
     it('fail validate create: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
-        const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor(VENDOR_A);
-        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
-            name: 'New Item Name',
-            categoryId: category.id,
-            vendorId: vendor.id,
+            name: `${P}-new-item-3`,
+            categoryId: categories[3].id,
+            vendorId: vendors[0].id,
             sizes: [
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
-                    packageId: pkg.id,
+                    packageId: packages[0].id,
                     unit: 'lb',
                     measureAmount: 5,
                     cost: -1,
                 }),
             ],
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -177,26 +157,15 @@ describe('inventory item validator', () => {
         );
     });
 
-    // Update Validation Tests
     it('successfully validate update with no validation errors', async () => {
-        const itemToUpdate = await findInventoryItem(FOOD_A);
-        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-
-        const categories = await categoryRepo.find();
-        const newCategory = categories.find(
-            (c) => c.id !== itemToUpdate.category?.id,
-        );
-        if (!newCategory) {
-            throw new Error('new category not found');
-        }
-        const vendors = await vendorRepo.find();
+        const itemToUpdate = await loadItem(items[0].id);
+        const newCategory = categories.find((c) => c.id !== itemToUpdate.category?.id);
+        if (!newCategory) throw new Error('new category not found');
         const newVendor = vendors.find((v) => v.id !== itemToUpdate.vendor?.id);
-        if (!newVendor) {
-            throw new Error('new vendor not found');
-        }
+        if (!newVendor) throw new Error('new vendor not found');
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
-            name: 'Updated Item Name',
+            name: `${P}-updated-item`,
             categoryId: newCategory.id,
             vendorId: newVendor.id,
             sizes: [
@@ -209,7 +178,7 @@ describe('inventory item validator', () => {
                 }),
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
-                    packageId: pkg.id,
+                    packageId: packages[4].id,
                     unit: 'oz',
                     measureAmount: 20,
                     cost: 30.99,
@@ -222,28 +191,13 @@ describe('inventory item validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const items = await itemRepo.find({ relations: ['category', 'vendor'] });
-        if (items.length < 2) {
-            throw new Error('Not enough items for test');
-        }
-
-        const itemToUpdate = items[0];
-        if (!itemToUpdate.category) {
-            throw new Error('item category not found');
-        }
-        if (!itemToUpdate.vendor) {
-            throw new Error('item vendor not found');
-        }
-        const existingItem = items[1];
-
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
-            name: existingItem.name,
-            categoryId: itemToUpdate.category?.id,
-            vendorId: itemToUpdate.vendor?.id,
+            name: items[1].name,
+            categoryId: categories[3].id,
+            vendorId: vendors[0].id,
             sizes: [],
         });
-
-        const errors = await validator.validateDto(dto, itemToUpdate.id);
+        const errors = await validator.validateDto(dto, items[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -253,13 +207,8 @@ describe('inventory item validator', () => {
     });
 
     it('fail validate update: nestedUpdateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-        const itemToUpdate = await findInventoryItem(FOOD_A);
-        if (!itemToUpdate.category) {
-            throw new Error('item category not found');
-        }
-        if (!itemToUpdate.vendor) {
-            throw new Error('item vendor not found');
-        }
+        const itemToUpdate = await loadItem(items[0].id);
+        if (!itemToUpdate.category || !itemToUpdate.vendor) throw new Error('item relations missing');
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: itemToUpdate.name,
@@ -277,26 +226,19 @@ describe('inventory item validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [
-                { prop: 'sizes', id: itemToUpdate.sizes[0].id },
-            ],
+            [{ prop: 'sizes', id: itemToUpdate.sizes[0].id }],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['measureAmount']),
         );
     });
 
     it('fail validate update: nestedUpdateInventoryItemSizeDto errors: cost with value 0', async () => {
-        const itemToUpdate = await findInventoryItem(FOOD_A);
-        if (!itemToUpdate.category) {
-            throw new Error('item category not found');
-        }
-        if (!itemToUpdate.vendor) {
-            throw new Error('item vendor not found');
-        }
+        const itemToUpdate = await loadItem(items[0].id);
+        if (!itemToUpdate.category || !itemToUpdate.vendor) throw new Error('item relations missing');
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: itemToUpdate.name,
-            categoryId: itemToUpdate.category?.id,
-            vendorId: itemToUpdate.vendor?.id,
+            categoryId: itemToUpdate.category.id,
+            vendorId: itemToUpdate.vendor.id,
             sizes: [
                 plainToInstance(NestedUpdateInventoryItemSizeDto, {
                     id: itemToUpdate.sizes[0].id,
@@ -315,24 +257,17 @@ describe('inventory item validator', () => {
     });
 
     it('fail validate update: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-        const itemToUpdate = await findInventoryItem(FOOD_A);
-        if (!itemToUpdate.category) {
-            throw new Error('item category not found');
-        }
-        if (!itemToUpdate.vendor) {
-            throw new Error('item vendor not found');
-        }
-
-        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
+        const itemToUpdate = await loadItem(items[0].id);
+        if (!itemToUpdate.category || !itemToUpdate.vendor) throw new Error('item relations missing');
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: itemToUpdate.name,
-            categoryId: itemToUpdate.category?.id,
-            vendorId: itemToUpdate.vendor?.id,
+            categoryId: itemToUpdate.category.id,
+            vendorId: itemToUpdate.vendor.id,
             sizes: [
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
-                    packageId: pkg.id,
+                    packageId: packages[0].id,
                     unit: 'lb',
                     measureAmount: 0,
                     cost: 10.99,
@@ -350,23 +285,17 @@ describe('inventory item validator', () => {
     });
 
     it('fail validate update: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
-        const itemToUpdate = await findInventoryItem(FOOD_A);
-        if (!itemToUpdate.category) {
-            throw new Error('item category not found');
-        }
-        if (!itemToUpdate.vendor) {
-            throw new Error('item vendor not found');
-        }
-        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
+        const itemToUpdate = await loadItem(items[0].id);
+        if (!itemToUpdate.category || !itemToUpdate.vendor) throw new Error('item relations missing');
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: itemToUpdate.name,
-            categoryId: itemToUpdate.category?.id,
-            vendorId: itemToUpdate.vendor?.id,
+            categoryId: itemToUpdate.category.id,
+            vendorId: itemToUpdate.vendor.id,
             sizes: [
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
-                    packageId: pkg.id,
+                    packageId: packages[0].id,
                     unit: 'lb',
                     measureAmount: 5,
                     cost: -1,

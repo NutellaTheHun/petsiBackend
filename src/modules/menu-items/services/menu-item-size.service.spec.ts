@@ -7,7 +7,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
-import { SIZE_ONE } from '../utils/constants';
+import { menuItemSizeToUpdateDto } from '../utils/entity-transformers/menu-item-size.dto.transfomer';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemSizeService } from './menu-item-size.service';
@@ -27,104 +27,107 @@ class TestableMenuItemSizeService extends MenuItemSizeService {
         return this.updateEntity(dto, manager, entity);
     }
 }
+
+const P = `t${Date.now()}`;
+
 describe('menu item size service', () => {
     let testingUtil: MenuItemTestingUtil;
-    let sizeService: TestableMenuItemSizeService;
-    let dbTestContext: DatabaseTestContext;
+    let service: TestableMenuItemSizeService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let sizeRepo: Repository<MenuItemSize>;
+
+    let sizes: MenuItemSize[];
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
             menuItemSizeServiceClass: TestableMenuItemSizeService,
         });
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
-        dataSource = module.get(DataSource);
-        sizeService = module.get(
+        service = module.get<MenuItemSizeService>(
             MenuItemSizeService,
         ) as TestableMenuItemSizeService;
+        dataSource = module.get(DataSource);
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ sizes } = await testingUtil.seedSizes(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should be defined', () => {
-        expect(sizeService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create size', async () => {
-        const dto = plainToInstance(CreateMenuItemSizeDto, { name: 'x-large' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await sizeService.createEntityForTest(dto, manager);
+    describe('size lifecycle', () => {
+        let created: MenuItemSize;
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.name).toEqual(dto.name);
+        it('should create size', async () => {
+            const dto = plainToInstance(CreateMenuItemSizeDto, { name: `${P}-create-test` });
+            await dataSource.transaction(async (manager) => {
+                created = await service.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.name).toBe(dto.name);
+            testCtx.addCleanupFunction(async () => { await sizeRepo.delete(created.id); });
+        });
+
+        it('should update size', async () => {
+            const dto = plainToInstance(UpdateMenuItemSizeDto, { name: `${P}-create-updated` });
+            await dataSource.transaction(async (manager) => {
+                await service.updateEntityForTest(dto, created, manager);
+            });
+            const reloaded = await sizeRepo.findOneOrFail({ where: { id: created.id } });
+            expect(reloaded.name).toBe(`${P}-create-updated`);
+        });
+
+        it('should remove size', async () => {
+            await service.remove(created.id);
+            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update size', async () => {
-        const size = await sizeRepo.findOne({ where: { name: SIZE_ONE } });
-        if (!size) throw new Error('size not found');
+    it('should find seeded size in findAll results', async () => {
+        const result = await service.findAll();
+        const found = result.items.find((s) => s.id === sizes[0].id);
+        expect(found).toBeDefined();
+    });
 
-        const dto = plainToInstance(UpdateMenuItemSizeDto, { name: 'Size One Updated' });
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        await dataSource.transaction(async (manager) => {
-            await sizeService.updateEntityForTest(dto, size, manager);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(MenuItemSizeService.prototype as any, 'updateEntity');
         });
 
-        const result = await sizeRepo.findOne({ where: { id: size.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
-    });
-
-    // test findAll()
-    it('should find all sizes', async () => {
-        const repoResult = await sizeRepo.find();
-        const serviceResult = await sizeService.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findall() with sort by name
-    it('should find all sizes with sort by name', async () => {
-        const repoResult = await sizeRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await sizeService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
+        afterEach(() => {
+            spy.mockRestore();
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-        }
-    });
 
-    // test findOne()
-    it('should find one size', async () => {
-        const size = await sizeRepo.find({ take: 1 });
-        if (!size.length) throw new Error('size not found');
+        it('skips updateEntity when name unchanged', async () => {
+            const size = sizes[0];
+            const dto = menuItemSizeToUpdateDto(size);
+            await service.update(size.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
 
-        const serviceResult = await sizeService.findOne(size[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(size[0].id);
-    });
-
-    // test remove()
-    it('should remove size', async () => {
-        const size = await sizeRepo.find({ take: 1 });
-        if (!size.length) throw new Error('size not found');
-        const id = size[0].id;
-
-        const deleteResult = await sizeService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(sizeService.findOne(id)).rejects.toThrow(NotFoundException);
+        it('calls updateEntity when name changes', async () => {
+            const size = sizes[1];
+            const dto = menuItemSizeToUpdateDto(size, { name: `${P}-size-renamed` });
+            await service.update(size.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await sizeRepo.findOneOrFail({ where: { id: size.id } });
+            expect(row.name).toBe(`${P}-size-renamed`);
+        });
     });
 });

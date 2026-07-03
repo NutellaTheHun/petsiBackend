@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import {
     DynamicPropertyConfig,
@@ -21,8 +21,6 @@ import { MenuItemContainerItem } from '../entities/menu-item-container-item.enti
 import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { item_a } from '../utils/constants';
-import { menuItemToUpdateDto } from '../utils/entity-transformers/menu-item.dto.transfomer';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
@@ -44,10 +42,12 @@ class TestableMenuItemService extends MenuItemService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('menu item service', () => {
     let testingUtil: MenuItemTestingUtil;
-    let itemService: TestableMenuItemService;
-    let dbTestContext: DatabaseTestContext;
+    let service: TestableMenuItemService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
@@ -56,349 +56,266 @@ describe('menu item service', () => {
     let valueRepo: Repository<MenuItemDynamicPropertyValue>;
     let configRepo: Repository<DynamicPropertyConfig>;
 
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let containerLines: MenuItemContainerItem[];
+
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
             menuItemServiceClass: TestableMenuItemService,
         });
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+        service = module.get<MenuItemService>(MenuItemService) as TestableMenuItemService;
         dataSource = module.get(DataSource);
-        itemService = module.get(MenuItemService) as TestableMenuItemService;
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         valueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
+
+        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
+            await testingUtil.seedContainerLines(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await containerItemRepo.delete(containerLines.map((l) => l.id));
+        await itemRepo.delete([
+            ...fixedContainerItems.map((i) => i.id),
+            ...varContainerItems.map((i) => i.id),
+            ...singleItems.map((i) => i.id),
+        ]);
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should be defined', () => {
-        expect(itemService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity() of type single
-    it('should create item of type single', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const sizeIds = (await sizeRepo.find({ take: 2 })).map((s) => s.id);
-        if (!cat || sizeIds.length < 2) throw new Error('fixtures not found');
-        const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'Single Item',
-            type: MENU_ITEM_TYPES.SINGLE,
-            categoryId: cat.id,
-            sizeIds,
-        });
-
-        await dataSource.transaction(async (manager) => {
-            const result = await itemService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).toBeDefined();
-            expect(result.name).toEqual(dto.name);
-            expect(result.type).toEqual(MENU_ITEM_TYPES.SINGLE);
-        });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
-    // test createEntity() of type container (With NestedCreateMenuItemContainerItemDto, variableMaxAmount = null)
-    it('should create item of type container (With NestedCreateMenuItemContainerItemDto, variableMaxAmount = null)', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const sizeIds = (await sizeRepo.find({ take: 2 })).map((s) => s.id);
-        if (!cat || sizeIds.length < 2) throw new Error('fixtures not found');
-        const containedItem = await itemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!containedItem) throw new Error('contained item not found');
-        const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'Container Item',
-            type: MENU_ITEM_TYPES.CONTAINER,
-            categoryId: cat.id,
-            sizeIds,
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[0].id,
-                    quantity: 4,
-                    parentItemSizeId: sizeIds[0],
-                }),
-            ],
+    describe('single item lifecycle', () => {
+        let created: MenuItem;
+
+        it('should create item of type single', async () => {
+            const dto = plainToInstance(CreateMenuItemDto, {
+                name: `${P}-single-item`,
+                type: MENU_ITEM_TYPES.SINGLE,
+                categoryId: categories[0].id,
+                sizeIds: [sizes[0].id, sizes[1].id],
+            });
+            await dataSource.transaction(async (manager) => {
+                created = await service.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.name).toBe(dto.name);
+            expect(created.type).toBe(MENU_ITEM_TYPES.SINGLE);
         });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await itemService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).toBeDefined();
-            expect(result.name).toEqual(dto.name);
-            expect(result.type).toEqual(MENU_ITEM_TYPES.CONTAINER);
-            expect(result.variableMaxAmount == null).toBe(true);
-            expect(result.containerMenuItems).not.toBeNull();
-            expect(result.containerMenuItems?.length).toBe(1);
-            expect(result.containerMenuItems?.[0].id).toBeDefined();
-            expect(result.containerMenuItems?.[0].quantity).toBe(4);
-            expect(result.containerMenuItems?.[0].containedMenuItem.id).toBe(
-                containedItem.id,
-            );
-            expect(result.containerMenuItems?.[0].containedItemSize.id).toBe(
-                containedItem.sizes[0].id,
-            );
+        it('should remove single item', async () => {
+            await service.remove(created.id);
+            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity() of type container with NestedUpdate (and NestedCreate if context had parentItemSizeId)
-    it('should update item of type container (With NestedUpdateMenuItemContainerItemDto and NestedCreateMenuItemContainerItemDto)', async () => {
-        const parent = await itemRepo.findOne({
-            where: { containerMenuItems: MoreThan(0) },
-            relations: ['containerMenuItems', 'sizes', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize', 'category'],
-        });
-        if (!parent?.containerMenuItems?.length || !parent.sizes?.length)
-            throw new Error('container item_f or its containerMenuItems not found');
-        const containedItem = await itemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!containedItem) throw new Error('contained item not found');
-        const dto = menuItemToUpdateDto(parent, {
-            containerMenuItems: [
-                plainToInstance(NestedCreateMenuItemContainerItemDto, {
-                    createId: 'c2',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: containedItem.sizes[1].id,
-                    quantity: 5,
-                    parentItemSizeId: parent.sizes[0].id,
-                })]
+    describe('container item lifecycle', () => {
+        let created: MenuItem;
+
+        afterAll(async () => {
+            if (created?.id) await itemRepo.delete(created.id);
         });
 
-        const containedToUpdate = dto.containerMenuItems?.pop() as NestedUpdateMenuItemContainerItemDto;
-        if (!containedToUpdate) throw new Error('contained to update not found');
-        const updateDto = plainToInstance(NestedUpdateMenuItemContainerItemDto, {
-            id: containedToUpdate.id,
-            containedMenuItemId: containedToUpdate.containedMenuItemId,
-            containedItemSizeId: containedToUpdate.containedItemSizeId,
-            quantity: 99
+        it('should create item of type container', async () => {
+            const containedItem = singleItems[0];
+            const dto = plainToInstance(CreateMenuItemDto, {
+                name: `${P}-container-item`,
+                type: MENU_ITEM_TYPES.CONTAINER,
+                categoryId: categories[0].id,
+                sizeIds: [sizes[2].id, sizes[3].id],
+                containerMenuItems: [
+                    plainToInstance(NestedCreateMenuItemContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: containedItem.id,
+                        containedItemSizeId: sizes[0].id,
+                        quantity: 4,
+                        parentItemSizeId: sizes[2].id,
+                    }),
+                ],
+            });
+            await dataSource.transaction(async (manager) => {
+                created = await service.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.name).toBe(dto.name);
+            expect(created.type).toBe(MENU_ITEM_TYPES.CONTAINER);
+            expect(created.variableMaxAmount == null).toBe(true);
+            expect(created.containerMenuItems).not.toBeNull();
+            expect(created.containerMenuItems?.length).toBe(1);
+            expect(created.containerMenuItems?.[0].containedMenuItem.id).toBe(containedItem.id);
         });
-        dto.containerMenuItems?.push(updateDto);
 
-        await dataSource.transaction(async (manager) => {
-            await itemService.updateEntityForTest(dto, parent, manager);
-        });
+        it('should update container item (add nested container line)', async () => {
+            const parent = await itemRepo.findOneOrFail({
+                where: { id: created.id },
+                relations: ['containerMenuItems', 'sizes', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize', 'category'],
+            });
+            if (!parent.containerMenuItems?.length || !parent.sizes?.length)
+                throw new Error('container item or its containerMenuItems not found');
 
-        const updated = await containerItemRepo.findOne({
-            where: { id: containedToUpdate.id },
-        });
-        if (!updated) throw new Error('result not found');
-        expect(updated.quantity).toEqual(99);
+            const existingLine = parent.containerMenuItems[0];
+            const newContained = singleItems[1];
+            const dto = plainToInstance(UpdateMenuItemDto, {
+                name: parent.name,
+                type: parent.type,
+                categoryId: parent.category?.id ?? null,
+                variableMaxAmount: parent.variableMaxAmount ?? null,
+                sizeIds: parent.sizes.map((s) => s.id),
+                containerMenuItems: [
+                    plainToInstance(NestedUpdateMenuItemContainerItemDto, {
+                        id: existingLine.id,
+                        containedMenuItemId: existingLine.containedMenuItem.id,
+                        containedItemSizeId: existingLine.containedItemSize.id,
+                        quantity: existingLine.quantity,
+                    }),
+                    plainToInstance(NestedCreateMenuItemContainerItemDto, {
+                        createId: 'new-line',
+                        containedMenuItemId: newContained.id,
+                        containedItemSizeId: sizes[0].id,
+                        quantity: 3,
+                        parentItemSizeId: parent.sizes[0].id,
+                    }),
+                ],
+            });
 
-        const updatedItem = await itemRepo.findOne({
-            where: { id: parent.id },
-            relations: ['containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'],
+            await dataSource.transaction(async (manager) => {
+                await service.updateEntityForTest(dto, parent, manager);
+            });
+
+            const updated = await itemRepo.findOneOrFail({
+                where: { id: created.id },
+                relations: ['containerMenuItems'],
+            });
+            expect(updated.containerMenuItems!.length).toBe(2);
         });
-        if (!updatedItem) throw new Error('updated item not found');
-        expect(updatedItem.containerMenuItems).not.toBeNull();
-        // expect to find created item in containerMenuItems by seraching for containedMenuItem id, containedItemSize id, and quantity = 5
-        expect(
-            updatedItem.containerMenuItems?.find(
-                (c) =>
-                    c.containedMenuItem.id === containedItem.id &&
-                    c.containedItemSize.id === containedItem.sizes[0].id &&
-                    c.quantity === 5,
-            ),
-        ).not.toBeNull();
     });
 
-    // test findAll()
-    it('should find all items', async () => {
-        const repoResult = await itemRepo.find();
-        const serviceResult = await itemService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+    it('should find seeded item in findAll results', async () => {
+        const result = await service.findAll({ limit: 100 });
+        const found = result.items.find((i) => i.id === singleItems[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll() with search by name
     it('should find all items with search by name', async () => {
-        const serviceResult = await itemService.findAll({
-            search: 'item',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(
-            serviceResult?.items.every((i) => i.name.toLowerCase().includes('item')),
-        ).toBe(true);
+        const result = await service.findAll({ search: P, limit: 100 });
+        expect(result.items.length).toBeGreaterThan(0);
+        expect(result.items.every((i) => i.name.includes(P))).toBe(true);
     });
 
-    // test findAll() with filter by category
     it('should find all items with filter by category', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        if (!cat) throw new Error('category not found');
-        const repoResult = await itemRepo.find({
-            where: { category: { id: cat.id } },
-        });
-        const serviceResult = await itemService.findAll({
+        const cat = categories[0];
+        const result = await service.findAll({
             filters: [`category=${cat.id}`],
             limit: 100,
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        expect(result.items.length).toBeGreaterThan(0);
+        // singleItems[0] is seeded with categories[0]
+        const resultIds = result.items.map((i) => i.id);
+        expect(resultIds).toContain(singleItems[0].id);
     });
 
-    // test findAll() with sort by name
-    it('should find all items with sort by name', async () => {
-        const repoResult = await itemRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await itemService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
+    it('should find all items with filter by type', async () => {
+        const result = await service.findAll({
+            filters: [`type=${MENU_ITEM_TYPES.SINGLE}`],
             limit: 100,
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0)
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
+        const seededSingle = result.items.find((i) => i.id === singleItems[0].id);
+        expect(seededSingle).toBeDefined();
+        expect(result.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE)).toBe(true);
     });
 
-    // test findAll() with sort by category
-    it('should find all items with sort by category', async () => {
-        const repoResult = await itemRepo.find({
-            order: { category: { name: 'DESC' } },
-        });
-        if (!repoResult.length) throw new Error('items not found');
-
-        const serviceResult = await itemService.findAll({
-            sortBy: 'category',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        if (!serviceResult) throw new Error('service result not found');
-
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        expect(serviceResult.items.length).toEqual(repoResult.length);
-        // expect first item of serviceResult and category result to be the same
-        expect(serviceResult?.items[0]?.category?.id).toEqual(
-            repoResult[0]?.category?.id,
-        );
-        // expect last item of serviceResult and category result to be the same
-        expect(
-            serviceResult?.items[serviceResult.items.length - 1]?.category?.id,
-        ).toEqual(repoResult[repoResult.length - 1]?.category?.id);
-    });
-
-    // test findOne()
-    it('should find one item', async () => {
-        const [item] = await itemRepo.find({ take: 1 });
-        if (!item) throw new Error('item not found');
-
-        const serviceResult = await itemService.findOne(item.id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(item.id);
-    });
-
-    // test findOne() with relations
     it('should find one item with relations', async () => {
-        const item = await itemRepo.findOneOrFail({ where: { containerMenuItems: MoreThan(0) }, relations: ['category', 'sizes', 'containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'] });
-        if (!item.containerMenuItems) { throw new Error('conatiner items not found') }
-
-        const serviceResult = await itemService.findOne(item.id, [
+        const container = fixedContainerItems[0];
+        const result = await service.findOne(container.id, [
             'category',
             'sizes',
             'containerMenuItems',
             'containerMenuItems.containedMenuItem',
             'containerMenuItems.containedItemSize',
         ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(item.id);
-        expect(serviceResult?.category).toBeDefined();
-        expect(serviceResult?.sizes).toBeDefined();
-        expect(Array.isArray(serviceResult?.containerMenuItems)).toBe(true);
-        expect(serviceResult?.containerMenuItems?.[0].containedMenuItem).toBeDefined();
-        expect(serviceResult?.containerMenuItems?.[0].containedItemSize).toBeDefined();
+        expect(result.id).toBe(container.id);
+        expect(result.category).toBeDefined();
+        expect(result.sizes).toBeDefined();
+        expect(Array.isArray(result.containerMenuItems)).toBe(true);
+        expect(result.containerMenuItems?.[0].containedMenuItem).toBeDefined();
     });
 
-    // test remove()
-    it('should remove item', async () => {
-        const item = await itemRepo.findOne({ where: { name: 'Single Item' } });
-        if (!item) throw new Error('item not found (create "Single Item" first)');
-        const id = item.id;
-
-        const deleteResult = await itemService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(itemService.findOne(id)).rejects.toThrow(NotFoundException);
-    });
-
-    // test findAll() with filter by type
-    it('should find all items with filter by type', async () => {
-        const serviceResult = await itemService.findAll({
-            filters: [`type=${MENU_ITEM_TYPES.SINGLE}`],
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        expect(serviceResult?.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE)).toBe(true);
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
     });
 
     describe('dynamic property value write path', () => {
         let testFilepathConfig: DynamicPropertyConfig;
         let testEntityRefConfig: DynamicPropertyConfig;
+        let dpTestItemId: number;
+        let dpOmitTestItemId: number;
 
         beforeAll(async () => {
             testFilepathConfig = await configRepo.save(
                 configRepo.create({
                     holderEntityType: HolderEntityType.MenuItem,
-                    propertyName: 'service-spec-filepath',
+                    propertyName: `${P}-service-spec-filepath`,
                     valueType: ValueType.Filepath,
                 }),
             );
             testEntityRefConfig = await configRepo.save(
                 configRepo.create({
                     holderEntityType: HolderEntityType.MenuItem,
-                    propertyName: 'service-spec-entity-ref',
+                    propertyName: `${P}-service-spec-entity-ref`,
                     valueType: ValueType.EntityReference,
                     valueEntityType: 'menuItem',
                 }),
             );
+        });
 
-            dbTestContext.addCleanupFunction(async () => {
-                await configRepo.delete([testFilepathConfig.id, testEntityRefConfig.id]);
-            });
+        afterAll(async () => {
+            if (dpTestItemId) await itemRepo.delete(dpTestItemId);
+            if (dpOmitTestItemId) await itemRepo.delete(dpOmitTestItemId);
+            await configRepo.delete([testFilepathConfig.id, testEntityRefConfig.id]);
         });
 
         it('should persist value rows when creating MenuItem with dynamicProperties', async () => {
-            const [cat] = await categoryRepo.find({ take: 1 });
-            const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
-
             const dto = plainToInstance(CreateMenuItemDto, {
-                name: 'Dynamic Prop Create Test',
+                name: `${P}-dp-create-test`,
                 type: MENU_ITEM_TYPES.SINGLE,
-                categoryId: cat?.id ?? null,
-                sizeIds,
+                categoryId: categories[0].id,
+                sizeIds: [sizes[0].id],
                 dynamicProperties: [{ configId: testFilepathConfig.id, value: '/images/test.jpg' }],
             });
 
             await dataSource.transaction(async (manager) => {
-                await itemService.createEntityForTest(dto, manager);
+                const result = await service.createEntityForTest(dto, manager);
+                dpTestItemId = result.id;
             });
 
-            const item = await itemRepo.findOneOrFail({ where: { name: 'Dynamic Prop Create Test' } });
             const row = await valueRepo.findOne({
-                where: {
-                    menuItem: { id: item.id },
-                    config: { id: testFilepathConfig.id },
-                },
+                where: { menuItem: { id: dpTestItemId }, config: { id: testFilepathConfig.id } },
             });
             expect(row).not.toBeNull();
             expect(row!.valueText).toBe('/images/test.jpg');
         });
 
         it('should upsert value row when updating with a new value', async () => {
-            const item = await itemRepo.findOneOrFail({ where: { name: 'Dynamic Prop Create Test' } });
             const full = await itemRepo.findOneOrFail({
-                where: { id: item.id },
+                where: { id: dpTestItemId },
                 relations: ['category', 'sizes', 'containerMenuItems'],
             });
 
-            // Omit `type` to avoid triggering syncOrderMenuItems for SINGLE-type items
             const dto = plainToInstance(UpdateMenuItemDto, {
                 name: full.name,
                 categoryId: full.category?.id ?? null,
@@ -406,27 +323,22 @@ describe('menu item service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                await itemService.updateEntityForTest(dto, full, manager);
+                await service.updateEntityForTest(dto, full, manager);
             });
 
             const row = await valueRepo.findOne({
-                where: {
-                    menuItem: { id: item.id },
-                    config: { id: testFilepathConfig.id },
-                },
+                where: { menuItem: { id: dpTestItemId }, config: { id: testFilepathConfig.id } },
             });
             expect(row).not.toBeNull();
             expect(row!.valueText).toBe('/images/updated.jpg');
         });
 
         it('should delete value row when updating with value: null', async () => {
-            const item = await itemRepo.findOneOrFail({ where: { name: 'Dynamic Prop Create Test' } });
             const full = await itemRepo.findOneOrFail({
-                where: { id: item.id },
+                where: { id: dpTestItemId },
                 relations: ['category', 'sizes', 'containerMenuItems'],
             });
 
-            // Omit `type` to avoid triggering syncOrderMenuItems for SINGLE-type items
             const dto = plainToInstance(UpdateMenuItemDto, {
                 name: full.name,
                 categoryId: full.category?.id ?? null,
@@ -434,73 +346,59 @@ describe('menu item service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                await itemService.updateEntityForTest(dto, full, manager);
+                await service.updateEntityForTest(dto, full, manager);
             });
 
             const row = await valueRepo.findOne({
-                where: {
-                    menuItem: { id: item.id },
-                    config: { id: testFilepathConfig.id },
-                },
+                where: { menuItem: { id: dpTestItemId }, config: { id: testFilepathConfig.id } },
             });
             expect(row).toBeNull();
         });
 
         it('should leave existing value row unchanged when config is omitted from update', async () => {
-            const [cat] = await categoryRepo.find({ take: 1 });
-            const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
-
-            const createDto = plainToInstance(CreateMenuItemDto, {
-                name: 'Dynamic Prop Omit Test',
+            const dto = plainToInstance(CreateMenuItemDto, {
+                name: `${P}-dp-omit-test`,
                 type: MENU_ITEM_TYPES.SINGLE,
-                categoryId: cat?.id ?? null,
-                sizeIds,
+                categoryId: categories[0].id,
+                sizeIds: [sizes[0].id],
                 dynamicProperties: [{ configId: testFilepathConfig.id, value: '/keep/this.jpg' }],
             });
 
-            let createdId!: number;
             await dataSource.transaction(async (manager) => {
-                const result = await itemService.createEntityForTest(createDto, manager);
-                createdId = result.id;
+                const result = await service.createEntityForTest(dto, manager);
+                dpOmitTestItemId = result.id;
             });
 
             const full = await itemRepo.findOneOrFail({
-                where: { id: createdId },
+                where: { id: dpOmitTestItemId },
                 relations: ['category', 'sizes', 'containerMenuItems'],
             });
 
-            // Omit `type` to avoid triggering syncOrderMenuItems; omit dynamicProperties to verify no-op
             const updateDto = plainToInstance(UpdateMenuItemDto, {
                 name: full.name,
                 categoryId: full.category?.id ?? null,
             });
 
             await dataSource.transaction(async (manager) => {
-                await itemService.updateEntityForTest(updateDto, full, manager);
+                await service.updateEntityForTest(updateDto, full, manager);
             });
 
             const row = await valueRepo.findOne({
-                where: {
-                    menuItem: { id: createdId },
-                    config: { id: testFilepathConfig.id },
-                },
+                where: { menuItem: { id: dpOmitTestItemId }, config: { id: testFilepathConfig.id } },
             });
             expect(row).not.toBeNull();
             expect(row!.valueText).toBe('/keep/this.jpg');
         });
 
         it('should SET NULL on valueEntity when the referenced MenuItem is deleted', async () => {
-            const [cat] = await categoryRepo.find({ take: 1 });
-            const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
-
             let refItemId!: number;
             await dataSource.transaction(async (manager) => {
-                const ref = await itemService.createEntityForTest(
+                const ref = await service.createEntityForTest(
                     plainToInstance(CreateMenuItemDto, {
-                        name: 'Referenced Item For SET NULL',
+                        name: `${P}-ref-item-set-null`,
                         type: MENU_ITEM_TYPES.SINGLE,
-                        categoryId: cat?.id ?? null,
-                        sizeIds,
+                        categoryId: categories[0].id,
+                        sizeIds: [sizes[0].id],
                     }),
                     manager,
                 );
@@ -509,12 +407,12 @@ describe('menu item service', () => {
 
             let holderItemId!: number;
             await dataSource.transaction(async (manager) => {
-                const holder = await itemService.createEntityForTest(
+                const holder = await service.createEntityForTest(
                     plainToInstance(CreateMenuItemDto, {
-                        name: 'Holder Item For SET NULL',
+                        name: `${P}-holder-item-set-null`,
                         type: MENU_ITEM_TYPES.SINGLE,
-                        categoryId: cat?.id ?? null,
-                        sizeIds,
+                        categoryId: categories[0].id,
+                        sizeIds: [sizes[0].id],
                         dynamicProperties: [
                             { configId: testEntityRefConfig.id, value: String(refItemId) },
                         ],
@@ -523,24 +421,19 @@ describe('menu item service', () => {
                 );
                 holderItemId = holder.id;
             });
+            testCtx.addCleanupFunction(async () => { await itemRepo.delete(holderItemId); });
 
             let row = await valueRepo.findOne({
-                where: {
-                    menuItem: { id: holderItemId },
-                    config: { id: testEntityRefConfig.id },
-                },
+                where: { menuItem: { id: holderItemId }, config: { id: testEntityRefConfig.id } },
                 relations: ['valueEntity'],
             });
             expect(row).not.toBeNull();
             expect(row!.valueEntity?.id).toBe(refItemId);
 
-            await itemService.remove(refItemId);
+            await service.remove(refItemId);
 
             row = await valueRepo.findOne({
-                where: {
-                    menuItem: { id: holderItemId },
-                    config: { id: testEntityRefConfig.id },
-                },
+                where: { menuItem: { id: holderItemId }, config: { id: testEntityRefConfig.id } },
                 relations: ['valueEntity'],
             });
             expect(row).not.toBeNull();
@@ -551,18 +444,23 @@ describe('menu item service', () => {
 
 describe('menu item service – revision history snapshots', () => {
     let itemService: MenuItemService;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
     let configRepo: Repository<DynamicPropertyConfig>;
     let revisionRepo: Repository<RevisionHistory>;
     let itemRepo: Repository<MenuItem>;
 
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+
+    const PR = `${P}r`;
+
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
             mockRevisionHistory: false,
         });
-        dbTestContext = new DatabaseTestContext();
+        const testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         itemService = module.get(MenuItemService);
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
@@ -570,109 +468,108 @@ describe('menu item service – revision history snapshots', () => {
         revisionRepo = module.get(getRepositoryToken(RevisionHistory));
         itemRepo = module.get(getRepositoryToken(MenuItem));
 
-        const testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+        ({ categories, sizes } = await testingUtil.seedItems(PR));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should store a v2 snapshot with dynamicProperties on create', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
-
-        const config = await configRepo.save(
-            configRepo.create({
-                holderEntityType: HolderEntityType.MenuItem,
-                propertyName: 'rev-spec-filepath',
-                valueType: ValueType.Filepath,
-            }),
-        );
-        dbTestContext.addCleanupFunction(async () => {
-            await configRepo.delete(config.id);
-        });
-
-        const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'Rev History Create Test',
-            type: MENU_ITEM_TYPES.SINGLE,
-            categoryId: cat?.id ?? null,
-            sizeIds,
-            dynamicProperties: [{ configId: config.id, value: '/images/snap.jpg' }],
-        });
-
-        const created = await itemService.create(dto);
-        dbTestContext.addCleanupFunction(async () => {
-            await itemRepo.delete(created.id);
-        });
-
-        const revision = await revisionRepo.findOne({
-            where: {
-                entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
-                entityId: created.id,
-                revisionNumber: 1,
-            },
-        });
-
-        expect(revision).not.toBeNull();
-        const snap = revision!.payload as unknown as MenuItemSnapshotV2;
-        expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
-        expect(Array.isArray(snap.dynamicProperties)).toBe(true);
-        expect(snap.dynamicProperties).toHaveLength(1);
-        expect(snap.dynamicProperties[0].configId).toBe(config.id);
-        expect(snap.dynamicProperties[0].valueText).toBe('/images/snap.jpg');
-        expect(snap.dynamicProperties[0].valueEntityId).toBeNull();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    it('should store a v2 snapshot with updated dynamicProperties on update', async () => {
-        const item = await itemRepo.findOneOrFail({
-            where: { name: 'Rev History Create Test' },
-            relations: ['category', 'sizes'],
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
+    describe('v2 snapshot with dynamicProperties', () => {
+        let testConfig: DynamicPropertyConfig;
+        let createdItem: MenuItem;
+
+        beforeAll(async () => {
+            testConfig = await configRepo.save(
+                configRepo.create({
+                    holderEntityType: HolderEntityType.MenuItem,
+                    propertyName: `${PR}-rev-spec-filepath`,
+                    valueType: ValueType.Filepath,
+                }),
+            );
         });
 
-        const config = await configRepo.findOneOrFail({
-            where: { propertyName: 'rev-spec-filepath' },
+        afterAll(async () => {
+            if (createdItem) await itemRepo.delete(createdItem.id);
+            await configRepo.delete(testConfig.id);
         });
 
-        const dto = plainToInstance(UpdateMenuItemDto, {
-            name: item.name,
-            dynamicProperties: [{ configId: config.id, value: '/images/updated-snap.jpg' }],
+        it('should store a v2 snapshot with dynamicProperties on create', async () => {
+            const dto = plainToInstance(CreateMenuItemDto, {
+                name: `${PR}-rev-create-test`,
+                type: MENU_ITEM_TYPES.SINGLE,
+                categoryId: categories[0].id,
+                sizeIds: [sizes[0].id],
+                dynamicProperties: [{ configId: testConfig.id, value: '/images/snap.jpg' }],
+            });
+
+            createdItem = await itemService.create(dto);
+
+            const revision = await revisionRepo.findOne({
+                where: {
+                    entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
+                    entityId: createdItem.id,
+                    revisionNumber: 1,
+                },
+            });
+
+            expect(revision).not.toBeNull();
+            const snap = revision!.payload as unknown as MenuItemSnapshotV2;
+            expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
+            expect(Array.isArray(snap.dynamicProperties)).toBe(true);
+            expect(snap.dynamicProperties).toHaveLength(1);
+            expect(snap.dynamicProperties[0].configId).toBe(testConfig.id);
+            expect(snap.dynamicProperties[0].valueText).toBe('/images/snap.jpg');
+            expect(snap.dynamicProperties[0].valueEntityId).toBeNull();
         });
 
-        await itemService.update(item.id, dto);
+        it('should store a v2 snapshot with updated dynamicProperties on update', async () => {
+            const item = await itemRepo.findOneOrFail({
+                where: { id: createdItem.id },
+                relations: ['category', 'sizes'],
+            });
 
-        const revision = await revisionRepo.findOne({
-            where: {
-                entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
-                entityId: item.id,
-                revisionNumber: 2,
-            },
+            const dto = plainToInstance(UpdateMenuItemDto, {
+                name: item.name,
+                dynamicProperties: [{ configId: testConfig.id, value: '/images/updated-snap.jpg' }],
+            });
+
+            await itemService.update(item.id, dto);
+
+            const revision = await revisionRepo.findOne({
+                where: {
+                    entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
+                    entityId: item.id,
+                    revisionNumber: 2,
+                },
+            });
+
+            expect(revision).not.toBeNull();
+            const snap = revision!.payload as unknown as MenuItemSnapshotV2;
+            expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
+            expect(snap.dynamicProperties[0].valueText).toBe('/images/updated-snap.jpg');
         });
-
-        expect(revision).not.toBeNull();
-        const snap = revision!.payload as unknown as MenuItemSnapshotV2;
-        expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
-        expect(Array.isArray(snap.dynamicProperties)).toBe(true);
-        expect(snap.dynamicProperties).toHaveLength(1);
-        expect(snap.dynamicProperties[0].configId).toBe(config.id);
-        expect(snap.dynamicProperties[0].valueText).toBe('/images/updated-snap.jpg');
     });
 
     it('should store dynamicProperties: [] for an item with no dynamic property values', async () => {
-        const [cat] = await categoryRepo.find({ take: 1 });
-        const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
-
         const dto = plainToInstance(CreateMenuItemDto, {
-            name: 'Rev History No Props Test',
+            name: `${PR}-rev-no-props-test`,
             type: MENU_ITEM_TYPES.SINGLE,
-            categoryId: cat?.id ?? null,
-            sizeIds,
+            categoryId: categories[0].id,
+            sizeIds: [sizes[0].id],
         });
 
         const created = await itemService.create(dto);
-        dbTestContext.addCleanupFunction(async () => {
-            await itemRepo.delete(created.id);
-        });
+        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
 
         const revision = await revisionRepo.findOne({
             where: {

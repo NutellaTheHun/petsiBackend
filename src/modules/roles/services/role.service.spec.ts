@@ -7,7 +7,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
-import { ROLE_ADMIN } from '../utils/constants';
+import { roleToUpdateDto } from '../utils/entity-transformers/role.dto.transformer';
 import { RoleTestUtil } from '../utils/role-test.util';
 import { getRoleTestingModule } from '../utils/role-testing-module';
 import { RoleService } from './role.service';
@@ -29,113 +29,110 @@ class TestableRoleService extends RoleService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Role Service', () => {
-    let roleService: TestableRoleService;
     let roleTestingUtil: RoleTestUtil;
-    let dbTestContext: DatabaseTestContext;
+    let roleService: TestableRoleService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let roleRepo: Repository<Role>;
+
+    let roles: Role[];
 
     beforeAll(async () => {
         const module: TestingModule = await getRoleTestingModule({
             roleServiceClass: TestableRoleService,
         });
+        roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);
         roleService = module.get(RoleService) as TestableRoleService;
         dataSource = module.get(DataSource);
         roleRepo = module.get(getRepositoryToken(Role));
-        dbTestContext = new DatabaseTestContext();
-        roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);
-        await roleTestingUtil.initRoleTestingDatabase(dbTestContext);
+
+        ({ roles } = await roleTestingUtil.seedRoles(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await roleRepo.delete(roles.map((r) => r.id));
     });
 
-    it('should be defined', () => {
-        expect(roleService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create role', async () => {
-        const dto = plainToInstance(CreateRoleDto, { name: 'viewer' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await roleService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).toBeDefined();
+    describe('role lifecycle', () => {
+        let role: Role;
+
+        it('should create role', async () => {
+            const dto = plainToInstance(CreateRoleDto, { name: `${P}-role-create` });
+            await dataSource.transaction(async (manager) => {
+                role = await roleService.createEntityForTest(dto, manager);
+            });
+            expect(role.id).toBeDefined();
+            expect(role.name).toEqual(dto.name);
+        });
+
+        it('should update role', async () => {
+            const dto = plainToInstance(UpdateRoleDto, { name: `${P}-role-updated` });
+            await dataSource.transaction(async (manager) => {
+                await roleService.updateEntityForTest(dto, role, manager);
+            });
+            const result = await roleRepo.findOneOrFail({ where: { id: role.id } });
             expect(result.name).toEqual(dto.name);
         });
-    });
 
-    // test updateEntity()
-    it('should update role', async () => {
-        const role = await roleRepo.findOne({ where: { name: ROLE_ADMIN } });
-        if (!role) throw new Error('role not found');
-
-        const dto = plainToInstance(UpdateRoleDto, { name: 'Admin Updated' });
-
-        await dataSource.transaction(async (manager) => {
-            await roleService.updateEntityForTest(dto, role, manager);
+        it('should remove role', async () => {
+            const deleteResult = await roleService.remove(role.id);
+            expect(deleteResult).toBe(true);
+            await expect(roleService.findOne(role.id)).rejects.toThrow(NotFoundException);
         });
-
-        const result = await roleRepo.findOne({ where: { id: role.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
     });
 
-    // test findAll()
-    it('should find all roles', async () => {
-        const repoResult = await roleRepo.find();
-        const serviceResult = await roleService.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+    it('should find seeded role in findAll results', async () => {
+        const result = await roleService.findAll();
+        const found = result.items.find((r) => r.id === roles[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll() with sortBy name
-    it('should find all roles with filter by name', async () => {
-        const repoResult = await roleRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await roleService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-        }
-    });
-
-    // test findOne()
-    it('should find one role', async () => {
-        const role = await roleRepo.find({ take: 1 });
-        if (!role.length) throw new Error('role not found');
-
-        const serviceResult = await roleService.findOne(role[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(role[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one role with relations', async () => {
-        const role = await roleRepo.find({ take: 1 });
-        if (!role.length) throw new Error('role not found');
-
-        const serviceResult = await roleService.findOne(role[0].id, ['users']);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(role[0].id);
-        expect(serviceResult?.users).toBeDefined();
-        expect(Array.isArray(serviceResult?.users)).toBe(true);
+        const result = await roleService.findOne(roles[0].id, ['users']);
+        expect(result.id).toEqual(roles[0].id);
+        expect(Array.isArray(result.users)).toBe(true);
     });
 
-    // test remove()
-    it('should remove role', async () => {
-        const role = await roleRepo.find({ take: 1 });
-        if (!role.length) throw new Error('role not found');
-        const id = role[0].id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(roleService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        const deleteResult = await roleService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(roleService.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(RoleService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when name unchanged', async () => {
+            const role = roles[0];
+            const dto = roleToUpdateDto(role);
+            await roleService.update(role.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const role = roles[1];
+            const dto = roleToUpdateDto(role, { name: `${P}-role-renamed` });
+            await roleService.update(role.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await roleRepo.findOneOrFail({ where: { id: role.id } });
+            expect(row.name).toEqual(`${P}-role-renamed`);
+        });
     });
 });

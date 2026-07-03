@@ -7,53 +7,58 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
-import { ROLE_ADMIN } from '../utils/constants';
 import { RoleTestUtil } from '../utils/role-test.util';
 import { getRoleTestingModule } from '../utils/role-testing-module';
 import { RoleValidator } from './role.validator';
 
+const P = `t${Date.now()}`;
+
 describe('role validator', () => {
     let testingUtil: RoleTestUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: RoleValidator;
     let roleRepo: Repository<Role>;
 
+    let roles: Role[];
+
     beforeAll(async () => {
         const module: TestingModule = await getRoleTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
-        await testingUtil.initRoleTestingDatabase(dbTestContext);
-
         validator = module.get<RoleValidator>(RoleValidator);
-
         roleRepo = module.get(getRepositoryToken(Role));
+
+        ({ roles } = await testingUtil.seedRoles(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await roleRepo.delete(roles.map((r) => r.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
         const dto: CreateRoleDto = plainToInstance(CreateRoleDto, {
-            name: 'New Role Name',
+            name: `${P}-new-role-name`,
         });
 
-        const errors = await validator.validateDto(dto, 'root')
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateRoleDto = plainToInstance(CreateRoleDto, {
-            name: ROLE_ADMIN,
+            name: roles[0].name,
         });
 
-        const errors = await validator.validateDto(dto, 'root')
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
@@ -64,25 +69,15 @@ describe('role validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const roleToUpdate = await roleRepo.findOne({ where: { name: ROLE_ADMIN } });
-        if (!roleToUpdate) {
-            throw new Error('role not found');
-        }
-
         const dto: UpdateRoleDto = plainToInstance(UpdateRoleDto, {
-            name: 'Updated Role Name',
+            name: `${P}-updated-role-name`,
         });
 
-        const errors = await validator.validateDto(dto, roleToUpdate.id);
+        const errors = await validator.validateDto(dto, roles[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const roles = await roleRepo.find();
-        if (roles.length < 2) {
-            throw new Error('Not enough roles for test');
-        }
-
         const roleToUpdate = roles[0];
         const existingRole = roles[1];
 

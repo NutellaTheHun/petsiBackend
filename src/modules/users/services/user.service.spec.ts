@@ -5,11 +5,10 @@ import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { Role } from '../../roles/entities/role.entity';
-import { RoleTestUtil } from '../../roles/utils/role-test.util';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
-import { USER_A } from '../utils/constants';
+import { userToUpdateDto } from '../utils/entity-transformers/user.dto.transformer';
 import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
 import { UserService } from './user.service';
@@ -30,159 +29,153 @@ class TestableUserService extends UserService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('User Service', () => {
-    let usersService: TestableUserService;
     let userTestingUtil: UserTestUtil;
-    let roleTestingUtil: RoleTestUtil;
-    let dbTestContext: DatabaseTestContext;
+    let usersService: TestableUserService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let userRepo: Repository<User>;
     let roleRepo: Repository<Role>;
+
+    let roles: Role[];
+    let users: User[];
 
     beforeAll(async () => {
         const module: TestingModule = await getUserTestingModule({
             userServiceClass: TestableUserService,
         });
         dataSource = module.get(DataSource);
-        dbTestContext = new DatabaseTestContext();
-
         usersService = module.get(UserService) as TestableUserService;
-
+        userTestingUtil = module.get<UserTestUtil>(UserTestUtil);
+        userRepo = module.get(getRepositoryToken(User));
         roleRepo = module.get(getRepositoryToken(Role));
 
-        userTestingUtil = module.get<UserTestUtil>(UserTestUtil);
-        await userTestingUtil.initUserTestingDatabase(dbTestContext);
-        roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);
-        await roleTestingUtil.initRoleTestingDatabase(dbTestContext);
-        userRepo = module.get(getRepositoryToken(User));
+        ({ roles, users } = await userTestingUtil.seedUsers(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await userRepo.delete(users.map((u) => u.id));
+        await roleRepo.delete(roles.map((r) => r.id));
     });
 
-    it('should be defined', () => {
-        expect(usersService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity() and not return password property
-    it('should create user and not return password property', async () => {
-        const [role] = await roleRepo.find({ take: 1 });
-        if (!role) throw new Error('role not found');
-        const dto = plainToInstance(CreateUserDto, {
-            name: 'newuser',
-            password: 'secret123',
-            email: 'new@example.com',
-            roleIds: [role.id],
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
+    describe('user lifecycle', () => {
+        let user: User;
+
+        it('should create user and not return password property', async () => {
+            const dto = plainToInstance(CreateUserDto, {
+                name: `${P}-user-create`,
+                password: 'secret123',
+                email: `${P}-user-create@example.com`,
+                roleIds: [roles[0].id],
+            });
+
+            await dataSource.transaction(async (manager) => {
+                user = await usersService.createEntityForTest(dto, manager);
+            });
+            expect(user.id).toBeDefined();
+            expect(user.email).toEqual(dto.email);
+            expect((user as any).password).toBeUndefined();
         });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await usersService.createEntityForTest(dto, manager);
-            expect(result).not.toBeNull();
-            expect(result?.id).toBeDefined();
+        it('should update user', async () => {
+            const loaded = await userRepo.findOneOrFail({
+                where: { id: user.id },
+                relations: ['roles'],
+            });
+            const dto = plainToInstance(UpdateUserDto, {
+                name: `${P}-user-updated`,
+                email: `${P}-user-updated@example.com`,
+                roleIds: [roles[0].id],
+            });
+
+            await dataSource.transaction(async (manager) => {
+                await usersService.updateEntityForTest(dto, loaded, manager);
+            });
+
+            const result = await userRepo.findOneOrFail({ where: { id: user.id } });
+            expect(result.name).toEqual(dto.name);
             expect(result.email).toEqual(dto.email);
-            expect((result as any).password).toBeUndefined();
+        });
+
+        it('should remove user', async () => {
+            const deleteResult = await usersService.remove(user.id);
+            expect(deleteResult).toBe(true);
+            await expect(usersService.findOne(user.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update user', async () => {
-        const user = await userRepo.findOne({ where: { name: USER_A } });
-        if (!user) throw new Error('user not found');
-
-        const dto = plainToInstance(UpdateUserDto, { name: 'User A Updated', email: 'updated@example.com' });
-
-        await dataSource.transaction(async (manager) => {
-            await usersService.updateEntityForTest(dto, user, manager);
-        });
-
-        const result = await userRepo.findOne({ where: { id: user.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
-        expect(result.email).toEqual(dto.email);
+    it('should find seeded user in findAll search results', async () => {
+        const result = await usersService.findAll({ search: `${P}-user`, limit: 100 });
+        const found = result.items.find((u) => u.id === users[0].id);
+        expect(found).toBeDefined();
+        expect(
+            result.items.every((u) => u.name.toLowerCase().includes(P.toLowerCase())),
+        ).toBe(true);
     });
 
-    // test findAll()
-    it('should find all users', async () => {
-        const repoResult = await userRepo.find();
-        const serviceResult = await usersService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findAll() with search by name
-    it('should find all users with search by name', async () => {
-        const serviceResult = await usersService.findAll({
-            search: 'user',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        expect(serviceResult?.items.every((u) => u.name.toLowerCase().includes('user'))).toBe(true);
-    });
-
-    // test findAll() with filter by role
-    it('should find all users with filter by role', async () => {
-        const [role] = await roleRepo.find({ take: 1 });
-        if (!role) throw new Error('role not found');
-        const repoResult = await userRepo
-            .createQueryBuilder('u')
-            .leftJoin('u.roles', 'r')
-            .where('r.id = :id', { id: role.id })
-            .getMany();
-        const serviceResult = await usersService.findAll({
+    it('should find seeded users filtered by role', async () => {
+        const role = roles[0];
+        const result = await usersService.findAll({
             filters: [`role=${role.id}`],
             limit: 100,
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        const found = result.items.find((u) => u.id === users[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll() with sortBy name
-    it('should find all users with sortBy name', async () => {
-        const repoResult = await userRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await usersService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-        }
-    });
-
-    // test findOne()
-    it('should find one user', async () => {
-        const user = await userRepo.find({ take: 1 });
-        if (!user.length) throw new Error('user not found');
-
-        const serviceResult = await usersService.findOne(user[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(user[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one user with relations', async () => {
-        const user = await userRepo.find({ take: 1 });
-        if (!user.length) throw new Error('user not found');
-
-        const serviceResult = await usersService.findOne(user[0].id, ['roles']);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(user[0].id);
-        expect(serviceResult?.roles).toBeDefined();
-        expect(Array.isArray(serviceResult?.roles)).toBe(true);
+        const result = await usersService.findOne(users[0].id, ['roles']);
+        expect(result.id).toEqual(users[0].id);
+        expect(Array.isArray(result.roles)).toBe(true);
     });
 
-    // test remove()
-    it('should remove user', async () => {
-        const user = await userRepo.findOne({ where: { name: 'newuser' } });
-        if (!user) throw new Error('user not found (create "newuser" first)');
-        const id = user.id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(usersService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        const deleteResult = await usersService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(usersService.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(UserService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches current user', async () => {
+            const user = await userRepo.findOneOrFail({
+                where: { id: users[2].id },
+                relations: ['roles'],
+            });
+            const dto = userToUpdateDto(user, { password: undefined });
+            const result = await usersService.update(user.id, dto);
+            expect(result.name).toEqual(user.name);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const user = await userRepo.findOneOrFail({
+                where: { id: users[3].id },
+                relations: ['roles'],
+            });
+            const newName = `${P}-user-renamed`;
+            const dto = userToUpdateDto(user, { name: newName, password: undefined });
+            await usersService.update(user.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await userRepo.findOneOrFail({ where: { id: user.id } });
+            expect(row.name).toEqual(newName);
+        });
     });
 });

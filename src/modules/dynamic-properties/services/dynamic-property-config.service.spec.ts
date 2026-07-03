@@ -3,11 +3,10 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
 import { UpdateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/update-dynamic-property-config.dto';
 import {
@@ -35,51 +34,49 @@ class TestableDynamicPropertyConfigService extends DynamicPropertyConfigService 
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('DynamicPropertyConfigService', () => {
     let service: TestableDynamicPropertyConfigService;
     let configRepo: Repository<DynamicPropertyConfig>;
-    let categoryRepo: Repository<MenuItemCategory>;
     let menuItemRepo: Repository<MenuItem>;
     let dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
+
+    let lockTestMenuItem: MenuItem;
 
     beforeAll(async () => {
         const module: TestingModule = await getDynamicPropertiesTestingModule({
             dynamicPropertyConfigServiceClass: TestableDynamicPropertyConfigService,
         });
 
-        dbTestContext = new DatabaseTestContext();
         service = module.get(DynamicPropertyConfigService) as TestableDynamicPropertyConfigService;
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
-        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
         dataSource = module.get(DataSource);
 
-        await configRepo.deleteAll();
-
-        dbTestContext.addCleanupFunction(async () => {
-            await configRepo.deleteAll();
-        });
-        dbTestContext.addCleanupFunction(async () => {
-            await menuItemRepo.delete({ name: '__lock_test_item__' });
-        });
+        lockTestMenuItem = await menuItemRepo.save({ name: `${P}-lock-test-item` });
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await menuItemRepo.delete(lockTestMenuItem.id);
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     it('creates a config with valid fields and returns it with fieldRenderType', async () => {
         const dto = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
             holderCategoryId: null,
-            propertyName: 'Vegan Counterpart',
+            propertyName: `${P}-vegan-counterpart`,
             valueType: ValueType.EntityReference,
             valueEntityType: 'menuItem',
             valueEntityCategoryId: null,
@@ -87,11 +84,12 @@ describe('DynamicPropertyConfigService', () => {
 
         await dataSource.transaction(async (manager) => {
             const result = await service.createEntityForTest(dto, manager);
+            testCtx.addCleanupFunction(async () => { await configRepo.delete(result.id); });
 
             expect(result).toBeDefined();
             expect(result.id).toBeDefined();
             expect(result.holderEntityType).toEqual(HolderEntityType.MenuItem);
-            expect(result.propertyName).toEqual('Vegan Counterpart');
+            expect(result.propertyName).toEqual(dto.propertyName);
             expect(result.valueType).toEqual(ValueType.EntityReference);
             expect(result.valueEntityType).toEqual('menuItem');
             expect(result.fieldRenderType).toEqual('entity-select');
@@ -102,7 +100,7 @@ describe('DynamicPropertyConfigService', () => {
         const dto = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
             holderCategoryId: null,
-            propertyName: 'Spec Sheet',
+            propertyName: `${P}-spec-sheet`,
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategoryId: null,
@@ -110,23 +108,26 @@ describe('DynamicPropertyConfigService', () => {
 
         await dataSource.transaction(async (manager) => {
             const result = await service.createEntityForTest(dto, manager);
+            testCtx.addCleanupFunction(async () => { await configRepo.delete(result.id); });
             expect(result.fieldRenderType).toEqual('file-upload');
         });
     });
 
     it('enforces propertyName uniqueness per holderEntityType', async () => {
+        const propertyName = `${P}-unique-name-test`;
         const dto = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
-            propertyName: 'Unique Name Test',
+            propertyName,
             valueType: ValueType.Filepath,
             valueEntityType: null,
         });
 
-        await service.create(dto);
+        const created = await service.create(dto);
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
 
         const duplicate = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
-            propertyName: 'Unique Name Test',
+            propertyName,
             valueType: ValueType.Filepath,
             valueEntityType: null,
         });
@@ -137,7 +138,7 @@ describe('DynamicPropertyConfigService', () => {
     it('deletes a config and removes it from the database', async () => {
         const dto = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
-            propertyName: 'To Be Deleted',
+            propertyName: `${P}-to-be-deleted`,
             valueType: ValueType.Filepath,
             valueEntityType: null,
         });
@@ -154,12 +155,14 @@ describe('DynamicPropertyConfigService', () => {
     it('returns config with fieldRenderType from findOne', async () => {
         const dto = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
-            propertyName: 'Find One Test',
+            propertyName: `${P}-find-one-test`,
             valueType: ValueType.EntityReference,
             valueEntityType: 'menuItem',
         });
 
         const created = await service.create(dto);
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
+
         const found = await service.findOne(created.id);
 
         expect(found.fieldRenderType).toEqual('entity-select');
@@ -168,53 +171,64 @@ describe('DynamicPropertyConfigService', () => {
     it('updates a config and persists the changes', async () => {
         const dto = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
-            propertyName: 'Before Update',
+            propertyName: `${P}-before-update`,
             valueType: ValueType.Filepath,
             valueEntityType: null,
         });
 
         const created = await service.create(dto);
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
 
         const updateDto = plainToInstance(UpdateDynamicPropertyConfigDto, {
-            propertyName: 'After Update',
+            propertyName: `${P}-after-update`,
         });
 
         const updated = await service.update(created.id, updateDto);
-        expect(updated.propertyName).toEqual('After Update');
+        expect(updated.propertyName).toEqual(`${P}-after-update`);
     });
 
     it('allows renaming propertyName when value rows exist', async () => {
         const config = await service.create(
             plainToInstance(CreateDynamicPropertyConfigDto, {
                 holderEntityType: HolderEntityType.MenuItem,
-                propertyName: 'Lock Test Rename Prop',
+                propertyName: `${P}-lock-test-rename-prop`,
                 valueType: ValueType.Filepath,
                 valueEntityType: null,
             }),
         );
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
-        const menuItem = await menuItemRepo.save({ name: '__lock_test_item__' });
-        await dynPropValueRepo.save({ menuItem: { id: menuItem.id }, config: { id: config.id }, valueText: '/file' });
+        const value = await dynPropValueRepo.save({
+            menuItem: { id: lockTestMenuItem.id },
+            config: { id: config.id },
+            valueText: '/file',
+        });
+        testCtx.addCleanupFunction(async () => { await dynPropValueRepo.delete(value.id); });
 
         const updated = await service.update(
             config.id,
-            plainToInstance(UpdateDynamicPropertyConfigDto, { propertyName: 'Lock Test Rename Prop Updated' }),
+            plainToInstance(UpdateDynamicPropertyConfigDto, { propertyName: `${P}-lock-test-rename-prop-updated` }),
         );
-        expect(updated.propertyName).toEqual('Lock Test Rename Prop Updated');
+        expect(updated.propertyName).toEqual(`${P}-lock-test-rename-prop-updated`);
     });
 
     it('returns IMMUTABLE_FIELD validation error when changing a locked field with existing value rows', async () => {
         const config = await service.create(
             plainToInstance(CreateDynamicPropertyConfigDto, {
                 holderEntityType: HolderEntityType.MenuItem,
-                propertyName: 'Lock Test Locked Field Prop',
+                propertyName: `${P}-lock-test-locked-field-prop`,
                 valueType: ValueType.Filepath,
                 valueEntityType: null,
             }),
         );
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
-        const menuItem = await menuItemRepo.findOneByOrFail({ name: '__lock_test_item__' });
-        await dynPropValueRepo.save({ menuItem: { id: menuItem.id }, config: { id: config.id }, valueText: '/file2' });
+        const value = await dynPropValueRepo.save({
+            menuItem: { id: lockTestMenuItem.id },
+            config: { id: config.id },
+            valueText: '/file2',
+        });
+        testCtx.addCleanupFunction(async () => { await dynPropValueRepo.delete(value.id); });
 
         const updateDto = plainToInstance(UpdateDynamicPropertyConfigDto, {
             valueType: ValueType.EntityReference,
@@ -240,11 +254,12 @@ describe('DynamicPropertyConfigService', () => {
         const config = await service.create(
             plainToInstance(CreateDynamicPropertyConfigDto, {
                 holderEntityType: HolderEntityType.MenuItem,
-                propertyName: 'Lock Test No Values Prop',
+                propertyName: `${P}-lock-test-no-values-prop`,
                 valueType: ValueType.Filepath,
                 valueEntityType: null,
             }),
         );
+        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
         const updated = await service.update(
             config.id,

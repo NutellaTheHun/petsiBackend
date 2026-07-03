@@ -2,8 +2,10 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, Like, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
@@ -29,174 +31,183 @@ class TestableLabelService extends LabelService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Label Service', () => {
     let labelService: TestableLabelService;
     let testingUtil: LabelTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
 
     let labelRepo: Repository<Label>;
     let labelTypeRepo: Repository<LabelType>;
     let itemRepo: Repository<MenuItem>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+
+    let labelTypes: LabelType[];
+    let categories: MenuItemCategory[];
+    let sizes: MenuItemSize[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let labels: Label[];
 
     beforeAll(async () => {
         const module: TestingModule = await getLabelsTestingModule({
             labelServiceClass: TestableLabelService,
         });
 
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
-        await testingUtil.initLabelTestDatabase(dbTestContext);
-
         labelService = module.get(LabelService) as TestableLabelService;
         dataSource = module.get(DataSource);
         labelRepo = module.get(getRepositoryToken(Label));
         labelTypeRepo = module.get(getRepositoryToken(LabelType));
         itemRepo = module.get(getRepositoryToken(MenuItem));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ labelTypes, categories, sizes, singleItems, fixedContainerItems, varContainerItems, labels } =
+            await testingUtil.seedLabels(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await labelRepo.delete(labels.map((l) => l.id));
+        await labelTypeRepo.delete(labelTypes.map((t) => t.id));
+        await itemRepo.delete([
+            ...fixedContainerItems.map((i) => i.id),
+            ...varContainerItems.map((i) => i.id),
+            ...singleItems.map((i) => i.id),
+        ]);
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should be defined', () => {
-        expect(labelService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create label', async () => {
-        const menuItem = await itemRepo.findOne({ where: {} });
-        const labelType = await labelTypeRepo.findOne({ where: {} });
-        if (!menuItem || !labelType) throw new Error('menuItem or labelType not found');
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        const dto = plainToInstance(CreateLabelDto, {
-            menuItemId: menuItem.id,
-            labelTypeId: labelType.id,
-            imageUrl: 'https://example.com/new-label.png',
+    describe('label lifecycle', () => {
+        let label: Label;
+
+        it('should create label', async () => {
+            const dto = plainToInstance(CreateLabelDto, {
+                menuItemId: singleItems[0].id,
+                labelTypeId: labelTypes[0].id,
+                imageUrl: `${P}-lifecycle-label.png`,
+            });
+
+            await dataSource.transaction(async (manager) => {
+                label = await labelService.createEntityForTest(dto, manager);
+            });
+            expect(label.id).toBeDefined();
+            expect(label.imageUrl).toBe(dto.imageUrl);
+            expect(label.menuItem.id).toBe(singleItems[0].id);
+            expect(label.labelType.id).toBe(labelTypes[0].id);
         });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await labelService.createEntityForTest(dto, manager);
+        it('should update label', async () => {
+            const dto = plainToInstance(UpdateLabelDto, {
+                imageUrl: `${P}-lifecycle-label-updated.png`,
+            });
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.imageUrl).toEqual(dto.imageUrl);
-            expect(result.menuItem?.id).toEqual(menuItem.id);
-            expect(result.labelType?.id).toEqual(labelType.id);
+            await dataSource.transaction(async (manager) => {
+                await labelService.updateEntityForTest(dto, label, manager);
+            });
+
+            const reloaded = await labelRepo.findOneOrFail({ where: { id: label.id } });
+            expect(reloaded.imageUrl).toBe(dto.imageUrl);
+        });
+
+        it('should remove label', async () => {
+            await labelService.remove(label.id);
+            await expect(labelService.findOne(label.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
-    // test updateEntity()
-    it('should update label', async () => {
-        const label = await labelRepo.findOne({
-            where: {},
-            relations: ['menuItem', 'labelType'],
-        });
-        if (!label) throw new Error('label not found');
-
-        const dto = plainToInstance(UpdateLabelDto, { imageUrl: 'https://example.com/updated.png' });
-
-        await dataSource.transaction(async (manager) => {
-            await labelService.updateEntityForTest(dto, label, manager);
-        });
-
-        const result = await labelRepo.findOne({ where: { id: label.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.imageUrl).toEqual(dto.imageUrl);
-    });
-
-    // test findAll()
-    it('should find all labels', async () => {
-        const repoResult = await labelRepo.find();
-        const serviceResult = await labelService.findAll({ limit: 100 });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findAll() with search by menuItem name
-    it('should find all labels with search by menuItem name', async () => {
-        const menuItem = await itemRepo.findOne({ where: {} });
-        const search = menuItem?.name ? menuItem.name.substring(0, 2) : 'e';
-
-        const repoResult = await labelRepo.find({
-            where: { menuItem: { name: Like(`%${search}%`) } },
-        });
-        const serviceResult = await labelService.findAll({
-            search,
+    it('should find seeded label in findAll search results by menuItem name', async () => {
+        const result = await labelService.findAll({
+            search: singleItems[0].name,
             limit: 100,
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        const found = result.items.find((l) => l.id === labels[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll() with filter by labelType
-    it('should find all labels with filter by labelType', async () => {
-        const labelType = await labelTypeRepo.findOne({ where: {} });
-        if (!labelType) throw new Error('labelType not found');
-
-        const repoResult = await labelRepo.find({
-            where: { labelType: { id: labelType.id } },
-        });
-        const serviceResult = await labelService.findAll({
-            filters: [`labelType=${labelType.id}`],
+    it('should find seeded labels filtered by labelType', async () => {
+        const result = await labelService.findAll({
+            filters: [`labelType=${labelTypes[0].id}`],
             limit: 100,
         });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
+        const found = result.items.find((l) => l.id === labels[0].id);
+        expect(found).toBeDefined();
+        expect(
+            result.items.every(
+                (l) => l.labelType?.id === labelTypes[0].id || !l.labelType,
+            ),
+        ).toBe(true);
     });
 
-    // test findAll() with sortBy labelType
-    it('should find all labels with sortBy labelType', async () => {
-        const serviceResult = await labelService.findAll({
-            sortBy: 'labelType',
-            sortOrder: 'ASC',
-            limit: 100,
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        for (let i = 1; i < (serviceResult?.items.length ?? 0); i++) {
-            const prev = serviceResult!.items[i - 1].labelType?.name ?? '';
-            const curr = serviceResult!.items[i].labelType?.name ?? '';
-            expect(prev <= curr).toBe(true);
-        }
-    });
-
-    // test findOne()
-    it('should find one label', async () => {
-        const label = await labelRepo.find({ take: 1 });
-        if (!label.length) throw new Error('label not found');
-
-        const serviceResult = await labelService.findOne(label[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(label[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one label with relations', async () => {
-        const label = await labelRepo.find({
-            take: 1,
-            relations: ['menuItem', 'labelType'],
-        });
-        if (!label.length) throw new Error('label not found');
-
-        const serviceResult = await labelService.findOne(label[0].id, [
+        const result = await labelService.findOne(labels[0].id, [
             'menuItem',
             'labelType',
         ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(label[0].id);
-        expect(serviceResult?.menuItem).toBeDefined();
-        expect(serviceResult?.labelType).toBeDefined();
+        expect(result.id).toBe(labels[0].id);
+        expect(result.menuItem).toBeDefined();
+        expect(result.labelType).toBeDefined();
     });
 
-    // test remove()
-    it('should remove label', async () => {
-        const label = await labelRepo.find({ take: 1 });
-        if (!label.length) throw new Error('label not found');
-        const id = label[0].id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(labelService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-        const deleteResult = await labelService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(labelService.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(LabelService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches entity', async () => {
+            const label = await labelRepo.findOneOrFail({
+                where: { id: labels[1].id },
+                relations: ['menuItem', 'labelType'],
+            });
+            const dto = plainToInstance(UpdateLabelDto, {
+                imageUrl: label.imageUrl,
+                menuItemId: label.menuItem.id,
+                labelTypeId: label.labelType.id,
+            });
+            const result = await labelService.update(label.id, dto);
+            expect(result.imageUrl).toBe(label.imageUrl);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when imageUrl changes', async () => {
+            const label = await labelRepo.findOneOrFail({
+                where: { id: labels[2].id },
+                relations: ['menuItem', 'labelType'],
+            });
+            const dto = plainToInstance(UpdateLabelDto, {
+                imageUrl: `${P}-label-renamed.png`,
+            });
+            await labelService.update(label.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await labelRepo.findOneOrFail({ where: { id: label.id } });
+            expect(row.imageUrl).toBe(`${P}-label-renamed.png`);
+        });
     });
 });

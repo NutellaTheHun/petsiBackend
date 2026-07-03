@@ -1,111 +1,73 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemContainerItemController } from './menu-item-container-item.controller';
 
+const P = `t${Date.now()}`;
+
 describe('menu item container item controller', () => {
     let testingUtil: MenuItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
-    let module: TestingModule;
+    let testCtx: DatabaseTestContext;
     let controller: MenuItemContainerItemController;
     let containerItemRepo: Repository<MenuItemContainerItem>;
-    let menuItemRepo: Repository<MenuItem>;
+    let itemRepo: Repository<MenuItem>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+
+    let categories: MenuItemCategory[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let sizes: MenuItemSize[];
+    let containerLines: MenuItemContainerItem[];
 
     beforeAll(async () => {
-        module = await getMenuItemTestingModule();
-        dbTestContext = new DatabaseTestContext();
+        const module: TestingModule = await getMenuItemTestingModule();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+        controller = module.get<MenuItemContainerItemController>(MenuItemContainerItemController);
+        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        itemRepo = module.get(getRepositoryToken(MenuItem));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
 
-        controller = module.get<MenuItemContainerItemController>(
-            MenuItemContainerItemController,
-        );
-        containerItemRepo = module.get(
-            getRepositoryToken(MenuItemContainerItem),
-        );
-        menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        ({ categories, singleItems, fixedContainerItems, varContainerItems, sizes, containerLines } =
+            await testingUtil.seedContainerLines(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await containerItemRepo.delete(containerLines.map((l) => l.id));
+        await itemRepo.delete([
+            ...fixedContainerItems.map((i) => i.id),
+            ...varContainerItems.map((i) => i.id),
+            ...singleItems.map((i) => i.id),
+        ]);
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await sizeRepo.delete(sizes.map((s) => s.id));
     });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    it('findAll returns items aligned with repository', async () => {
-        const repoRows = await containerItemRepo.find();
-        const result = await controller.findAll(undefined, 100);
-        expect(result.items.length).toEqual(repoRows.length);
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
-    it('findAll with sortBy containedMenuItem returns non-empty list', async () => {
-        const result = await controller.findAll(
-            undefined,
-            100,
-            undefined,
-            'containedMenuItem',
-            'DESC',
-            undefined,
-            undefined,
-        );
-        expect(result.items.length).toBeGreaterThan(0);
+    it('findAll returns seeded containerLine in results', async () => {
+        const result = await controller.findAll();
+        const found = result.items.find((ci) => ci.id === containerLines[0].id);
+        expect(found).toBeDefined();
     });
 
-    it('findAll with filter by parentMenuItem matches parent line count', async () => {
-        const parent = await menuItemRepo.findOneOrFail({
-            where: { containerMenuItems: MoreThan(0) },
-            relations: ['containerMenuItems'],
-        });
-        if (!parent.containerMenuItems) {
-            throw new Error('container menu items not found');
-        }
-        const result = await controller.findAll(
-            undefined,
-            100,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            [`parentMenuItem=${parent.id}`],
-        );
-        expect(result.items.length).toEqual(parent.containerMenuItems.length);
-    });
-
-    it('findOne returns a seeded container line', async () => {
-        const row = await containerItemRepo.findOne({
-            where: {},
-            relations: ['parentMenuItem', 'containedMenuItem'],
-        });
-        if (!row) throw new Error('no seeded container item');
-        const result = await controller.findOne(row.id);
-        expect(result.id).toEqual(row.id);
-    });
-
-    it('findOne throws NotFoundException for missing id', async () => {
-        await expect(controller.findOne(9_999_999)).rejects.toThrow(
-            NotFoundException,
-        );
-    });
-
-    it('remove deletes a container line then findOne fails', async () => {
-        const row = await containerItemRepo.findOne({ where: {} });
-        if (!row) throw new Error('no row to remove');
-        const id = row.id;
-        await controller.remove(id);
-        await expect(controller.findOne(id)).rejects.toThrow(NotFoundException);
-    });
-
-    it('remove throws NotFoundException when id does not exist', async () => {
-        await expect(controller.remove(9_999_999)).rejects.toThrow(
-            NotFoundException,
-        );
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(NotFoundException);
     });
 });

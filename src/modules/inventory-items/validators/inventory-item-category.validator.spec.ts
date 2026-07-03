@@ -7,56 +7,54 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
-import { FOOD_CAT } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryValidator } from './inventory-item-category.validator';
 
+const P = `t${Date.now()}`;
+
 describe('inventory item category validator', () => {
     let testingUtil: InventoryItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: InventoryItemCategoryValidator;
     let categoryRepo: Repository<InventoryItemCategory>;
 
+    let categories: InventoryItemCategory[];
+
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemCategoryTestDatabase(dbTestContext);
-
-        validator = module.get<InventoryItemCategoryValidator>(
-            InventoryItemCategoryValidator,
-        );
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+        validator = module.get<InventoryItemCategoryValidator>(InventoryItemCategoryValidator);
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+
+        ({ categories } = await testingUtil.seedCategories(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await categoryRepo.delete(categories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // Create Validation Tests
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
+
     it('successfully validate create: no validation errors', async () => {
         const dto: CreateInventoryItemCategoryDto = plainToInstance(CreateInventoryItemCategoryDto, {
-            name: 'New Category Name',
+            name: `${P}-new-category`,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateInventoryItemCategoryDto = plainToInstance(CreateInventoryItemCategoryDto, {
-            name: FOOD_CAT,
+            name: categories[0].name,
         });
-
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -66,43 +64,19 @@ describe('inventory item category validator', () => {
         );
     });
 
-    // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const categoryToUpdate = await categoryRepo.findOne({
-            where: { name: FOOD_CAT },
-        });
-        if (!categoryToUpdate) {
-            throw new Error('category not found');
-        }
-
         const dto: UpdateInventoryItemCategoryDto = plainToInstance(UpdateInventoryItemCategoryDto, {
-            name: 'Updated Category Name',
+            name: `${P}-updated-name`,
         });
-
-        const errors = await validator.validateDto(
-            dto,
-            categoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, categories[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const categories = await categoryRepo.find();
-        if (categories.length < 2) {
-            throw new Error('Not enough categories for test');
-        }
-
-        const categoryToUpdate = categories[0];
-        const existingCategory = categories[1];
-
         const dto: UpdateInventoryItemCategoryDto = plainToInstance(UpdateInventoryItemCategoryDto, {
-            name: existingCategory.name,
+            name: categories[1].name,
         });
-
-        const errors = await validator.validateDto(
-            dto,
-            categoryToUpdate.id,
-        );
+        const errors = await validator.validateDto(dto, categories[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,

@@ -80,4 +80,26 @@ export class UserTestUtil {
     public async cleanupUserTestingDatabase(): Promise<void> {
         await this.userRepo.deleteAll();
     }
+
+    // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
+    // These do not register cleanup — callers are responsible for deleting by ID.
+
+    public async seedUsers(P: string = ''): Promise<{ roles: Role[]; users: User[] }> {
+        const { roles } = await this.roleTestUtil.seedRoles(P);
+
+        const names = ['user-a', 'user-b', 'user-c', 'user-d', 'user-e'];
+        const users: User[] = [];
+        for (let i = 0; i < names.length; i++) {
+            const entityName = P ? `${P}-${names[i]}` : names[i];
+            const entity = await this.userBuilder
+                .reset()
+                .email(`${entityName}@example.com`)
+                .password(`password${i}`)
+                .name(entityName)
+                .roles([roles[i % roles.length].id])
+                .build();
+            users.push(await this.userRepo.save(entity));
+        }
+        return { roles, users };
+    }
 }

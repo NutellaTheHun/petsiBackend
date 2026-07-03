@@ -7,41 +7,46 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
-import { type_a } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelTypeValidator } from './label-type.validator';
 
+const P = `t${Date.now()}`;
+
 describe('label type validator', () => {
     let testingUtil: LabelTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
 
     let validator: LabelTypeValidator;
     let typeRepo: Repository<LabelType>;
 
+    let labelTypes: LabelType[];
+
     beforeAll(async () => {
         const module: TestingModule = await getLabelsTestingModule();
-        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
-        await testingUtil.initLabelTypeTestDatabase(dbTestContext);
-
         validator = module.get<LabelTypeValidator>(LabelTypeValidator);
-
         typeRepo = module.get(getRepositoryToken(LabelType));
+
+        ({ labelTypes } = await testingUtil.seedLabelTypes(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await typeRepo.delete(labelTypes.map((t) => t.id));
     });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined;
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // Create Validation Tests
     it('successfully validate create with no validation errors', async () => {
         const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
-            name: 'New Label Type',
+            name: `${P}-new-type`,
             length: 400,
             width: 200,
         });
@@ -52,7 +57,7 @@ describe('label type validator', () => {
 
     it('fail validate create: name already exists', async () => {
         const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
-            name: type_a,
+            name: labelTypes[0].name,
             length: 400,
             width: 200,
         });
@@ -68,7 +73,7 @@ describe('label type validator', () => {
 
     it('fail validate create: length with value 0', async () => {
         const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
-            name: 'New Label Type',
+            name: `${P}-new-type`,
             length: 0,
             width: 200,
         });
@@ -84,7 +89,7 @@ describe('label type validator', () => {
 
     it('fail validate create: width with value 0', async () => {
         const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
-            name: 'New Label Type',
+            name: `${P}-new-type`,
             length: 400,
             width: 0,
         });
@@ -100,13 +105,10 @@ describe('label type validator', () => {
 
     // Update Validation Tests
     it('successfully validate update with no validation errors', async () => {
-        const typeToUpdate = await typeRepo.findOne({ where: { name: type_a } });
-        if (!typeToUpdate) {
-            throw new Error('type not found');
-        }
+        const typeToUpdate = labelTypes[0];
 
         const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
-            name: 'Updated Label Type',
+            name: `${P}-type-updated`,
             length: 500,
             width: 300,
         });
@@ -116,13 +118,8 @@ describe('label type validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const types = await typeRepo.find();
-        if (types.length < 2) {
-            throw new Error('Not enough types for test');
-        }
-
-        const typeToUpdate = types[0];
-        const existingType = types[1];
+        const typeToUpdate = labelTypes[0];
+        const existingType = labelTypes[1];
 
         const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             name: existingType.name,
@@ -140,10 +137,7 @@ describe('label type validator', () => {
     });
 
     it('fail validate update: length with value 0', async () => {
-        const typeToUpdate = await typeRepo.findOne({ where: { name: type_a } });
-        if (!typeToUpdate) {
-            throw new Error('type not found');
-        }
+        const typeToUpdate = labelTypes[0];
 
         const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             length: 0,
@@ -161,10 +155,7 @@ describe('label type validator', () => {
     });
 
     it('fail validate update: width with value 0', async () => {
-        const typeToUpdate = await typeRepo.findOne({ where: { name: type_a } });
-        if (!typeToUpdate) {
-            throw new Error('type not found');
-        }
+        const typeToUpdate = labelTypes[0];
 
         const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             width: 0,

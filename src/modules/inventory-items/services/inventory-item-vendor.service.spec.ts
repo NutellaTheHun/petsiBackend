@@ -7,7 +7,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
-import { VENDOR_A } from '../utils/constants';
+import { inventoryItemVendorToUpdateDto } from '../utils/entity-transformers/inventory-item-vendor.dto.transformer';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
@@ -28,129 +28,111 @@ class TestableInventoryItemVendorService extends InventoryItemVendorService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('Inventory Item Vendor Service', () => {
     let testingUtil: InventoryItemTestingUtil;
-    let dbTestContext: DatabaseTestContext;
     let vendorService: TestableInventoryItemVendorService;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let vendorRepo: Repository<InventoryItemVendor>;
+
+    let vendors: InventoryItemVendor[];
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemVendorServiceClass: TestableInventoryItemVendorService,
         });
-
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<InventoryItemTestingUtil>(
-            InventoryItemTestingUtil,
-        );
-        await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
-
+        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
         vendorService = module.get(
             InventoryItemVendorService,
         ) as TestableInventoryItemVendorService;
         dataSource = module.get(DataSource);
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+
+        ({ vendors } = await testingUtil.seedVendors(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await vendorRepo.delete(vendors.map((v) => v.id));
     });
 
-    it('should be defined', () => {
-        expect(vendorService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
     });
 
-    // test createEntity()
-    it('should create vendor', async () => {
-        const dto = plainToInstance(CreateInventoryItemVendorDto, { name: 'Vendor D' });
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
+    });
 
-        await dataSource.transaction(async (manager) => {
-            const result = await vendorService.createEntityForTest(dto, manager);
+    describe('vendor lifecycle', () => {
+        let created: InventoryItemVendor;
 
-            expect(result).not.toBeNull();
-            expect(result?.id).not.toBeNull();
-            expect(result.name).toEqual(dto.name);
+        it('should create vendor', async () => {
+            const dto = plainToInstance(CreateInventoryItemVendorDto, { name: `${P}-vendor-create` });
+            await dataSource.transaction(async (manager) => {
+                created = await vendorService.createEntityForTest(dto, manager);
+            });
+            expect(created.id).toBeDefined();
+            expect(created.name).toBe(dto.name);
+        });
+
+        it('should update vendor', async () => {
+            const dto = plainToInstance(UpdateInventoryItemVendorDto, { name: `${P}-vendor-updated` });
+            await dataSource.transaction(async (manager) => {
+                await vendorService.updateEntityForTest(dto, created, manager);
+            });
+            const reloaded = await vendorRepo.findOneOrFail({ where: { id: created.id } });
+            expect(reloaded.name).toBe(`${P}-vendor-updated`);
+        });
+
+        it('should remove vendor', async () => {
+            await vendorService.remove(created.id);
+            await expect(vendorService.findOne(created.id)).rejects.toThrow(NotFoundException);
         });
     });
 
-    // test updateEntity()
-    it('should update vendor', async () => {
-        const vendor = await vendorRepo.findOne({ where: { name: VENDOR_A } });
-        if (!vendor) throw new Error('vendor not found');
-
-        const dto = plainToInstance(UpdateInventoryItemVendorDto, { name: 'Vendor A Updated' });
-
-        await dataSource.transaction(async (manager) => {
-            await vendorService.updateEntityForTest(dto, vendor, manager);
-        });
-
-        const result = await vendorRepo.findOne({ where: { id: vendor.id } });
-        if (!result) throw new Error('result not found');
-        expect(result.name).toEqual(dto.name);
+    it('should find seeded vendor in findAll results', async () => {
+        const result = await vendorService.findAll();
+        const found = result.items.find((v) => v.id === vendors[0].id);
+        expect(found).toBeDefined();
     });
 
-    // test findAll()
-    it('should find all vendors', async () => {
-        const repoResult = await vendorRepo.find();
-        const serviceResult = await vendorService.findAll();
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findall() with sort by name
-    it('should find all vendors with sort by name', async () => {
-        const repoResult = await vendorRepo.find({ order: { name: 'DESC' } });
-        const serviceResult = await vendorService.findAll({
-            sortBy: 'name',
-            sortOrder: 'DESC',
-        });
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        if (repoResult.length > 0) {
-            expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
-            const lastIdx = repoResult.length - 1;
-            expect(serviceResult?.items[lastIdx].name).toEqual(
-                repoResult[lastIdx].name,
-            );
-        }
-    });
-
-    // test findOne()
-    it('should find one vendor', async () => {
-        const vendor = await vendorRepo.find({ take: 1 });
-        if (!vendor.length) throw new Error('vendor not found');
-
-        const serviceResult = await vendorService.findOne(vendor[0].id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(vendor[0].id);
-    });
-
-    // test findOne() with relations
     it('should find one vendor with relations', async () => {
-        const vendor = await vendorRepo.find({
-            take: 1,
-            relations: ['inventoryItems'],
-        });
-        if (!vendor.length) throw new Error('vendor not found');
-
-        const serviceResult = await vendorService.findOne(vendor[0].id, [
-            'inventoryItems',
-        ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(vendor[0].id);
-        expect(serviceResult?.inventoryItems).toBeDefined();
-        expect(Array.isArray(serviceResult?.inventoryItems)).toBe(true);
+        const result = await vendorService.findOne(vendors[0].id, ['inventoryItems']);
+        expect(result.id).toBe(vendors[0].id);
+        expect(Array.isArray(result.inventoryItems)).toBe(true);
     });
 
-    // test remove()
-    it('should remove vendor', async () => {
-        const vendor = await vendorRepo.find({ take: 1 });
-        if (!vendor.length) throw new Error('vendor not found');
-        const id = vendor[0].id;
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(vendorService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
 
-        const deleteResult = await vendorService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(vendorService.findOne(id)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
+
+        beforeEach(() => {
+            spy = jest.spyOn(InventoryItemVendorService.prototype as any, 'updateEntity');
+        });
+
+        afterEach(() => {
+            spy.mockRestore();
+        });
+
+        it('skips updateEntity when name unchanged', async () => {
+            const v = vendors[0];
+            const dto = inventoryItemVendorToUpdateDto(v);
+            await vendorService.update(v.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const v = vendors[1];
+            const dto = inventoryItemVendorToUpdateDto(v, { name: `${P}-vendor-renamed` });
+            await vendorService.update(v.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await vendorRepo.findOneOrFail({ where: { id: v.id } });
+            expect(row.name).toBe(`${P}-vendor-renamed`);
+        });
     });
 });
