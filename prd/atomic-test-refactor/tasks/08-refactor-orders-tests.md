@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [02-refactor-menu-items-tests.md]
 
 ---
@@ -39,12 +39,12 @@ Update calls to `MenuItemTestingUtil` methods to pass the `P` prefix received fr
 
 ## Acceptance criteria
 
-- [ ] `OrderTestingUtil` passes `P` to `MenuItemTestingUtil` methods and accepts its own optional `P` parameter; backward compatible with `seed.service.ts`
-- [ ] Each of the 11 orders spec files declares `const P = \`t${Date.now()}\``
-- [ ] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity
-- [ ] `findAll` filter/search tests assert the prefixed entity appears in results
-- [ ] Change detector short-circuit tests live in service specs only
-- [ ] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test
-- [ ] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
-- [ ] `npm run test` passes for all orders spec files
-- [ ] `npm run seedTestDb` still succeeds
+- [x] `OrderTestingUtil` passes `P` to `MenuItemTestingUtil` methods and accepts its own optional `P` parameter; backward compatible with `seed.service.ts`
+- [x] Each of the 11 orders spec files declares `const P = \`t${Date.now()}\`` (14 active spec files touch the DB; the 4 change-detector specs are pure unit tests left untouched per CLAUDE.md; `recurring-order-schedule.service.spec.ts` is an intentional coverage-placeholder — its real coverage lives in `order.service.spec.ts` / `order-recurrence.service.spec.ts`)
+- [x] No spec file queries entities with `{ where: {} }` or `{ take: 1 }` as the sole selector for a specific known entity (remaining hits are inside the fully-commented-out placeholder block of `recurring-order-schedule.service.spec.ts`)
+- [x] `findAll` filter/search tests assert the prefixed entity appears in results
+- [x] Change detector short-circuit tests live in service specs only
+- [x] Controller specs contain only the ValidationException wiring test and remove → findOne lifecycle test (order-container-item/order-menu-item controllers have create/update disabled, matching task 02/04/07 precedent; order.revision-history.controller.spec.ts keeps its revision-specific tests)
+- [x] All `should be defined`, count-comparison `findAll`, and `sortBy` tests are deleted
+- [x] `npm run test` passes for all orders spec files (118/118 suites, 692/692 tests pass full-suite, including after a clean `clearTestDb`+`seedTestDb`)
+- [x] `npm run seedTestDb` still succeeds

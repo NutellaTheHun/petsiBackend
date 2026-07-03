@@ -4017,6 +4017,238 @@
         ]
       }
     },
+    "/dynamic-property-configs": {
+      "post": {
+        "operationId": "DynamicPropertyConfigController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDynamicPropertyConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPropertyConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a DynamicPropertyConfig",
+        "tags": [
+          "Dynamic Property Config"
+        ]
+      },
+      "get": {
+        "operationId": "DynamicPropertyConfigController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DynamicPropertyConfig"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves all DynamicPropertyConfigs",
+        "tags": [
+          "Dynamic Property Config"
+        ]
+      }
+    },
+    "/dynamic-property-configs/{id}": {
+      "patch": {
+        "operationId": "DynamicPropertyConfigController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDynamicPropertyConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPropertyConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "DynamicPropertyConfig not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Updates a DynamicPropertyConfig",
+        "tags": [
+          "Dynamic Property Config"
+        ]
+      },
+      "delete": {
+        "operationId": "DynamicPropertyConfigController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully removed"
+          },
+          "404": {
+            "description": "DynamicPropertyConfig not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a DynamicPropertyConfig",
+        "tags": [
+          "Dynamic Property Config"
+        ]
+      },
+      "get": {
+        "operationId": "DynamicPropertyConfigController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DynamicPropertyConfig"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "DynamicPropertyConfig not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves one DynamicPropertyConfig",
+        "tags": [
+          "Dynamic Property Config"
+        ]
+      }
+    },
     "/orders": {
       "post": {
         "operationId": "OrderController_createOrderResponse",
@@ -6468,8 +6700,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-06-25T22:44:45.791Z",
-                "updatedAt": "2026-06-25T22:44:45.791Z",
+                "createdAt": "2026-07-03T17:41:01.431Z",
+                "updatedAt": "2026-07-03T17:41:01.431Z",
                 "name": "jim",
                 "email": "jim@email.com",
                 "roles": [
@@ -6606,7 +6838,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2026-06-25T22:44:46.161Z",
+              "countDate": "2026-07-03T17:41:01.692Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -6909,7 +7141,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2026-06-25T22:44:46.160Z",
+              "countDate": "2026-07-03T17:41:01.691Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -7598,8 +7830,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-06-25T22:44:46.189Z",
-                "updatedAt": "2026-06-25T22:44:46.189Z",
+                "createdAt": "2026-07-03T17:41:01.653Z",
+                "updatedAt": "2026-07-03T17:41:01.653Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -7766,8 +7998,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.248Z",
-              "updatedAt": "2026-06-25T22:44:46.248Z",
+              "createdAt": "2026-07-03T17:41:01.741Z",
+              "updatedAt": "2026-07-03T17:41:01.741Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8219,6 +8451,26 @@
           "parentItemSizeId"
         ]
       },
+      "DynamicPropertyValueDto": {
+        "type": "object",
+        "properties": {
+          "configId": {
+            "type": "number",
+            "description": "ID of the DynamicPropertyConfig",
+            "example": 1
+          },
+          "value": {
+            "type": "object",
+            "description": "Value to store; null to clear the existing value",
+            "example": "42",
+            "nullable": true
+          }
+        },
+        "required": [
+          "configId",
+          "value"
+        ]
+      },
       "CreateMenuItemDto": {
         "type": "object",
         "properties": {
@@ -8273,6 +8525,13 @@
             "description": "Total size limit of item, when item is of type fixed_container or variable_container",
             "example": 7,
             "nullable": true
+          },
+          "dynamicProperties": {
+            "description": "Dynamic property values to persist with this menu item",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DynamicPropertyValueDto"
+            }
           }
         },
         "required": [
@@ -8373,6 +8632,13 @@
             "description": "Total size limit of item, when item is of type fixed_container or variable_container",
             "example": 6,
             "nullable": true
+          },
+          "dynamicProperties": {
+            "description": "Dynamic property values to upsert or clear. Omit a configId to leave that value unchanged.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DynamicPropertyValueDto"
+            }
           }
         },
         "required": [
@@ -8392,8 +8658,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.191Z",
-              "updatedAt": "2026-06-25T22:44:46.191Z",
+              "createdAt": "2026-07-03T17:41:01.653Z",
+              "updatedAt": "2026-07-03T17:41:01.653Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8435,8 +8701,8 @@
           "parentMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.191Z",
-              "updatedAt": "2026-06-25T22:44:46.191Z",
+              "createdAt": "2026-07-03T17:41:01.653Z",
+              "updatedAt": "2026-07-03T17:41:01.653Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8542,6 +8808,139 @@
           "quantity"
         ]
       },
+      "DynamicPropertyConfig": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "holderEntityType": {
+            "type": "string",
+            "enum": [
+              "menuItem"
+            ]
+          },
+          "holderCategory": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MenuItemCategory"
+              }
+            ]
+          },
+          "propertyName": {
+            "type": "string"
+          },
+          "valueType": {
+            "type": "string",
+            "enum": [
+              "entityReference",
+              "filepath"
+            ]
+          },
+          "valueEntityType": {
+            "type": "object",
+            "nullable": true
+          },
+          "valueEntityCategory": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MenuItemCategory"
+              }
+            ]
+          },
+          "fieldRenderType": {
+            "type": "string",
+            "enum": [
+              "entity-select",
+              "file-upload"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "holderEntityType",
+          "holderCategory",
+          "propertyName",
+          "valueType",
+          "valueEntityType",
+          "valueEntityCategory",
+          "fieldRenderType"
+        ]
+      },
+      "CreateDynamicPropertyConfigDto": {
+        "type": "object",
+        "properties": {
+          "holderEntityType": {
+            "type": "string",
+            "enum": [
+              "menuItem"
+            ]
+          },
+          "holderCategoryId": {
+            "type": "number",
+            "nullable": true
+          },
+          "propertyName": {
+            "type": "string"
+          },
+          "valueType": {
+            "type": "string",
+            "enum": [
+              "entityReference",
+              "filepath"
+            ]
+          },
+          "valueEntityType": {
+            "type": "object",
+            "nullable": true
+          },
+          "valueEntityCategoryId": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "holderEntityType",
+          "propertyName",
+          "valueType"
+        ]
+      },
+      "UpdateDynamicPropertyConfigDto": {
+        "type": "object",
+        "properties": {
+          "holderEntityType": {
+            "type": "string",
+            "enum": [
+              "menuItem"
+            ]
+          },
+          "holderCategoryId": {
+            "type": "number",
+            "nullable": true
+          },
+          "propertyName": {
+            "type": "string"
+          },
+          "valueType": {
+            "type": "string",
+            "enum": [
+              "entityReference",
+              "filepath"
+            ]
+          },
+          "valueEntityType": {
+            "type": "object",
+            "nullable": true
+          },
+          "valueEntityCategoryId": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
       "OrderContainerItem": {
         "type": "object",
         "properties": {
@@ -8553,8 +8952,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.198Z",
-              "updatedAt": "2026-06-25T22:44:46.198Z",
+              "createdAt": "2026-07-03T17:41:01.712Z",
+              "updatedAt": "2026-07-03T17:41:01.712Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8599,8 +8998,8 @@
               "parentOrder": {},
               "menuItem": {
                 "id": 1,
-                "createdAt": "2026-06-25T22:44:46.198Z",
-                "updatedAt": "2026-06-25T22:44:46.198Z",
+                "createdAt": "2026-07-03T17:41:01.713Z",
+                "updatedAt": "2026-07-03T17:41:01.713Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -8651,8 +9050,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.199Z",
-              "updatedAt": "2026-06-25T22:44:46.199Z",
+              "createdAt": "2026-07-03T17:41:01.713Z",
+              "updatedAt": "2026-07-03T17:41:01.713Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8698,8 +9097,8 @@
                 "parentOrderMenuItem": {},
                 "containedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-25T22:44:46.199Z",
-                  "updatedAt": "2026-06-25T22:44:46.199Z",
+                  "createdAt": "2026-07-03T17:41:01.713Z",
+                  "updatedAt": "2026-07-03T17:41:01.713Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -8732,9 +9131,9 @@
               "id": 1,
               "category": {},
               "recipient": "alberto",
-              "createdAt": "2026-06-25T22:44:46.199Z",
-              "updatedAt": "2026-06-25T22:44:46.199Z",
-              "fulfillmentDate": "2026-06-25T22:44:46.199Z",
+              "createdAt": "2026-07-03T17:41:01.713Z",
+              "updatedAt": "2026-07-03T17:41:01.713Z",
+              "fulfillmentDate": "2026-07-03T17:41:01.713Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8901,8 +9300,8 @@
                 "parentOrder": {},
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-25T22:44:46.201Z",
-                  "updatedAt": "2026-06-25T22:44:46.201Z",
+                  "createdAt": "2026-07-03T17:41:01.714Z",
+                  "updatedAt": "2026-07-03T17:41:01.714Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -8928,8 +9327,8 @@
                     "parentOrderMenuItem": {},
                     "containedMenuItem": {
                       "id": 1,
-                      "createdAt": "2026-06-25T22:44:46.201Z",
-                      "updatedAt": "2026-06-25T22:44:46.201Z",
+                      "createdAt": "2026-07-03T17:41:01.714Z",
+                      "updatedAt": "2026-07-03T17:41:01.714Z",
                       "type": "container",
                       "name": "Classic Apple",
                       "category": {},
@@ -8964,8 +9363,8 @@
               "id": 1,
               "order": {},
               "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
-              "startDate": "2026-06-25T22:44:46.201Z",
-              "endDate": "2026-06-25T22:44:46.201Z"
+              "startDate": "2026-07-03T17:41:01.714Z",
+              "endDate": "2026-07-03T17:41:01.714Z"
             },
             "description": "The schedule of the recurring order",
             "nullable": true,
@@ -9037,9 +9436,9 @@
                 "id": 1,
                 "category": {},
                 "recipient": "alberto",
-                "createdAt": "2026-06-25T22:44:46.202Z",
-                "updatedAt": "2026-06-25T22:44:46.202Z",
-                "fulfillmentDate": "2026-06-25T22:44:46.202Z",
+                "createdAt": "2026-07-03T17:41:01.714Z",
+                "updatedAt": "2026-07-03T17:41:01.714Z",
+                "fulfillmentDate": "2026-07-03T17:41:01.714Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10099,8 +10498,8 @@
               "name": "Classic Apple Pie",
               "producedMenuItem": {
                 "id": 1,
-                "createdAt": "2026-06-25T22:44:46.337Z",
-                "updatedAt": "2026-06-25T22:44:46.337Z",
+                "createdAt": "2026-07-03T17:41:01.791Z",
+                "updatedAt": "2026-07-03T17:41:01.791Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -10160,8 +10559,8 @@
           "producedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.337Z",
-              "updatedAt": "2026-06-25T22:44:46.337Z",
+              "createdAt": "2026-07-03T17:41:01.791Z",
+              "updatedAt": "2026-07-03T17:41:01.791Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10319,8 +10718,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-25T22:44:46.338Z",
-                  "updatedAt": "2026-06-25T22:44:46.338Z",
+                  "createdAt": "2026-07-03T17:41:01.791Z",
+                  "updatedAt": "2026-07-03T17:41:01.791Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10417,8 +10816,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-25T22:44:46.338Z",
-                  "updatedAt": "2026-06-25T22:44:46.338Z",
+                  "createdAt": "2026-07-03T17:41:01.792Z",
+                  "updatedAt": "2026-07-03T17:41:01.792Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10945,8 +11344,8 @@
                 "displayName": "CLAPPLE",
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-25T22:44:46.389Z",
-                  "updatedAt": "2026-06-25T22:44:46.389Z",
+                  "createdAt": "2026-07-03T17:41:01.818Z",
+                  "updatedAt": "2026-07-03T17:41:01.818Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10999,8 +11398,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-25T22:44:46.389Z",
-              "updatedAt": "2026-06-25T22:44:46.389Z",
+              "createdAt": "2026-07-03T17:41:01.818Z",
+              "updatedAt": "2026-07-03T17:41:01.818Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},

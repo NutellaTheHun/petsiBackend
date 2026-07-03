@@ -2,13 +2,16 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { container_a, container_b } from '../../menu-items/utils/constants';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
+import { OrderCategory } from '../entities/order-category.entity';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
@@ -33,23 +36,38 @@ class TestableOrderMenuItemService extends OrderMenuItemService {
     }
 }
 
+const P = `t${Date.now()}`;
+
 describe('order menu item service', () => {
     let orderItemService: TestableOrderMenuItemService;
     let testingUtil: OrderTestingUtil;
-    let dbTestContext: DatabaseTestContext;
+    let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let orderMenuItemRepo: Repository<OrderMenuItem>;
     let orderRepo: Repository<Order>;
+    let categoryRepo: Repository<OrderCategory>;
     let containerItemRepo: Repository<OrderContainerItem>;
     let menuItemRepo: Repository<MenuItem>;
+    let menuItemContainerItemRepo: Repository<MenuItemContainerItem>;
+    let menuItemCategoryRepo: Repository<MenuItemCategory>;
+    let menuItemSizeRepo: Repository<MenuItemSize>;
+
+    let categories: OrderCategory[];
+    let orders: Order[];
+    let singleItems: MenuItem[];
+    let fixedContainerItems: MenuItem[];
+    let varContainerItems: MenuItem[];
+    let containerLines: MenuItemContainerItem[];
+    let orderMenuItems: OrderMenuItem[];
+    let containerOrderMenuItems: OrderMenuItem[];
+    let menuItemCategories: MenuItemCategory[];
+    let menuItemSizes: MenuItemSize[];
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule({
             orderMenuItemServiceClass: TestableOrderMenuItemService,
         });
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        dbTestContext = new DatabaseTestContext();
-        await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
         dataSource = module.get(DataSource);
 
         orderItemService = module.get(
@@ -57,27 +75,39 @@ describe('order menu item service', () => {
         ) as TestableOrderMenuItemService;
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
+        categoryRepo = module.get(getRepositoryToken(OrderCategory));
         containerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
+
+        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, containerOrderMenuItems, menuItemCategories, menuItemSizes } =
+            await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
+        await orderMenuItemRepo.delete(orderMenuItems.map((i) => i.id));
+        await orderRepo.delete(orders.map((o) => o.id));
+        await categoryRepo.delete(categories.map((c) => c.id));
+        await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
+        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
+        await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
 
-    it('should be defined', () => {
-        expect(orderItemService).toBeDefined();
+    beforeEach(() => {
+        testCtx = new DatabaseTestContext();
+    });
+
+    afterEach(async () => {
+        await testCtx.executeCleanupFunctions();
     });
 
     // test createEntity()
     it('should create order menu item', async () => {
-        const [order] = await orderRepo.find({ take: 1 });
-        const [menuItem] = await menuItemRepo.find({
-            relations: ['sizes'],
-            take: 1,
-        });
-        if (!order || !menuItem?.sizes?.length)
-            throw new Error('fixtures not found');
+        const order = orders[0];
+        const menuItem = singleItems[0];
 
         const dto = plainToInstance(CreateOrderMenuItemDto, {
             parentOrderId: order.id,
@@ -91,42 +121,30 @@ describe('order menu item service', () => {
             expect(result).not.toBeNull();
             expect(result?.id).toBeDefined();
             expect(result.quantity).toEqual(dto.quantity);
+            testCtx.addCleanupFunction(async () => {
+                await orderMenuItemRepo.delete(result.id);
+            });
         });
     });
 
     // test createEntity() with NestedCreateOrderContainerItemDtos
     it('should create order menu item with NestedCreateOrderContainerItemDtos', async () => {
-        const parentOrder = await orderRepo.findOneOrFail({ where: {} });
-        const container = await menuItemRepo.findOne({
-            where: { name: container_a },
-            relations: [
-                'sizes',
-                'containerMenuItems',
-                'containerMenuItems.containedMenuItem',
-                'containerMenuItems.containedItemSize',
-            ],
-        });
-        if (
-            !parentOrder ||
-            !container?.sizes?.length ||
-            !container.containerMenuItems?.length
-        )
-            throw new Error(
-                'fixtures not found (need order and container item_f with containerMenuItems)',
-            );
+        const order = orders[0];
+        const container = fixedContainerItems[0];
+        const line = containerLines.find((l) => l.parentMenuItem.id === container.id);
+        if (!line) throw new Error('container line not found');
 
-        const c0 = container.containerMenuItems[0];
         const dto = plainToInstance(CreateOrderMenuItemDto, {
-            parentOrderId: parentOrder.id,
+            parentOrderId: order.id,
             menuItemId: container.id,
-            sizeId: container.sizes[0].id,
+            sizeId: line.parentItemSize.id,
             quantity: 1,
             containerOrderMenuItems: [
                 plainToInstance(NestedCreateOrderContainerItemDto, {
                     createId: 'c1',
-                    containedMenuItemId: c0.containedMenuItem.id,
-                    containedItemSizeId: c0.containedItemSize.id,
-                    quantity: c0.quantity,
+                    containedMenuItemId: line.containedMenuItem.id,
+                    containedItemSizeId: line.containedItemSize.id,
+                    quantity: line.quantity,
                 }),
             ],
         });
@@ -138,13 +156,15 @@ describe('order menu item service', () => {
             expect(result.containerOrderMenuItems).toBeDefined();
             expect(Array.isArray(result.containerOrderMenuItems)).toBe(true);
             expect(result.containerOrderMenuItems!.length).toBeGreaterThan(0);
+            testCtx.addCleanupFunction(async () => {
+                await orderMenuItemRepo.delete(result.id);
+            });
         });
     });
 
     // test updateEntity()
     it('should update order menu item', async () => {
-        const toUpdate = await orderMenuItemRepo.findOneOrFail({ where: {} });
-        if (!toUpdate) throw new Error('order menu item not found');
+        const toUpdate = orderMenuItems[0];
 
         const dto = orderMenuItemToUpdateDto(toUpdate, { quantity: 10 });
 
@@ -152,52 +172,30 @@ describe('order menu item service', () => {
             await orderItemService.updateEntityForTest(dto, toUpdate, manager);
         });
 
-        const result = await orderMenuItemRepo.findOne({
+        const result = await orderMenuItemRepo.findOneOrFail({
             where: { id: toUpdate.id },
         });
-        if (!result) throw new Error('result not found');
         expect(result.quantity).toEqual(dto.quantity);
     });
 
     // test updateEntity() with NestedUpdate and NestedCreate for container
     it('should update order menu item whos menuItem is of type container with NestedCreateOrderContainerItemDto', async () => {
-        const toUpdate = await orderMenuItemRepo.findOne({
-            where: { containerOrderMenuItems: MoreThan(0) },
-            relations: [
-                'menuItem',
-                'size',
-                'containerOrderMenuItems',
-                'containerOrderMenuItems.containedMenuItem',
-                'containerOrderMenuItems.containedItemSize',
-            ],
-        });
-        if (!toUpdate?.containerOrderMenuItems?.length || !toUpdate.menuItem)
-            throw new Error('order menu item with containerOrderMenuItems not found');
+        const toUpdate = containerOrderMenuItems[0];
 
-        const c0 = toUpdate.containerOrderMenuItems[0];
+        const newContainer = fixedContainerItems[1];
+        const newLine = containerLines.find((l) => l.parentMenuItem.id === newContainer.id);
+        if (!newLine) throw new Error('new container line not found');
+        const newQuantity = 5;
 
-        const containerItem = await menuItemRepo.findOneOrFail({
-            where: { name: container_b },
-            relations: [
-                'sizes',
-                'containerMenuItems',
-                'containerMenuItems.containedMenuItem',
-                'containerMenuItems.containedItemSize',
-                'containerMenuItems.parentItemSize',
-            ],
-        });
-        const containerSizeId = containerItem.sizes[0].id;
-        const validContainerItems = containerItem.containerMenuItems?.filter(ci => ci.parentItemSize.id === containerSizeId);
-        if (!validContainerItems?.length) throw new Error('valid container items not found');
-
+        // orderMenuItemToUpdateDto preserves existing container lines as NestedUpdateDtos
+        // and prepends the override, so this both keeps the original line and adds a new one.
         const dto = orderMenuItemToUpdateDto(toUpdate, {
-            menuItemId: containerItem.id,
-            sizeId: containerSizeId,
             containerOrderMenuItems: [
                 plainToInstance(NestedCreateOrderContainerItemDto, {
-                    containedMenuItemId: validContainerItems[0].containedMenuItem.id,
-                    containedItemSizeId: validContainerItems[0].containedItemSize.id,
-                    quantity: validContainerItems[0].quantity,
+                    createId: 'newLine1',
+                    containedMenuItemId: newLine.containedMenuItem.id,
+                    containedItemSizeId: newLine.containedItemSize.id,
+                    quantity: newQuantity,
                 }),
             ],
         });
@@ -206,96 +204,31 @@ describe('order menu item service', () => {
             await orderItemService.updateEntityForTest(dto, toUpdate, manager);
         });
 
-        const updated = await containerItemRepo.findOne({ where: { id: c0.id } });
-        if (!updated) throw new Error('result not found');
-        expect(updated.quantity).toEqual(validContainerItems[0].quantity);
-
-        const updatedItem = await orderMenuItemRepo.findOne({
+        const updatedItem = await orderMenuItemRepo.findOneOrFail({
             where: { id: toUpdate.id },
+            relations: ['containerOrderMenuItems', 'containerOrderMenuItems.containedMenuItem', 'containerOrderMenuItems.containedItemSize'],
         });
-        if (!updatedItem) throw new Error('updated item not found');
-        // expect to find created item in containerOrderMenuItems by seraching for containedMenuItem id, containedItemSize id, and quantity = 5
         expect(
             updatedItem.containerOrderMenuItems?.find(
                 (c) =>
-                    c.containedMenuItem.id === validContainerItems[0].containedMenuItem.id &&
-                    c.containedItemSize.id === validContainerItems[0].containedItemSize.id &&
-                    c.quantity === 5,
+                    c.containedMenuItem.id === newLine.containedMenuItem.id &&
+                    c.containedItemSize.id === newLine.containedItemSize.id &&
+                    c.quantity === newQuantity,
             ),
-        ).not.toBeNull();
+        ).toBeDefined();
     });
 
     // test findAll()
-    it('should find all order menu items', async () => {
-        const repoResult = await orderMenuItemRepo.find();
+    it('should find seeded order menu item in findAll results', async () => {
         const serviceResult = await orderItemService.findAll({ limit: 100 });
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-    });
-
-    // test findAll() sortBy quantity
-    it('should find all order menu items with sortBy quantity', async () => {
-        const repoResult = await orderMenuItemRepo.find({
-            order: { quantity: 'DESC' },
-        });
-        if (!repoResult.length) throw new Error('order menu items not found');
-        const serviceResult = await orderItemService.findAll({
-            sortBy: 'quantity',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        if (!serviceResult) throw new Error('service result not found');
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        // expect first item of serviceResult and quantity result to be the same
-        expect(serviceResult?.items[0]?.quantity).toEqual(repoResult[0]?.quantity);
-        // expect last item of serviceResult and quantity result to be the same
-        expect(
-            serviceResult?.items[serviceResult.items.length - 1]?.quantity,
-        ).toEqual(repoResult[repoResult.length - 1]?.quantity);
-    });
-
-    // test findAll() sortBy menuItem name
-    it('should find all order menu items with sortBy menuItem name', async () => {
-        const repoResult = await orderMenuItemRepo.find({
-            order: { menuItem: { name: 'DESC' } },
-        });
-        if (!repoResult.length) throw new Error('order menu items not found');
-        const serviceResult = await orderItemService.findAll({
-            sortBy: 'menuItem',
-            sortOrder: 'DESC',
-            limit: 100,
-        });
-        if (!serviceResult) throw new Error('service result not found');
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(repoResult.length);
-        expect(serviceResult?.items.length).toBeGreaterThan(0);
-        // expect first item of serviceResult and menuItem name result to be the same
-        expect(serviceResult?.items[0]?.menuItem?.name).toEqual(
-            repoResult[0]?.menuItem?.name,
-        );
-        // expect last item of serviceResult and menuItem name result to be the same
-        expect(
-            serviceResult?.items[serviceResult.items.length - 1]?.menuItem?.name,
-        ).toEqual(repoResult[repoResult.length - 1]?.menuItem?.name);
+        const found = serviceResult?.items.find((i) => i.id === orderMenuItems[0].id);
+        expect(found).toBeDefined();
     });
 
     // test findOne()
-    it('should find one order menu item', async () => {
-        const [oi] = await orderMenuItemRepo.find({ take: 1 });
-        if (!oi) throw new Error('order menu item not found');
-
-        const serviceResult = await orderItemService.findOne(oi.id);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(oi.id);
-    });
-
-    // test findOne() with relations
     it('should find one order menu item with relations', async () => {
-        const [oi] = await orderMenuItemRepo.find({ take: 1 });
-        if (!oi) throw new Error('order menu item not found');
-
+        const oi = orderMenuItems[0];
         const serviceResult = await orderItemService.findOne(oi.id, [
             'parentOrder',
             'menuItem',
@@ -308,22 +241,13 @@ describe('order menu item service', () => {
         expect(Array.isArray(serviceResult?.containerOrderMenuItems)).toBe(true);
     });
 
-    // test remove()
-    it('should remove order menu item', async () => {
-        const [oi] = await orderMenuItemRepo.find({ take: 1 });
-        if (!oi) throw new Error('order menu item not found');
-        const id = oi.id;
-
-        const deleteResult = await orderItemService.remove(id);
-        expect(deleteResult).toBe(true);
-        await expect(orderItemService.findOne(id)).rejects.toThrow(
-            NotFoundException,
-        );
+    it('findOne throws NotFoundException for nonexistent id', async () => {
+        await expect(orderItemService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
     });
 
     // test findAll() with filter by parentOrder
     it('should find all order menu items with filter by parentOrder', async () => {
-        const order = await orderRepo.findOneOrFail({ where: { orderedItems: MoreThan(0) }, relations: ['orderedItems'] });
+        const order = await orderRepo.findOneOrFail({ where: { id: orders[0].id }, relations: ['orderedItems'] });
 
         const serviceResult = await orderItemService.findAll({
             filters: [`parentOrder=${order.id}`],
@@ -331,5 +255,28 @@ describe('order menu item service', () => {
         });
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.items.length).toEqual(order.orderedItems.length);
+    });
+
+    describe('order menu item lifecycle', () => {
+        let item: OrderMenuItem;
+
+        it('should create', async () => {
+            const dto = plainToInstance(CreateOrderMenuItemDto, {
+                parentOrderId: orders[1].id,
+                menuItemId: singleItems[1].id,
+                sizeId: singleItems[1].sizes[0].id,
+                quantity: 1,
+            });
+            await dataSource.transaction(async (manager) => {
+                item = await orderItemService.createEntityForTest(dto, manager);
+            });
+            expect(item.id).toBeDefined();
+        });
+
+        it('should remove', async () => {
+            const deleteResult = await orderItemService.remove(item.id);
+            expect(deleteResult).toBe(true);
+            await expect(orderItemService.findOne(item.id)).rejects.toThrow(NotFoundException);
+        });
     });
 });

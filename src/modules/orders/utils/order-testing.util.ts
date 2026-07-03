@@ -3,11 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
+import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
@@ -27,6 +30,9 @@ export class OrderTestingUtil {
         private readonly categoryRepo: Repository<OrderCategory>,
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
+
+        @InjectRepository(OrderContainerItem)
+        private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
 
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
@@ -322,5 +328,252 @@ export class OrderTestingUtil {
         }
 
         return results;
+    }
+
+    // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
+    // These do NOT register cleanup — callers are responsible for deleting by ID.
+
+    /**
+     * 4 categories: type a-d.
+     */
+    public async seedCategories(P = ''): Promise<{ categories: OrderCategory[] }> {
+        const names = getTestOrderCategoryNames();
+        const categories: OrderCategory[] = [];
+        for (const name of names) {
+            const entityName = P ? `${P}-${name}` : name;
+            categories.push(
+                await this.categoryRepo.save({ name: entityName } as OrderCategory),
+            );
+        }
+        return { categories };
+    }
+
+    /**
+     * Delegates to MenuItemTestingUtil.seedContainerLines(P) for the menu item dependency chain.
+     */
+    public async seedMenuItems(P = ''): Promise<{
+        menuItemCategories: MenuItemCategory[];
+        menuItemSizes: MenuItemSize[];
+        singleItems: MenuItem[];
+        fixedContainerItems: MenuItem[];
+        varContainerItems: MenuItem[];
+        containerLines: MenuItemContainerItem[];
+    }> {
+        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
+            await this.menuItemTestUtil.seedContainerLines(P);
+        return {
+            menuItemCategories: categories,
+            menuItemSizes: sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+        };
+    }
+
+    /**
+     * 7 orders (recipient-a .. recipient-g), rotating through categories and fulfillment types.
+     */
+    public async seedOrders(P = ''): Promise<{
+        categories: OrderCategory[];
+        orders: Order[];
+    }> {
+        const { categories } = await this.seedCategories(P);
+
+        const recipients = [
+            'recipient-a',
+            'recipient-b',
+            'recipient-c',
+            'recipient-d',
+            'recipient-e',
+            'recipient-f',
+            'recipient-g',
+        ];
+        const fulfillTypes = ['pickup', 'delivery'];
+
+        const orders: Order[] = [];
+        let catIdx = 0;
+        let fIdx = 0;
+        let idx = 0;
+        for (const name of recipients) {
+            const fulfillmentDate = new Date();
+            fulfillmentDate.setDate(fulfillmentDate.getDate() + idx);
+            const entityName = P ? `${P}-${name}` : name;
+
+            orders.push(
+                await this.orderRepo.save({
+                    category: categories[catIdx++ % categories.length],
+                    recipient: entityName,
+                    fulfillmentDate,
+                    fulfillmentType: fulfillTypes[fIdx++ % fulfillTypes.length],
+                    deliveryAddress: `${entityName}-delAddress`,
+                    phoneNumber: `${entityName}-number`,
+                    email: `${entityName}-email@example.com`,
+                    note: `${entityName}-note`,
+                    isFrozen: false,
+                } as Order),
+            );
+            idx++;
+        }
+
+        return { categories, orders };
+    }
+
+    /**
+     * Seeds orders and menu items, then adds order lines:
+     * - 2 single-item lines per order (rotating through singleItems).
+     * - 1 fixed-container line and 1 variable-max-container line, each on a separate order,
+     *   with their child OrderContainerItem rows derived from containerLines.
+     *
+     * `orderMenuItems` is the flat list of every OrderMenuItem line created (reloaded with relations).
+     * `containerOrderMenuItems` is the subset of `orderMenuItems` whose menuItem is a container.
+     */
+    public async seedOrderMenuItems(P = ''): Promise<{
+        categories: OrderCategory[];
+        orders: Order[];
+        menuItemCategories: MenuItemCategory[];
+        menuItemSizes: MenuItemSize[];
+        singleItems: MenuItem[];
+        fixedContainerItems: MenuItem[];
+        varContainerItems: MenuItem[];
+        containerLines: MenuItemContainerItem[];
+        orderMenuItems: OrderMenuItem[];
+        containerOrderMenuItems: OrderMenuItem[];
+    }> {
+        const { categories, orders } = await this.seedOrders(P);
+        const { menuItemCategories, menuItemSizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
+            await this.seedMenuItems(P);
+
+        const orderMenuItemRelations = [
+            'menuItem',
+            'size',
+            'parentOrder',
+            'containerOrderMenuItems',
+            'containerOrderMenuItems.containedMenuItem',
+            'containerOrderMenuItems.containedItemSize',
+        ];
+
+        const orderMenuItems: OrderMenuItem[] = [];
+
+        // 2 single-item lines per order.
+        let miIdx = 0;
+        let sizeIdx = 0;
+        let qty = 1;
+        for (const order of orders) {
+            for (let i = 0; i < 2; i++) {
+                const menuItem = singleItems[miIdx++ % singleItems.length];
+                const size = menuItem.sizes[sizeIdx++ % menuItem.sizes.length];
+                const saved = await this.orderMenuItemRepo.save({
+                    parentOrder: order,
+                    menuItem,
+                    quantity: qty++,
+                    size,
+                } as OrderMenuItem);
+                orderMenuItems.push(
+                    await this.orderMenuItemRepo.findOneOrFail({
+                        where: { id: saved.id },
+                        relations: orderMenuItemRelations,
+                    }),
+                );
+            }
+        }
+
+        // 1 fixed-container line + 1 variable-max-container line, each on their own order.
+        const containerOrderMenuItems: OrderMenuItem[] = [];
+        const containers = [fixedContainerItems[0], varContainerItems[0]];
+        for (let i = 0; i < containers.length; i++) {
+            const container = containers[i];
+            const order = orders[i % orders.length];
+            const size = container.sizes[0];
+
+            const savedLine = await this.orderMenuItemRepo.save({
+                parentOrder: order,
+                menuItem: container,
+                quantity: 1,
+                size,
+            } as OrderMenuItem);
+
+            const relevantLines = containerLines.filter(
+                (l) => l.parentMenuItem.id === container.id && l.parentItemSize.id === size.id,
+            );
+            for (const line of relevantLines) {
+                await this.orderContainerItemRepo.save({
+                    parentOrderMenuItem: savedLine,
+                    containedMenuItem: line.containedMenuItem,
+                    containedItemSize: line.containedItemSize,
+                    quantity: line.quantity,
+                } as OrderContainerItem);
+            }
+
+            const reloaded = await this.orderMenuItemRepo.findOneOrFail({
+                where: { id: savedLine.id },
+                relations: orderMenuItemRelations,
+            });
+            orderMenuItems.push(reloaded);
+            containerOrderMenuItems.push(reloaded);
+        }
+
+        return {
+            categories,
+            orders,
+            menuItemCategories,
+            menuItemSizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            containerOrderMenuItems,
+        };
+    }
+
+    /**
+     * Seeds everything from seedOrderMenuItems, then adds one additional order with a
+     * nested weekly RecurringOrderSchedule.
+     */
+    public async seedRecurringOrder(P = ''): Promise<{
+        categories: OrderCategory[];
+        orders: Order[];
+        menuItemCategories: MenuItemCategory[];
+        menuItemSizes: MenuItemSize[];
+        singleItems: MenuItem[];
+        fixedContainerItems: MenuItem[];
+        varContainerItems: MenuItem[];
+        containerLines: MenuItemContainerItem[];
+        orderMenuItems: OrderMenuItem[];
+        containerOrderMenuItems: OrderMenuItem[];
+        recurringOrder: Order;
+        recurringOrderSchedule: RecurringOrderSchedule;
+    }> {
+        const seeded = await this.seedOrderMenuItems(P);
+        const entityName = P ? `${P}-recurring-recipient` : 'recurring-recipient';
+
+        const dtstartDate = buildRRULEDateString(new Date());
+        const saved = await this.orderRepo.save({
+            category: seeded.categories[0],
+            recipient: entityName,
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'pickup',
+            isFrozen: false,
+            recurrenceSchedule: {
+                rrule: `${dtstartDate}\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;TZID=America/New_York;`,
+                startDate: new Date(),
+                timezone: 'America/New_York',
+            } as RecurringOrderSchedule,
+        } as Order);
+
+        const recurringOrder = await this.orderRepo.findOneOrFail({
+            where: { id: saved.id },
+            relations: ['recurrenceSchedule', 'category'],
+        });
+        if (!recurringOrder.recurrenceSchedule) {
+            throw new Error('recurrence schedule not created');
+        }
+
+        return {
+            ...seeded,
+            recurringOrder,
+            recurringOrderSchedule: recurringOrder.recurrenceSchedule,
+        };
     }
 }
