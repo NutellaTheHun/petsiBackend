@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [01-init-local-skill-pilot-orders.md]
 
 ---
@@ -28,8 +28,8 @@ Create `src/common/base/CLAUDE.md` and `src/modules/revision-history/CLAUDE.md`,
 
 ## Acceptance criteria
 
-- [ ] `src/common/base/CLAUDE.md` exists, generated via `/init-local` then hand-merged with the full base-class hierarchy diagram and lifecycle-hook docs
-- [ ] `src/modules/revision-history/CLAUDE.md` exists, generated via `/init-local` then hand-merged with revision internals and pruning-cron details
-- [ ] Root `CLAUDE.md` no longer contains the migrated detail, replaced with a one-line pointer to each new file
-- [ ] Root `CLAUDE.md` still contains Commands, directory layout, Testing, Auth and roles, Caching, and DB config sections unchanged
-- [ ] No information is lost — every fact in the original "Base class system" and revision-history/pruning sections is present in one of the three files after migration
+- [x] `src/common/base/CLAUDE.md` exists, generated via `/init-local` then hand-merged with the full base-class hierarchy diagram and lifecycle-hook docs
+- [x] `src/modules/revision-history/CLAUDE.md` exists, generated via `/init-local` then hand-merged with revision internals and pruning-cron details
+- [x] Root `CLAUDE.md` no longer contains the migrated detail, replaced with a one-line pointer to each new file
+- [x] Root `CLAUDE.md` still contains Commands, directory layout, Testing, Auth and roles, Caching, and DB config sections unchanged
+- [x] No information is lost — every fact in the original "Base class system" and revision-history/pruning sections is present in one of the three files after migration

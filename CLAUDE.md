@@ -35,44 +35,13 @@ NestJS + TypeORM + PostgreSQL backend for a restaurant/food-ordering app.
 - `src/modules/<domain>/` — one NestJS module per domain (orders, menu-items, recipes, etc.)
 - `src/modules/revision-history/` — generic change-history table used across domains
 
-### Base class system
+### Base class hierarchy and lifecycle hooks
 
-Every domain entity participates in a typed hierarchy rooted in phantom-type carriers:
-
-```
-EntityBase<TEntity, CDto, UDto>   — phantom carrier; never instantiated
-  └── ServiceBase<TEntity>        — CRUD + cursor pagination + lifecycle hooks
-  └── ControllerBase<TEntity>     — REST endpoints + in-memory cache (60 s)
-  └── BuilderBase<T>              — queue-based DTO→entity construction
-  └── ValidatorBase<T, I>         — business rule validation (pre-DB)
-  └── ChangeDetectorBase<T, UDto> — field-level diff on update
-  └── ComposerBase<T>             — nested entity create/update within a transaction
-```
-
-`NestedEntityBase` extends `EntityBase` with `__NcDto` / `__NuDto` phantom types for entities that can appear as nested children in parent DTOs.
-
-### ServiceBase lifecycle hooks
-
-Override these in subclasses rather than overriding `create`/`update` directly:
-
-- `createEntity(dto, manager)` — **required**: build and persist the entity
-- `updateEntity(dto, manager, entity)` — **required**: mutate the entity in place
-- `afterCreateInTransaction(manager, entity)` — runs inside the create transaction (revision history is written here)
-- `afterUpdateInTransaction(manager, entity, ctx)` — runs inside the update transaction; `ctx.detectionResult` carries the change diff
-- `getChangeDetector()` — return a `ChangeDetectorBase` to enable no-op short-circuit and diff tracking
-- `getUpdateDiffRelations()` — relations to eager-load before diffing on update
-- `beforeRemove` / `afterRemove` — hooks around entity deletion
+See `src/common/base/CLAUDE.md`.
 
 ### Change detection + revision history
 
-`ChangeDetectorBase.detect(entity, dto)` returns `{ patch, hasChanges, changes[] }`. Each change has `op: 'scalar' | 'reference' | 'aggregate'`. The patch (only changed fields) is what `updateEntity` receives when a detector is wired up.
-
-`RevisionHistoryService.appendRevision()` stores a JSONB snapshot + change log for each create/update. Currently tracked entity types: `order`, `menu_item` (see `src/modules/revision-history/constants/revision-entity-type.ts`). To add a new entity type, add it to that constants file and call `appendRevision` inside `afterCreateInTransaction` / `afterUpdateInTransaction`.
-
-Pruning is a nightly cron job disabled by default. Enable via env vars:
-
-- `REVISION_HISTORY_PRUNE_ENABLED=true`
-- `REVISION_HISTORY_PRUNE_DRY_RUN=true` (set to false to actually delete)
+Every domain entity's `ServiceBase` can wire up a `ChangeDetectorBase` to diff an incoming update DTO against the current entity; when a detector is present, `update` short-circuits to a no-op if nothing changed, and only the changed-field patch reaches `updateEntity`. Domains that track history persist a versioned snapshot + change log from that diff via `RevisionHistoryService`. Revision-history internals and pruning-cron details: see `src/modules/revision-history/CLAUDE.md`.
 
 ### Database configuration
 
