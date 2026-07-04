@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: []
 
 ---
@@ -42,8 +42,8 @@ last_reviewed: <date>
 
 ## Acceptance criteria
 
-- [ ] `.claude/skills/init-local/SKILL.md` exists, invocable as `/init-local <path>`, and errors or prompts if no path arg is given
-- [ ] Running it against a directory with no existing `CLAUDE.md` creates one matching the template, with an empty Gotchas section
-- [ ] Running it a second time against the same directory re-derives Overview + Enforced Patterns, shows a diff, and requires confirmation before overwriting
-- [ ] A pre-existing Gotchas section survives a re-run untouched
-- [ ] `src/modules/orders/CLAUDE.md` is generated via the new skill and manually reviewed for accuracy
+- [x] `.claude/skills/init-local/SKILL.md` exists, invocable as `/init-local <path>`, and errors or prompts if no path arg is given
+- [x] Running it against a directory with no existing `CLAUDE.md` creates one matching the template, with an empty Gotchas section
+- [x] Running it a second time against the same directory re-derives Overview + Enforced Patterns, shows a diff, and requires confirmation before overwriting
+- [x] A pre-existing Gotchas section survives a re-run untouched
+- [x] `src/modules/orders/CLAUDE.md` is generated via the new skill and manually reviewed for accuracy
