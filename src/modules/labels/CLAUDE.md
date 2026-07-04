@@ -1,0 +1,32 @@
+---
+module: src/modules/labels
+last_reviewed: 2026-07-04
+---
+
+## Overview
+
+This module owns two entities: `LabelType` and `Label`. A "label" here is a printable label image for a physical bakery product — the entity doc comment says it plainly: references a `menuItem` with a `LabelType` and a url to the label image for printing. `Label.imageUrl` (`@Column({ type: 'text' })`) points at an image hosted in third-party storage, not an in-app asset. `LabelType` is a named physical size/category ("4x2", "2x1", "ingredient label") with `length`/`width` stored in hundredths of an inch. The same `MenuItem` (e.g. "Classic Apple") can have multiple `Label` rows, one per `LabelType` — a 4x2 wholesale label, a 2x1 "cutie" label, etc., each with its own `imageUrl`.
+
+`Label` is a pure join/attachment entity between `MenuItem` (from `src/modules/menu-items`) and `LabelType`; it carries no business data of its own beyond the image URL. Only `MenuItem` is attached to in this codebase — the only other consumers are `src/modules/seed` (which just seeds test data via `LabelTestingUtil`), so despite the name genericity, inventory-items never reference `Label`/`LabelType` — this is menu-items-only today, and the relationship is one-directional (`MenuItem` has no back-reference to `Label`).
+
+Both entities follow the standard base-class wiring: services extend `ServiceBase`, controllers extend `ControllerBase`, builders extend `BuilderBase` (present but currently unused by the services — `createEntity`/`updateEntity` build entities directly via `manager.create`, not via the builders), validators extend `ValidatorBase`, and change detectors extend `ChangeDetectorBase`. `labels.module.ts` imports `MenuItemsModule` for the cross-module `MenuItem` repository/relation, exporting `LabelService`, `LabelTypeService`, and `LabelTestingUtil` for consumption by `seed`.
+
+Key relationships:
+- `Label *—1 MenuItem` via `@ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })` — deleting a `MenuItem` deletes every `Label` that points at it.
+- `Label *—1 LabelType` via `@ManyToOne(() => LabelType, { onDelete: 'SET NULL' })` — deleting a `LabelType` does **not** delete the `Label`s that reference it; it orphans them with a null `labelType` column at the DB level.
+- `Label` has a compound DB-level `@Unique(['menuItem', 'imageUrl', 'labelType'])` constraint, but this is effectively unreachable in practice because `LabelValidator` enforces a stricter, narrower rule first (see below).
+- `LabelType` has its own DB-level `@Column({ unique: true })` on `name`, additionally enforced app-side via `enforceUnique` in `LabelTypeValidator`.
+- Only `src/modules/menu-items` (attachment target) and `src/modules/seed` (test-data plumbing) reference this module from outside `src/modules/labels`.
+
+## Enforced Patterns
+
+- **One `Label` per `(menuItem, labelType)` pair, regardless of `imageUrl` — enforced in application code, not by the DB schema.** `LabelValidator.validateIdentity` does its own `(menuItem.id, labelType.id)` lookup and raises `ALREADY_EXISTS` on `labelType` if a match is found whose id differs from the entity being updated/created. This check ignores `imageUrl` entirely, so it is *stricter* than the entity's own `@Unique(['menuItem', 'imageUrl', 'labelType'])` decorator — the app rejects a second label for the same item+type combo even with a brand-new image URL, well before the DB constraint (which only blocks an exact triple match) would ever fire. Relying on the DB constraint to reason about "what's allowed" is misleading — the validator is always stricter, making the DB constraint dead weight.
+- **`LabelType` deletion silently orphans `Label` rows rather than failing or cascading.** Because `Label.labelType` uses `onDelete: 'SET NULL'` with no explicit `nullable: false`, the FK column is nullable even though the TS field type (`labelType: LabelType`) is written as non-optional — code that reads `label.labelType.id` after a `LabelType` was deleted elsewhere will throw at runtime despite the type system claiming it's always present. `LabelService.applyFilters` and its spec defend against this with optional chaining; any new code touching `label.labelType` must do the same.
+- **`LabelTypeValidator` treats `length`/`width` of `0` (or negative) as invalid** via `enforcePositive` — the DTO's `@IsNumber()` decorator does not itself block non-positive numbers, so this validator call is the sole gate. Skipping it on a new mutation path would allow negative label dimensions to be persisted.
+- **`LabelTypeValidator` enforces name uniqueness case-sensitively and exact-match**, via `enforceUnique` — `"4x2"` and `"4X2"` are treated as distinct names (no normalization anywhere in the validator or the DB constraint).
+- **`LabelService.updateEntity`/`LabelTypeService.updateEntity` treat every DTO field as independently optional**, even though the update DTOs mark every field `@IsNotEmpty()` (required) for class-validator purposes. A real HTTP `PUT` always has to send the full DTO (enforced by the global `ValidationPipe`), but anything constructing an update DTO manually and calling the services directly can do a true partial update — the two layers disagree on what's "required," and only the controller-level pipe closes that gap for real traffic.
+- **Change detection is flat and per-field, not per-relation-object.** `LabelChangeDetector.detect` compares `entity.menuItem?.id`/`entity.labelType?.id` against the DTO's ids, and `LabelService.getUpdateDiffRelations()` returns `['menuItem', 'labelType']` so `ServiceBase.update` eager-loads both before diffing — omitting either would make the pre-update entity's relation come back `undefined`, causing the detector to always report a false-positive change. A `hasChanges: false` result short-circuits `ServiceBase.update` entirely (asserted directly in `label.service.spec.ts`).
+- **`LabelService.applySearch` searches by the related `MenuItem`'s name, not any field on `Label` itself**, and `applySortBy`'s only supported value is `'labelType'` — any other `sortBy`/`filters` key is silently ignored rather than erroring, since both methods are simple `if` blocks with no `else` branch.
+- **Builders (`LabelBuilder`, `LabelTypeBuilder`) exist and are registered in `labels.module.ts` but are dead code from the services' perspective** — the services build/mutate entities directly, never via the builders. Don't assume builder methods are exercised by the live create/update path.
+
+## Gotchas

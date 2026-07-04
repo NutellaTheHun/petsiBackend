@@ -1,0 +1,31 @@
+---
+module: src/infrastructure/database/typeorm
+last_reviewed: 2026-07-04
+---
+
+## Overview
+
+This directory contains all TypeORM wiring for the app's single PostgreSQL connection. There is no `entities/` or `migrations/` subfolder here — it purely holds connection *configuration factories*.
+
+- **`configs/TypeORMPostgresProd.ts`** exports `TypeORMPostgresModule(entities: any[])`, which calls `TypeOrmModule.forRootAsync` with a `useFactory` that reads `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE` from `ConfigService`, sets `type: 'postgres'`, `autoLoadEntities: true`, and `synchronize: false`.
+- **`configs/TypeORMPostgresTesting.ts`** exports `TypeORMPostgresTestingModule(entities: any[])`, structurally identical except it reads `DB_TEST_DATABASE` instead of `DB_DATABASE`, and sets `synchronize: true` (with a commented-out `logging: ['query', 'error']` line left in place for local debugging).
+- **`typeorm.module.ts`** exports `selectTypeOrmModule(entities: any[] = [])`, which branches on `process.env.NODE_ENV`: if it's exactly `'production'`, it returns `TypeORMPostgresModule(entities)`; for every other value (including `undefined`, `'development'`, `'test'`, etc.) it returns `TypeORMPostgresTestingModule(entities)`. The "testing" config is effectively the default/dev config too — anything short of `NODE_ENV=production` gets the test database and `synchronize: true`.
+- **Wiring into `AppModule`**: `src/app.module.ts` imports `selectTypeOrmModule` and calls `selectTypeOrmModule([])` directly inside the `imports` array, passing an empty entities array. This is the one and only place the app's real `DataSource` gets constructed; `AppModule`'s constructor even injects `DataSource` directly to force it to be instantiated eagerly at boot.
+
+Key relationships:
+- `src/app.module.ts` → `selectTypeOrmModule()` (`typeorm.module.ts`) → either `TypeORMPostgresModule` or `TypeORMPostgresTestingModule` (`configs/*.ts`).
+- Every domain module's `*-testing.module.ts` (e.g. `src/modules/labels/utils/label-testing.module.ts`, `src/modules/orders/utils/order-testing.module.ts`, and the equivalent files under `auth`, `roles`, `users`, `inventory-areas`, `inventory-items`, `recipes`, `templates`, `menu-items`, `dynamic-properties`, `seed`, plus `revision-history-pruner.service.spec.ts`) calls `TypeORMPostgresTestingModule([...])` directly, bypassing `selectTypeOrmModule`, each standing up its own isolated `TestingModule` connection against `DB_TEST_DATABASE`.
+- `src/modules/users/user.module.ts` also imports `TypeORMPostgresTestingModule([])` directly inside a *non-test* module file — worth double-checking before assuming every production-path import goes through `selectTypeOrmModule`.
+- Root `CLAUDE.md` documents the atomic-test pattern (unique-prefix `P`, `DatabaseTestContext` LIFO cleanup) that depends on every spec ultimately running against the `TypeORMPostgresTestingModule` connection configured here.
+
+## Enforced Patterns
+
+- **`synchronize` must never be `true` in the prod config.** `TypeORMPostgresProd.ts` hardcodes `synchronize: false`; `TypeORMPostgresTesting.ts` hardcodes `synchronize: true`. `synchronize: true` lets TypeORM auto-mutate the schema to match entity metadata on every boot — acceptable for a disposable test database but destructive against production data. There is no `migrations/` folder or `MigrationInterface` classes anywhere in this codebase, so any prod schema change today has to happen out-of-band.
+- **Entities are auto-discovered, not explicitly listed or globbed.** Both configs set `autoLoadEntities: true`, which tells `@nestjs/typeorm` to automatically register every entity that's been passed to a `TypeOrmModule.forFeature([...])` call anywhere in the module tree imported into the root/testing module — there is no `entities: [...]` array or glob path in either config.
+- **The `entities` parameter on `TypeORMPostgresModule`/`TypeORMPostgresTestingModule`/`selectTypeOrmModule` is dead code.** All three functions accept an `entities: any[]` argument, but none of the `useFactory` bodies ever reference it — the returned config only sets `autoLoadEntities: true`. Every call site (e.g. `TypeORMPostgresTestingModule([Label, LabelType, MenuItem])` in `label-testing.module.ts`) pairs it with a separate, real `TypeOrmModule.forFeature([...])` import for the same entities — that `forFeature` call is what actually registers the repositories; the array handed to `TypeORMPostgresTestingModule` does nothing. Don't assume passing entities here has any effect.
+- **`selectTypeOrmModule()`'s branch is on the literal string `'production'`, not "test vs. non-test."** Anything that isn't exactly `NODE_ENV=production` (dev, unset, `test`, a typo) silently falls through to the testing config, pointing at `DB_TEST_DATABASE` with `synchronize: true`. There is no dedicated "development" branch; dev and test share the exact same connection config and schema-sync behavior.
+- **Only the testing config's database name differs (`DB_TEST_DATABASE` vs. `DB_DATABASE`) — host/port/user/password env vars are shared** (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` read identically in both files). Genuinely separate credentials or host for the test DB is not currently supported by these configs.
+- **No connection pooling options, retry logic, or SSL config are set explicitly in either file** — both rely entirely on TypeORM/`pg` driver defaults. Tuning pool size or adding SSL for a hosted Postgres provider has to be added to the `useFactory` return object in `TypeORMPostgresProd.ts` (and mirrored thoughtfully in the testing config given `synchronize: true` and higher connection churn under `--runInBand` Jest runs).
+- **This is the root of the real-database testing strategy documented in the top-level `CLAUDE.md`.** Every `*-testing.module.ts` factory imports `TypeORMPostgresTestingModule` directly from this directory, all pointed at the same `DB_TEST_DATABASE` with `synchronize: true`. Because schema sync happens per test-module bootstrap, and tests run `--runInBand` (serially), changing `synchronize` or the entity set here without understanding that specs share one physical test database can break the atomic-test/unique-prefix (`P`) and `DatabaseTestContext` LIFO-cleanup patterns relied on throughout the test suite.
+
+## Gotchas
