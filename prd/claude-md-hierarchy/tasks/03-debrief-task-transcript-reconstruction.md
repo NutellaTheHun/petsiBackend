@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: []
 
 ---
@@ -22,8 +22,8 @@ This task does not change `do-task` (that's task 04) or `review-debrief` (that's
 
 ## Acceptance criteria
 
-- [ ] `debrief-task` reads `session` from the target task file's frontmatter rather than assuming shared conversation context
-- [ ] `debrief-task` locates and parses the correct `.jsonl` transcript file for that session id
-- [ ] Friction/deviation reconstruction is derived from transcript content (tool calls, errors, corrections), not from anything only visible in live conversation memory
-- [ ] The debrief output includes a `modules touched` field listing directories under `src/` that were edited during the session, derived from Edit/Write tool calls in the transcript
-- [ ] Manually run `/debrief-task` against a past task with a known session id (e.g. one of the `atomic-test-refactor` tasks, if a session id can be backfilled or a fresh test task is used) and confirm the output is accurate and self-consistent with no shared-context assumptions
+- [x] `debrief-task` reads `session` from the target task file's frontmatter rather than assuming shared conversation context
+- [x] `debrief-task` locates and parses the correct `.jsonl` transcript file for that session id
+- [x] Friction/deviation reconstruction is derived from transcript content (tool calls, errors, corrections), not from anything only visible in live conversation memory
+- [x] The debrief output includes a `modules touched` field listing directories under `src/` that were edited during the session, derived from Edit/Write tool calls in the transcript
+- [x] Manually run `/debrief-task` against a past task with a known session id (e.g. one of the `atomic-test-refactor` tasks, if a session id can be backfilled or a fresh test task is used) and confirm the output is accurate and self-consistent with no shared-context assumptions

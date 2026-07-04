@@ -1,5 +1,6 @@
 status: done
 blocked-by: [01-init-local-skill-pilot-orders.md]
+session: 21d1220a-20c6-445d-ab55-942e54db2457
 
 ---
 
