@@ -70,6 +70,7 @@ Never mock repositories — all integration tests hit a real PostgreSQL DB (DB_T
 - Check off each acceptance criterion you actually verified.
 - If all are met: set `status: done`.
 - If some aren't: leave `status: in-progress`, list what's unmet and why, and stop — do not mark done.
+- If and only if you set `status: done`: also record `session: $CLAUDE_CODE_SESSION_ID` (the actual value of that environment variable, not the literal string) into the task file's frontmatter, then spawn a background Agent invoking `/debrief-task <prd-slug> <task>` for the task just completed. Don't wait on it — it runs independently in a fresh context.
 - Summarize what changed and any deviations from the plan in your final message.
 
 Do NOT modify the source PRD file. Do NOT touch other task files except to read their `status`/`blocked-by` for selection. Do NOT handle git operations (branching, committing, pushing) — that's managed outside this skill.

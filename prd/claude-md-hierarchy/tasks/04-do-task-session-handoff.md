@@ -1,5 +1,6 @@
-status: todo
+status: done
 blocked-by: [03-debrief-task-transcript-reconstruction.md]
+session: 896d99f8-9f98-42f6-b179-2e10c3fd9b10
 
 ---
 
@@ -21,7 +22,7 @@ This is a small, targeted addition to the end of `do-task`'s existing flow — i
 
 ## Acceptance criteria
 
-- [ ] `do-task`'s final step writes `session: $CLAUDE_CODE_SESSION_ID` into the task file's frontmatter before/alongside marking `status: done`
-- [ ] `do-task`'s final step spawns a background Agent invoking `/debrief-task <prd-slug> <task>` for the completed task
-- [ ] `do-task`'s planning/implementation flow prior to the final step is unchanged
-- [ ] Run `do-task` end-to-end on a real (small) task and confirm the task file ends up with both `status: done` and a `session` field, and that a debrief agent was spawned and produced output
+- [x] `do-task`'s final step writes `session: $CLAUDE_CODE_SESSION_ID` into the task file's frontmatter before/alongside marking `status: done`
+- [x] `do-task`'s final step spawns a background Agent invoking `/debrief-task <prd-slug> <task>` for the completed task
+- [x] `do-task`'s planning/implementation flow prior to the final step is unchanged
+- [x] Run `do-task` end-to-end on a real (small) task and confirm the task file ends up with both `status: done` and a `session` field, and that a debrief agent was spawned and produced output — ran `/do-task claude-md-hierarchy 05`; task 05's frontmatter has `status: done` + `session: 896d99f8-9f98-42f6-b179-2e10c3fd9b10`, and the spawned background Agent wrote `prd/claude-md-hierarchy/debriefs/05-review-debrief-scoped-recommendations.md`.

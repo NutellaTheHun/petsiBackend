@@ -1,5 +1,6 @@
-status: todo
+status: done
 blocked-by: [03-debrief-task-transcript-reconstruction.md]
+session: 896d99f8-9f98-42f6-b179-2e10c3fd9b10
 
 ---
 
@@ -20,7 +21,7 @@ Update `.claude/skills/review-debrief/SKILL.md` so it clusters accumulated debri
 
 ## Acceptance criteria
 
-- [ ] `review-debrief` reads `modules touched` from each debrief and uses it to scope proposed findings to the correct local `CLAUDE.md` file, falling back to global for cross-cutting findings
-- [ ] Each printed recommendation includes: pattern, root cause, exact proposed text, and target file
-- [ ] The auto-apply step is removed from `review-debrief`'s SKILL.md — running it does not modify any file
-- [ ] Manually run `/review-debrief` against a small set of real or test debriefs (e.g. produced by task 03/04's test runs) and confirm recommendations are correctly scoped and nothing is written to disk
+- [x] `review-debrief` reads `modules touched` from each debrief and uses it to scope proposed findings to the correct local `CLAUDE.md` file, falling back to global for cross-cutting findings
+- [x] Each printed recommendation includes: pattern, root cause, exact proposed text, and target file
+- [x] The auto-apply step is removed from `review-debrief`'s SKILL.md — running it does not modify any file
+- [x] Manually run `/review-debrief` against a small set of real or test debriefs (e.g. produced by task 03/04's test runs) and confirm recommendations are correctly scoped and nothing is written to disk
