@@ -73,4 +73,14 @@ Never mock repositories — all integration tests hit a real PostgreSQL DB (DB_T
 - If and only if you set `status: done`: also record `session: $CLAUDE_CODE_SESSION_ID` (the actual value of that environment variable, not the literal string) into the task file's frontmatter, then spawn a background Agent invoking `/debrief-task <prd-slug> <task>` for the task just completed. Don't wait on it — it runs independently in a fresh context.
 - Summarize what changed and any deviations from the plan in your final message.
 
+**CLAUDE.md suggestions (include in final summary, do not apply):**
+
+After writing your summary, review the `CLAUDE.md` files in every module directory you touched (e.g. `src/modules/<domain>/CLAUDE.md`, `src/common/base/CLAUDE.md`). If this task introduced or changed patterns, conventions, base-class behavior, lifecycle hooks, or architectural invariants that a future agent would need to avoid a `wrong-assumption` or `missing-context` outcome — propose the update.
+
+For each suggested change, include in your final message:
+- Which `CLAUDE.md` file it targets
+- The exact text to add or change (as a diff or a clearly marked block)
+
+Do **not** write these files yourself. The user will review the proposals and apply the ones they approve. If nothing warrants a doc update, say so briefly ("No CLAUDE.md updates needed") so the user knows the check was done.
+
 Do NOT modify the source PRD file. Do NOT touch other task files except to read their `status`/`blocked-by` for selection. Do NOT handle git operations (branching, committing, pushing) — that's managed outside this skill.
