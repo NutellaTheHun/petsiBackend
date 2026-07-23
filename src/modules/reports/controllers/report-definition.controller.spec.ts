@@ -10,6 +10,7 @@ import { CreateReportDefinitionDto } from '../dto/create-report-definition.dto';
 import { ReportSchemaService } from '../services/report-schema.service';
 import { ReportDefinitionController } from './report-definition.controller';
 import { ReportDefinitionService } from '../services/report-definition.service';
+import { ReportExecutionService } from '../services/report-execution.service';
 import { ReportSchemaController } from './report-schema.controller';
 
 const TEST_JWT_SECRET = 'report-ctrl-test-secret';
@@ -40,6 +41,10 @@ const mockService = {
     remove: jest.fn().mockResolvedValue(undefined),
 };
 
+const mockExecutionService = {
+    execute: jest.fn().mockResolvedValue({ reportId: 1, name: 'Test', generatedAt: new Date(), params: {}, sections: [] }),
+};
+
 const mockSchemaService = {
     getSchema: jest.fn().mockReturnValue({ entities: { orders: { label: 'Orders', fields: {} } } }),
 };
@@ -54,6 +59,7 @@ describe('ReportDefinitionController (role enforcement)', () => {
             controllers: [ReportDefinitionController, ReportSchemaController],
             providers: [
                 { provide: ReportDefinitionService, useValue: mockService },
+                { provide: ReportExecutionService, useValue: mockExecutionService },
                 { provide: ReportSchemaService, useValue: mockSchemaService },
                 { provide: RequestContextService, useClass: TestRequestContextService },
                 TestAuthGuard,
@@ -126,5 +132,15 @@ describe('ReportDefinitionController (role enforcement)', () => {
             .expect(200);
         expect(res.body.entities).toBeDefined();
         expect(Object.keys(res.body.entities).length).toBeGreaterThan(0);
+    });
+
+    it('POST /reports/definitions/:id/execute returns 403 for staff JWT when service throws ForbiddenException', async () => {
+        const { ForbiddenException } = await import('@nestjs/common');
+        mockExecutionService.execute.mockRejectedValueOnce(new ForbiddenException());
+        await request(app.getHttpServer())
+            .post('/reports/definitions/1/execute')
+            .set('Authorization', `Bearer ${token(['staff'])}`)
+            .send({})
+            .expect(403);
     });
 });

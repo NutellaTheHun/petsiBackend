@@ -5,6 +5,7 @@ import { ReportDefinitionController } from './controllers/report-definition.cont
 import { ReportSchemaController } from './controllers/report-schema.controller';
 import { ReportDefinition } from './entities/report-definition.entity';
 import { ReportDefinitionService } from './services/report-definition.service';
+import { ReportExecutionService } from './services/report-execution.service';
 import { ReportSchemaService } from './services/report-schema.service';
 
 @Module({
@@ -13,7 +14,7 @@ import { ReportSchemaService } from './services/report-schema.service';
         RequestContextModule,
     ],
     controllers: [ReportDefinitionController, ReportSchemaController],
-    providers: [ReportDefinitionService, ReportSchemaService],
-    exports: [ReportDefinitionService, ReportSchemaService],
+    providers: [ReportDefinitionService, ReportExecutionService, ReportSchemaService],
+    exports: [ReportDefinitionService, ReportExecutionService, ReportSchemaService],
 })
 export class ReportsModule {}
