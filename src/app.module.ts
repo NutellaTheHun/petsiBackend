@@ -24,6 +24,7 @@ import { LabelsModule } from './modules/labels/labels.module';
 import { MenuItemsModule } from './modules/menu-items/menu-items.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { RecipesModule } from './modules/recipes/recipes.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { RequestContextModule } from './modules/request-context/request-context.module';
 import { RoleGuard } from './modules/roles/guards/role.guard';
 import { RoleModule } from './modules/roles/role.module';
@@ -88,6 +89,7 @@ import { UserModule } from './modules/users/user.module';
     UserModule,
     RoleModule,
     DynamicPropertiesModule,
+    ReportsModule,
   ],
 
   controllers: [AppController],

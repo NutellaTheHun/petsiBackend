@@ -43,6 +43,9 @@ export class AuthGuard implements CanActivate {
         if (Number.isFinite(userId)) {
           ns.set('userId', userId);
         }
+        if (Array.isArray(payload?.roles)) {
+          ns.set('roles', payload.roles);
+        }
       }
     } catch (err) {
       throw new UnauthorizedException();
