@@ -18,6 +18,7 @@ export interface FieldRegistryEntry {
     joins?: FieldJoin[];
     select: string;
     alias: string;
+    isChildrenExpansion?: boolean;
 }
 
 export interface EntityRegistryEntry {

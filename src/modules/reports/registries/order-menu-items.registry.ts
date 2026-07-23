@@ -67,6 +67,7 @@ export const orderMenuItemsRegistry: EntityRegistryEntry = {
             groupable: false,
             select: '',
             alias: 'children',
+            isChildrenExpansion: true,
         },
     },
 };

@@ -1,7 +1,8 @@
 import { ForbiddenException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { AppHttpException } from '../../../common/exceptions/app-http-exception';
+import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -26,6 +27,8 @@ export class ReportExecutionService {
     constructor(
         @InjectRepository(ReportDefinition)
         private readonly definitionRepo: Repository<ReportDefinition>,
+        @InjectRepository(OrderMenuItem)
+        private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
         private readonly dataSource: DataSource,
         private readonly requestContextService: RequestContextService,
     ) {}
@@ -79,6 +82,10 @@ export class ReportExecutionService {
 
         const entityRegistry = FIELD_REGISTRY[section.entity];
 
+        const hasChildrenExpansion = section.columns.some(
+            (col) => entityRegistry.fields[col.fieldKey]?.isChildrenExpansion === true,
+        );
+
         const columnEntries: Array<{ fieldEntry: FieldRegistryEntry; label: string }> = [];
         for (const col of section.columns) {
             const fieldEntry = entityRegistry.fields[col.fieldKey];
@@ -114,6 +121,10 @@ export class ReportExecutionService {
         for (let i = 1; i < columnEntries.length; i++) {
             qb.addSelect(columnEntries[i].fieldEntry.select, columnEntries[i].fieldEntry.alias);
             applyJoins(columnEntries[i].fieldEntry);
+        }
+
+        if (hasChildrenExpansion) {
+            qb.addSelect(`${entityConfig.alias}.id`, '__parentId');
         }
 
         if (section.entity === 'orders') {
@@ -181,6 +192,30 @@ export class ReportExecutionService {
                   return mapped;
               })
             : rows;
+
+        if (hasChildrenExpansion) {
+            const parentIds = [...new Set(mappedRows.map((r) => r.__parentId))].filter(
+                (id): id is number => id != null,
+            );
+            const childrenByParentId = new Map<number, OrderContainerItem[]>();
+            if (parentIds.length > 0) {
+                const parentEntities = await this.orderMenuItemRepo.find({
+                    where: { id: In(parentIds) },
+                });
+                for (const parent of parentEntities) {
+                    childrenByParentId.set(parent.id, parent.containerOrderMenuItems ?? []);
+                }
+            }
+            for (const row of mappedRows) {
+                const containers = childrenByParentId.get(row.__parentId) ?? [];
+                row.children = containers.map((ci) => ({
+                    itemName: ci.containedMenuItem?.name ?? null,
+                    sizeName: ci.containedItemSize?.name ?? null,
+                    quantity: ci.quantity,
+                }));
+                delete row.__parentId;
+            }
+        }
 
         const columns: ColumnDefDto[] = columnEntries.map(({ fieldEntry, label }) => ({
             key: fieldEntry.alias,

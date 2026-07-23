@@ -8,6 +8,7 @@ import { TestRequestContextService } from '../../../test/mocks/test-request-cont
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -42,6 +43,7 @@ describe('ReportExecutionService', () => {
     let orderFrozen: Order;
     let orderMenuItemAlice: OrderMenuItem;
     let orderMenuItemBob: OrderMenuItem;
+    let orderContainerItemRepo: Repository<OrderContainerItem>;
 
     beforeAll(async () => {
         module = await getReportsExecutionTestingModule();
@@ -52,6 +54,7 @@ describe('ReportExecutionService', () => {
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         testContextService = module.get(RequestContextService) as TestRequestContextService;
 
         menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie` });
@@ -461,6 +464,90 @@ describe('ReportExecutionService', () => {
             testContextService.run(() => {}, { roles: [ROLE_STAFF] });
             await expect(service.execute(defn.id, {})).rejects.toThrow(ForbiddenException);
             testContextService.run(() => {}, { roles: [ROLE_MANAGER] });
+        });
+    });
+
+    describe('nested children (orderMenuItems with container sub-items)', () => {
+        it('container row includes children array with correct sub-item fields', async () => {
+            const containerOrder = await orderRepo.save({
+                recipient: `${P}-container-order`,
+                fulfillmentDate: DATE_1,
+                fulfillmentType: 'pickup',
+                isFrozen: false,
+            });
+            testCtx.addCleanupFunction(async () => { await orderRepo.delete(containerOrder.id); });
+
+            const containerOrderMenuItem = await orderMenuItemRepo.save({
+                menuItem,
+                size: menuItemSize,
+                quantity: 1,
+                parentOrder: containerOrder,
+                containerOrderMenuItems: [
+                    { containedMenuItem: menuItem, containedItemSize: menuItemSize, quantity: 2 },
+                    { containedMenuItem: menuItem2, containedItemSize: menuItemSize, quantity: 3 },
+                ],
+            } as any);
+            testCtx.addCleanupFunction(async () => { await orderMenuItemRepo.delete(containerOrderMenuItem.id); });
+
+            const defn = await createDefinition([
+                {
+                    type: 'table',
+                    order: 1,
+                    title: 'Items with sub-items',
+                    entity: 'orderMenuItems',
+                    columns: [
+                        { fieldKey: 'itemName' },
+                        { fieldKey: 'sizeName' },
+                        { fieldKey: 'quantity' },
+                        { fieldKey: 'children' },
+                    ],
+                    filters: [],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+            const section = result.sections[0] as any;
+
+            const containerRow = section.rows.find(
+                (r: any) => r.itemName === `${P}-apple-pie` && Number(r.quantity) === 1,
+            );
+            expect(containerRow).toBeDefined();
+            expect(containerRow.children).toHaveLength(2);
+
+            const childWithQty2 = containerRow.children.find((c: any) => Number(c.quantity) === 2);
+            expect(childWithQty2).toBeDefined();
+            expect(childWithQty2.itemName).toBe(`${P}-apple-pie`);
+            expect(childWithQty2.sizeName).toBe(`${P}-regular`);
+
+            const childWithQty3 = containerRow.children.find((c: any) => Number(c.quantity) === 3);
+            expect(childWithQty3).toBeDefined();
+            expect(childWithQty3.itemName).toBe(`${P}-cherry-pie`);
+            expect(childWithQty3.sizeName).toBe(`${P}-regular`);
+        });
+
+        it('non-container rows have an empty children array', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'table',
+                    order: 1,
+                    title: 'All Items',
+                    entity: 'orderMenuItems',
+                    columns: [
+                        { fieldKey: 'itemName' },
+                        { fieldKey: 'children' },
+                    ],
+                    filters: [],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+            const section = result.sections[0] as any;
+
+            // All seeded rows (alice + bob) have no container sub-items
+            for (const row of section.rows) {
+                expect(Array.isArray(row.children)).toBe(true);
+                expect(row.children).toHaveLength(0);
+            }
         });
     });
 });
