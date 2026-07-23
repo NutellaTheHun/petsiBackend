@@ -8,6 +8,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { ColumnDefDto, ReportResultDto, ReportSectionResultDto } from '../dto/report-result.dto';
 import {
+    JsonMetricReportSection,
     JsonTableReportSection,
     JsonTextReportSection,
     ReportDefinition,
@@ -49,6 +50,8 @@ export class ReportExecutionService {
                 sections.push(this.processTextSection(section));
             } else if (section.type === 'table') {
                 sections.push(await this.processTableSection(section, runtimeParams));
+            } else if (section.type === 'metric') {
+                sections.push(await this.processMetricSection(section, runtimeParams));
             }
         }
 
@@ -136,7 +139,48 @@ export class ReportExecutionService {
             });
         }
 
+        if (section.groupBy && section.groupBy.length > 0) {
+            for (const fieldKey of section.groupBy) {
+                const fieldEntry = entityRegistry.fields[fieldKey];
+                if (!fieldEntry) {
+                    throw new AppHttpException(
+                        `Unknown groupBy field key: ${fieldKey}`,
+                        HttpStatus.BAD_REQUEST,
+                    );
+                }
+                applyJoins(fieldEntry);
+                qb.addGroupBy(fieldEntry.select);
+            }
+        }
+
+        const hasAggregates = !!(section.aggregates && section.aggregates.length > 0);
+        if (hasAggregates) {
+            for (let i = 0; i < section.aggregates!.length; i++) {
+                const agg = section.aggregates![i];
+                const fieldEntry = entityRegistry.fields[agg.fieldKey];
+                if (!fieldEntry) {
+                    throw new AppHttpException(
+                        `Unknown aggregate field key: ${agg.fieldKey}`,
+                        HttpStatus.BAD_REQUEST,
+                    );
+                }
+                applyJoins(fieldEntry);
+                qb.addSelect(`${agg.fn.toUpperCase()}(${fieldEntry.select})`, `__agg_${i}`);
+            }
+        }
+
         const rows = await qb.getRawMany();
+
+        const mappedRows = hasAggregates
+            ? rows.map((row) => {
+                  const mapped: Record<string, any> = { ...row };
+                  section.aggregates!.forEach((agg, i) => {
+                      mapped[agg.label] = Number(row[`__agg_${i}`]);
+                      delete mapped[`__agg_${i}`];
+                  });
+                  return mapped;
+              })
+            : rows;
 
         const columns: ColumnDefDto[] = columnEntries.map(({ fieldEntry, label }) => ({
             key: fieldEntry.alias,
@@ -144,6 +188,94 @@ export class ReportExecutionService {
             dataType: fieldEntry.dataType,
         }));
 
-        return { type: 'table', title: section.title, columns, rows };
+        if (hasAggregates) {
+            for (const agg of section.aggregates!) {
+                columns.push({ key: agg.label, label: agg.label, dataType: 'number' });
+            }
+        }
+
+        return { type: 'table', title: section.title, columns, rows: mappedRows };
+    }
+
+    protected async processMetricSection(
+        section: JsonMetricReportSection,
+        runtimeParams: Record<string, any>,
+    ): Promise<ReportSectionResultDto> {
+        const entityConfig = ENTITY_QUERY_CONFIG[section.entity];
+        if (!entityConfig) {
+            throw new AppHttpException(`Unknown entity: ${section.entity}`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!section.aggregates || section.aggregates.length === 0) {
+            return { type: 'metric', title: section.title, metrics: [] };
+        }
+
+        const entityRegistry = FIELD_REGISTRY[section.entity];
+        const qb = this.dataSource.createQueryBuilder(entityConfig.entityClass, entityConfig.alias);
+        const addedJoinAliases = new Set<string>();
+
+        const applyJoins = (fieldEntry: FieldRegistryEntry) => {
+            for (const join of fieldEntry.joins ?? []) {
+                if (!addedJoinAliases.has(join.alias)) {
+                    qb.leftJoin(join.relation, join.alias);
+                    addedJoinAliases.add(join.alias);
+                }
+            }
+        };
+
+        const firstAgg = section.aggregates[0];
+        const firstFieldEntry = entityRegistry.fields[firstAgg.fieldKey];
+        if (!firstFieldEntry) {
+            throw new AppHttpException(
+                `Unknown aggregate field key: ${firstAgg.fieldKey}`,
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+        applyJoins(firstFieldEntry);
+        qb.select(`${firstAgg.fn.toUpperCase()}(${firstFieldEntry.select})`, `__agg_0`);
+
+        for (let i = 1; i < section.aggregates.length; i++) {
+            const agg = section.aggregates[i];
+            const fieldEntry = entityRegistry.fields[agg.fieldKey];
+            if (!fieldEntry) {
+                throw new AppHttpException(
+                    `Unknown aggregate field key: ${agg.fieldKey}`,
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            applyJoins(fieldEntry);
+            qb.addSelect(`${agg.fn.toUpperCase()}(${fieldEntry.select})`, `__agg_${i}`);
+        }
+
+        if (section.entity === 'orders') {
+            qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, { isFrozen: false });
+        }
+
+        for (let i = 0; i < (section.filters ?? []).length; i++) {
+            const filter = section.filters[i];
+            const filterFieldEntry = entityRegistry.fields[filter.field];
+            if (!filterFieldEntry) {
+                throw new AppHttpException(
+                    `Unknown filter field: ${filter.field}`,
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            applyJoins(filterFieldEntry);
+            const value =
+                filter.source === 'param' ? runtimeParams[filter.paramName] : filter.value;
+            const paramKey = `fp_${i}`;
+            qb.andWhere(`${filterFieldEntry.select} ${filter.operator} :${paramKey}`, {
+                [paramKey]: value,
+            });
+        }
+
+        const [row] = await qb.getRawMany();
+
+        const metrics = section.aggregates.map((agg, i) => ({
+            label: agg.label,
+            value: row ? Number(row[`__agg_${i}`]) : 0,
+        }));
+
+        return { type: 'metric', title: section.title, metrics };
     }
 }

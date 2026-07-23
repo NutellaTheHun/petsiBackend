@@ -34,12 +34,14 @@ describe('ReportExecutionService', () => {
     let testCtx: DatabaseTestContext;
 
     let menuItem: MenuItem;
+    let menuItem2: MenuItem;
     let menuItemSize: MenuItemSize;
     let menuItemCategory: MenuItemCategory;
     let orderAlice: Order;
     let orderBob: Order;
     let orderFrozen: Order;
     let orderMenuItemAlice: OrderMenuItem;
+    let orderMenuItemBob: OrderMenuItem;
 
     beforeAll(async () => {
         module = await getReportsExecutionTestingModule();
@@ -55,6 +57,7 @@ describe('ReportExecutionService', () => {
         menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie` });
         menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular` });
         menuItem = await menuItemRepo.save({ name: `${P}-apple-pie` });
+        menuItem2 = await menuItemRepo.save({ name: `${P}-cherry-pie` });
 
         orderAlice = await orderRepo.save({
             recipient: `${P}-alice`,
@@ -81,14 +84,20 @@ describe('ReportExecutionService', () => {
             quantity: 2,
             parentOrder: orderAlice,
         });
+        orderMenuItemBob = await orderMenuItemRepo.save({
+            menuItem: menuItem2,
+            size: menuItemSize,
+            quantity: 3,
+            parentOrder: orderBob,
+        });
 
         testContextService.run(() => {}, { roles: [ROLE_MANAGER] });
     });
 
     afterAll(async () => {
-        await orderMenuItemRepo.delete(orderMenuItemAlice.id);
+        await orderMenuItemRepo.delete([orderMenuItemAlice.id, orderMenuItemBob.id]);
         await orderRepo.delete([orderAlice.id, orderBob.id, orderFrozen.id]);
-        await menuItemRepo.delete(menuItem.id);
+        await menuItemRepo.delete([menuItem.id, menuItem2.id]);
         await menuItemSizeRepo.delete(menuItemSize.id);
         await menuItemCategoryRepo.delete(menuItemCategory.id);
     });
@@ -270,6 +279,154 @@ describe('ReportExecutionService', () => {
             expect(row).toBeDefined();
             expect(row.sizeName).toBe(`${P}-regular`);
             expect(Number(row.quantity)).toBe(2);
+        });
+    });
+
+    describe('aggregated table section (groupBy + aggregates)', () => {
+        it('groups by itemName and returns correct sum per group', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'table',
+                    order: 1,
+                    title: 'Qty by Item',
+                    entity: 'orderMenuItems',
+                    columns: [{ fieldKey: 'itemName' }],
+                    filters: [],
+                    groupBy: ['itemName'],
+                    aggregates: [{ fieldKey: 'quantity', fn: 'sum', label: 'totalQty' }],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+            const section = result.sections[0] as any;
+
+            expect(section.type).toBe('table');
+            expect(section.columns).toContainEqual({ key: 'itemName', label: 'Item Name', dataType: 'string' });
+            expect(section.columns).toContainEqual({ key: 'totalQty', label: 'totalQty', dataType: 'number' });
+
+            const appleRow = section.rows.find((r: any) => r.itemName === `${P}-apple-pie`);
+            expect(appleRow).toBeDefined();
+            expect(Number(appleRow.totalQty)).toBe(2);
+
+            const cherryRow = section.rows.find((r: any) => r.itemName === `${P}-cherry-pie`);
+            expect(cherryRow).toBeDefined();
+            expect(Number(cherryRow.totalQty)).toBe(3);
+        });
+
+        it('one row per unique grouped field combination', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'table',
+                    order: 1,
+                    title: 'Grouped Items',
+                    entity: 'orderMenuItems',
+                    columns: [{ fieldKey: 'itemName' }, { fieldKey: 'sizeName' }],
+                    filters: [],
+                    groupBy: ['itemName', 'sizeName'],
+                    aggregates: [{ fieldKey: 'quantity', fn: 'count', label: 'itemCount' }],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+            const section = result.sections[0] as any;
+
+            const appleRow = section.rows.find((r: any) => r.itemName === `${P}-apple-pie`);
+            const cherryRow = section.rows.find((r: any) => r.itemName === `${P}-cherry-pie`);
+            expect(appleRow).toBeDefined();
+            expect(cherryRow).toBeDefined();
+            expect(Number(appleRow.itemCount)).toBe(1);
+            expect(Number(cherryRow.itemCount)).toBe(1);
+        });
+    });
+
+    describe('metric section', () => {
+        it('returns metric values matching known seeded aggregates', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'metric',
+                    order: 1,
+                    title: 'Summary',
+                    entity: 'orderMenuItems',
+                    columns: [],
+                    filters: [],
+                    aggregates: [
+                        { fieldKey: 'quantity', fn: 'sum', label: 'Total Quantity' },
+                        { fieldKey: 'quantity', fn: 'count', label: 'Item Count' },
+                    ],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+            const section = result.sections[0] as any;
+
+            expect(section.type).toBe('metric');
+            expect(section.title).toBe('Summary');
+            expect(section.metrics).toHaveLength(2);
+
+            const totalQtyMetric = section.metrics.find((m: any) => m.label === 'Total Quantity');
+            expect(totalQtyMetric).toBeDefined();
+            expect(Number(totalQtyMetric.value)).toBe(5); // 2 (alice) + 3 (bob)
+
+            const itemCountMetric = section.metrics.find((m: any) => m.label === 'Item Count');
+            expect(itemCountMetric).toBeDefined();
+            expect(Number(itemCountMetric.value)).toBe(2);
+        });
+
+        it('fixed filter scopes metric aggregation to matching rows', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'metric',
+                    order: 1,
+                    title: 'Apple Pie Only',
+                    entity: 'orderMenuItems',
+                    columns: [],
+                    filters: [
+                        {
+                            source: 'fixed',
+                            field: 'itemName',
+                            operator: '=',
+                            value: `${P}-apple-pie`,
+                        },
+                    ],
+                    aggregates: [{ fieldKey: 'quantity', fn: 'sum', label: 'totalQty' }],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+            const section = result.sections[0] as any;
+
+            expect(section.type).toBe('metric');
+            const metric = section.metrics.find((m: any) => m.label === 'totalQty');
+            expect(metric).toBeDefined();
+            expect(Number(metric.value)).toBe(2);
+        });
+
+        it('param filter scopes metric aggregation', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'metric',
+                    order: 1,
+                    title: 'Filtered Qty',
+                    entity: 'orderMenuItems',
+                    columns: [],
+                    filters: [
+                        {
+                            source: 'param',
+                            field: 'itemName',
+                            operator: '=',
+                            paramName: 'item',
+                        },
+                    ],
+                    aggregates: [{ fieldKey: 'quantity', fn: 'sum', label: 'totalQty' }],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, { item: `${P}-cherry-pie` });
+            const section = result.sections[0] as any;
+
+            expect(section.type).toBe('metric');
+            const metric = section.metrics.find((m: any) => m.label === 'totalQty');
+            expect(Number(metric.value)).toBe(3);
         });
     });
 
