@@ -21,6 +21,7 @@ import { DynamicPropertiesModule } from './modules/dynamic-properties/dynamic-pr
 import { InventoryAreasModule } from './modules/inventory-areas/inventory-areas.module';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
 import { LabelsModule } from './modules/labels/labels.module';
+import { LocationsModule } from './modules/locations/locations.module';
 import { MenuItemsModule } from './modules/menu-items/menu-items.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { RecipesModule } from './modules/recipes/recipes.module';
@@ -30,6 +31,7 @@ import { RoleGuard } from './modules/roles/guards/role.guard';
 import { RoleModule } from './modules/roles/role.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { TemplatesModule } from './modules/templates/templates.module';
+import { TenantsModule } from './modules/tenants/tenants.module';
 import { UserModule } from './modules/users/user.module';
 
 @Module({
@@ -90,6 +92,8 @@ import { UserModule } from './modules/users/user.module';
     RoleModule,
     DynamicPropertiesModule,
     ReportsModule,
+    TenantsModule,
+    LocationsModule,
   ],
 
   controllers: [AppController],
