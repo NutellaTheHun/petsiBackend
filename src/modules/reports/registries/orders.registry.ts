@@ -1,0 +1,62 @@
+import { EntityRegistryEntry } from './field-registry.types';
+
+export const ordersRegistry: EntityRegistryEntry = {
+    label: 'Orders',
+    fields: {
+        fulfillmentDate: {
+            label: 'Fulfillment Date',
+            dataType: 'date',
+            filterable: true,
+            aggregatable: false,
+            groupable: true,
+            select: 'order.fulfillmentDate',
+            alias: 'fulfillmentDate',
+        },
+        fulfillmentType: {
+            label: 'Fulfillment Type',
+            dataType: 'enum',
+            options: ['pickup', 'delivery'],
+            filterable: true,
+            aggregatable: false,
+            groupable: true,
+            select: 'order.fulfillmentType',
+            alias: 'fulfillmentType',
+        },
+        recipient: {
+            label: 'Recipient Name',
+            dataType: 'string',
+            filterable: true,
+            aggregatable: false,
+            groupable: false,
+            select: 'order.recipient',
+            alias: 'recipient',
+        },
+        isFrozen: {
+            label: 'Frozen',
+            dataType: 'boolean',
+            filterable: true,
+            aggregatable: false,
+            groupable: false,
+            select: 'order.isFrozen',
+            alias: 'isFrozen',
+        },
+        note: {
+            label: 'Note',
+            dataType: 'string',
+            filterable: false,
+            aggregatable: false,
+            groupable: false,
+            select: 'order.note',
+            alias: 'note',
+        },
+        deliveryAddress: {
+            label: 'Delivery Address',
+            dataType: 'string',
+            filterable: false,
+            aggregatable: false,
+            groupable: false,
+            select: 'order.deliveryAddress',
+            alias: 'deliveryAddress',
+        },
+    },
+};

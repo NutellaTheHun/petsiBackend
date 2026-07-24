@@ -1,0 +1,73 @@
+import { EntityRegistryEntry } from './field-registry.types';
+
+export const orderMenuItemsRegistry: EntityRegistryEntry = {
+    label: 'Order Items',
+    fields: {
+        itemName: {
+            label: 'Item Name',
+            dataType: 'string',
+            filterable: true,
+            aggregatable: false,
+            groupable: true,
+            joins: [{ relation: 'orderMenuItem.menuItem', alias: 'menuItem' }],
+            select: 'menuItem.name',
+            alias: 'itemName',
+        },
+        sizeName: {
+            label: 'Size',
+            dataType: 'string',
+            filterable: true,
+            aggregatable: false,
+            groupable: true,
+            joins: [{ relation: 'orderMenuItem.size', alias: 'size' }],
+            select: 'size.name',
+            alias: 'sizeName',
+        },
+        quantity: {
+            label: 'Quantity',
+            dataType: 'number',
+            filterable: false,
+            aggregatable: true,
+            aggregateFns: ['sum', 'count', 'avg'],
+            groupable: false,
+            select: 'orderMenuItem.quantity',
+            alias: 'quantity',
+        },
+        categoryName: {
+            label: 'Category',
+            dataType: 'string',
+            filterable: true,
+            aggregatable: false,
+            groupable: true,
+            joins: [
+                { relation: 'orderMenuItem.menuItem', alias: 'menuItem' },
+                { relation: 'menuItem.category', alias: 'category' },
+            ],
+            select: 'category.name',
+            alias: 'categoryName',
+        },
+        categoryId: {
+            label: 'Category ID',
+            dataType: 'number',
+            filterable: true,
+            aggregatable: false,
+            groupable: false,
+            joins: [
+                { relation: 'orderMenuItem.menuItem', alias: 'menuItem' },
+                { relation: 'menuItem.category', alias: 'category' },
+            ],
+            select: 'category.id',
+            alias: 'categoryId',
+        },
+        children: {
+            label: 'Sub-items',
+            dataType: 'string',
+            filterable: false,
+            aggregatable: false,
+            groupable: false,
+            select: '',
+            alias: 'children',
+            isChildrenExpansion: true,
+        },
+    },
+};
