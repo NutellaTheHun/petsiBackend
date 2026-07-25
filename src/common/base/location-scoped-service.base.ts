@@ -106,4 +106,33 @@ export abstract class LocationScopedServiceBase<
       }
     }
   }
+
+  /**
+   * Results vary not just by tenant but by which locations the caller is
+   * authorized for (an unscoped `findAll`/`findOne` implicitly filters to
+   * the caller's location set — see `applyScope` above), so the cache key
+   * must fold that in too, or two callers in the same tenant with different
+   * location assignments could be served each other's cached results.
+   */
+  public getCacheScope(): string {
+    const tenantScope = super.getCacheScope();
+    if (this.isTenantAdmin()) {
+      return `${tenantScope}|admin`;
+    }
+    const locationIds = [...this.getAuthorizedLocationIds()].sort(
+      (a, b) => a - b,
+    );
+    return `${tenantScope}|locations:${locationIds.join(',')}`;
+  }
+
+  /**
+   * Unlike `getCacheScope()`, invalidation deliberately drops the location
+   * component: a create/update/remove at one location must invalidate the
+   * `findAll` cache for every location-view variant within the tenant, not
+   * just the writer's own. Falls back to the tenant-only scope from
+   * `TenantScopedServiceBase`.
+   */
+  public getCacheInvalidationScope(): string {
+    return super.getCacheScope();
+  }
 }

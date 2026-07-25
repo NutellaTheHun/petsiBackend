@@ -63,4 +63,8 @@ export abstract class TenantScopedServiceBase<
       tenantId: this.getTenantId(),
     });
   }
+
+  public getCacheScope(): string {
+    return `tenant:${this.getTenantId()}`;
+  }
 }

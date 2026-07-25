@@ -452,6 +452,32 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     // Default: do nothing.
   }
 
+  /**
+   * Default: no scoping. Overridden by `TenantScopedServiceBase`/
+   * `LocationScopedServiceBase` so that `ControllerBase`'s cache keys fold in
+   * whatever part of the caller's identity affects query results (tenant,
+   * and for location-scoped entities, the caller's authorized locations) —
+   * otherwise a cached response for one tenant/location could be served to a
+   * different tenant/location within the cache TTL. Public (unlike
+   * `applyScope`) because `ControllerBase` — a sibling class, not a
+   * subclass — needs to call it when building cache keys.
+   */
+  public getCacheScope(): string {
+    return '';
+  }
+
+  /**
+   * The scope `ControllerBase` uses when tracking/invalidating `findAll`
+   * cache entries on create/update/remove. Defaults to `getCacheScope()`.
+   * `LocationScopedServiceBase` overrides this to drop the location
+   * component so a single write invalidates every location-view variant of
+   * the `findAll` cache within the affected tenant, not just the writer's
+   * own location scope.
+   */
+  public getCacheInvalidationScope(): string {
+    return this.getCacheScope();
+  }
+
   protected abstract createEntity(
     dto: TEntity['__CDto'],
     manager: EntityManager,
