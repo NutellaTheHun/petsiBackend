@@ -161,6 +161,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     dateBy?: string;
     startDate?: string;
     endDate?: string;
+    locationId?: number;
   }): Promise<PaginatedResult<TEntity['__Entity']>> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
@@ -174,6 +175,12 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
 
     // Start query with query builder
     const query = this.entityRepo.createQueryBuilder('entity');
+
+    // Unconditional (unlike applyFilters/applySearch/applyDate below, which only
+    // run when the caller supplied the relevant option): tenant/location scoping
+    // must never depend on the caller passing anything. See
+    // TenantScopedServiceBase/LocationScopedServiceBase.
+    this.applyScope(query, options);
 
     if (options.relations && options.relations.length > 0) {
       const relations = this.buildRelationStatements(options.relations);
@@ -428,6 +435,21 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
 
     // Default:
     _query.orderBy('entity.id', 'ASC');
+  }
+
+  /**
+   * Default: no scoping. Overridden by `TenantScopedServiceBase`/
+   * `LocationScopedServiceBase` to filter every `findAll` query by the
+   * caller's tenant (and location). Unlike `applyFilters`/`applySearch`/
+   * `applyDate`, this always runs, regardless of what the caller passed in
+   * `options` — a domain subclass overriding `applyFilters` for its own
+   * filters never affects this, since it's a distinct hook.
+   */
+  protected applyScope(
+    _query: SelectQueryBuilder<TEntity['__Entity']>,
+    _options?: { locationId?: number },
+  ): void {
+    // Default: do nothing.
   }
 
   protected abstract createEntity(

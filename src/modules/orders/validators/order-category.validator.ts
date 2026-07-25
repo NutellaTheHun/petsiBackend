@@ -35,6 +35,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

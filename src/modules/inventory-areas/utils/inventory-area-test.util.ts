@@ -10,6 +10,8 @@ import { InventoryItemSize } from '../../inventory-items/entities/inventory-item
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
+import { Location } from '../../locations/entities/location.entity';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
@@ -43,7 +45,52 @@ export class InventoryAreaTestUtil {
         private readonly inventoryItemRepo: Repository<InventoryItem>,
 
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
+
+        @InjectRepository(Location)
+        private readonly locationRepo: Repository<Location>,
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) { }
+
+    /**
+     * InventoryArea now requires tenantId/locationId (NOT NULL). Most
+     * inventory-areas fixtures don't care about tenant/location scoping
+     * themselves — they only need valid ids to satisfy the columns — so this
+     * lazily provisions (or reuses, by fixed subdomain, across the whole test
+     * run) one shared fixture Tenant+Location rather than requiring every
+     * seed method's callers to plumb ids through. Tests that actually
+     * exercise tenant/location scoping (inventory-area.*.spec.ts) seed and
+     * pass their own explicit tenant/location.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'inventory-area-test-util-fixture-tenant';
+    private defaultLocation?: Location;
+    public async getDefaultLocation(): Promise<Location> {
+        if (!this.defaultLocation) {
+            let tenant = await this.tenantRepo.findOne({
+                where: { subdomain: InventoryAreaTestUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            if (!tenant) {
+                tenant = await this.tenantRepo.save({
+                    name: 'Inventory Area Test Util Fixture Tenant',
+                    subdomain: InventoryAreaTestUtil.DEFAULT_TENANT_SUBDOMAIN,
+                });
+            }
+
+            let location = await this.locationRepo.findOne({
+                where: { tenant: { id: tenant.id }, name: 'fixture-location' },
+                relations: ['tenant'],
+            });
+            if (!location) {
+                location = await this.locationRepo.save({
+                    tenant,
+                    name: 'fixture-location',
+                });
+                location.tenant = tenant;
+            }
+            this.defaultLocation = location;
+        }
+        return this.defaultLocation;
+    }
 
     /**
      * Dependencies initialized: None
@@ -54,9 +101,17 @@ export class InventoryAreaTestUtil {
     ): Promise<InventoryArea[]> {
         const results: InventoryArea[] = [];
         const names = getAreaNames();
+        const location = await this.getDefaultLocation();
 
         for (const name of names) {
-            results.push(await this.areaBuilder.reset().areaName(name).build());
+            results.push(
+                await this.areaBuilder
+                    .reset()
+                    .areaName(name)
+                    .tenantId(location.tenant.id)
+                    .locationId(location.id)
+                    .build(),
+            );
         }
         return results;
     }
@@ -279,12 +334,34 @@ export class InventoryAreaTestUtil {
     // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
     // These do not register cleanup — callers are responsible for deleting by ID.
 
-    public async seedAreas(P: string = ''): Promise<{ areas: InventoryArea[] }> {
+    /**
+     * `tenantId`/`locationId` default to a shared fixture Location (see
+     * `getDefaultLocation`) — pass them explicitly when the test actually
+     * exercises tenant/location scoping.
+     */
+    public async seedAreas(
+        P: string = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{ areas: InventoryArea[] }> {
+        let effectiveTenantId = tenantId;
+        let effectiveLocationId = locationId;
+        if (effectiveTenantId === undefined || effectiveLocationId === undefined) {
+            const location = await this.getDefaultLocation();
+            effectiveTenantId ??= location.tenant.id;
+            effectiveLocationId ??= location.id;
+        }
+
         const names = getAreaNames();
         const areas: InventoryArea[] = [];
         for (const name of names) {
             const areaName = P ? `${P}-${name}` : name;
-            const entity = await this.areaBuilder.reset().areaName(areaName).build();
+            const entity = await this.areaBuilder
+                .reset()
+                .areaName(areaName)
+                .tenantId(effectiveTenantId)
+                .locationId(effectiveLocationId)
+                .build();
             areas.push(await this.areaRepo.save(entity));
         }
         return { areas };

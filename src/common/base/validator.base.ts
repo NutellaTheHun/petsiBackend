@@ -20,7 +20,7 @@ export abstract class ValidatorBase<
     constructor(
         private readonly entityRepo: Repository<T['__Entity']>,
         private readonly validationPrefix: string,
-        private readonly requestContextService: RequestContextService,
+        protected readonly requestContextService: RequestContextService,
         private readonly logger: AppLogger,
     ) {
         this.exceptionHandler = new ValidationExceptionHandler(logger);

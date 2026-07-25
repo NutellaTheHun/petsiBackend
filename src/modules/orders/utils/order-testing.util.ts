@@ -9,6 +9,7 @@ import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -41,10 +42,40 @@ export class OrderTestingUtil {
         private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
 
         private readonly menuItemTestUtil: MenuItemTestingUtil,
+
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) {
         this.orderTypeInit = false;
         this.orderInit = false;
         this.orderMenuItemInit = false;
+    }
+
+    /**
+     * OrderCategory now requires a tenantId (NOT NULL). Most order-module
+     * fixtures don't care about tenant scoping themselves — they only need a
+     * valid tenantId to satisfy the column — so this lazily provisions (or
+     * reuses, by fixed subdomain, across the whole test run) one shared
+     * fixture Tenant rather than requiring every seed method's callers to
+     * plumb a tenantId through. Tests that actually exercise tenant scoping
+     * (order-category.*.spec.ts) seed and pass their own explicit tenantId.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'order-testing-util-fixture-tenant';
+    private defaultTenantId?: number;
+    public async getDefaultTenantId(): Promise<number> {
+        if (this.defaultTenantId === undefined) {
+            const existing = await this.tenantRepo.findOne({
+                where: { subdomain: OrderTestingUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            const tenant =
+                existing ??
+                (await this.tenantRepo.save({
+                    name: 'Order Testing Util Fixture Tenant',
+                    subdomain: OrderTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                }));
+            this.defaultTenantId = tenant.id;
+        }
+        return this.defaultTenantId;
     }
 
     // Order Category
@@ -53,10 +84,12 @@ export class OrderTestingUtil {
     ): Promise<OrderCategory[]> {
         const names = getTestOrderCategoryNames();
         const results: OrderCategory[] = [];
+        const tenantId = await this.getDefaultTenantId();
 
         for (const name of names) {
             results.push({
                 name: name,
+                tenantId,
             } as OrderCategory);
         }
 
@@ -334,15 +367,21 @@ export class OrderTestingUtil {
     // These do NOT register cleanup — callers are responsible for deleting by ID.
 
     /**
-     * 4 categories: type a-d.
+     * 4 categories: type a-d. `tenantId` defaults to a shared fixture tenant
+     * (see `getDefaultTenantId`) — pass one explicitly when the test actually
+     * exercises tenant scoping.
      */
-    public async seedCategories(P = ''): Promise<{ categories: OrderCategory[] }> {
+    public async seedCategories(P = '', tenantId?: number): Promise<{ categories: OrderCategory[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestOrderCategoryNames();
         const categories: OrderCategory[] = [];
         for (const name of names) {
             const entityName = P ? `${P}-${name}` : name;
             categories.push(
-                await this.categoryRepo.save({ name: entityName } as OrderCategory),
+                await this.categoryRepo.save({
+                    name: entityName,
+                    tenantId: effectiveTenantId,
+                } as OrderCategory),
             );
         }
         return { categories };

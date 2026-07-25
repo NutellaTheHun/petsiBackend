@@ -1,8 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../test/mocks/test-request-context.service';
 import { InventoryAreaCountService } from '../inventory-areas/services/inventory-area-count.service';
 import { InventoryAreaItemService } from '../inventory-areas/services/inventory-area-item.service';
 import { InventoryAreaService } from '../inventory-areas/services/inventory-area.service';
+import { InventoryAreaTestUtil } from '../inventory-areas/utils/inventory-area-test.util';
 import { InventoryItemCategoryService } from '../inventory-items/services/inventory-item-category.service';
 import { InventoryItemPackageService } from '../inventory-items/services/inventory-item-package.service';
 import { InventoryItemSizeService } from '../inventory-items/services/inventory-item-size.service';
@@ -18,10 +20,12 @@ import { OrderCategoryService } from '../orders/services/order-category.service'
 import { OrderContainerItemService } from '../orders/services/order-container-item.service';
 import { OrderMenuItemService } from '../orders/services/order-menu-item.service';
 import { OrderService } from '../orders/services/order.service';
+import { OrderTestingUtil } from '../orders/utils/order-testing.util';
 import { RecipeCategoryService } from '../recipes/services/recipe-category.service';
 import { RecipeIngredientService } from '../recipes/services/recipe-ingredient.service';
 import { RecipeSubCategoryService } from '../recipes/services/recipe-sub-category.service';
 import { RecipeService } from '../recipes/services/recipe.service';
+import { RequestContextService } from '../request-context/RequestContextService';
 import { RoleService } from '../roles/services/role.service';
 import { TemplateMenuItemService } from '../templates/services/template-menu-item.service';
 import { TemplateService } from '../templates/services/template.service';
@@ -36,6 +40,9 @@ describe('Seed Service', () => {
   let inventoryAreaCountService: InventoryAreaCountService;
   let inventoryAreaItemService: InventoryAreaItemService;
   let inventoryAreaService: InventoryAreaService;
+  let inventoryAreaTestUtil: InventoryAreaTestUtil;
+  let orderTestingUtil: OrderTestingUtil;
+  let requestContext: TestRequestContextService;
 
   let inventoryItemService: InventoryItemService;
   let inventoryItemCategoryService: InventoryItemCategoryService;
@@ -82,6 +89,9 @@ describe('Seed Service', () => {
     );
     inventoryAreaService =
       module.get<InventoryAreaService>(InventoryAreaService);
+    inventoryAreaTestUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+    orderTestingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
+    requestContext = module.get(RequestContextService) as TestRequestContextService;
 
     // Inventory Item
     inventoryItemService =
@@ -176,6 +186,15 @@ describe('Seed Service', () => {
     const invAreaItemCounts = await inventoryAreaItemService.findAll();
     expect(invAreaItemCounts.items.length).toBeGreaterThan(0);
 
+    // InventoryAreaService is tenant/location-scoped (TenantScopedServiceBase/
+    // LocationScopedServiceBase) — read as the fixture tenant-admin so findAll
+    // sees every location's seeded areas under that tenant.
+    const fixtureLocation = await inventoryAreaTestUtil.getDefaultLocation();
+    requestContext.setContext({
+      tenantId: fixtureLocation.tenant.id,
+      isTenantAdmin: true,
+      locations: [],
+    });
     const invAreas = await inventoryAreaService.findAll();
     expect(invAreas.items.length).toBeGreaterThan(0);
 
@@ -221,6 +240,10 @@ describe('Seed Service', () => {
     const orders = await orderService.findAll();
     expect(orders.items.length).toBeGreaterThan(0);
 
+    // OrderCategoryService is tenant-scoped (TenantScopedServiceBase) — read as
+    // the OrderTestingUtil fixture tenant so findAll sees the seeded categories.
+    const orderFixtureTenantId = await orderTestingUtil.getDefaultTenantId();
+    requestContext.setContext({ tenantId: orderFixtureTenantId });
     const orderCategories = await orderCategoryService.findAll();
     expect(orderCategories.items.length).toBeGreaterThan(0);
 

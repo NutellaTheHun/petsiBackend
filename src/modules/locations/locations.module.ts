@@ -23,6 +23,6 @@ import { LocationValidator } from './validators/location.validator';
     ],
     controllers: [LocationController],
     providers: [LocationService, LocationBuilder, LocationValidator, LocationTestUtil, LocationChangeDetector],
-    exports: [LocationService, LocationTestUtil],
+    exports: [LocationService, LocationTestUtil, TypeOrmModule],
 })
 export class LocationsModule { }

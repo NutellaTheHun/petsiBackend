@@ -8,6 +8,7 @@ import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { RevisionHistoryModule } from '../revision-history/revision-history.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { OrderCategoryBuilder } from './builders/order-category.builder';
 import { OrderContainerItemBuilder } from './builders/order-container-item.builder';
 import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
@@ -56,6 +57,7 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
         ]),
         MenuItemsModule,
         RevisionHistoryModule,
+        TenantsModule,
         CacheModule.register(),
         AppLoggingModule,
         RequestContextModule,

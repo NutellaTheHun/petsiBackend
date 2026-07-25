@@ -10,6 +10,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
@@ -23,7 +26,10 @@ describe('order category controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: OrderCategoryController;
     let categoryRepo: Repository<OrderCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: OrderCategory[];
 
     beforeAll(async () => {
@@ -31,12 +37,18 @@ describe('order category controller', () => {
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         controller = module.get<OrderCategoryController>(OrderCategoryController);
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories } = await testingUtil.seedCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories } = await testingUtil.seedCategories(P, tenant.id));
     });
 
     afterAll(async () => {
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

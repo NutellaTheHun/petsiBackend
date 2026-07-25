@@ -5,6 +5,7 @@ import { InventoryArea } from "../../entities/inventory-area.entity";
 export function inventoryAreaToUpdateDto(inventoryArea: InventoryArea, merge: Partial<UpdateInventoryAreaDto> = {}): UpdateInventoryAreaDto {
     return plainToInstance(UpdateInventoryAreaDto, {
         name: inventoryArea.name,
+        locationId: inventoryArea.locationId,
         ...merge,
     });
 }
