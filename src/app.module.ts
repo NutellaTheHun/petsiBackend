@@ -13,6 +13,7 @@ import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RequestIdMiddleware } from './common/middleware/RequestIdMiddleware';
+import { TenantResolutionMiddleware } from './common/middleware/TenantResolutionMiddleware';
 import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.module';
 import { AppLoggingModule } from './modules/app-logging/app-logging.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -116,7 +117,7 @@ import { UserModule } from './modules/users/user.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware).forRoutes('*');
+    consumer.apply(RequestIdMiddleware, TenantResolutionMiddleware).forRoutes('*');
   }
   constructor(private dataSource: DataSource) {}
 }

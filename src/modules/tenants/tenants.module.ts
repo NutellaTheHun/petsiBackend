@@ -20,6 +20,6 @@ import { TenantValidator } from './validators/tenant.validator';
     ],
     controllers: [TenantController],
     providers: [TenantService, TenantBuilder, TenantValidator, TenantTestUtil, TenantChangeDetector],
-    exports: [TenantService, TenantTestUtil],
+    exports: [TenantService, TenantTestUtil, TypeOrmModule],
 })
 export class TenantsModule { }
