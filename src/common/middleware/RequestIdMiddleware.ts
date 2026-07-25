@@ -8,7 +8,8 @@ export class RequestIdMiddleware implements NestMiddleware {
   constructor(private readonly requestContext: RequestContextService) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    const requestId = req.headers['x-request-id'] || randomUUID();
+    const rawRequestId = req.headers['x-request-id'];
+    const requestId = (Array.isArray(rawRequestId) ? rawRequestId[0] : rawRequestId) || randomUUID();
     req['requestId'] = requestId;
 
     this.requestContext.run(

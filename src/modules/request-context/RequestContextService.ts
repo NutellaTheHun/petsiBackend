@@ -5,13 +5,28 @@ import { AppHttpException } from '../../common/exceptions/app-http-exception';
 
 export const REQUEST_NAMESPACE = 'request';
 
+/**
+ * Recognized keys carried on the per-request CLS namespace. Not an enforced
+ * schema — `get`/`set` remain generic string-keyed access (see `get<T>`) — this
+ * exists purely to document what producers (e.g. `AuthGuard`, `RequestIdMiddleware`)
+ * and consumers (e.g. `ServiceBase` subclasses, `RoleGuard`) agree the keys mean.
+ */
+export interface RequestContextValues {
+  requestId?: string;
+  userId?: number;
+  roles?: string[];
+  tenantId?: number;
+  isTenantAdmin?: boolean;
+  locations?: { locationId: number; roles: string[] }[];
+}
+
 @Injectable()
 export class RequestContextService {
-  run(callback: (...args: any[]) => void, context: Record<string, any>) {
+  run(callback: (...args: any[]) => void, context: RequestContextValues) {
     const ns = getRequestNamespace();
     ns.run(() => {
       for (const key in context) {
-        ns.set(key, context[key]);
+        ns.set(key, (context as Record<string, any>)[key]);
       }
       callback();
     });
