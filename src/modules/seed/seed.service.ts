@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../test/DatabaseTestContext';
 import { InventoryAreaTestUtil } from '../inventory-areas/utils/inventory-area-test.util';
 import { InventoryItemTestingUtil } from '../inventory-items/utils/inventory-item-testing.util';
 import { LabelTestingUtil } from '../labels/utils/label-testing.util';
+import { Location } from '../locations/entities/location.entity';
+import { UserLocation } from '../locations/entities/user-location.entity';
 import { MenuItemTestingUtil } from '../menu-items/utils/menu-item-testing.util';
 import { OrderTestingUtil } from '../orders/utils/order-testing.util';
 import { RecipeTestUtil } from '../recipes/utils/recipe-test.util';
 import { Role } from '../roles/entities/role.entity';
+import { Tenant } from '../tenants/entities/tenant.entity';
 import { TemplateTestingUtil } from '../templates/utils/template-testing.util';
 import { User } from '../users/entities/user.entities';
 
@@ -22,6 +25,12 @@ export class SeedService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepo: Repository<Role>,
+    @InjectRepository(Tenant)
+    private readonly tenantRepo: Repository<Tenant>,
+    @InjectRepository(Location)
+    private readonly locationRepo: Repository<Location>,
+    @InjectRepository(UserLocation)
+    private readonly userLocationRepo: Repository<UserLocation>,
 
     private readonly inventoryAreaTestUtil: InventoryAreaTestUtil,
     private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
@@ -32,81 +41,57 @@ export class SeedService {
     private readonly templateTestUtil: TemplateTestingUtil,
   ) {}
 
-  private async seedRolesAndUsers() {
-    // Seed Roles
-    const roles = ['admin', 'manager', 'staff'];
-    for (const role of roles) {
-      const roleExists = await this.roleRepo.findOne({ where: { name: role } });
-      if (!roleExists) {
-        await this.roleRepo.save({ name: role });
-      }
-    }
-
-    // Seed Admin account
-    const adminExists = await this.userRepo.findOne({
-      where: { name: 'admin' },
-    });
-    if (!adminExists) {
-      const pwrd = this.configService.get<string>('seed_admin_pwrd') || 'error';
-      if (!pwrd) {
-        throw new Error();
-      }
-
-      const roles = await this.roleRepo.find();
-
-      await this.userRepo.save({
-        name: 'admin',
-        password: pwrd,
-        roles: roles,
+  /**
+   * `Role`/`User` now require a tenantId (NOT NULL), and role assignment
+   * moved from a direct `User.roles` relation onto `UserLocation`. Seed data
+   * doesn't care about tenant/location scoping itself — it only needs a
+   * valid tenant+location to satisfy those columns and to attach the
+   * seeded admin/manager/staff accounts' roles — so this lazily provisions
+   * (or reuses, by fixed subdomain, across the whole seed run) one shared
+   * fixture Tenant+Location.
+   */
+  private static readonly SEED_TENANT_SUBDOMAIN = 'seed-service-fixture-tenant';
+  private seedFixtureLocation?: { tenant: Tenant; location: Location };
+  public async getSeedFixtureLocation(): Promise<{ tenant: Tenant; location: Location }> {
+    if (!this.seedFixtureLocation) {
+      let tenant = await this.tenantRepo.findOne({
+        where: { subdomain: SeedService.SEED_TENANT_SUBDOMAIN },
       });
-    }
-
-    //Seed Manager account
-    const managerExist = await this.userRepo.findOne({
-      where: { name: 'manager' },
-    });
-    if (!managerExist) {
-      const pwrd = 'manager';
-      if (!pwrd) {
-        throw new Error();
+      if (!tenant) {
+        tenant = await this.tenantRepo.save({
+          name: 'Seed Service Fixture Tenant',
+          subdomain: SeedService.SEED_TENANT_SUBDOMAIN,
+        });
       }
 
-      const role = await this.roleRepo.findOne({ where: { name: 'manager' } });
-      if (!role) {
-        throw new Error();
-      }
-      await this.userRepo.save({
-        name: 'manager',
-        password: pwrd,
-        roles: [role],
+      let location = await this.locationRepo.findOne({
+        where: { tenant: { id: tenant.id }, name: 'fixture-location' },
+        relations: ['tenant'],
       });
+      if (!location) {
+        location = await this.locationRepo.save({ tenant, name: 'fixture-location' });
+        location.tenant = tenant;
+      }
+      this.seedFixtureLocation = { tenant, location };
     }
+    return this.seedFixtureLocation;
+  }
 
-    //Seed Staff account
-    const staffExists = await this.userRepo.findOne({
-      where: { name: 'staff' },
+  private async ensureUserLocation(
+    tenantId: number,
+    locationId: number,
+    user: User,
+    roleNames: string[],
+  ): Promise<void> {
+    const existing = await this.userLocationRepo.findOne({
+      where: { tenantId, locationId, user: { id: user.id } },
     });
-    if (!staffExists) {
-      const pwrd = 'staff';
-      if (!pwrd) {
-        throw new Error();
-      }
-
-      const role = await this.roleRepo.findOne({ where: { name: 'staff' } });
-      if (!role) {
-        throw new Error();
-      }
-
-      await this.userRepo.save({
-        name: 'staff',
-        password: pwrd,
-        roles: [role],
-      });
+    if (existing) {
+      return;
     }
 
-    // Seed Menu Item Sizes
-
-    // Seed Units Of Measure (and categories)
+    const roles = await this.roleRepo.find({ where: { tenantId, name: In(roleNames) } });
+    await this.userLocationRepo.save({ tenantId, locationId, user, roles });
   }
 
   async seedTestDb(inputCtx?: DatabaseTestContext) {
@@ -287,11 +272,14 @@ export class SeedService {
   }
 
   private async seedRoleTestDb(ctx: DatabaseTestContext) {
+    const { tenant } = await this.getSeedFixtureLocation();
     const roles = ['admin', 'manager', 'staff'];
     for (const role of roles) {
-      const roleExists = await this.roleRepo.findOne({ where: { name: role } });
+      const roleExists = await this.roleRepo.findOne({
+        where: { name: role, tenantId: tenant.id },
+      });
       if (!roleExists) {
-        await this.roleRepo.save({ name: role });
+        await this.roleRepo.save({ name: role, tenantId: tenant.id });
       }
     }
   }
@@ -309,67 +297,55 @@ export class SeedService {
    */
   private async seedUserTestDb(ctx: DatabaseTestContext) {
     await this.seedRoleTestDb(ctx);
+    const { tenant, location } = await this.getSeedFixtureLocation();
 
     // Seed Admin account
-    const adminExists = await this.userRepo.findOne({
-      where: { name: 'admin' },
+    let adminUser = await this.userRepo.findOne({
+      where: { name: 'admin', tenantId: tenant.id },
     });
-    if (!adminExists) {
+    if (!adminUser) {
       const pwrd = this.configService.get<string>('seed_admin_pwrd') || 'error';
       if (!pwrd) {
         throw new Error();
       }
 
-      const roles = await this.roleRepo.find();
-
-      await this.userRepo.save({
+      adminUser = await this.userRepo.save({
         name: 'admin',
         password: pwrd,
-        roles: roles,
+        tenantId: tenant.id,
+        isTenantAdmin: true,
       });
     }
+    await this.ensureUserLocation(tenant.id, location.id, adminUser, [
+      'admin',
+      'manager',
+      'staff',
+    ]);
 
     //Seed Manager account
-    const managerExist = await this.userRepo.findOne({
-      where: { name: 'manager' },
+    let managerUser = await this.userRepo.findOne({
+      where: { name: 'manager', tenantId: tenant.id },
     });
-    if (!managerExist) {
-      const pwrd = 'manager';
-      if (!pwrd) {
-        throw new Error();
-      }
-
-      const role = await this.roleRepo.findOne({ where: { name: 'manager' } });
-      if (!role) {
-        throw new Error();
-      }
-      await this.userRepo.save({
+    if (!managerUser) {
+      managerUser = await this.userRepo.save({
         name: 'manager',
-        password: pwrd,
-        roles: [role],
+        password: 'manager',
+        tenantId: tenant.id,
       });
     }
+    await this.ensureUserLocation(tenant.id, location.id, managerUser, ['manager']);
 
     //Seed Staff account
-    const staffExists = await this.userRepo.findOne({
-      where: { name: 'staff' },
+    let staffUser = await this.userRepo.findOne({
+      where: { name: 'staff', tenantId: tenant.id },
     });
-    if (!staffExists) {
-      const pwrd = 'staff';
-      if (!pwrd) {
-        throw new Error();
-      }
-
-      const role = await this.roleRepo.findOne({ where: { name: 'staff' } });
-      if (!role) {
-        throw new Error();
-      }
-
-      await this.userRepo.save({
+    if (!staffUser) {
+      staffUser = await this.userRepo.save({
         name: 'staff',
-        password: pwrd,
-        roles: [role],
+        password: 'staff',
+        tenantId: tenant.id,
       });
     }
+    await this.ensureUserLocation(tenant.id, location.id, staffUser, ['staff']);
   }
 }

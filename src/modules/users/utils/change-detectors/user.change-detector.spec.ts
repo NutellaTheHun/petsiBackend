@@ -1,4 +1,3 @@
-import { Role } from '../../../roles/entities/role.entity';
 import { User } from '../../entities/user.entities';
 import { userToUpdateDto } from '../entity-transformers/user.dto.transformer';
 import { UserChangeDetector } from './user.change-detector';
@@ -9,10 +8,11 @@ describe('UserChangeDetector', () => {
     const baseEntity = (): User =>
         ({
             id: 1,
+            tenantId: 1,
             name: 'Alice',
             email: 'a@example.com',
             password: 'hashed',
-            roles: [{ id: 10 } as Role, { id: 20 } as Role],
+            isTenantAdmin: false,
         } as User);
 
     const dtoNoPassword = (user: User) => userToUpdateDto(user, { password: undefined });
@@ -40,20 +40,12 @@ describe('UserChangeDetector', () => {
         expect(result.patch).toEqual({ email: 'new@example.com' });
     });
 
-    it('does not flag roleIds when same ids in different order', () => {
+    it('detects isTenantAdmin change', () => {
         const entity = baseEntity();
-        const dto = userToUpdateDto(entity, { roleIds: [20, 10], password: undefined });
-        const result = detector.detect(entity, dto);
-        expect(result.hasChanges).toBe(false);
-        expect(result.patch).toEqual({});
-    });
-
-    it('detects roleIds change', () => {
-        const entity = baseEntity();
-        const dto = userToUpdateDto(entity, { roleIds: [99], password: undefined });
+        const dto = userToUpdateDto(entity, { isTenantAdmin: true, password: undefined });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ roleIds: [99] });
+        expect(result.patch).toEqual({ isTenantAdmin: true });
     });
 
     it('treats defined password in dto as a change', () => {

@@ -3,27 +3,47 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    JoinTable,
-    ManyToMany,
     PrimaryGeneratedColumn,
+    Unique,
     UpdateDateColumn,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
-import { roleExample } from '../../../common/swagger/examples/roles/role.example';
-import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 
 export type UserEntity = EntityBase<User, CreateUserDto, UpdateUserDto>;
 
 /**
- * A set of credentials and list of {@link Role} to control access to features such as order management, recipe costing, and inventory management.
+ * A set of credentials to control access to features such as order management, recipe costing, and inventory management.
+ *
+ * Roles are attached per-location via {@link UserLocation}, not directly on the user — a user's roles at one
+ * location can differ from their roles at another.
  */
 @Entity({ name: 'app_users' })
+@Unique(['tenantId', 'name'])
 export class User {
     @ApiProperty({ example: 1, description: 'The unique identifier of the user' })
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The Tenant this user belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    @ApiProperty({
+        example: false,
+        description:
+            'Grants access to every current and future location under the tenant without a per-location UserLocation assignment',
+    })
+    @Column({ default: false })
+    isTenantAdmin: boolean;
 
     @ApiProperty({
         example: '2025-06-05T23:00:17.814Z',
@@ -40,7 +60,7 @@ export class User {
     updatedAt: Date;
 
     @ApiProperty({ example: 'johndoe', description: 'Username of the user' })
-    @Column({ unique: true })
+    @Column()
     name: string;
 
     @ApiProperty({
@@ -61,14 +81,4 @@ export class User {
     })
     @Column({ nullable: true, type: 'varchar' })
     email: string | null = null;
-
-    @ApiProperty({
-        example: [roleExample(new Set<string>(), true)],
-        description: 'list of roles the user possess to determine feature access',
-        type: () => Role,
-        isArray: true,
-    })
-    @ManyToMany(() => Role, (role) => role.users)
-    @JoinTable()
-    roles: Role[];
 }

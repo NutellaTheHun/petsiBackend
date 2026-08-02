@@ -2,11 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { hashPassword } from '../../auth/utils/hash';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
@@ -14,7 +13,7 @@ import { UserChangeDetector } from '../utils/change-detectors/user.change-detect
 import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
-export class UserService extends ServiceBase<UserEntity> {
+export class UserService extends TenantScopedServiceBase<UserEntity> {
     constructor(
         @InjectRepository(User)
         userRepo: Repository<User>,
@@ -31,21 +30,22 @@ export class UserService extends ServiceBase<UserEntity> {
         manager: EntityManager,
     ): Promise<User> {
         const password = await hashPassword(dto.password);
-        const roles = dto.roleIds ? dto.roleIds.map((i) => ({ id: i })) : [];
 
         const result = manager.create(User, {
+            tenantId: this.getTenantId(),
             name: dto.name,
             email: dto.email,
-            roles,
+            isTenantAdmin: dto.isTenantAdmin ?? false,
             password,
         });
         await manager.save(result);
 
         return {
             id: result.id,
+            tenantId: result.tenantId,
             name: result.name,
             email: result.email,
-            roles: result.roles,
+            isTenantAdmin: result.isTenantAdmin,
             createdAt: result.createdAt,
             updatedAt: result.updatedAt,
         } as User;
@@ -64,8 +64,8 @@ export class UserService extends ServiceBase<UserEntity> {
             entity.password = await hashPassword(dto.password);
         }
 
-        if (dto.roleIds !== undefined) {
-            entity.roles = dto.roleIds.map((i) => manager.create(Role, { id: i }));
+        if (dto.isTenantAdmin !== undefined) {
+            entity.isTenantAdmin = dto.isTenantAdmin;
         }
 
         if (dto.name !== undefined) {
@@ -81,17 +81,6 @@ export class UserService extends ServiceBase<UserEntity> {
         });
     }
 
-    protected applyFilters(
-        query: SelectQueryBuilder<User>,
-        filters: Record<string, string[]>,
-    ): void {
-        if (filters.role && filters.role.length > 0) {
-            query
-                .leftJoin('entity.roles', 'role')
-                .andWhere('role.id IN (:...roles)', { roles: filters.role });
-        }
-    }
-
     protected applySortBy(
         query: SelectQueryBuilder<User>,
         sortBy: string,
@@ -104,9 +93,5 @@ export class UserService extends ServiceBase<UserEntity> {
 
     protected getChangeDetector(): ChangeDetectorBase<User, UpdateUserDto> | undefined {
         return this.userChangeDetector;
-    }
-
-    protected getUpdateDiffRelations(): string[] {
-        return ['roles'];
     }
 }

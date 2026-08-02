@@ -7,7 +7,7 @@ export function userToUpdateDto(user: User, merge: Partial<UpdateUserDto> = {}):
         name: user.name,
         password: user.password,
         email: user.email ?? null,
-        roleIds: user.roles.map(role => role.id),
+        isTenantAdmin: user.isTenantAdmin,
         ...merge,
     });
 }

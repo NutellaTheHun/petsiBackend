@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { UserLocation } from '../locations/entities/user-location.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { User } from '../users/entities/user.entities';
 import { UserModule } from '../users/user.module';
@@ -13,7 +14,7 @@ import { AuthService } from './services/auth.service';
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserLocation]),
 
     JwtModule.registerAsync({
       imports: [ConfigModule],

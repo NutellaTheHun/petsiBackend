@@ -19,6 +19,7 @@ import {
     ApiBody,
     ApiCreatedResponse,
     ApiExtraModels,
+    ApiForbiddenResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
@@ -34,27 +35,27 @@ import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN } from '../../roles/utils/constants';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { User, UserEntity } from '../entities/user.entities';
-import { UserService } from '../services/user.service';
+import { CreateUserLocationDto } from '../dto/create-user-location.dto';
+import { UpdateUserLocationDto } from '../dto/update-user-location.dto';
+import { UserLocation, UserLocationEntity } from '../entities/user-location.entity';
+import { UserLocationService } from '../services/user-location.service';
 
-@ApiTags('User')
+@ApiTags('UserLocation')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_ADMIN)
-@Controller('users')
-@ApiExtraModels(User)
-export class UserController extends ControllerBase<UserEntity> {
+@Controller('user-locations')
+@ApiExtraModels(UserLocation)
+export class UserLocationController extends ControllerBase<UserLocationEntity> {
     constructor(
-        userService: UserService,
+        userLocationService: UserLocationService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(
-            userService,
+            userLocationService,
             cacheManager,
-            'UserController',
+            'UserLocationController',
             requestContextService,
             logger,
         );
@@ -62,46 +63,48 @@ export class UserController extends ControllerBase<UserEntity> {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a User' })
-    @ApiCreatedResponse({ description: 'User successfully created', type: User })
+    @ApiOperation({ summary: 'Assigns a User to a Location with a set of Roles' })
+    @ApiCreatedResponse({ description: 'UserLocation successfully created', type: UserLocation })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateUserDto })
-    async create(@Body() dto: CreateUserDto): Promise<User> {
+    @ApiForbiddenResponse({ description: 'Caller is not authorized for the target location' })
+    @ApiBody({ type: CreateUserLocationDto })
+    async create(@Body() dto: CreateUserLocationDto): Promise<UserLocation> {
         return super.create(dto);
     }
 
     @Put(':id')
-    @ApiOperation({ summary: 'Updates a User' })
-    @ApiOkResponse({ description: 'User successfully updated', type: User })
+    @ApiOperation({ summary: 'Updates a UserLocation assignment' })
+    @ApiOkResponse({ description: 'UserLocation successfully updated', type: UserLocation })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiNotFoundResponse({ description: 'User to update not found.' })
-    @ApiBody({ type: UpdateUserDto })
+    @ApiNotFoundResponse({ description: 'UserLocation to update not found.' })
+    @ApiForbiddenResponse({ description: 'Caller is not authorized for the target location' })
+    @ApiBody({ type: UpdateUserLocationDto })
     async update(
         @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateUserDto,
-    ): Promise<User> {
+        @Body() dto: UpdateUserLocationDto,
+    ): Promise<UserLocation> {
         return super.update(id, dto);
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiOperation({ summary: 'Removes a User' })
-    @ApiNoContentResponse({ description: 'User successfully removed' })
-    @ApiNotFoundResponse({ description: 'User not found' })
+    @ApiOperation({ summary: 'Removes a UserLocation assignment' })
+    @ApiNoContentResponse({ description: 'UserLocation successfully removed' })
+    @ApiNotFoundResponse({ description: 'UserLocation not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return super.remove(id);
     }
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves an array of Users' })
+    @ApiOperation({ summary: 'Retrieves an array of UserLocation assignments' })
     @ApiOkResponse({
         schema: {
             type: 'object',
             properties: {
                 items: {
                     type: 'array',
-                    items: { $ref: getSchemaPath(User) },
+                    items: { $ref: getSchemaPath(UserLocation) },
                 },
                 nextCursor: {
                     type: 'string',
@@ -114,36 +117,19 @@ export class UserController extends ControllerBase<UserEntity> {
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
-        name: 'sortBy',
+        name: 'filters',
         required: false,
+        isArray: true,
         type: String,
-        description: `Field to sort by. Available options:\n
-            - username`,
-    })
-    @ApiQuery({
-        name: 'sortOrder',
-        required: false,
-        enum: ['ASC', 'DESC'],
-        description: 'Sort order: ASC or DESC',
-    })
-    @ApiQuery({
-        name: 'search',
-        required: false,
-        type: String,
-        description: 'Search by username (case-insensitive partial match)',
+        description: `Filterable fields. Use format: field=value. Available filters:\n
+          - **user** (e.g., \`user=5\`)`,
     })
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,
         @Query('offset') cursor?: string,
-        @Query('sortBy') sortBy?: string,
-        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
-        @Query('search') search?: string,
         @Query('filters') filters?: string | string[],
-        //@Query('dateBy') dateBy?: string,
-        //@Query('startDate') startDate?: string,  // ISO format string
-        //@Query('endDate') endDate?: string, // ISO format string
-    ): Promise<PaginatedResult<User>> {
+    ): Promise<PaginatedResult<UserLocation>> {
         const filterArray = filters
             ? Array.isArray(filters)
                 ? filters
@@ -153,9 +139,9 @@ export class UserController extends ControllerBase<UserEntity> {
             rawRelations,
             limit,
             cursor,
-            sortBy,
-            sortOrder,
-            search,
+            undefined,
+            undefined,
+            undefined,
             filterArray,
             undefined,
             undefined,
@@ -165,10 +151,10 @@ export class UserController extends ControllerBase<UserEntity> {
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves one User' })
-    @ApiOkResponse({ description: 'User found', type: User })
-    @ApiNotFoundResponse({ description: 'User not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    @ApiOperation({ summary: 'Retrieves one UserLocation assignment' })
+    @ApiOkResponse({ description: 'UserLocation found', type: UserLocation })
+    @ApiNotFoundResponse({ description: 'UserLocation not found' })
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserLocation> {
         return super.findOne(id);
     }
 }

@@ -273,6 +273,16 @@ describe('Seed Service', () => {
     const templateItems = await templateMenuItemService.findAll();
     expect(templateItems.items.length).toBeGreaterThan(0);
 
+    // RoleService/UserService are tenant-scoped (TenantScopedServiceBase) —
+    // read as the SeedService fixture tenant-admin so findAll sees the
+    // seeded admin/manager/staff roles and accounts.
+    const { tenant: seedFixtureTenant } = await seedService.getSeedFixtureLocation();
+    requestContext.setContext({
+      tenantId: seedFixtureTenant.id,
+      isTenantAdmin: true,
+      locations: [],
+    });
+
     // Roles
     const roles = await roleService.findAll();
     expect(roles.items.length).toBeGreaterThan(0);

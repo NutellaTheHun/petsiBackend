@@ -32,6 +32,7 @@ export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdenti
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

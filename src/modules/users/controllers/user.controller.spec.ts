@@ -10,7 +10,8 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { Role } from '../../roles/entities/role.entity';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { User } from '../entities/user.entities';
 import { UserTestUtil } from '../utils/user-test.util';
@@ -22,11 +23,11 @@ const P = `t${Date.now()}`;
 describe('UserController', () => {
     let testingUtil: UserTestUtil;
     let testCtx: DatabaseTestContext;
+    let requestContext: TestRequestContextService;
     let controller: UserController;
     let userRepo: Repository<User>;
-    let roleRepo: Repository<Role>;
 
-    let roles: Role[];
+    let tenantId: number;
     let users: User[];
 
     beforeAll(async () => {
@@ -34,14 +35,14 @@ describe('UserController', () => {
         testingUtil = module.get<UserTestUtil>(UserTestUtil);
         controller = module.get(UserController);
         userRepo = module.get(getRepositoryToken(User));
-        roleRepo = module.get(getRepositoryToken(Role));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ roles, users } = await testingUtil.seedUsers(P));
+        ({ tenantId, users } = await testingUtil.seedUsers(P));
+        requestContext.setContext({ tenantId });
     });
 
     afterAll(async () => {
         await userRepo.delete(users.map((u) => u.id));
-        await roleRepo.delete(roles.map((r) => r.id));
     });
 
     beforeEach(() => {
@@ -57,7 +58,6 @@ describe('UserController', () => {
             name: users[0].name,
             password: 'x',
             email: null,
-            roleIds: [roles[0].id],
         });
         try {
             await controller.create(dto);
@@ -82,7 +82,6 @@ describe('UserController', () => {
                 name: `${P}-controller-user-remove`,
                 password: 'rm123456',
                 email: `${P}-ctrl-rm@example.com`,
-                roleIds: [roles[0].id],
             }),
         );
         await controller.remove(created.id);

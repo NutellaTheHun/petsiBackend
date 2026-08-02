@@ -25,4 +25,8 @@ export class RoleBuilder extends BuilderBase<Role> {
   public roleName(name: string): this {
     return this.setPropByVal('name', name);
   }
+
+  public tenantId(tenantId: number): this {
+    return this.setPropByVal('tenantId', tenantId);
+  }
 }

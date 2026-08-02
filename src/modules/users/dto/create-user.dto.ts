@@ -1,14 +1,10 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import {
-    IsArray,
+    IsBoolean,
     IsNotEmpty,
-    IsNumber,
     IsOptional,
-    IsPositive,
     IsString,
 } from 'class-validator';
-import { EntityId } from '../../../common/types';
-import { Role } from '../../roles/entities/role.entity';
 
 export class CreateUserDto {
     @ApiProperty({ description: '', example: 'jsmith123' })
@@ -32,14 +28,10 @@ export class CreateUserDto {
     readonly email: string | null;
 
     @ApiPropertyOptional({
-        description: 'Id of roles the user has.',
-        example: [1, 2],
-        type: 'number',
-        isArray: true,
+        description: 'Grants access to every location under the tenant without a per-location UserLocation assignment. Defaults to false.',
+        example: false,
     })
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true })
+    @IsBoolean()
     @IsOptional()
-    readonly roleIds?: EntityId<Role>[];
+    readonly isTenantAdmin?: boolean;
 }

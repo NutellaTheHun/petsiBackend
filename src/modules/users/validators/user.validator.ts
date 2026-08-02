@@ -5,7 +5,6 @@ import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
@@ -16,8 +15,6 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
     constructor(
         @InjectRepository(User)
         private readonly repo: Repository<User>,
-        @InjectRepository(Role)
-        private readonly roleRepo: Repository<Role>,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
@@ -40,17 +37,6 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
             // password requirements?
         }
 
-        if (identity.roleIds) {
-            for (const roleId of identity.roleIds) {
-                await this.helper.enforceExists(
-                    roleId,
-                    this.roleRepo,
-                    'roles',
-                    errorMap,
-                );
-            }
-        }
-
         if (identity.name) {
             await this.helper.enforceUnique(
                 identity.name,
@@ -58,6 +44,7 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 
@@ -68,8 +55,8 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
         return {
             email: dto.email,
             password: dto.password,
-            roleIds: dto.roleIds,
             name: dto.name,
+            isTenantAdmin: dto.isTenantAdmin,
         } as UserValidatorIdentity;
     }
 }

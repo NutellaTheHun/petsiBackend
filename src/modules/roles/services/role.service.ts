@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
@@ -12,7 +12,7 @@ import { RoleChangeDetector } from '../utils/change-detectors/role.change-detect
 import { RoleValidator } from '../validators/role.validator';
 
 @Injectable()
-export class RoleService extends ServiceBase<RoleEntity> {
+export class RoleService extends TenantScopedServiceBase<RoleEntity> {
     constructor(
         @InjectRepository(Role)
         repo: Repository<Role>,
@@ -29,6 +29,7 @@ export class RoleService extends ServiceBase<RoleEntity> {
         manager: EntityManager,
     ): Promise<Role> {
         const result = manager.create(Role, {
+            tenantId: this.getTenantId(),
             name: dto.name,
         });
         return await manager.save(result);
