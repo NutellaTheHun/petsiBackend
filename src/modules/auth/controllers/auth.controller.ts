@@ -1,10 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { Public } from '../../../common/decorators/PublicLogin';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -27,16 +28,24 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   @Public()
-  async signIn(@Body() signInDto: SignInDto): Promise<AuthResponseDto> {
+  async signIn(
+    @Body() signInDto: SignInDto,
+    @Req() req: Request,
+  ): Promise<AuthResponseDto> {
     const requestId = this.requestContextService.getRequestId();
 
     this.logger.logAction('Authentication', requestId, 'SIGN IN', 'REQUEST', {
       requestId,
     });
 
+    // Resolved by TenantResolutionMiddleware before this handler runs,
+    // for every route including this @Public() one.
+    const tenantId = req['tenant']?.id;
+
     const result = await this.authService.signIn(
       signInDto.username,
       signInDto.password,
+      tenantId,
     );
 
     this.logger.logAction('Authentication', requestId, 'SIGN IN', 'SUCCESS', {

@@ -43,13 +43,17 @@ describe('AuthController', () => {
 
     jest
       .spyOn(authService, 'signIn')
-      .mockImplementation(async (username, inputPass) => {
+      .mockImplementation(async (username, inputPass, _tenantId) => {
         const user = users.find((user) => user.name === username);
         if (!user || !(await isPassHashMatch(inputPass, user.password)))
           throw new UnauthorizedException();
         return { access_token: 'mock_token', roles: ['role'] };
       });
   });
+
+  function reqWithTenant(tenantId = 1): any {
+    return { tenant: { id: tenantId } };
+  }
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
@@ -58,18 +62,29 @@ describe('AuthController', () => {
   it('should sign in', async () => {
     const username = 'user_A';
     const pass = 'passA';
-    const result = await controller.signIn({
-      username: username,
-      password: pass,
-    } as SignInDto);
+    const result = await controller.signIn(
+      { username: username, password: pass } as SignInDto,
+      reqWithTenant(),
+    );
     expect(result.access_token).toEqual('mock_token');
+  });
+
+  it('passes the tenant resolved by TenantResolutionMiddleware into AuthService.signIn', async () => {
+    await controller.signIn(
+      { username: 'user_A', password: 'passA' } as SignInDto,
+      reqWithTenant(42),
+    );
+    expect(authService.signIn).toHaveBeenCalledWith('user_A', 'passA', 42);
   });
 
   it('should fail to sign in (username doesnt exist)', async () => {
     const username = 'userE';
     const pass = 'passA';
     await expect(
-      controller.signIn({ username: username, password: pass } as SignInDto),
+      controller.signIn(
+        { username: username, password: pass } as SignInDto,
+        reqWithTenant(),
+      ),
     ).rejects.toThrow(UnauthorizedException);
   });
 
@@ -77,7 +92,10 @@ describe('AuthController', () => {
     const username = 'userA';
     const pass = 'passB';
     await expect(
-      controller.signIn({ username: username, password: pass } as SignInDto),
+      controller.signIn(
+        { username: username, password: pass } as SignInDto,
+        reqWithTenant(),
+      ),
     ).rejects.toThrow(UnauthorizedException);
   });
 });

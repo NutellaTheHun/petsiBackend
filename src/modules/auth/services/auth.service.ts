@@ -25,11 +25,12 @@ export class AuthService {
   async signIn(
     username: string,
     rawPass: string,
+    tenantId: number,
   ): Promise<{ access_token: string; roles: string[] }> {
     const requestId = this.requestContextService.getRequestId();
 
     const user = await this.userRepo.findOne({
-      where: { name: username },
+      where: { tenantId, name: username },
     });
     if (!user) {
       this.logger.logAction('Authentication', requestId, 'SIGN IN', 'FAIL', {
@@ -45,22 +46,25 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    // Roles are held per-location via UserLocation; flatten every location
-    // assignment's roles into the flat list the JWT payload still expects.
-    // Location-aware claims (tenantId, isTenantAdmin, per-location roles)
-    // are wired up in a later slice.
+    // Roles are held per-location via UserLocation; build the per-location
+    // claim shape the JWT payload carries, plus a flattened list for the
+    // response's frontend-rendering-only `roles` field.
     const assignments = await this.userLocationRepo.find({
       where: { user: { id: user.id } },
       relations: ['roles'],
     });
-    const roleNames = [
-      ...new Set(assignments.flatMap((a) => a.roles.map((role) => role.name))),
-    ];
+    const locations = assignments.map((assignment) => ({
+      locationId: assignment.locationId,
+      roles: assignment.roles.map((role) => role.name),
+    }));
+    const roleNames = [...new Set(locations.flatMap((l) => l.roles))];
 
     const payload = {
       sub: user.id,
       username: user.name,
-      roles: roleNames,
+      tenantId: user.tenantId,
+      isTenantAdmin: user.isTenantAdmin,
+      locations,
     };
 
     return {
