@@ -32,6 +32,7 @@ import { RoleGuard } from './modules/roles/guards/role.guard';
 import { RoleModule } from './modules/roles/role.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { TemplatesModule } from './modules/templates/templates.module';
+import { TenantProvisioningModule } from './modules/tenant-provisioning/tenant-provisioning.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { UserModule } from './modules/users/user.module';
 
@@ -95,6 +96,7 @@ import { UserModule } from './modules/users/user.module';
     ReportsModule,
     TenantsModule,
     LocationsModule,
+    TenantProvisioningModule,
   ],
 
   controllers: [AppController],
