@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -143,5 +144,38 @@ describe('menu item revision history (controller)', () => {
         expect(rev.revisionNumber).toEqual(revisions[0].revisionNumber);
         expect(rev.changeLog).toBeDefined();
         expect(rev.payload).toBeDefined();
+    });
+
+    it('blocks revision reads/revert for a menu item belonging to a different tenant', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateMenuItemDto, {
+                name: `${P}-cross-tenant-item`,
+                categoryId: categories[0].id,
+                type: MENU_ITEM_TYPES.SINGLE,
+                sizeIds: [sizes[0].id],
+            }),
+        );
+        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+
+        const otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        testCtx.addCleanupFunction(async () => { await tenantRepo.delete(otherTenant.id); });
+
+        requestContext.setContext({ tenantId: otherTenant.id });
+        try {
+            await expect(
+                controller.listMenuItemRevisions(created.id),
+            ).rejects.toThrow(NotFoundException);
+            await expect(
+                controller.getMenuItemRevision(created.id, 1),
+            ).rejects.toThrow(NotFoundException);
+            await expect(
+                controller.revertMenuItem(created.id, 1),
+            ).rejects.toThrow(NotFoundException);
+        } finally {
+            requestContext.setContext({ tenantId: tenant.id });
+        }
     });
 });

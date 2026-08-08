@@ -454,6 +454,14 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         orderId: number,
         targetRevisionNumber: number,
     ): Promise<Order> {
+        // Authorize the order itself before touching revision history — the
+        // raw `manager.findOne` calls below intentionally bypass
+        // LocationScopedServiceBase's scoping (they need full relation graphs
+        // mid-transaction), so this is the one place in this method
+        // tenant/location authorization is enforced. RevisionHistoryService
+        // has no tenant/location awareness of its own.
+        await this.findOne(orderId);
+
         const row = await this.revisionHistoryService.getRevisionRow(
             REVISION_ENTITY_TYPES.ORDER,
             orderId,
@@ -468,12 +476,6 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         if (!isOrderSnapshotV1(payload)) {
             throw new BadRequestException('Unsupported or invalid order snapshot payload');
         }
-
-        // Authorize the order itself before reverting — the raw `manager.findOne`
-        // calls below intentionally bypass LocationScopedServiceBase's scoping
-        // (they need full relation graphs mid-transaction), so this is the one
-        // place in this method tenant/location authorization is enforced.
-        await this.findOne(orderId);
 
         await this.entityRepo.manager.transaction(async (manager) => {
             const order = await manager.findOne(Order, {

@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -9,6 +10,7 @@ import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-conta
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RevisionHistoryService } from '../../revision-history/revision-history.service';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -42,6 +44,9 @@ describe('order revision history (controller)', () => {
     let menuItemCategories: MenuItemCategory[];
     let menuItemSizes: MenuItemSize[];
     let fixtureLocationId: number;
+    let fixtureTenantId: number;
+    let requestContext: TestRequestContextService;
+    let tenantRepo: Repository<Tenant>;
 
     const createdOrderIds: number[] = [];
 
@@ -57,11 +62,12 @@ describe('order revision history (controller)', () => {
         menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        const requestContext = module.get(
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(
             RequestContextService,
         ) as TestRequestContextService;
 
-        const fixtureTenantId = await testingUtil.getDefaultTenantId();
+        fixtureTenantId = await testingUtil.getDefaultTenantId();
         fixtureLocationId = await testingUtil.getDefaultLocationId();
         requestContext.setContext({
             tenantId: fixtureTenantId,
@@ -179,6 +185,108 @@ describe('order revision history (controller)', () => {
         expect(rev.revisionNumber).toEqual(revisions[0].revisionNumber);
         expect(rev.changeLog).toBeDefined();
         expect(rev.payload).toBeDefined();
+    });
+
+    it('blocks revision reads/revert for an order belonging to a different tenant', async () => {
+        const cat = categories[0];
+        const mi = singleItems[0];
+
+        const created = await controller.createOrderResponse(
+            plainToInstance(CreateOrderDto, {
+                recipient: `${P}-cross-tenant-order`,
+                fulfillmentDate: new Date('2026-02-01'),
+                fulfillmentType: 'pickup',
+                categoryId: cat.id,
+                locationId: fixtureLocationId,
+                orderedItems: [
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: 'o1',
+                        menuItemId: mi.id,
+                        sizeId: mi.sizes[0].id,
+                        quantity: 1,
+                    }),
+                ],
+            }),
+        );
+        createdOrderIds.push(created.id);
+
+        const otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+
+        try {
+            requestContext.setContext({
+                tenantId: otherTenant.id,
+                isTenantAdmin: true,
+                locations: [],
+            });
+            await expect(
+                controller.listOrderRevisions(created.id),
+            ).rejects.toThrow(NotFoundException);
+            await expect(
+                controller.getOrderRevision(created.id, 1),
+            ).rejects.toThrow(NotFoundException);
+            await expect(
+                controller.revertOrder(created.id, 1),
+            ).rejects.toThrow(NotFoundException);
+        } finally {
+            await tenantRepo.delete(otherTenant.id);
+            requestContext.setContext({
+                tenantId: fixtureTenantId,
+                isTenantAdmin: true,
+                locations: [],
+            });
+        }
+    });
+
+    it('blocks revision reads/revert for an order at a location the caller is not assigned to', async () => {
+        const cat = categories[1];
+        const mi = singleItems[1];
+
+        const created = await controller.createOrderResponse(
+            plainToInstance(CreateOrderDto, {
+                recipient: `${P}-cross-location-order`,
+                fulfillmentDate: new Date('2026-02-01'),
+                fulfillmentType: 'pickup',
+                categoryId: cat.id,
+                locationId: fixtureLocationId,
+                orderedItems: [
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: 'o1',
+                        menuItemId: mi.id,
+                        sizeId: mi.sizes[0].id,
+                        quantity: 1,
+                    }),
+                ],
+            }),
+        );
+        createdOrderIds.push(created.id);
+
+        try {
+            // Same tenant, but not a tenant admin and no UserLocation
+            // assignment for the fixture location.
+            requestContext.setContext({
+                tenantId: fixtureTenantId,
+                isTenantAdmin: false,
+                locations: [],
+            });
+            await expect(
+                controller.listOrderRevisions(created.id),
+            ).rejects.toThrow(NotFoundException);
+            await expect(
+                controller.getOrderRevision(created.id, 1),
+            ).rejects.toThrow(NotFoundException);
+            await expect(
+                controller.revertOrder(created.id, 1),
+            ).rejects.toThrow(NotFoundException);
+        } finally {
+            requestContext.setContext({
+                tenantId: fixtureTenantId,
+                isTenantAdmin: true,
+                locations: [],
+            });
+        }
     });
 });
 

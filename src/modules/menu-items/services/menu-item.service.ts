@@ -403,6 +403,14 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         menuItemId: number,
         targetRevisionNumber: number,
     ): Promise<MenuItem> {
+        // Authorize the menu item itself before touching revision history —
+        // the raw `manager.findOne` calls below intentionally bypass
+        // TenantScopedServiceBase's scoping (they need full relation graphs
+        // mid-transaction), so this is the one place in this method
+        // tenant authorization is enforced. RevisionHistoryService has no
+        // tenant awareness of its own.
+        await this.findOne(menuItemId);
+
         const row = await this.revisionHistoryService.getRevisionRow(
             REVISION_ENTITY_TYPES.MENU_ITEM,
             menuItemId,

@@ -106,6 +106,10 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
     async listMenuItemRevisions(
         @Param('id', ParseIntPipe) id: number,
     ): Promise<RevisionHistoryListItemDto[]> {
+        // Resolve the owning entity through the tenant-scoped service first —
+        // RevisionHistoryService itself has no tenant awareness, so this is
+        // what turns a cross-tenant id into NotFoundException instead of a leak.
+        await this.menuItemService.findOne(id);
         return this.revisionHistoryService.listRevisions(
             REVISION_ENTITY_TYPES.MENU_ITEM,
             id,
@@ -120,6 +124,8 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
         @Param('id', ParseIntPipe) id: number,
         @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
     ): Promise<RevisionHistoryDetailDto> {
+        // See listMenuItemRevisions — owning-entity lookup enforces tenant scope.
+        await this.menuItemService.findOne(id);
         return this.revisionHistoryService.getRevisionOrThrow(
             REVISION_ENTITY_TYPES.MENU_ITEM,
             id,
