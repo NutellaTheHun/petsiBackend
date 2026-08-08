@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
@@ -16,7 +16,7 @@ import { InventoryAreaItemChangeDetector } from '../utils/change-detectors/inven
 import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
-export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntity> {
+export class InventoryAreaItemService extends LocationScopedServiceBase<InventoryAreaItemEntity> {
     constructor(
         @InjectRepository(InventoryAreaItem)
         repo: Repository<InventoryAreaItem>,

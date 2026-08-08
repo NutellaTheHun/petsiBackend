@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UserLocation } from '../../locations/entities/user-location.entity';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { User } from '../../users/entities/user.entities';
@@ -13,6 +14,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(UserLocation)
+    private readonly userLocationRepo: Repository<UserLocation>,
     private readonly jwtService: JwtService,
     private readonly configSerivce: ConfigService,
     private readonly requestContextService: RequestContextService,
@@ -22,12 +25,12 @@ export class AuthService {
   async signIn(
     username: string,
     rawPass: string,
+    tenantId: number,
   ): Promise<{ access_token: string; roles: string[] }> {
     const requestId = this.requestContextService.getRequestId();
 
     const user = await this.userRepo.findOne({
-      where: { name: username },
-      relations: ['roles'],
+      where: { tenantId, name: username },
     });
     if (!user) {
       this.logger.logAction('Authentication', requestId, 'SIGN IN', 'FAIL', {
@@ -43,17 +46,32 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
+    // Roles are held per-location via UserLocation; build the per-location
+    // claim shape the JWT payload carries, plus a flattened list for the
+    // response's frontend-rendering-only `roles` field.
+    const assignments = await this.userLocationRepo.find({
+      where: { user: { id: user.id } },
+      relations: ['roles'],
+    });
+    const locations = assignments.map((assignment) => ({
+      locationId: assignment.locationId,
+      roles: assignment.roles.map((role) => role.name),
+    }));
+    const roleNames = [...new Set(locations.flatMap((l) => l.roles))];
+
     const payload = {
       sub: user.id,
       username: user.name,
-      roles: user.roles.map((role) => role.name),
+      tenantId: user.tenantId,
+      isTenantAdmin: user.isTenantAdmin,
+      locations,
     };
 
     return {
       access_token: await this.jwtService.signAsync(payload, {
         expiresIn: '1hr',
       }),
-      roles: user.roles.map((role) => role.name),
+      roles: roleNames,
     };
   }
 

@@ -34,6 +34,16 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
             });
         }
 
+        if (dto.isTenantAdmin !== undefined && !this.unchanged(entity.isTenantAdmin, dto.isTenantAdmin)) {
+            patch.isTenantAdmin = dto.isTenantAdmin;
+            changes.push({
+                op: 'scalar',
+                path: 'isTenantAdmin',
+                previousValue: entity.isTenantAdmin,
+                nextValue: dto.isTenantAdmin,
+            });
+        }
+
         if (dto.password !== undefined) {
             patch.password = dto.password;
             changes.push({
@@ -41,21 +51,6 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
                 path: 'password',
                 previousValue: '***',
                 nextValue: '***',
-            });
-        }
-
-        const existingRoleIds = (entity.roles ?? [])
-            .map((role) => role.id)
-            .sort((a, b) => a - b);
-        const incomingRoleIds = [...dto.roleIds].sort((a, b) => a - b);
-
-        if (!this.sameNumberArray(existingRoleIds, incomingRoleIds)) {
-            patch.roleIds = dto.roleIds;
-            changes.push({
-                op: 'aggregate',
-                path: 'roleIds',
-                previousValue: existingRoleIds,
-                nextValue: dto.roleIds,
             });
         }
 

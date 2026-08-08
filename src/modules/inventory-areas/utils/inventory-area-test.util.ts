@@ -10,6 +10,8 @@ import { InventoryItemSize } from '../../inventory-items/entities/inventory-item
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
+import { Location } from '../../locations/entities/location.entity';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
@@ -43,7 +45,52 @@ export class InventoryAreaTestUtil {
         private readonly inventoryItemRepo: Repository<InventoryItem>,
 
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
+
+        @InjectRepository(Location)
+        private readonly locationRepo: Repository<Location>,
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) { }
+
+    /**
+     * InventoryArea now requires tenantId/locationId (NOT NULL). Most
+     * inventory-areas fixtures don't care about tenant/location scoping
+     * themselves — they only need valid ids to satisfy the columns — so this
+     * lazily provisions (or reuses, by fixed subdomain, across the whole test
+     * run) one shared fixture Tenant+Location rather than requiring every
+     * seed method's callers to plumb ids through. Tests that actually
+     * exercise tenant/location scoping (inventory-area.*.spec.ts) seed and
+     * pass their own explicit tenant/location.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'inventory-area-test-util-fixture-tenant';
+    private defaultLocation?: Location;
+    public async getDefaultLocation(): Promise<Location> {
+        if (!this.defaultLocation) {
+            let tenant = await this.tenantRepo.findOne({
+                where: { subdomain: InventoryAreaTestUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            if (!tenant) {
+                tenant = await this.tenantRepo.save({
+                    name: 'Inventory Area Test Util Fixture Tenant',
+                    subdomain: InventoryAreaTestUtil.DEFAULT_TENANT_SUBDOMAIN,
+                });
+            }
+
+            let location = await this.locationRepo.findOne({
+                where: { tenant: { id: tenant.id }, name: 'fixture-location' },
+                relations: ['tenant'],
+            });
+            if (!location) {
+                location = await this.locationRepo.save({
+                    tenant,
+                    name: 'fixture-location',
+                });
+                location.tenant = tenant;
+            }
+            this.defaultLocation = location;
+        }
+        return this.defaultLocation;
+    }
 
     /**
      * Dependencies initialized: None
@@ -54,9 +101,17 @@ export class InventoryAreaTestUtil {
     ): Promise<InventoryArea[]> {
         const results: InventoryArea[] = [];
         const names = getAreaNames();
+        const location = await this.getDefaultLocation();
 
         for (const name of names) {
-            results.push(await this.areaBuilder.reset().areaName(name).build());
+            results.push(
+                await this.areaBuilder
+                    .reset()
+                    .areaName(name)
+                    .tenantId(location.tenant.id)
+                    .locationId(location.id)
+                    .build(),
+            );
         }
         return results;
     }
@@ -71,17 +126,27 @@ export class InventoryAreaTestUtil {
     ): Promise<InventoryAreaCount[]> {
         await this.initInventoryAreaTestDatabase(testContext);
 
+        const buildForArea = async (name: string): Promise<InventoryAreaCount> => {
+            const area = await this.areaRepo.findOneOrFail({ where: { name } });
+            return this.areaCountBuilder
+                .reset()
+                .inventoryAreaById(area.id)
+                .tenantId(area.tenantId)
+                .locationId(area.locationId)
+                .build();
+        };
+
         return [
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_A).build(),
+            await buildForArea(AREA_A),
 
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_B).build(),
+            await buildForArea(AREA_B),
 
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_C).build(),
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_C).build(),
+            await buildForArea(AREA_C),
+            await buildForArea(AREA_C),
 
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_D).build(),
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_D).build(),
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_D).build(),
+            await buildForArea(AREA_D),
+            await buildForArea(AREA_D),
+            await buildForArea(AREA_D),
         ];
     }
 
@@ -120,6 +185,8 @@ export class InventoryAreaTestUtil {
                     .countedItemById(itemA.id)
                     .countedItemSizeById(sizeA.id)
                     .amount(1)
+                    .tenantId(counts[i].tenantId)
+                    .locationId(counts[i].locationId)
                     .build(),
             );
 
@@ -135,6 +202,8 @@ export class InventoryAreaTestUtil {
                     .countedItemById(itemB.id)
                     .countedItemSizeById(sizeB.id)
                     .amount(1)
+                    .tenantId(counts[i].tenantId)
+                    .locationId(counts[i].locationId)
                     .build(),
             );
         }
@@ -279,12 +348,34 @@ export class InventoryAreaTestUtil {
     // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
     // These do not register cleanup — callers are responsible for deleting by ID.
 
-    public async seedAreas(P: string = ''): Promise<{ areas: InventoryArea[] }> {
+    /**
+     * `tenantId`/`locationId` default to a shared fixture Location (see
+     * `getDefaultLocation`) — pass them explicitly when the test actually
+     * exercises tenant/location scoping.
+     */
+    public async seedAreas(
+        P: string = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{ areas: InventoryArea[] }> {
+        let effectiveTenantId = tenantId;
+        let effectiveLocationId = locationId;
+        if (effectiveTenantId === undefined || effectiveLocationId === undefined) {
+            const location = await this.getDefaultLocation();
+            effectiveTenantId ??= location.tenant.id;
+            effectiveLocationId ??= location.id;
+        }
+
         const names = getAreaNames();
         const areas: InventoryArea[] = [];
         for (const name of names) {
             const areaName = P ? `${P}-${name}` : name;
-            const entity = await this.areaBuilder.reset().areaName(areaName).build();
+            const entity = await this.areaBuilder
+                .reset()
+                .areaName(areaName)
+                .tenantId(effectiveTenantId)
+                .locationId(effectiveLocationId)
+                .build();
             areas.push(await this.areaRepo.save(entity));
         }
         return { areas };
@@ -307,11 +398,15 @@ export class InventoryAreaTestUtil {
      * areas order: [A, B, C, D].
      * counts order: 1 for A, 1 for B, 2 for C, 3 for D (7 total).
      */
-    public async seedCounts(P: string = ''): Promise<{
+    public async seedCounts(
+        P: string = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{
         areas: InventoryArea[];
         counts: InventoryAreaCount[];
     }> {
-        const { areas } = await this.seedAreas(P);
+        const { areas } = await this.seedAreas(P, tenantId, locationId);
         const countsPerArea = [1, 1, 2, 3];
 
         const counts: InventoryAreaCount[] = [];
@@ -320,6 +415,8 @@ export class InventoryAreaTestUtil {
                 const entity = await this.areaCountBuilder
                     .reset()
                     .inventoryAreaById(areas[i].id)
+                    .tenantId(areas[i].tenantId)
+                    .locationId(areas[i].locationId)
                     .build();
                 counts.push(await this.areaCountRepo.save(entity));
             }
@@ -355,6 +452,8 @@ export class InventoryAreaTestUtil {
                     .countedItemById(items[idx].id)
                     .countedItemSizeById(sizes[idx * 2].id)
                     .amount(1)
+                    .tenantId(count.tenantId)
+                    .locationId(count.locationId)
                     .build();
                 areaItems.push(await this.areaItemRepo.save(entity));
             }

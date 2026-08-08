@@ -1,15 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import {
-    IsArray,
+    IsBoolean,
     IsNotEmpty,
-    IsNumber,
     IsOptional,
-    IsPositive,
     IsString,
 } from 'class-validator';
-import { EntityId } from '../../../common/types';
-import { Role } from '../../roles/entities/role.entity';
 
 export class UpdateUserDto {
     @ApiProperty({ description: '', example: 'jsmith123' })
@@ -32,16 +27,11 @@ export class UpdateUserDto {
     @IsOptional()
     readonly email: string | null;
 
-    @ApiProperty({
-        description: 'Id of roles the user has.',
-        example: [1, 2],
-        type: 'number',
-        isArray: true,
+    @ApiPropertyOptional({
+        description: 'Grants access to every location under the tenant without a per-location UserLocation assignment.',
+        example: false,
     })
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true })
-    @IsNotEmpty()
-    @Type(() => Number)
-    readonly roleIds: EntityId<Role>[];
+    @IsBoolean()
+    @IsOptional()
+    readonly isTenantAdmin?: boolean;
 }

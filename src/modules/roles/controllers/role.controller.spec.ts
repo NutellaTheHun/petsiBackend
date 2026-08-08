@@ -10,6 +10,8 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { Role } from '../entities/role.entity';
 import { RoleTestUtil } from '../utils/role-test.util';
@@ -21,9 +23,11 @@ const P = `t${Date.now()}`;
 describe('RoleController', () => {
     let testingUtil: RoleTestUtil;
     let testCtx: DatabaseTestContext;
+    let requestContext: TestRequestContextService;
     let controller: RoleController;
     let roleRepo: Repository<Role>;
 
+    let tenantId: number;
     let roles: Role[];
 
     beforeAll(async () => {
@@ -31,8 +35,10 @@ describe('RoleController', () => {
         testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
         controller = module.get(RoleController);
         roleRepo = module.get(getRepositoryToken(Role));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ roles } = await testingUtil.seedRoles(P));
+        ({ tenantId, roles } = await testingUtil.seedRoles(P));
+        requestContext.setContext({ tenantId });
     });
 
     afterAll(async () => {

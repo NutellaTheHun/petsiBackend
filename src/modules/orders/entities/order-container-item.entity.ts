@@ -34,6 +34,29 @@ export class OrderContainerItem {
     id: number;
 
     /**
+     * The Tenant this contained item belongs to. Denormalized scalar column,
+     * always copied from the parent {@link Order} (via {@link OrderMenuItem}),
+     * never re-derived independently.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
+     * The Location this contained item belongs to. Denormalized scalar
+     * column, same reasoning as tenantId.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Location this entity belongs to',
+    })
+    @Column()
+    locationId: number;
+
+    /**
      * The {@link MenuItem} within the {@link parentOrderMenuItem} that is being ordered.
      *
      * Example: Within the parent {@link menuItem} Breakfast Pastry Platter, size: small, one of the {@link containedMenuItem} would be a Blueberry muffin, size regular, quantity 2.

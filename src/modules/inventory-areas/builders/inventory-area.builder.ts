@@ -25,16 +25,30 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
     if (dto.name !== undefined) {
       this.areaName(dto.name);
     }
+    if (dto.locationId !== undefined) {
+      this.locationId(dto.locationId);
+    }
   }
 
   protected updateEntity(dto: UpdateInventoryAreaDto): void {
     if (dto.name !== undefined) {
       this.areaName(dto.name);
     }
+    if (dto.locationId !== undefined) {
+      this.locationId(dto.locationId);
+    }
   }
 
   public areaName(name: string): this {
     return this.setPropByVal('name', name);
+  }
+
+  public tenantId(tenantId: number): this {
+    return this.setPropByVal('tenantId', tenantId);
+  }
+
+  public locationId(locationId: number): this {
+    return this.setPropByVal('locationId', locationId);
   }
 
   public inventoryCountsById(ids: number[]): this {

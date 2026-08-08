@@ -4,6 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { rrulestr } from 'rrule';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -81,6 +83,7 @@ describe('OrderRecurrenceService', () => {
     let containerLines: MenuItemContainerItem[];
     let menuItemCategories: MenuItemCategory[];
     let menuItemSizes: MenuItemSize[];
+    let fixtureLocationId: number;
 
     const linesFor = (menuItemId: number, sizeId: number) =>
         containerLines.filter((l) => l.parentMenuItem.id === menuItemId && l.parentItemSize.id === sizeId);
@@ -111,6 +114,17 @@ describe('OrderRecurrenceService', () => {
         menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        const requestContext = module.get(
+            RequestContextService,
+        ) as TestRequestContextService;
+
+        const fixtureTenantId = await testingUtil.getDefaultTenantId();
+        fixtureLocationId = await testingUtil.getDefaultLocationId();
+        requestContext.setContext({
+            tenantId: fixtureTenantId,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
         ({ categories } = await testingUtil.seedCategories(P));
         ({ singleItems, fixedContainerItems, varContainerItems, containerLines, menuItemCategories, menuItemSizes } = await testingUtil.seedMenuItems(P));
@@ -170,6 +184,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: past,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -222,6 +237,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: future,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -268,6 +284,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -317,6 +334,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -365,6 +383,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -446,6 +465,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -510,6 +530,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -578,6 +599,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: startDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -646,6 +668,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -681,6 +704,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o1',
@@ -718,6 +742,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [],
             recurrenceSchedule: recurrenceCreateDto,
@@ -740,6 +765,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o1',
@@ -778,6 +804,7 @@ describe('OrderRecurrenceService', () => {
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: cat.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {

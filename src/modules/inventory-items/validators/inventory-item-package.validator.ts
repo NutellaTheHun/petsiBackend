@@ -36,6 +36,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

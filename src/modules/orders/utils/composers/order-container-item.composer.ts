@@ -25,6 +25,8 @@ export class OrderContainerItemComposer extends ComposerBase<OrderContainerItemE
             containedMenuItem: { id: dto.containedMenuItemId },
             containedItemSize: { id: dto.containedItemSizeId },
             quantity: dto.quantity,
+            tenantId: dto.tenantId,
+            locationId: dto.locationId,
         });
         return result;
     }
@@ -64,12 +66,17 @@ export class OrderContainerItemComposer extends ComposerBase<OrderContainerItemE
         if (!context?.parentMenuItemSizeId) {
             throw new Error('Parent menu item size id is required');
         }
+        if (context.tenantId == null || context.locationId == null) {
+            throw new Error('tenantId/locationId are required in context');
+        }
 
         return {
             containedMenuItemId: dto.containedMenuItemId,
             containedItemSizeId: dto.containedItemSizeId,
             quantity: dto.quantity,
             parentOrderMenuItemId: context.parentOrderMenuItemId,
+            tenantId: context.tenantId,
+            locationId: context.locationId,
         };
     }
 }

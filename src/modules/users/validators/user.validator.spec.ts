@@ -4,7 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { Role } from '../../roles/entities/role.entity';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
@@ -17,12 +18,12 @@ const P = `t${Date.now()}`;
 describe('user validator', () => {
     let testingUtil: UserTestUtil;
     let testCtx: DatabaseTestContext;
+    let requestContext: TestRequestContextService;
 
     let validator: UserValidator;
     let userRepo: Repository<User>;
-    let roleRepo: Repository<Role>;
 
-    let roles: Role[];
+    let tenantId: number;
     let users: User[];
 
     beforeAll(async () => {
@@ -30,14 +31,14 @@ describe('user validator', () => {
         testingUtil = module.get<UserTestUtil>(UserTestUtil);
         validator = module.get<UserValidator>(UserValidator);
         userRepo = module.get(getRepositoryToken(User));
-        roleRepo = module.get(getRepositoryToken(Role));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ roles, users } = await testingUtil.seedUsers(P));
+        ({ tenantId, users } = await testingUtil.seedUsers(P));
+        requestContext.setContext({ tenantId });
     });
 
     afterAll(async () => {
         await userRepo.delete(users.map((u) => u.id));
-        await roleRepo.delete(roles.map((r) => r.id));
     });
 
     beforeEach(() => {
@@ -78,15 +79,11 @@ describe('user validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const userToUpdate = await userRepo.findOneOrFail({
-            where: { id: users[0].id },
-            relations: ['roles'],
-        });
+        const userToUpdate = await userRepo.findOneOrFail({ where: { id: users[0].id } });
 
         const dto: UpdateUserDto = plainToInstance(UpdateUserDto, {
             name: `${P}-updated-user-name`,
             email: userToUpdate.email ?? null,
-            roleIds: userToUpdate.roles.map((role) => role.id),
         });
 
         const errors = await validator.validateDto(dto, userToUpdate.id);
@@ -94,15 +91,11 @@ describe('user validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const userToUpdate = await userRepo.findOneOrFail({
-            where: { id: users[0].id },
-            relations: ['roles'],
-        });
+        const userToUpdate = users[0];
         const existingUser = users[1];
 
         const dto: UpdateUserDto = plainToInstance(UpdateUserDto, {
             name: existingUser.name,
-            roleIds: userToUpdate.roles.map((role) => role.id),
             email: userToUpdate.email ?? null,
         });
 

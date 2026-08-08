@@ -1,6 +1,6 @@
 ---
 module: src/common/base
-last_reviewed: 2026-07-04
+last_reviewed: 2026-08-07
 ---
 
 ## Overview
@@ -42,7 +42,9 @@ Each concrete base class in the hierarchy:
   - `beforeRemove(entity, manager)` / `afterRemove(entity, manager)` — hooks around `manager.remove` inside the remove transaction.
 - **`ServiceBase.update` short-circuits to a no-op when the change detector reports no changes** — if `getChangeDetector()` is defined and `detect(...).hasChanges` is `false`, `update` returns the existing entity without calling `updateEntity`, opening a transaction, or persisting anything. Any subclass wiring up a detector must expect `updateEntity` to not be called on a true no-op update (this is asserted directly in service specs per the root `CLAUDE.md` testing conventions).
 - **`ComposerBase` subclasses must never call `manager.save`/`manager.remove` themselves for the entity they compose** — persistence is owned by the `ServiceBase` (or parent composer) that supplies the `EntityManager`; the composer's job is only to build/mutate the entity within that shared transaction and return it.
+- **A `ComposerBase` subclass that needs to stamp `tenantId` (or read any other request-scoped value) must inject `RequestContextService` itself** — `ComposerBase` has no constructor and doesn't provide it. This matters for any tenant-scoped entity that's also created as a nested child of a parent DTO (bypassing the owning service's `createEntity`/`TenantScopedServiceBase.getTenantId()`): the composer's own `createInTransaction` is the only place left to stamp `tenantId` on that path. See `MenuItemContainerItemComposer`, `TemplateMenuItemComposer`, `RecipeSubCategoryComposer`, `RecipeIngredientComposer`, `InventoryItemSizeComposer` for the pattern.
 - **`BuilderBase` property setters (`setPropById`, `setPropByName`, `setPropByFn`, `setPropByBuilder`) queue work rather than run it immediately** — nothing on `this.entity` is actually populated until `build()`/`buildCreateDto()`/`buildUpdateDto()` drains `buildQueue`. Reading `this.entity[prop]` before calling `build()` will see the pre-queued state, not the resolved value.
 - **`ValidatorBase.validateDto` always resolves an identity first, then validates it** — `resolveIdentity` is abstract per-domain (how to turn a raw create/update DTO into `{ id?, createId? }`), but `validateIdentity` is what subclasses actually implement business rules in. `validateNestedIdentity` is the entry point nested validators must use so failures get attached to the parent's `ValidationErrorMap` under the right field key, rather than thrown independently.
+- **`LocationScopedServiceBase.create()`'s pre-check only fires when the create DTO carries an explicit `locationId`.** Some location-bound entities never put one there — a nested child stamped from an already-authorized parent (`OrderMenuItem`, `OrderContainerItem`, `RecurringOrderSchedule`), or an entity whose location is derived from a referenced entity (`InventoryAreaCount` via `inventoryAreaId`). Those domains must authorize the *derived* location themselves inside `createEntity` (via the inherited `assertLocationAuthorized`) — omitting this silently skips authorization. See `InventoryAreaCountService.createEntity`/`updateEntity` for the pattern.
 
 ## Gotchas

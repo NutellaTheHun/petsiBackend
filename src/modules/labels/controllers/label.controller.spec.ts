@@ -10,9 +10,12 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { LabelType } from '../entities/label-type.entity';
 import { Label } from '../entities/label.entity';
@@ -31,7 +34,10 @@ describe('label controller', () => {
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let labelTypes: LabelType[];
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
@@ -49,9 +55,14 @@ describe('label controller', () => {
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({ labelTypes, categories, sizes, singleItems, fixedContainerItems, varContainerItems, labels } =
-            await testingUtil.seedLabels(P));
+            await testingUtil.seedLabels(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -64,6 +75,7 @@ describe('label controller', () => {
         ]);
         await categoryRepo.delete(categories.map((c) => c.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {
@@ -100,14 +112,24 @@ describe('label controller', () => {
     });
 
     it('remove deletes a created label then findOne fails', async () => {
+        // A brand-new LabelType guarantees the (menuItem, labelType) pair
+        // can't collide with one of the combos seedLabels already used.
+        const freshType = await labelTypeRepo.save({
+            name: `${P}-to-remove-type`,
+            length: 100,
+            width: 100,
+            tenantId: tenant.id,
+        } as LabelType);
+
         const created = await controller.create(
             plainToInstance(CreateLabelDto, {
                 menuItemId: singleItems[0].id,
-                labelTypeId: labelTypes[1].id,
+                labelTypeId: freshType.id,
                 imageUrl: `${P}-to-remove.png`,
             }),
         );
         await controller.remove(created.id);
+        await labelTypeRepo.delete(freshType.id);
         await expect(controller.findOne(created.id)).rejects.toThrow(
             NotFoundException,
         );

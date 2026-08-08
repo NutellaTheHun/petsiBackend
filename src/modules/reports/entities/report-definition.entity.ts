@@ -70,6 +70,13 @@ export class ReportDefinition {
     @PrimaryGeneratedColumn()
     id: number;
 
+    /**
+     * The Tenant this report definition belongs to. Denormalized scalar
+     * column (not a relation) so tenant filtering never needs a join.
+     */
+    @Column()
+    tenantId: number;
+
     @CreateDateColumn()
     createdAt: Date;
 

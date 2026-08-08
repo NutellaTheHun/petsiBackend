@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
@@ -36,8 +39,13 @@ describe('Inventory Item Vendor Service', () => {
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let vendorRepo: Repository<InventoryItemVendor>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let vendors: InventoryItemVendor[];
+    let otherTenantVendor: InventoryItemVendor;
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
@@ -49,12 +57,26 @@ describe('Inventory Item Vendor Service', () => {
         ) as TestableInventoryItemVendorService;
         dataSource = module.get(DataSource);
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ vendors } = await testingUtil.seedVendors(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ vendors } = await testingUtil.seedVendors(P, tenant.id));
+        otherTenantVendor = await vendorRepo.save({
+            name: `${P}-other-tenant-vendor`,
+            tenantId: otherTenant.id,
+        } as InventoryItemVendor);
     });
 
     afterAll(async () => {
-        await vendorRepo.delete(vendors.map((v) => v.id));
+        await vendorRepo.delete([...vendors.map((v) => v.id), otherTenantVendor.id]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -133,6 +155,24 @@ describe('Inventory Item Vendor Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await vendorRepo.findOneOrFail({ where: { id: v.id } });
             expect(row.name).toBe(`${P}-vendor-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await vendorService.create(
+                plainToInstance(CreateInventoryItemVendorDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as InventoryItemVendor).tenantId).toBe(tenant.id);
+            await vendorRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(vendorService.findOne(otherTenantVendor.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

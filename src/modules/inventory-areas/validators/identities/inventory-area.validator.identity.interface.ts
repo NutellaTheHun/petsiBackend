@@ -2,4 +2,5 @@ import { ValidatorIdentityBaseInterface } from "../../../../common/base/validato
 
 export interface InventoryAreaValidatorIdentity extends ValidatorIdentityBaseInterface {
     name?: string;
+    locationId?: number;
 }

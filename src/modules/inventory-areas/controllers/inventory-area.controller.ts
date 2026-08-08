@@ -29,6 +29,7 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
+import { LocationScope } from '../../../common/decorators/LocationScope';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
@@ -65,6 +66,7 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @LocationScope('body', 'locationId')
     @ApiOperation({ summary: 'Creates a Inventory Area' })
     @ApiCreatedResponse({
         description: 'Inventory Area successfully created',
@@ -77,6 +79,7 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
     }
 
     @Put(':id')
+    @LocationScope('body', 'locationId')
     @ApiOperation({ summary: 'Updates a Inventory Area' })
     @ApiOkResponse({
         description: 'Inventory Area successfully updated',

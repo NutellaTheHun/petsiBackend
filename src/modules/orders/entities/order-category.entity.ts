@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { orderExample } from '../../../common/swagger/examples/orders/order.example';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
@@ -16,6 +16,7 @@ export type OrderCategoryEntity = EntityBase<
  * A category of {@link Order} for filtering/organization such as: "square", "wholesale", "retail", "farmers market", "special", ect.
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class OrderCategory {
   @ApiProperty({
     example: 1,
@@ -24,8 +25,19 @@ export class OrderCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * The Tenant this category belongs to. Denormalized scalar column (not a
+   * relation) so ServiceBase-level tenant filtering never needs a join.
+   */
+  @ApiProperty({
+    example: 1,
+    description: 'The Tenant this entity belongs to',
+  })
+  @Column()
+  tenantId: number;
+
   @ApiProperty({ example: 'wholesale', description: 'Name of the category.' })
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   /**

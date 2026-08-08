@@ -4,6 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
@@ -16,10 +18,12 @@ const P = `t${Date.now()}`;
 describe('role validator', () => {
     let testingUtil: RoleTestUtil;
     let testCtx: DatabaseTestContext;
+    let requestContext: TestRequestContextService;
 
     let validator: RoleValidator;
     let roleRepo: Repository<Role>;
 
+    let tenantId: number;
     let roles: Role[];
 
     beforeAll(async () => {
@@ -27,8 +31,10 @@ describe('role validator', () => {
         testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
         validator = module.get<RoleValidator>(RoleValidator);
         roleRepo = module.get(getRepositoryToken(Role));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ roles } = await testingUtil.seedRoles(P));
+        ({ tenantId, roles } = await testingUtil.seedRoles(P));
+        requestContext.setContext({ tenantId });
     });
 
     afterAll(async () => {

@@ -13,6 +13,7 @@ import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { ReportDefinition, ReportVisibility } from '../entities/report-definition.entity';
 import { getReportsExecutionTestingModule } from '../reports-testing.module';
 import { ReportExecutionService } from './report-execution.service';
@@ -21,6 +22,9 @@ const P = `t${Date.now()}`;
 
 const DATE_1 = new Date('2025-01-15T00:00:00.000Z');
 const DATE_2 = new Date('2025-01-16T00:00:00.000Z');
+// No FK constraint on Order/OrderMenuItem/OrderContainerItem.locationId —
+// a real Location row isn't needed to satisfy the NOT NULL column.
+const FIXTURE_LOCATION_ID = 1;
 
 describe('ReportExecutionService', () => {
     let module: TestingModule;
@@ -33,7 +37,9 @@ describe('ReportExecutionService', () => {
     let menuItemCategoryRepo: Repository<MenuItemCategory>;
     let testContextService: TestRequestContextService;
     let testCtx: DatabaseTestContext;
+    let tenantRepo: Repository<Tenant>;
 
+    let tenant: Tenant;
     let menuItem: MenuItem;
     let menuItem2: MenuItem;
     let menuItemSize: MenuItemSize;
@@ -55,30 +61,48 @@ describe('ReportExecutionService', () => {
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
         testContextService = module.get(RequestContextService) as TestRequestContextService;
 
-        menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie` });
-        menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular` });
-        menuItem = await menuItemRepo.save({ name: `${P}-apple-pie` });
-        menuItem2 = await menuItemRepo.save({ name: `${P}-cherry-pie` });
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        // Order/OrderMenuItem/OrderContainerItem are location-bound (NOT
+        // NULL locationId) but ReportExecutionService queries them
+        // unscoped (see reports/CLAUDE.md) — no real Location row is
+        // needed here, locationId has no FK constraint.
+        testContextService.setContext({
+            tenantId: tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
+
+        menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie`, tenantId: tenant.id } as MenuItemCategory);
+        menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular`, tenantId: tenant.id } as MenuItemSize);
+        menuItem = await menuItemRepo.save({ name: `${P}-apple-pie`, tenantId: tenant.id } as MenuItem);
+        menuItem2 = await menuItemRepo.save({ name: `${P}-cherry-pie`, tenantId: tenant.id } as MenuItem);
 
         orderAlice = await orderRepo.save({
             recipient: `${P}-alice`,
             fulfillmentDate: DATE_1,
             fulfillmentType: 'pickup',
             isFrozen: false,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
         orderBob = await orderRepo.save({
             recipient: `${P}-bob`,
             fulfillmentDate: DATE_2,
             fulfillmentType: 'delivery',
             isFrozen: false,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
         orderFrozen = await orderRepo.save({
             recipient: `${P}-frozen`,
             fulfillmentDate: DATE_1,
             fulfillmentType: 'pickup',
             isFrozen: true,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
 
         orderMenuItemAlice = await orderMenuItemRepo.save({
@@ -86,12 +110,16 @@ describe('ReportExecutionService', () => {
             size: menuItemSize,
             quantity: 2,
             parentOrder: orderAlice,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
         orderMenuItemBob = await orderMenuItemRepo.save({
             menuItem: menuItem2,
             size: menuItemSize,
             quantity: 3,
             parentOrder: orderBob,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
 
         testContextService.run(() => {}, { roles: [ROLE_MANAGER] });
@@ -103,6 +131,7 @@ describe('ReportExecutionService', () => {
         await menuItemRepo.delete([menuItem.id, menuItem2.id]);
         await menuItemSizeRepo.delete(menuItemSize.id);
         await menuItemCategoryRepo.delete(menuItemCategory.id);
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {
@@ -123,6 +152,7 @@ describe('ReportExecutionService', () => {
             showHeader: true,
             params: [],
             sections,
+            tenantId: tenant.id,
         });
         testCtx.addCleanupFunction(async () => { await definitionRepo.delete(defn.id); });
         return defn;
@@ -474,6 +504,8 @@ describe('ReportExecutionService', () => {
                 fulfillmentDate: DATE_1,
                 fulfillmentType: 'pickup',
                 isFrozen: false,
+                tenantId: tenant.id,
+                locationId: FIXTURE_LOCATION_ID,
             });
             testCtx.addCleanupFunction(async () => { await orderRepo.delete(containerOrder.id); });
 
@@ -482,9 +514,11 @@ describe('ReportExecutionService', () => {
                 size: menuItemSize,
                 quantity: 1,
                 parentOrder: containerOrder,
+                tenantId: tenant.id,
+                locationId: FIXTURE_LOCATION_ID,
                 containerOrderMenuItems: [
-                    { containedMenuItem: menuItem, containedItemSize: menuItemSize, quantity: 2 },
-                    { containedMenuItem: menuItem2, containedItemSize: menuItemSize, quantity: 3 },
+                    { containedMenuItem: menuItem, containedItemSize: menuItemSize, quantity: 2, tenantId: tenant.id, locationId: FIXTURE_LOCATION_ID },
+                    { containedMenuItem: menuItem2, containedItemSize: menuItemSize, quantity: 3, tenantId: tenant.id, locationId: FIXTURE_LOCATION_ID },
                 ],
             } as any);
             testCtx.addCleanupFunction(async () => { await orderMenuItemRepo.delete(containerOrderMenuItem.id); });

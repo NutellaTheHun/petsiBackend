@@ -19,6 +19,9 @@ import { InventoryItemsModule } from '../inventory-items/inventory-items.module'
 import { LabelType } from '../labels/entities/label-type.entity';
 import { Label } from '../labels/entities/label.entity';
 import { LabelsModule } from '../labels/labels.module';
+import { Location } from '../locations/entities/location.entity';
+import { UserLocation } from '../locations/entities/user-location.entity';
+import { LocationsModule } from '../locations/locations.module';
 import { MenuItemCategory } from '../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
@@ -38,6 +41,8 @@ import { RequestContextModule } from '../request-context/request-context.module'
 import { RequestContextService } from '../request-context/RequestContextService';
 import { Role } from '../roles/entities/role.entity';
 import { RoleModule } from '../roles/role.module';
+import { Tenant } from '../tenants/entities/tenant.entity';
+import { TenantsModule } from '../tenants/tenants.module';
 import { TemplateMenuItem } from '../templates/entities/template-menu-item.entity';
 import { Template } from '../templates/entities/template.entity';
 import { TemplatesModule } from '../templates/templates.module';
@@ -83,6 +88,9 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
 
         User,
         Role,
+        Tenant,
+        Location,
+        UserLocation,
       ]),
       TypeOrmModule.forFeature([
         InventoryArea,
@@ -118,10 +126,15 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
 
         User,
         Role,
+        Tenant,
+        Location,
+        UserLocation,
       ]),
       SeedModule,
       UserModule,
       RoleModule,
+      TenantsModule,
+      LocationsModule,
       InventoryAreasModule,
       InventoryItemsModule,
       LabelsModule,

@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -35,8 +38,13 @@ describe('order category service', () => {
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let categoryRepo: Repository<OrderCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let categories: OrderCategory[];
+    let otherTenantCategory: OrderCategory;
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule({
@@ -46,12 +54,26 @@ describe('order category service', () => {
         dataSource = module.get(DataSource);
         service = module.get(OrderCategoryService) as TestableOrderCategoryService;
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories } = await testingUtil.seedCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories } = await testingUtil.seedCategories(P, tenant.id));
+        otherTenantCategory = await categoryRepo.save({
+            name: `${P}-other-tenant-category`,
+            tenantId: otherTenant.id,
+        } as OrderCategory);
     });
 
     afterAll(async () => {
-        await categoryRepo.delete(categories.map((c) => c.id));
+        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -114,5 +136,35 @@ describe('order category service', () => {
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
         await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await service.create(
+                plainToInstance(CreateOrderCategoryDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as OrderCategory).tenantId).toBe(tenant.id);
+            await categoryRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(service.findOne(otherTenantCategory.id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+
+        it('findAll excludes another tenant\'s categories', async () => {
+            const result = await service.findAll({ limit: 100 });
+            const found = result.items.find((c) => c.id === otherTenantCategory.id);
+            expect(found).toBeUndefined();
+        });
+
+        it('remove throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(service.remove(otherTenantCategory.id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
     });
 });

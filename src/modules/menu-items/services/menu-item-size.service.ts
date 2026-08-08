@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
@@ -15,7 +15,7 @@ import { MenuItemSizeChangeDetector } from '../utils/change-detectors/menu-item-
 import { MenuItemSizeValidator } from '../validators/menu-item-size.validator';
 
 @Injectable()
-export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
+export class MenuItemSizeService extends TenantScopedServiceBase<MenuItemSizeEntity> {
   constructor(
     @InjectRepository(MenuItemSize)
     repo: Repository<MenuItemSize>,
@@ -39,6 +39,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
   ): Promise<MenuItemSize> {
     const result = manager.create(MenuItemSize, {
       name: dto.name,
+      tenantId: this.getTenantId(),
     });
     return await manager.save(result);
   }

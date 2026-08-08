@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
-import { ServiceBase } from '../../../common/base/service.base';
+import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
@@ -14,7 +14,7 @@ import { OrderContainerItemComposer } from '../utils/composers/order-container-i
 import { OrderContainerItemValidator } from '../validators/order-container-item.validator';
 
 @Injectable()
-export class OrderContainerItemService extends ServiceBase<OrderContainerItemEntity> {
+export class OrderContainerItemService extends LocationScopedServiceBase<OrderContainerItemEntity> {
     constructor(
         @InjectRepository(OrderContainerItem)
         repo: Repository<OrderContainerItem>,

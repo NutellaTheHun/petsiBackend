@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
@@ -15,7 +15,7 @@ import { InventoryItemCategoryChangeDetector } from '../utils/change-detectors/i
 import { InventoryItemCategoryValidator } from '../validators/inventory-item-category.validator';
 
 @Injectable()
-export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategoryEntity> {
+export class InventoryItemCategoryService extends TenantScopedServiceBase<InventoryItemCategoryEntity> {
   constructor(
     @InjectRepository(InventoryItemCategory)
     repo: Repository<InventoryItemCategory>,
@@ -39,6 +39,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
   ): Promise<InventoryItemCategory> {
     const result = manager.create(InventoryItemCategory, {
       name: dto.name,
+      tenantId: this.getTenantId(),
     });
     return await manager.save(result);
   }

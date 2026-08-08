@@ -1,24 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { hashPassword } from '../../auth/utils/hash';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
 
 @Injectable()
 export class UserBuilder extends BuilderBase<User> {
-  constructor(
-    @InjectRepository(Role)
-    private readonly rolesRepo: Repository<Role>,
-
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
+  constructor(requestContextService: RequestContextService, logger: AppLogger) {
     super(User, 'UserBuilder', requestContextService, logger);
   }
 
@@ -29,8 +20,8 @@ export class UserBuilder extends BuilderBase<User> {
     if (dto.password !== undefined) {
       this.password(dto.password);
     }
-    if (dto.roleIds !== undefined) {
-      this.roles(dto.roleIds);
+    if (dto.isTenantAdmin !== undefined) {
+      this.isTenantAdmin(dto.isTenantAdmin);
     }
     if (dto.name !== undefined) {
       this.name(dto.name);
@@ -44,8 +35,8 @@ export class UserBuilder extends BuilderBase<User> {
     if (dto.password !== undefined) {
       this.password(dto.password);
     }
-    if (dto.roleIds !== undefined) {
-      this.roles(dto.roleIds);
+    if (dto.isTenantAdmin !== undefined) {
+      this.isTenantAdmin(dto.isTenantAdmin);
     }
     if (dto.name !== undefined) {
       this.name(dto.name);
@@ -70,12 +61,11 @@ export class UserBuilder extends BuilderBase<User> {
     return this.setPropByFn(hashPassword, 'password', password);
   }
 
-  public roles(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.rolesRepo.find({ where: { id: In(ids) } }),
-      'roles',
-      ids,
-    );
+  public isTenantAdmin(isTenantAdmin: boolean): this {
+    return this.setPropByVal('isTenantAdmin', isTenantAdmin);
+  }
+
+  public tenantId(tenantId: number): this {
+    return this.setPropByVal('tenantId', tenantId);
   }
 }

@@ -9,6 +9,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
@@ -22,7 +25,10 @@ describe('Inventory Item Vendor Controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: InventoryItemVendorController;
     let vendorRepo: Repository<InventoryItemVendor>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let vendors: InventoryItemVendor[];
 
     beforeAll(async () => {
@@ -30,12 +36,18 @@ describe('Inventory Item Vendor Controller', () => {
         testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
         controller = module.get<InventoryItemVendorController>(InventoryItemVendorController);
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ vendors } = await testingUtil.seedVendors(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ vendors } = await testingUtil.seedVendors(P, tenant.id));
     });
 
     afterAll(async () => {
         await vendorRepo.delete(vendors.map((v) => v.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

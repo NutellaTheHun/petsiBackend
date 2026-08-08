@@ -112,6 +112,11 @@ export class OrderController extends ControllerBase<OrderEntity> {
     async listOrderRevisions(
         @Param('id', ParseIntPipe) id: number,
     ): Promise<RevisionHistoryListItemDto[]> {
+        // Resolve the owning entity through the tenant/location-scoped service
+        // first — RevisionHistoryService itself has no tenant/location
+        // awareness, so this is what turns a cross-tenant/location id into
+        // NotFoundException instead of a leak.
+        await this.orderService.findOne(id);
         return this.revisionHistoryService.listRevisions(
             REVISION_ENTITY_TYPES.ORDER,
             id,
@@ -126,6 +131,8 @@ export class OrderController extends ControllerBase<OrderEntity> {
         @Param('id', ParseIntPipe) id: number,
         @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
     ): Promise<RevisionHistoryDetailDto> {
+        // See listOrderRevisions — owning-entity lookup enforces tenant/location scope.
+        await this.orderService.findOne(id);
         return this.revisionHistoryService.getRevisionOrThrow(
             REVISION_ENTITY_TYPES.ORDER,
             id,

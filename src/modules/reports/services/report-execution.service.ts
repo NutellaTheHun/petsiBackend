@@ -35,7 +35,10 @@ export class ReportExecutionService {
 
     async execute(definitionId: number, runtimeParams: Record<string, any>): Promise<ReportResultDto> {
         const definition = await this.definitionRepo.findOne({ where: { id: definitionId } });
-        if (!definition) {
+        // A lookup for an id belonging to a different tenant behaves like the
+        // id doesn't exist at all — never confirm another tenant's data exists.
+        const tenantId = this.requestContextService.get<number>('tenantId');
+        if (!definition || definition.tenantId !== tenantId) {
             throw new NotFoundException(`ReportDefinition #${definitionId} not found`);
         }
 

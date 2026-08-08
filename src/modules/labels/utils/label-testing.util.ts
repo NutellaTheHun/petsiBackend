@@ -6,6 +6,7 @@ import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.e
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { LabelType } from '../entities/label-type.entity';
 import { Label } from '../entities/label.entity';
 import { getTestImageUrls, getTestLabelTypeNames } from './constants';
@@ -25,7 +26,37 @@ export class LabelTestingUtil {
         private readonly itemRepo: Repository<MenuItem>,
 
         private readonly menuItemTestUtil: MenuItemTestingUtil,
+
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) { }
+
+    /**
+     * LabelType/Label now require a tenantId (NOT NULL). Most label-module
+     * fixtures don't care about tenant scoping themselves — they only need a
+     * valid tenantId to satisfy the column — so this lazily provisions (or
+     * reuses, by fixed subdomain, across the whole test run) one shared
+     * fixture Tenant rather than requiring every seed method's callers to
+     * plumb a tenantId through. Tests that actually exercise tenant scoping
+     * (label*.service.spec.ts) seed and pass their own explicit tenantId.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'label-testing-util-fixture-tenant';
+    private defaultTenantId?: number;
+    public async getDefaultTenantId(): Promise<number> {
+        if (this.defaultTenantId === undefined) {
+            const existing = await this.tenantRepo.findOne({
+                where: { subdomain: LabelTestingUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            const tenant =
+                existing ??
+                (await this.tenantRepo.save({
+                    name: 'Label Testing Util Fixture Tenant',
+                    subdomain: LabelTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                }));
+            this.defaultTenantId = tenant.id;
+        }
+        return this.defaultTenantId;
+    }
 
     // Label Types
     public async getTestLabelTypeEntities(
@@ -40,6 +71,7 @@ export class LabelTestingUtil {
         ];
         let dimensionIdx = 0;
         const results: LabelType[] = [];
+        const tenantId = await this.getDefaultTenantId();
 
         for (const name of names) {
             const dimension = dimensions[dimensionIdx % dimensions.length];
@@ -48,6 +80,7 @@ export class LabelTestingUtil {
                 name: name,
                 length: dimension.l,
                 width: dimension.w,
+                tenantId,
             } as LabelType);
 
             dimensionIdx++;
@@ -102,12 +135,14 @@ export class LabelTestingUtil {
         let itemIdx = 0;
 
         const results: Label[] = [];
+        const tenantId = await this.getDefaultTenantId();
 
         for (const url of urls) {
             results.push({
                 menuItem: items[itemIdx++ % items.length],
                 imageUrl: url,
                 labelType: types[typeIdx++ % types.length],
+                tenantId,
             } as Label);
         }
 
@@ -140,7 +175,8 @@ export class LabelTestingUtil {
     // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
     // These do NOT register cleanup — callers are responsible for deleting by ID.
 
-    public async seedLabelTypes(P: string = ''): Promise<{ labelTypes: LabelType[] }> {
+    public async seedLabelTypes(P: string = '', tenantId?: number): Promise<{ labelTypes: LabelType[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestLabelTypeNames();
         const dimensions = [
             { l: 200, w: 400 },
@@ -157,6 +193,7 @@ export class LabelTestingUtil {
                 name,
                 length: dimension.l,
                 width: dimension.w,
+                tenantId: effectiveTenantId,
             });
             labelTypes.push(await this.typeRepo.save(entity));
         }
@@ -167,7 +204,7 @@ export class LabelTestingUtil {
      * Seeds label types and menu items (via MenuItemTestingUtil.seedItems), then
      * pairs each of the 7 test image urls with a round-robin menuItem/labelType.
      */
-    public async seedLabels(P: string = ''): Promise<{
+    public async seedLabels(P: string = '', tenantId?: number): Promise<{
         labelTypes: LabelType[];
         categories: MenuItemCategory[];
         sizes: MenuItemSize[];
@@ -176,7 +213,8 @@ export class LabelTestingUtil {
         varContainerItems: MenuItem[];
         labels: Label[];
     }> {
-        const { labelTypes } = await this.seedLabelTypes(P);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        const { labelTypes } = await this.seedLabelTypes(P, effectiveTenantId);
         const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
             await this.menuItemTestUtil.seedItems(P);
 
@@ -187,6 +225,7 @@ export class LabelTestingUtil {
                 menuItem: singleItems[i % singleItems.length],
                 imageUrl: urls[i],
                 labelType: labelTypes[i % labelTypes.length],
+                tenantId: effectiveTenantId,
             });
             labels.push(await this.labelRepo.save(entity));
         }

@@ -10,6 +10,7 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
@@ -21,6 +22,7 @@ import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaCountController } from './inventory-area-count.controller';
 
 const P = `t${Date.now()}`;
@@ -58,6 +60,16 @@ describe('inventory area count controller', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+        const requestContext = module.get(
+            RequestContextService,
+        ) as TestRequestContextService;
+
+        const defaultLocation = await testingUtil.getDefaultLocation();
+        requestContext.setContext({
+            tenantId: defaultLocation.tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
         ({ areas } = await testingUtil.seedAreas(P));
         ({ categories, vendors, packages, items, sizes } =

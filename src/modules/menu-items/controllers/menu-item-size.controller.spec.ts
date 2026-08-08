@@ -9,6 +9,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
@@ -22,7 +25,10 @@ describe('menu item size controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: MenuItemSizeController;
     let sizeRepo: Repository<MenuItemSize>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let sizes: MenuItemSize[];
 
     beforeAll(async () => {
@@ -30,12 +36,18 @@ describe('menu item size controller', () => {
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         controller = module.get<MenuItemSizeController>(MenuItemSizeController);
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ sizes } = await testingUtil.seedSizes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ sizes } = await testingUtil.seedSizes(P, tenant.id));
     });
 
     afterAll(async () => {
         await sizeRepo.delete(sizes.map((s) => s.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

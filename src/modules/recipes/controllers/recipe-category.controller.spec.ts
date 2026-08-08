@@ -10,6 +10,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
@@ -25,7 +28,10 @@ describe('recipe category controller', () => {
     let controller: RecipeCategoryController;
     let categoryRepo: Repository<RecipeCategory>;
     let subCategoryRepo: Repository<RecipeSubCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: RecipeCategory[];
     let subCategories: RecipeSubCategory[];
 
@@ -35,13 +41,19 @@ describe('recipe category controller', () => {
         controller = module.get<RecipeCategoryController>(RecipeCategoryController);
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories, subCategories } = await testingUtil.seedSubCategories(P, tenant.id));
     });
 
     afterAll(async () => {
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

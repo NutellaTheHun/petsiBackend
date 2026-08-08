@@ -1,6 +1,6 @@
 ---
 module: src/modules/seed
-last_reviewed: 2026-07-04
+last_reviewed: 2026-08-07
 ---
 
 ## Overview
@@ -14,9 +14,13 @@ last_reviewed: 2026-07-04
 
 Role/user seeding (`seedRoleTestDb`, `seedUserTestDb`) is idempotent: it looks up each fixed name (`admin`/`manager`/`staff`) before inserting, so re-running the seed script against an already-seeded database is safe. `seedUserModuleTestDb` always calls `seedRoleTestDb` first since user creation assigns roles by name lookup. `seedRolesAndUsers` is a near-duplicate of this same role/user logic but is only referenced from a commented-out block in `seed.service.spec.ts` — it is not part of the `seedTestDb()` call graph.
 
+`Role`/`User` require a `tenantId` (NOT NULL), and role assignment lives on `UserLocation` rather than a direct `User.roles` relation. `getSeedFixtureLocation()` lazily provisions (or reuses, by the fixed subdomain `seed-service-fixture-tenant`) one shared `Tenant`+`Location` for the whole seed run, and `ensureUserLocation()` attaches each seeded user's roles via a `UserLocation` row at that fixture location — seed data doesn't care about tenant/location scoping itself, it only needs valid ids to satisfy those columns.
+
 ## Enforced Patterns
 - Seeding methods here call the domain test utils' legacy `init<Entity>TestDatabase(ctx)` methods (idempotent, fixed entity names, existence-checked via `findOne` before `save`) — **not** the newer prefix-based `seed<Entity>(P)` helpers that atomic test specs use for per-test isolation. Do not swap these to the `P`-prefixed variants; that would break idempotency of `npm run seedTestDb` against a database that already has seed data.
 - Seed order within `seedTestDb()` follows each domain's FK dependency chain (parent entities before children, e.g. category/package/vendor before item, item before size). New seed steps must be inserted at the correct point in this chain, not appended at the end.
 - Every seeding step accepts and threads through the same `DatabaseTestContext` (`ctx`) passed into `seedTestDb()`, so callers can register cleanup or share context across the whole seed run.
+- `seedRoleTestDb`/`seedUserTestDb` write `Role`/`User` rows via their repositories directly rather than through `RoleService`/`UserService` — both extend `TenantScopedServiceBase`, which stamps `tenantId` from `RequestContextService`, and there's no request/CLS context to read that from outside an HTTP request. `src/modules/tenant-provisioning/tenant-provisioning.service.ts` (the `npm run provisionTenant` script) follows this same repository-bypass rationale for the identical reason.
+- Most domain services seeded here are now `TenantScopedServiceBase` (or `LocationScopedServiceBase`), each behind its own module's independent default-fixture `Tenant` (keyed by that module's own subdomain, e.g. `menu-item-testing-util-fixture-tenant`, `inventory-item-testing-util-fixture-tenant` — these are **not** shared with each other or with `SeedService`'s own `seed-service-fixture-tenant`). `seed.service.spec.ts`'s `findAll()` assertions must switch `RequestContextService` to the right fixture tenant (via that domain's `*TestUtil.getDefaultTenantId()`) immediately before checking each domain's `findAll()` — get the wrong tenant in context and `findAll()` returns an empty page instead of an error, since the scoping filter just silently excludes everything.
 
 ## Gotchas

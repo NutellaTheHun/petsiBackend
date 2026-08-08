@@ -9,6 +9,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
@@ -22,7 +25,10 @@ describe('Inventory Item Category Controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: InventoryItemCategoryController;
     let categoryRepo: Repository<InventoryItemCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: InventoryItemCategory[];
 
     beforeAll(async () => {
@@ -30,12 +36,18 @@ describe('Inventory Item Category Controller', () => {
         testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
         controller = module.get<InventoryItemCategoryController>(InventoryItemCategoryController);
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories } = await testingUtil.seedCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories } = await testingUtil.seedCategories(P, tenant.id));
     });
 
     afterAll(async () => {
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

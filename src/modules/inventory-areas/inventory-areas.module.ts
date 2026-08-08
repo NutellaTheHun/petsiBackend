@@ -5,7 +5,9 @@ import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { InventoryItemSize } from '../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../inventory-items/entities/inventory-item.entity';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
+import { LocationsModule } from '../locations/locations.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { InventoryAreaCountBuilder } from './builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from './builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from './builders/inventory-area.builder';
@@ -37,6 +39,8 @@ import { InventoryAreaValidator } from './validators/inventory-area.validator';
       InventoryItemSize,
     ]),
     InventoryItemsModule,
+    TenantsModule,
+    LocationsModule,
     CacheModule.register(),
     AppLoggingModule,
     RequestContextModule,

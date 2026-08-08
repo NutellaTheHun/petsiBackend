@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
@@ -15,6 +15,7 @@ export type MenuItemSizeEntity = EntityBase<
  * - Pies can be size "cutie"(3"), "small"(5"), "medium"(8"), "large"(10")
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class MenuItemSize {
   @ApiProperty({
     example: 1,
@@ -24,12 +25,23 @@ export class MenuItemSize {
   id: number;
 
   /**
+   * The Tenant this size belongs to. Denormalized scalar column (not a
+   * relation) so ServiceBase-level tenant filtering never needs a join.
+   */
+  @ApiProperty({
+    example: 1,
+    description: 'The Tenant this entity belongs to',
+  })
+  @Column()
+  tenantId: number;
+
+  /**
    * By default, can be "regular", "cutie", "small", "medium", "large"
    */
   @ApiProperty({
     example: 'medium',
     description: 'The naming identifier of the size.',
   })
-  @Column({ unique: true })
+  @Column()
   name: string;
 }

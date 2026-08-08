@@ -19,7 +19,7 @@ import {
     ChangeDetectionResult,
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
@@ -54,7 +54,7 @@ import {
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
 @Injectable()
-export class MenuItemService extends ServiceBase<MenuItemEntity> {
+export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
     constructor(
         @InjectRepository(MenuItem)
         repo: Repository<MenuItem>,
@@ -92,6 +92,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             name: dto.name,
             sizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
             variableMaxAmount: dto.variableMaxAmount ?? null,
+            tenantId: this.getTenantId(),
         });
 
         const savedResult = await manager.save(entity);
@@ -402,6 +403,14 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         menuItemId: number,
         targetRevisionNumber: number,
     ): Promise<MenuItem> {
+        // Authorize the menu item itself before touching revision history —
+        // the raw `manager.findOne` calls below intentionally bypass
+        // TenantScopedServiceBase's scoping (they need full relation graphs
+        // mid-transaction), so this is the one place in this method
+        // tenant authorization is enforced. RevisionHistoryService has no
+        // tenant awareness of its own.
+        await this.findOne(menuItemId);
+
         const row = await this.revisionHistoryService.getRevisionRow(
             REVISION_ENTITY_TYPES.MENU_ITEM,
             menuItemId,

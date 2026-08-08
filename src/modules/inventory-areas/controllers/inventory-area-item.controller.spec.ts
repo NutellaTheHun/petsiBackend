@@ -3,6 +3,8 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
@@ -54,6 +56,16 @@ describe('inventory area item controller', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+        const requestContext = module.get(
+            RequestContextService,
+        ) as TestRequestContextService;
+
+        const defaultLocation = await testingUtil.getDefaultLocation();
+        requestContext.setContext({
+            tenantId: defaultLocation.tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
         ({ areas, counts, categories, vendors, packages, items, sizes, areaItems } =
             await testingUtil.seedItemCounts(P));

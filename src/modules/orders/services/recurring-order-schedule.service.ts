@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
-import { ServiceBase } from "../../../common/base/service.base";
+import { LocationScopedServiceBase } from "../../../common/base/location-scoped-service.base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
@@ -13,7 +13,7 @@ import { recurringOrderScheduleToResponseDto } from "../utils/entity-transformer
 import { RecurringOrderScheduleValidator } from "../validators/recurring-order-schedule.validator";
 
 @Injectable()
-export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderScheduleEntity> {
+export class RecurringOrderScheduleService extends LocationScopedServiceBase<RecurringOrderScheduleEntity> {
     constructor(
         @InjectRepository(RecurringOrderSchedule)
         repo: Repository<RecurringOrderSchedule>,

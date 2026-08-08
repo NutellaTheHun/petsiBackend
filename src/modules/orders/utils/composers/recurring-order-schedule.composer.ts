@@ -25,6 +25,8 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
             startDate: dto.startDate,
             endDate: dto.endDate,
             timezone: dto.timezone,
+            tenantId: dto.tenantId,
+            locationId: dto.locationId,
         });
         return result;
     }
@@ -49,6 +51,9 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
         if (!context?.orderId) {
             throw new Error('Order id is required');
         }
+        if (context.tenantId == null || context.locationId == null) {
+            throw new Error('tenantId/locationId are required in context');
+        }
         return {
             orderId: context.orderId,
             frequency: dto.frequency,
@@ -59,6 +64,8 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
             startDate: dto.startDate,
             endDate: dto.endDate,
             timezone: dto.timezone,
+            tenantId: context.tenantId,
+            locationId: context.locationId,
         };
     }
 }

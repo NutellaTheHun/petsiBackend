@@ -4,6 +4,9 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
@@ -16,10 +19,13 @@ const P = `t${Date.now()}`;
 describe('label type validator', () => {
     let testingUtil: LabelTestingUtil;
     let testCtx: DatabaseTestContext;
+    let requestContext: TestRequestContextService;
 
     let validator: LabelTypeValidator;
     let typeRepo: Repository<LabelType>;
+    let tenantRepo: Repository<Tenant>;
 
+    let tenant: Tenant;
     let labelTypes: LabelType[];
 
     beforeAll(async () => {
@@ -27,12 +33,18 @@ describe('label type validator', () => {
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
         validator = module.get<LabelTypeValidator>(LabelTypeValidator);
         typeRepo = module.get(getRepositoryToken(LabelType));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ labelTypes } = await testingUtil.seedLabelTypes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ labelTypes } = await testingUtil.seedLabelTypes(P, tenant.id));
     });
 
     afterAll(async () => {
         await typeRepo.delete(labelTypes.map((t) => t.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

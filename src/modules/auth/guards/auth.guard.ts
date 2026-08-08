@@ -43,8 +43,17 @@ export class AuthGuard implements CanActivate {
         if (Number.isFinite(userId)) {
           ns.set('userId', userId);
         }
-        if (Array.isArray(payload?.roles)) {
-          ns.set('roles', payload.roles);
+        if (payload?.tenantId != null) {
+          const tenantId = Number(payload.tenantId);
+          if (Number.isFinite(tenantId)) {
+            ns.set('tenantId', tenantId);
+          }
+        }
+        if (typeof payload?.isTenantAdmin === 'boolean') {
+          ns.set('isTenantAdmin', payload.isTenantAdmin);
+        }
+        if (Array.isArray(payload?.locations)) {
+          ns.set('locations', payload.locations);
         }
       }
     } catch (err) {

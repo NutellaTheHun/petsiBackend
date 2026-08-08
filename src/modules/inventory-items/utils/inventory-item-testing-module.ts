@@ -8,6 +8,7 @@ import { TestRequestContextService } from '../../../test/mocks/test-request-cont
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { TenantsModule } from '../../tenants/tenants.module';
 import { InventoryItemCategoryController } from '../controllers/inventory-item-category.controller';
 import { InventoryItemPackageController } from '../controllers/inventory-item-package.controller';
 import { InventoryItemSizeController } from '../controllers/inventory-item-size.controller';
@@ -74,6 +75,7 @@ export async function getInventoryItemTestingModule(opts?: {
       }),
       AppLoggingModule,
       RequestContextModule,
+      TenantsModule,
     ],
 
     controllers: [

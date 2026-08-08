@@ -3,6 +3,6 @@ import { ValidatorIdentityBaseInterface } from "../../../../common/base/validato
 export interface UserValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly email?: string;
     readonly password?: string;
-    readonly roleIds?: number[];
     readonly name?: string;
+    readonly isTenantAdmin?: boolean;
 }

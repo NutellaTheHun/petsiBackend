@@ -1,13 +1,15 @@
 import { Cache } from 'cache-manager';
 
 /**
- * removes all keys for the specific service for findAll requests.
+ * removes all keys for the specific service (and cache scope, e.g. tenant)
+ * for findAll requests.
  */
 export async function invalidateFindAllCache(
   servicePrefix: string,
   cacheManager: Cache,
+  scope = '',
 ): Promise<void> {
-  const trackerKey = `${servicePrefix}-findAll-tracker`;
+  const trackerKey = `${servicePrefix}-findAll-tracker-${scope}`;
   const keys: string[] = (await cacheManager.get<string[]>(trackerKey)) ?? [];
 
   for (const key of keys) {
@@ -23,15 +25,18 @@ export async function invalidateFindAllCache(
 }
 
 /**
- * Adds the current findAll request key to a set of keys that are currently in the cache to facilitate invalidation per service.
+ * Adds the current findAll request key to a set of keys that are currently in
+ * the cache to facilitate invalidation per service (and cache scope, e.g.
+ * tenant) — see `invalidateFindAllCache`.
  */
 export async function trackFindAllKey(
   servicePrefix: string,
   cacheKey: string,
   cacheManager: Cache,
   ttl: number,
+  scope = '',
 ): Promise<void> {
-  const trackerKey = `${servicePrefix}-findAll-tracker`;
+  const trackerKey = `${servicePrefix}-findAll-tracker-${scope}`;
 
   /*const existingKeys =
     (await cacheManager.get<Set<string>>(trackerKey)) ?? new Set<string>();*/

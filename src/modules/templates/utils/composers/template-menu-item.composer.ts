@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedCreateTemplateMenuItemDto } from '../../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../../dto/template-menu-item/update-template-menu-item.dto';
@@ -15,6 +16,10 @@ import {
 export class TemplateMenuItemComposer extends ComposerBase<TemplateMenuItemEntity> {
     protected readonly entityClass = TemplateMenuItem;
 
+    constructor(private readonly requestContextService: RequestContextService) {
+        super();
+    }
+
     protected async createInTransaction(
         dto: CreateTemplateMenuItemDto,
         manager: EntityManager,
@@ -24,6 +29,7 @@ export class TemplateMenuItemComposer extends ComposerBase<TemplateMenuItemEntit
             menuItem: { id: dto.menuItemId },
             tablePosIndex: dto.tablePosIndex,
             parentTemplate: { id: dto.parentTemplateId },
+            tenantId: this.requestContextService.get<number>('tenantId'),
         });
 
         return result;

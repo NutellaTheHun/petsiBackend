@@ -132,14 +132,6 @@ export class UserController extends ControllerBase<UserEntity> {
         type: String,
         description: 'Search by username (case-insensitive partial match)',
     })
-    @ApiQuery({
-        name: 'filters',
-        required: false,
-        isArray: true,
-        type: String,
-        description: `Filterable fields. Use format: field=value. Available filters:\n
-          - **role** (e.g., \`role=5\`)`,
-    })
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,

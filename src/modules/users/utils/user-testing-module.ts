@@ -8,8 +8,8 @@ import { TestRequestContextService } from '../../../test/mocks/test-request-cont
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { Role } from '../../roles/entities/role.entity';
-import { RoleModule } from '../../roles/role.module';
+import { Tenant } from '../../tenants/entities/tenant.entity';
+import { TenantsModule } from '../../tenants/tenants.module';
 import { UserController } from '../controllers/user.controller';
 import { User } from '../entities/user.entities';
 import { UserService } from '../services/user.service';
@@ -23,10 +23,10 @@ export async function getUserTestingModule(opts?: {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([User, Role]),
-      TypeOrmModule.forFeature([User, Role]),
+      TypeORMPostgresTestingModule([User, Tenant]),
+      TypeOrmModule.forFeature([User, Tenant]),
       UserModule,
-      RoleModule,
+      TenantsModule,
       AppLoggingModule,
       RequestContextModule,
       CacheModule.register(),

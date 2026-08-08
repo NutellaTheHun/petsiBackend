@@ -36,6 +36,10 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, I
                 'name',
                 errorMap,
                 id,
+                {
+                    tenantId: this.requestContextService.get<number>('tenantId'),
+                    locationId: identity.locationId,
+                },
             );
         }
 
@@ -45,6 +49,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, I
     public async resolveIdentity(dto: UpdateInventoryAreaDto | CreateInventoryAreaDto, id: number | string): Promise<InventoryAreaValidatorIdentity> {
         return {
             name: dto.name,
+            locationId: dto.locationId,
         } as InventoryAreaValidatorIdentity;
     }
 }

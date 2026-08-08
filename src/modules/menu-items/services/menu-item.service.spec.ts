@@ -4,13 +4,16 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import {
     DynamicPropertyConfig,
     HolderEntityType,
     ValueType,
 } from '../../dynamic-properties/entities/dynamic-property-config.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { RevisionHistory } from '../../revision-history/entities/revision-history.entity';
 import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { MenuItemSnapshotV2, MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION } from '../utils/snapshots/menu-item-snapshot.v2';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
@@ -55,13 +58,21 @@ describe('menu item service', () => {
     let containerItemRepo: Repository<MenuItemContainerItem>;
     let valueRepo: Repository<MenuItemDynamicPropertyValue>;
     let configRepo: Repository<DynamicPropertyConfig>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
     let singleItems: MenuItem[];
     let fixedContainerItems: MenuItem[];
     let varContainerItems: MenuItem[];
     let containerLines: MenuItemContainerItem[];
+    let otherTenantCategories: MenuItemCategory[];
+    let otherTenantSizes: MenuItemSize[];
+    let otherTenantItems: MenuItem[];
+    let otherTenantItem: MenuItem;
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
@@ -76,9 +87,28 @@ describe('menu item service', () => {
         containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         valueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
-            await testingUtil.seedContainerLines(P));
+            await testingUtil.seedContainerLines(P, tenant.id));
+
+        const otherItemsSeed = await testingUtil.seedItems(`${P}-other`, otherTenant.id);
+        otherTenantCategories = otherItemsSeed.categories;
+        otherTenantSizes = otherItemsSeed.sizes;
+        otherTenantItems = [
+            ...otherItemsSeed.singleItems,
+            ...otherItemsSeed.fixedContainerItems,
+            ...otherItemsSeed.varContainerItems,
+        ];
+        otherTenantItem = otherItemsSeed.singleItems[0];
     });
 
     afterAll(async () => {
@@ -87,9 +117,17 @@ describe('menu item service', () => {
             ...fixedContainerItems.map((i) => i.id),
             ...varContainerItems.map((i) => i.id),
             ...singleItems.map((i) => i.id),
+            ...otherTenantItems.map((i) => i.id),
         ]);
-        await categoryRepo.delete(categories.map((c) => c.id));
-        await sizeRepo.delete(sizes.map((s) => s.id));
+        await categoryRepo.delete([
+            ...categories.map((c) => c.id),
+            ...otherTenantCategories.map((c) => c.id),
+        ]);
+        await sizeRepo.delete([
+            ...sizes.map((s) => s.id),
+            ...otherTenantSizes.map((s) => s.id),
+        ]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -271,6 +309,7 @@ describe('menu item service', () => {
                     holderEntityType: HolderEntityType.MenuItem,
                     propertyName: `${P}-service-spec-filepath`,
                     valueType: ValueType.Filepath,
+                    tenantId: tenant.id,
                 }),
             );
             testEntityRefConfig = await configRepo.save(
@@ -279,6 +318,7 @@ describe('menu item service', () => {
                     propertyName: `${P}-service-spec-entity-ref`,
                     valueType: ValueType.EntityReference,
                     valueEntityType: 'menuItem',
+                    tenantId: tenant.id,
                 }),
             );
         });
@@ -440,6 +480,26 @@ describe('menu item service', () => {
             expect(row!.valueEntity).toBeNull();
         });
     });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const dto = plainToInstance(CreateMenuItemDto, {
+                name: `${P}-tenant-stamped`,
+                type: MENU_ITEM_TYPES.SINGLE,
+                categoryId: categories[0].id,
+                sizeIds: [sizes[0].id],
+            });
+            const created = await service.create(dto);
+            expect((created as MenuItem).tenantId).toBe(tenant.id);
+            await itemRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(service.findOne(otherTenantItem.id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+    });
 });
 
 describe('menu item service – revision history snapshots', () => {
@@ -450,9 +510,12 @@ describe('menu item service – revision history snapshots', () => {
     let configRepo: Repository<DynamicPropertyConfig>;
     let revisionRepo: Repository<RevisionHistory>;
     let itemRepo: Repository<MenuItem>;
+    let tenantRepo: Repository<Tenant>;
 
+    let tenant: Tenant;
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
+    let seedItemIds: number[];
 
     const PR = `${P}r`;
 
@@ -467,13 +530,31 @@ describe('menu item service – revision history snapshots', () => {
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
         revisionRepo = module.get(getRepositoryToken(RevisionHistory));
         itemRepo = module.get(getRepositoryToken(MenuItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        const requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories, sizes } = await testingUtil.seedItems(PR));
+        tenant = await tenantRepo.save({ name: `${PR}-tenant`, subdomain: `${PR}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        const seedResult = await testingUtil.seedItems(PR, tenant.id);
+        ({ categories, sizes } = seedResult);
+        // seedItems also creates single/container MenuItem rows as a side
+        // effect (needed as category/size dependents); this describe block
+        // only reads categories/sizes but still owns cleaning those up so
+        // they don't leak into other code paths that query MenuItem globally
+        // by type (e.g. SeedService's container-item fixture builder).
+        seedItemIds = [
+            ...seedResult.singleItems,
+            ...seedResult.fixedContainerItems,
+            ...seedResult.varContainerItems,
+        ].map((i) => i.id);
     });
 
     afterAll(async () => {
+        await itemRepo.delete(seedItemIds);
         await categoryRepo.delete(categories.map((c) => c.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {
@@ -494,6 +575,7 @@ describe('menu item service – revision history snapshots', () => {
                     holderEntityType: HolderEntityType.MenuItem,
                     propertyName: `${PR}-rev-spec-filepath`,
                     valueType: ValueType.Filepath,
+                    tenantId: tenant.id,
                 }),
             );
         });

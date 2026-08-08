@@ -4,6 +4,9 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -16,10 +19,14 @@ const P = `t${Date.now()}`;
 describe('order category validator', () => {
     let testingUtil: OrderTestingUtil;
     let testCtx: DatabaseTestContext;
+    let requestContext: TestRequestContextService;
 
     let validator: OrderCategoryValidator;
     let categoryRepo: Repository<OrderCategory>;
+    let tenantRepo: Repository<Tenant>;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let categories: OrderCategory[];
 
     beforeAll(async () => {
@@ -27,12 +34,22 @@ describe('order category validator', () => {
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         validator = module.get<OrderCategoryValidator>(OrderCategoryValidator);
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories } = await testingUtil.seedCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories } = await testingUtil.seedCategories(P, tenant.id));
     });
 
     afterAll(async () => {
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -65,6 +82,19 @@ describe('order category validator', () => {
             [],
             createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
+    });
+
+    it('allows create with a name already used by a different tenant', async () => {
+        requestContext.setContext({ tenantId: otherTenant.id });
+        try {
+            const dto: CreateOrderCategoryDto = plainToInstance(CreateOrderCategoryDto, {
+                name: categories[0].name,
+            });
+            const errors = await validator.validateDto(dto, 'root');
+            expect(errors).toBeNull();
+        } finally {
+            requestContext.setContext({ tenantId: tenant.id });
+        }
     });
 
     // Update Validation Tests

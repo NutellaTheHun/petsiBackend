@@ -1,91 +1,53 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { Role } from '../../roles/entities/role.entity';
-import { RoleTestUtil } from '../../roles/utils/role-test.util';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { UserBuilder } from '../builders/user.builder';
 import { User } from '../entities/user.entities';
-import { USER_A, USER_B, USER_C, USER_D, USER_E } from './constants';
 
 @Injectable()
 export class UserTestUtil {
-    private readonly usernames = [USER_A, USER_B, USER_C, USER_D, USER_E];
-    private readonly emails = [
-        'EMAIL_A@EMAIL.COM',
-        'EMAIL_B@EMAIL.COM',
-        'EMAIL_C@EMAIL.COM',
-        'EMAIL_D@EMAIL.COM',
-        'EMAIL_E@EMAIL.COM',
-    ];
-
-    private initUsers = false;
-
     constructor(
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
         private readonly userBuilder: UserBuilder,
 
-        @InjectRepository(Role)
-        private readonly roleRepo: Repository<Role>,
-        private readonly roleTestUtil: RoleTestUtil,
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) { }
 
-    public async getTestUserEntities(
-        testContext: DatabaseTestContext,
-    ): Promise<User[]> {
-        await this.roleTestUtil.initRoleTestingDatabase(testContext);
-
-        const roles = (await this.roleRepo.find()).map((role) => role.id);
-
-        const results: User[] = [];
-        for (let i = 0; i < this.usernames.length; i++) {
-            results.push(
-                await this.userBuilder
-                    .reset()
-                    .email(this.emails[i])
-                    .password(`password${i}`)
-                    .name(this.usernames[i])
-                    .roles([roles[i % roles.length]])
-                    .build(),
-            );
-        }
-        return results;
-    }
-
-    public async initUserTestingDatabase(
-        testContext: DatabaseTestContext,
-    ): Promise<void> {
-        if (this.initUsers) {
-            return;
-        }
-        this.initUsers = true;
-
-        testContext.addCleanupFunction(() => this.cleanupUserTestingDatabase());
-
-        const users = await this.getTestUserEntities(testContext);
-        for (const user of users) {
-            const exists = await this.userRepo.findOne({
-                where: { name: user.name },
+    /**
+     * `User` now requires a tenantId (NOT NULL). Most user fixtures don't
+     * care about tenant scoping themselves — they only need a valid tenantId
+     * to satisfy the column — so this lazily provisions (or reuses, by fixed
+     * subdomain, across the whole test run) one shared fixture Tenant rather
+     * than requiring every seed method's callers to plumb a tenantId
+     * through. Tests that actually exercise tenant scoping seed and pass
+     * their own explicit tenantId.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'user-test-util-fixture-tenant';
+    private defaultTenantId?: number;
+    public async getDefaultTenantId(): Promise<number> {
+        if (this.defaultTenantId === undefined) {
+            const existing = await this.tenantRepo.findOne({
+                where: { subdomain: UserTestUtil.DEFAULT_TENANT_SUBDOMAIN },
             });
-            if (!exists) {
-                await this.userRepo.save(user);
-            }
+            const tenant =
+                existing ??
+                (await this.tenantRepo.save({
+                    name: 'User Test Util Fixture Tenant',
+                    subdomain: UserTestUtil.DEFAULT_TENANT_SUBDOMAIN,
+                }));
+            this.defaultTenantId = tenant.id;
         }
-
-
-        // await this.userRepo.insert(users);
-    }
-
-    public async cleanupUserTestingDatabase(): Promise<void> {
-        await this.userRepo.deleteAll();
+        return this.defaultTenantId;
     }
 
     // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
     // These do not register cleanup — callers are responsible for deleting by ID.
 
-    public async seedUsers(P: string = ''): Promise<{ roles: Role[]; users: User[] }> {
-        const { roles } = await this.roleTestUtil.seedRoles(P);
+    public async seedUsers(P: string = '', tenantId?: number): Promise<{ tenantId: number; users: User[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
 
         const names = ['user-a', 'user-b', 'user-c', 'user-d', 'user-e'];
         const users: User[] = [];
@@ -96,10 +58,10 @@ export class UserTestUtil {
                 .email(`${entityName}@example.com`)
                 .password(`password${i}`)
                 .name(entityName)
-                .roles([roles[i % roles.length].id])
+                .tenantId(effectiveTenantId)
                 .build();
             users.push(await this.userRepo.save(entity));
         }
-        return { roles, users };
+        return { tenantId: effectiveTenantId, users };
     }
 }

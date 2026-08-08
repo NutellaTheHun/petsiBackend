@@ -71,6 +71,14 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
     );
   }
 
+  public tenantId(tenantId: number): this {
+    return this.setPropByVal('tenantId', tenantId);
+  }
+
+  public locationId(locationId: number): this {
+    return this.setPropByVal('locationId', locationId);
+  }
+
   public countedItemsById(ids: number[]): this {
     return this.setPropsByIds(
       async (ids: number[]) =>

@@ -217,11 +217,12 @@ export class ValidatorHelper<
         field: Prop,
         rootErrMap: ValidationErrorMap,
         id?: number | string,
+        scope?: Partial<Entity>,
     ): Promise<void> {
         if (val == null) return;
 
         const exists = await repo.find({
-            where: { [field]: val } as FindOptionsWhere<Entity>,
+            where: { [field]: val, ...scope } as FindOptionsWhere<Entity>,
         });
         if (exists && exists.length > 0) {
             // if the id is the same as the existing id, not a validation error, createIds are strings and will always fail this check.

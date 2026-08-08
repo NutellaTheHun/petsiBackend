@@ -32,6 +32,8 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
             menuItem: { id: dto.menuItemId },
             quantity: dto.quantity,
             size: { id: dto.sizeId },
+            tenantId: dto.tenantId,
+            locationId: dto.locationId,
         });
 
         const savedResult = await manager.save(entity);
@@ -45,6 +47,8 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                         parentOrderMenuItemId: savedResult.id,
                         parentMenuItemId: savedResult.menuItem.id,
                         parentMenuItemSizeId: savedResult.size?.id,
+                        tenantId: savedResult.tenantId,
+                        locationId: savedResult.locationId,
                     },
                 );
         }
@@ -82,6 +86,8 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                         parentOrderMenuItemId: entity.id,
                         parentMenuItemId: entity.menuItem.id,
                         parentMenuItemSizeId: entity.size?.id,
+                        tenantId: entity.tenantId,
+                        locationId: entity.locationId,
                     },
                 );
         }
@@ -95,6 +101,9 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
         if (!context?.parentOrderId) {
             throw new Error('Parent order id is required');
         }
+        if (context.tenantId == null || context.locationId == null) {
+            throw new Error('tenantId/locationId are required in context');
+        }
 
         return {
             parentOrderId: context.parentOrderId,
@@ -102,6 +111,8 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
             sizeId: dto.sizeId,
             quantity: dto.quantity,
             containerOrderMenuItems: dto.containerOrderMenuItems,
+            tenantId: context.tenantId,
+            locationId: context.locationId,
         };
     }
 }

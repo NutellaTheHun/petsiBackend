@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
@@ -13,7 +13,7 @@ import {
 import { OrderCategoryValidator } from '../validators/order-category.validator';
 
 @Injectable()
-export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
+export class OrderCategoryService extends TenantScopedServiceBase<OrderCategoryEntity> {
   constructor(
     @InjectRepository(OrderCategory)
     repo: Repository<OrderCategory>,
@@ -36,6 +36,7 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
   ): Promise<OrderCategory> {
     const result = manager.create(OrderCategory, {
       name: dto.name,
+      tenantId: this.getTenantId(),
     });
     return await manager.save(result);
   }

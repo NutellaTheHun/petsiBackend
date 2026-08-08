@@ -1,15 +1,20 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
+import { Location } from '../../locations/entities/location.entity';
+import { LocationTestUtil } from '../../locations/utils/location-test.util';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
@@ -41,6 +46,7 @@ const P = `t${Date.now()}`;
 
 describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;
+    let locationTestUtil: LocationTestUtil;
     let countService: TestableInventoryAreaCountService;
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
@@ -52,13 +58,26 @@ describe('Inventory area count service', () => {
     let packageRepo: Repository<InventoryItemPackage>;
     let itemRepo: Repository<InventoryItem>;
     let sizeRepo: Repository<InventoryItemSize>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let location: Location;
+    let otherTenant: Tenant;
+    let otherTenantLocation: Location;
     let areas: InventoryArea[];
     let categories: InventoryItemCategory[];
     let vendors: InventoryItemVendor[];
     let packages: InventoryItemPackage[];
     let items: InventoryItem[];
     let sizes: InventoryItemSize[];
+
+    const setAdminContext = () =>
+        requestContext.setContext({
+            tenantId: tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
     const createSeededCount = async (
         areaId: number,
@@ -97,6 +116,7 @@ describe('Inventory area count service', () => {
             countServiceClass: TestableInventoryAreaCountService,
         });
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
         countService = module.get(
             InventoryAreaCountService,
         ) as TestableInventoryAreaCountService;
@@ -109,8 +129,20 @@ describe('Inventory area count service', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ areas } = await testingUtil.seedAreas(P));
+        // InventoryItemSize is tenant-scoped — this file creates new sizes via
+        // nested-create DTOs, which route through InventoryItemSizeComposer
+        // and stamp tenantId from RequestContextService. Set a tenant/location
+        // so that stamp (and InventoryAreaCount's own tenant/location
+        // scoping) has something consistent to write/authorize against.
+        ({ tenant, locations: [location] } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({ tenant: otherTenant, locations: [otherTenantLocation] } =
+            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        setAdminContext();
+
+        ({ areas } = await testingUtil.seedAreas(P, tenant.id, location.id));
         ({ categories, vendors, packages, items, sizes } =
             await testingUtil.seedInventoryItems(P));
     });
@@ -122,10 +154,12 @@ describe('Inventory area count service', () => {
         await categoryRepo.delete(categories.map((c) => c.id));
         await vendorRepo.delete(vendors.map((v) => v.id));
         await areaRepo.delete(areas.map((a) => a.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
         testCtx = new DatabaseTestContext();
+        setAdminContext();
     });
 
     afterEach(async () => {
@@ -529,6 +563,49 @@ describe('Inventory area count service', () => {
                 (i) => i.id === areaItemUpdateId,
             );
             expect(updated?.amount).toBe(2);
+        });
+    });
+
+    describe('tenant/location scoping (inherited from LocationScopedServiceBase)', () => {
+        it('createEntity rejects a caller not authorized for the target area\'s (derived) location', async () => {
+            requestContext.setContext({
+                tenantId: tenant.id,
+                isTenantAdmin: false,
+                locations: [],
+            });
+            await expect(createSeededCount(areas[0].id)).rejects.toThrow(
+                ForbiddenException,
+            );
+        });
+
+        it('findOne throws NotFoundException for a count belonging to a different tenant\'s area', async () => {
+            const otherArea = await areaRepo.save({
+                name: `${P}-other-tenant-area`,
+                tenantId: otherTenant.id,
+                locationId: otherTenantLocation.id,
+            } as InventoryArea);
+            const otherCount = await countRepo.save({
+                inventoryArea: otherArea,
+                tenantId: otherTenant.id,
+                locationId: otherTenantLocation.id,
+            } as InventoryAreaCount);
+
+            await expect(countService.findOne(otherCount.id)).rejects.toThrow(
+                NotFoundException,
+            );
+
+            await countRepo.delete(otherCount.id);
+            await areaRepo.delete(otherArea.id);
+        });
+
+        it('isTenantAdmin bypasses per-location authorization when deriving the location from the target area', async () => {
+            requestContext.setContext({
+                tenantId: tenant.id,
+                isTenantAdmin: true,
+                locations: [],
+            });
+            const count = await createSeededCount(areas[0].id);
+            expect(count.locationId).toBe(areas[0].locationId);
         });
     });
 });

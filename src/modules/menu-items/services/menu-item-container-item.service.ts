@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
@@ -16,7 +16,7 @@ import { MenuItemContainerItemChangeDetector } from '../utils/change-detectors/m
 import { MenuItemContainerItemValidator } from '../validators/menu-item-container-item.validator';
 
 @Injectable()
-export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerItemEntity> {
+export class MenuItemContainerItemService extends TenantScopedServiceBase<MenuItemContainerItemEntity> {
     constructor(
         @InjectRepository(MenuItemContainerItem)
         repo: Repository<MenuItemContainerItem>,

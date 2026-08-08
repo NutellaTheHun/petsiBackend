@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { recipeSubCategoryExample } from '../../../common/swagger/examples/recipes/recipe-sub-category.example';
 import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
@@ -20,6 +20,7 @@ export type RecipeCategoryEntity = EntityBase<
  * Example: "Pie", "Pastry", "Drink"
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class RecipeCategory {
   @ApiProperty({
     example: 1,
@@ -28,8 +29,19 @@ export class RecipeCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * The Tenant this category belongs to. Denormalized scalar column (not a
+   * relation) so ServiceBase-level tenant filtering never needs a join.
+   */
+  @ApiProperty({
+    example: 1,
+    description: 'The Tenant this entity belongs to',
+  })
+  @Column()
+  tenantId: number;
+
   @ApiProperty({ example: 'Pie', description: 'The name of the category' })
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   /**

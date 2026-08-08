@@ -5,6 +5,7 @@ import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { LabelTypeBuilder } from './builders/label-type.builder';
 import { LabelBuilder } from './builders/label.builder';
 import { LabelTypeController } from './controllers/label-type.controller';
@@ -23,6 +24,7 @@ import { LabelValidator } from './validators/label.validator';
   imports: [
     TypeOrmModule.forFeature([Label, LabelType, MenuItem]),
     MenuItemsModule,
+    TenantsModule,
     CacheModule.register(),
     AppLoggingModule,
     RequestContextModule,

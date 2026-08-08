@@ -52,6 +52,7 @@ export class ControllerBase<
         await invalidateFindAllCache(
             this.entityService.servicePrefix,
             this.cacheManager,
+            this.entityService.getCacheInvalidationScope(),
         );
 
         this.logger.logAction(
@@ -115,8 +116,11 @@ export class ControllerBase<
             },
         );
 
-        // Build cache key
-        const cacheKey = `${this.entityService.servicePrefix}-findAll-${JSON.stringify(
+        // Build cache key — scoped by the caller's tenant (and, for
+        // location-scoped entities, authorized locations) so a cached
+        // response for one tenant/location can never be served to another.
+        const cacheScope = this.entityService.getCacheScope();
+        const cacheKey = `${this.entityService.servicePrefix}-findAll-${cacheScope}-${JSON.stringify(
             {
                 relations,
                 limit,
@@ -164,6 +168,7 @@ export class ControllerBase<
             cacheKey,
             this.cacheManager,
             60_000,
+            this.entityService.getCacheInvalidationScope(),
         );
 
         // Cache Result
@@ -212,8 +217,9 @@ export class ControllerBase<
             ) as string[];
         }
 
-        // Build cache key
-        const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
+        // Build cache key — scoped by the caller's tenant (and, for
+        // location-scoped entities, authorized locations); see findAll above.
+        const cacheKey = `${this.entityService.servicePrefix}-findOne-${this.entityService.getCacheScope()}-${id}`;
 
         // Check cache
         const cached = await this.cacheManager.get<string>(cacheKey);
@@ -271,7 +277,7 @@ export class ControllerBase<
         // Update
         const updated = await this.entityService.update(id, updateDto);
 
-        const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
+        const cacheKey = `${this.entityService.servicePrefix}-findOne-${this.entityService.getCacheScope()}-${id}`;
 
         // Cache result
         await this.cacheManager.set(cacheKey, stringify(updated), 60_000);
@@ -287,6 +293,7 @@ export class ControllerBase<
         await invalidateFindAllCache(
             this.entityService.servicePrefix,
             this.cacheManager,
+            this.entityService.getCacheInvalidationScope(),
         );
 
         // Return result
@@ -323,11 +330,12 @@ export class ControllerBase<
             );
 
             // invalidate findOne and findAll cache
-            const singleCacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
+            const singleCacheKey = `${this.entityService.servicePrefix}-findOne-${this.entityService.getCacheScope()}-${id}`;
             await this.cacheManager.del(singleCacheKey);
             await invalidateFindAllCache(
                 this.entityService.servicePrefix,
                 this.cacheManager,
+                this.entityService.getCacheInvalidationScope(),
             );
 
             // Log result

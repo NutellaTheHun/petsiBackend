@@ -20,6 +20,29 @@ export class RecurringOrderSchedule {
     @PrimaryGeneratedColumn()
     id: number;
 
+    /**
+     * The Tenant this schedule belongs to. Denormalized scalar column,
+     * always copied from the parent {@link Order}, never re-derived
+     * independently.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
+     * The Location this schedule belongs to. Denormalized scalar column,
+     * same reasoning as tenantId.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Location this entity belongs to',
+    })
+    @Column()
+    locationId: number;
+
     @ApiProperty({
         example: 1,
         description: 'The unique identifier of the order that this schedule is for',

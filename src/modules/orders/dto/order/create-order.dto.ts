@@ -4,6 +4,7 @@ import {
     IsArray,
     IsBoolean,
     IsDate,
+    IsInt,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -129,6 +130,13 @@ export class CreateOrderDto {
     @IsNotEmpty()
     @IsPositive()
     readonly categoryId: EntityId<OrderCategory>;
+
+    @ApiProperty({
+        description: 'Id of the Location this order belongs to.',
+        example: 1,
+    })
+    @IsInt()
+    readonly locationId: number;
 
     @ApiProperty({
         description: 'An array of CreateOrderMenuItemDtos.',

@@ -4,9 +4,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -50,6 +53,8 @@ describe('recipe ingredient service', () => {
     let invCategoryRepo: Repository<InventoryItemCategory>;
     let invVendorRepo: Repository<InventoryItemVendor>;
     let invItemRepo: Repository<InventoryItem>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
     let categories: RecipeCategory[];
     let subCategories: RecipeSubCategory[];
@@ -58,6 +63,9 @@ describe('recipe ingredient service', () => {
     let invVendors: InventoryItemVendor[];
     let invItems: InventoryItem[];
     let ingredients: RecipeIngredient[];
+    let otherTenant: Tenant;
+    let otherTenantRecipe: Recipe;
+    let otherTenantIngredient: RecipeIngredient;
 
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule({
@@ -77,19 +85,41 @@ describe('recipe ingredient service', () => {
         invCategoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        const tenantId = await testingUtil.getDefaultTenantId();
+        requestContext.setContext({ tenantId });
 
         ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
             await testingUtil.seedIngredients(P));
+
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        otherTenantRecipe = await recipeRepo.save({
+            name: `${P}-other-tenant-recipe`,
+            tenantId: otherTenant.id,
+            isIngredient: false,
+        } as Recipe);
+        otherTenantIngredient = await ingredientRepo.save({
+            tenantId: otherTenant.id,
+            parentRecipe: otherTenantRecipe,
+            quantity: 1,
+            unit: 'oz',
+        } as RecipeIngredient);
     });
 
     afterAll(async () => {
-        await ingredientRepo.delete(ingredients.map((i) => i.id));
-        await recipeRepo.delete(recipes.map((r) => r.id));
+        await ingredientRepo.delete([...ingredients.map((i) => i.id), otherTenantIngredient.id]);
+        await recipeRepo.delete([...recipes.map((r) => r.id), otherTenantRecipe.id]);
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await invItemRepo.delete(invItems.map((i) => i.id));
         await invVendorRepo.delete(invVendors.map((v) => v.id));
         await invCategoryRepo.delete(invCategories.map((c) => c.id));
+        await tenantRepo.delete(otherTenant.id);
     });
 
     beforeEach(() => {
@@ -222,6 +252,31 @@ describe('recipe ingredient service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await ingredientRepo.findOneOrFail({ where: { id: ingredients[2].id } });
             expect(Number(row.quantity)).toEqual(42);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const dto = plainToInstance(CreateRecipeIngredientDto, {
+                parentRecipeId: recipes[3].id,
+                ingredientInventoryItemId: invItems[4].id,
+                quantity: 2.5,
+                unit: 'kg',
+            });
+
+            let created!: RecipeIngredient;
+            await dataSource.transaction(async (manager) => {
+                created = await ingredientService.createEntityForTest(dto, manager);
+            });
+
+            expect(created.tenantId).toBe(await testingUtil.getDefaultTenantId());
+            await ingredientRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(
+                ingredientService.findOne(otherTenantIngredient.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

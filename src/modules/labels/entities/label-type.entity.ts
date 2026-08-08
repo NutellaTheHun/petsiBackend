@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
@@ -15,6 +15,7 @@ export type LabelTypeEntity = EntityBase<
  * - Example: a 4"x2" label for wholesale, or a 2"x1" cutie label, or a 4"x6" pot pie sticker.
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class LabelType {
   @ApiProperty({
     description: 'The unique identifier of the entity',
@@ -23,8 +24,19 @@ export class LabelType {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * The Tenant this label type belongs to. Denormalized scalar column (not a
+   * relation) so ServiceBase-level tenant filtering never needs a join.
+   */
+  @ApiProperty({
+    example: 1,
+    description: 'The Tenant this entity belongs to',
+  })
+  @Column()
+  tenantId: number;
+
   @ApiProperty({ description: 'Name of the label type', example: '4x2' })
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   /**

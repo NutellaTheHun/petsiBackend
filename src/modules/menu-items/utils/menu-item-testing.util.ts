@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
 import { MenuItemContainerItemBuilder } from '../builders/menu-item-container-item.builder';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
@@ -40,12 +41,46 @@ export class MenuItemTestingUtil {
         private readonly sizeBuilder: MenuItemSizeBuilder,
         private readonly categoryBuilder: MenuItemCategoryBuilder,
         private readonly containerItemBuilder: MenuItemContainerItemBuilder,
+
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) { }
+
+    /**
+     * MenuItemCategory/MenuItemSize/MenuItem/MenuItemContainerItem now require a
+     * tenantId (NOT NULL). Most consumers of this util (seed.service.ts,
+     * order/label/template testing utils) don't care about tenant scoping
+     * themselves — they only need a valid tenantId to satisfy the column — so
+     * this lazily provisions (or reuses, by fixed subdomain, across the whole
+     * test run) one shared fixture Tenant rather than requiring every seed
+     * method's callers to plumb a tenantId through. Tests that actually
+     * exercise tenant scoping (this module's own *.service.spec.ts files)
+     * seed and pass their own explicit tenantId.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'menu-item-testing-util-fixture-tenant';
+    private defaultTenantId?: number;
+    public async getDefaultTenantId(): Promise<number> {
+        if (this.defaultTenantId === undefined) {
+            const existing = await this.tenantRepo.findOne({
+                where: { subdomain: MenuItemTestingUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            const tenant =
+                existing ??
+                (await this.tenantRepo.save({
+                    name: 'Menu Item Testing Util Fixture Tenant',
+                    subdomain: MenuItemTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                }));
+            this.defaultTenantId = tenant.id;
+        }
+        return this.defaultTenantId;
+    }
 
     // Menu Item Size
     public async getTestMenuItemSizeEntities(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<MenuItemSize[]> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const sizeNames = getTestSizeNames();
         const results: MenuItemSize[] = [];
 
@@ -55,13 +90,16 @@ export class MenuItemTestingUtil {
                 continue;
             }
 
-            results.push(await this.sizeBuilder.reset().name(name).build());
+            const entity = await this.sizeBuilder.reset().name(name).build();
+            entity.tenantId = effectiveTenantId;
+            results.push(entity);
         }
         return results;
     }
 
     public async initMenuItemSizeTestDatabase(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<void> {
         if (this.menuItemSizeInit) {
             return;
@@ -71,7 +109,7 @@ export class MenuItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupMenuItemSizeTestDatabase(),
         );
-        const sizes = await this.getTestMenuItemSizeEntities(testContext);
+        const sizes = await this.getTestMenuItemSizeEntities(testContext, tenantId);
         for (const size of sizes) {
             if (await this.sizeRepo.findOne({ where: { name: size.name } })) {
                 continue;
@@ -88,7 +126,9 @@ export class MenuItemTestingUtil {
     // Menu Item Category
     public async getTestMenuItemCategoryEntities(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<MenuItemCategory[]> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const categoryNames = getTestCategoryNames();
         const results: MenuItemCategory[] = [];
 
@@ -98,13 +138,16 @@ export class MenuItemTestingUtil {
                 continue;
             }
 
-            results.push(await this.categoryBuilder.reset().name(name).build());
+            const entity = await this.categoryBuilder.reset().name(name).build();
+            entity.tenantId = effectiveTenantId;
+            results.push(entity);
         }
         return results;
     }
 
     public async initMenuItemCategoryTestDatabase(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<void> {
         if (this.menuItemCategoryInit) {
             return;
@@ -114,7 +157,7 @@ export class MenuItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupMenuItemCategoryTestDatabase(),
         );
-        const categories = await this.getTestMenuItemCategoryEntities(testContext);
+        const categories = await this.getTestMenuItemCategoryEntities(testContext, tenantId);
         for (const category of categories) {
             if (await this.categoryRepo.findOne({ where: { name: category.name } })) {
                 continue;
@@ -136,9 +179,11 @@ export class MenuItemTestingUtil {
      */
     public async getTestMenuItemEntities(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<MenuItem[]> {
-        await this.initMenuItemSizeTestDatabase(testContext);
-        await this.initMenuItemCategoryTestDatabase(testContext);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        await this.initMenuItemSizeTestDatabase(testContext, effectiveTenantId);
+        await this.initMenuItemCategoryTestDatabase(testContext, effectiveTenantId);
 
 
         const categoryIds = (await this.categoryRepo.find()).map((cat) => cat.id);
@@ -213,11 +258,16 @@ export class MenuItemTestingUtil {
 
         }
 
+        results.forEach((r) => {
+            r.tenantId = effectiveTenantId;
+        });
+
         return results;
     }
 
     public async initMenuItemTestDatabase(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<void> {
         if (this.menuItemInit) {
             return;
@@ -225,7 +275,7 @@ export class MenuItemTestingUtil {
         this.menuItemInit = true;
 
         testContext.addCleanupFunction(() => this.cleanupMenuItemTestDatabase());
-        const items = await this.getTestMenuItemEntities(testContext)
+        const items = await this.getTestMenuItemEntities(testContext, tenantId)
         for (const item of items) {
             if (await this.itemRepo.findOne({ where: { name: item.name } })) {
                 continue;
@@ -247,8 +297,10 @@ export class MenuItemTestingUtil {
      */
     public async getTestMenuItemContainerItemEntities(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<MenuItemContainerItem[]> {
-        await this.initMenuItemTestDatabase(testContext);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        await this.initMenuItemTestDatabase(testContext, effectiveTenantId);
 
         const singleItems = await this.itemRepo.find({ where: { type: MENU_ITEM_TYPES.SINGLE }, relations: ['sizes'] });
         let singleItemIdx = 0;
@@ -289,6 +341,10 @@ export class MenuItemTestingUtil {
             }
         }
 
+        results.forEach((r) => {
+            r.tenantId = effectiveTenantId;
+        });
+
         return results;
     }
 
@@ -302,6 +358,7 @@ export class MenuItemTestingUtil {
      */
     public async initMenuItemContainerItemTestDatabase(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<void> {
         if (this.menuItemContainerItemInit) {
             return;
@@ -311,7 +368,7 @@ export class MenuItemTestingUtil {
             this.cleanupMenuItemContainerItemTestDatabase(),
         );
 
-        const containerItems = await this.getTestMenuItemContainerItemEntities(testContext);
+        const containerItems = await this.getTestMenuItemContainerItemEntities(testContext, tenantId);
         for (const containerItem of containerItems) {
             // if containerItem is not already in the database, save it
             if (await this.containerItemRepo.findOne({ where: { parentMenuItem: { id: containerItem.parentMenuItem.id }, parentItemSize: { id: containerItem.parentItemSize.id }, containedMenuItem: { id: containerItem.containedMenuItem.id }, containedItemSize: { id: containerItem.containedItemSize.id } } })) {
@@ -329,23 +386,27 @@ export class MenuItemTestingUtil {
     // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
     // These do NOT register cleanup — callers are responsible for deleting by ID.
 
-    public async seedCategories(P = ''): Promise<{ categories: MenuItemCategory[] }> {
+    public async seedCategories(P = '', tenantId?: number): Promise<{ categories: MenuItemCategory[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestCategoryNames();
         const categories: MenuItemCategory[] = [];
         for (const name of names) {
             const entityName = P ? `${P}-${name}` : name;
             const entity = await this.categoryBuilder.reset().name(entityName).build();
+            entity.tenantId = effectiveTenantId;
             categories.push(await this.categoryRepo.save(entity));
         }
         return { categories };
     }
 
-    public async seedSizes(P = ''): Promise<{ sizes: MenuItemSize[] }> {
+    public async seedSizes(P = '', tenantId?: number): Promise<{ sizes: MenuItemSize[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestSizeNames();
         const sizes: MenuItemSize[] = [];
         for (const name of names) {
             const entityName = P ? `${P}-${name}` : name;
             const entity = await this.sizeBuilder.reset().name(entityName).build();
+            entity.tenantId = effectiveTenantId;
             sizes.push(await this.sizeRepo.save(entity));
         }
         return { sizes };
@@ -359,15 +420,16 @@ export class MenuItemTestingUtil {
      * Fixed container items each have sizes[2] and sizes[3].
      * Variable-max container items each have sizes[0] with variableMaxAmount = 6.
      */
-    public async seedItems(P = ''): Promise<{
+    public async seedItems(P = '', tenantId?: number): Promise<{
         categories: MenuItemCategory[];
         sizes: MenuItemSize[];
         singleItems: MenuItem[];
         fixedContainerItems: MenuItem[];
         varContainerItems: MenuItem[];
     }> {
-        const { categories } = await this.seedCategories(P);
-        const { sizes } = await this.seedSizes(P);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        const { categories } = await this.seedCategories(P, effectiveTenantId);
+        const { sizes } = await this.seedSizes(P, effectiveTenantId);
 
         const singleNames = getTestItemNames();
         const singleItems: MenuItem[] = [];
@@ -379,6 +441,7 @@ export class MenuItemTestingUtil {
                 .categorybyId(categories[i % categories.length].id)
                 .validSizesById([sizes[0].id, sizes[1].id])
                 .build();
+            entity.tenantId = effectiveTenantId;
             const saved = await this.itemRepo.save(entity);
             singleItems.push(
                 await this.itemRepo.findOneOrFail({ where: { id: saved.id }, relations: ['sizes', 'category'] }),
@@ -395,6 +458,7 @@ export class MenuItemTestingUtil {
                 .categorybyId(categories[0].id)
                 .validSizesById([sizes[2].id, sizes[3].id])
                 .build();
+            entity.tenantId = effectiveTenantId;
             const saved = await this.itemRepo.save(entity);
             fixedContainerItems.push(
                 await this.itemRepo.findOneOrFail({ where: { id: saved.id }, relations: ['sizes', 'category'] }),
@@ -412,6 +476,7 @@ export class MenuItemTestingUtil {
                 .categorybyId(categories[1].id)
                 .validSizesById([sizes[0].id])
                 .build();
+            entity.tenantId = effectiveTenantId;
             const saved = await this.itemRepo.save(entity);
             varContainerItems.push(
                 await this.itemRepo.findOneOrFail({ where: { id: saved.id }, relations: ['sizes', 'category'] }),
@@ -429,7 +494,7 @@ export class MenuItemTestingUtil {
      *
      * Returned containerLines are reloaded with relations including containedMenuItem.sizes.
      */
-    public async seedContainerLines(P = ''): Promise<{
+    public async seedContainerLines(P = '', tenantId?: number): Promise<{
         categories: MenuItemCategory[];
         sizes: MenuItemSize[];
         singleItems: MenuItem[];
@@ -437,7 +502,8 @@ export class MenuItemTestingUtil {
         varContainerItems: MenuItem[];
         containerLines: MenuItemContainerItem[];
     }> {
-        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } = await this.seedItems(P);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } = await this.seedItems(P, effectiveTenantId);
 
         const rawLines: MenuItemContainerItem[] = [];
 
@@ -452,6 +518,7 @@ export class MenuItemTestingUtil {
                         .containedItemSizeById(sizes[0].id)
                         .quantity(1)
                         .build();
+                    line.tenantId = effectiveTenantId;
                     rawLines.push(await this.containerItemRepo.save(line));
                 }
             }
@@ -468,6 +535,7 @@ export class MenuItemTestingUtil {
                     .containedItemSizeById(sizes[0].id)
                     .quantity(6)
                     .build();
+                line.tenantId = effectiveTenantId;
                 rawLines.push(await this.containerItemRepo.save(line));
             }
         }

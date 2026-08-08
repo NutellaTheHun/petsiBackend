@@ -27,7 +27,7 @@ export type OrderEntity = EntityBase<Order, CreateOrderDto, UpdateOrderDto>;
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
  */
 @Entity('orders')
-@Unique(['templateOrderId', 'recurrenceDate'])
+@Unique(['tenantId', 'locationId', 'templateOrderId', 'recurrenceDate'])
 export class Order {
     @ApiProperty({
         example: 1,
@@ -35,6 +35,28 @@ export class Order {
     })
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The Tenant this order belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
+     * The Location this order belongs to. Denormalized scalar column, same
+     * reasoning as tenantId.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Location this entity belongs to',
+    })
+    @Column()
+    locationId: number;
 
     @ApiProperty({
         example: '2025-06-06T19:22:07.102Z',

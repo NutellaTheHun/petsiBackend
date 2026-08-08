@@ -46,6 +46,8 @@ export class InventoryAreaItemComposer extends ComposerBase<InventoryAreaItemEnt
             countedInventoryItem: { id: dto.countedInventoryItemId },
             amount: dto.amount,
             countedItemSize,
+            tenantId: dto.tenantId,
+            locationId: dto.locationId,
         });
     }
 
@@ -95,6 +97,11 @@ export class InventoryAreaItemComposer extends ComposerBase<InventoryAreaItemEnt
                 'InventoryAreaItemResolver: parentInventoryCountId is required in context',
             );
         }
+        if (context.tenantId == null || context.locationId == null) {
+            throw new Error(
+                'InventoryAreaItemResolver: tenantId/locationId are required in context',
+            );
+        }
 
         return {
             countedInventoryItemId: dto.countedInventoryItemId,
@@ -102,6 +109,8 @@ export class InventoryAreaItemComposer extends ComposerBase<InventoryAreaItemEnt
             countedItemSizeId: dto.countedItemSizeId,
             countedItemSize: dto.countedItemSize,
             parentInventoryCountId: context.parentInventoryCountId,
+            tenantId: context.tenantId,
+            locationId: context.locationId,
         };
     }
 }

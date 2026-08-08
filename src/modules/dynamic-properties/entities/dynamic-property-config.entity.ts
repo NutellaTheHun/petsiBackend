@@ -33,12 +33,23 @@ export function deriveFieldRenderType(valueType: ValueType): FieldRenderType {
     return valueType === ValueType.EntityReference ? 'entity-select' : 'file-upload';
 }
 
-@Unique(['holderEntityType', 'propertyName'])
+@Unique(['tenantId', 'holderEntityType', 'propertyName'])
 @Entity()
 export class DynamicPropertyConfig {
     @ApiProperty({ example: 1 })
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The Tenant this config belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
     @ApiProperty({ enum: HolderEntityType })
     @Column({ type: 'enum', enum: HolderEntityType })

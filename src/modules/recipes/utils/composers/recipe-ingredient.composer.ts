@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
+import { RequestContextService } from '../../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../../dto/recipe-ingredient/update-recipe-ingedient.dto';
@@ -11,8 +13,13 @@ import {
 } from '../../entities/recipe-ingredient.entity';
 import { Recipe } from '../../entities/recipe.entity';
 
+@Injectable()
 export class RecipeIngredientComposer extends ComposerBase<RecipeIngredientEntity> {
     protected readonly entityClass = RecipeIngredient;
+
+    constructor(private readonly requestContextService: RequestContextService) {
+        super();
+    }
 
     protected async createInTransaction(
         dto: CreateRecipeIngredientDto,
@@ -32,6 +39,8 @@ export class RecipeIngredientComposer extends ComposerBase<RecipeIngredientEntit
             quantity: dto.quantity,
 
             unit: dto.unit,
+
+            tenantId: this.requestContextService.get<number>('tenantId'),
         });
 
         return result;

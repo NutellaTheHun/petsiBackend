@@ -1,6 +1,6 @@
 ---
 module: src/modules/reports
-last_reviewed: 2026-07-23
+last_reviewed: 2026-08-07
 ---
 
 ## Overview
@@ -30,5 +30,7 @@ The `FIELD_REGISTRY` (`registries/index.ts`) is the single source of truth mappi
 **Two separate testing modules for different test scopes.** `getReportsTestingModule()` covers definition CRUD (includes only `ReportDefinition`, mocks `ReportExecutionService`). `getReportsExecutionTestingModule()` covers execution (registers all order and menu-item entities so the query builder can join across them). Tests that assert execution behavior must use the execution testing module.
 
 **Aggregate column labels become raw row keys.** Aggregate results are mapped from `__agg_N` keys to the `agg.label` string. If two aggregates share the same label, the second overwrites the first. Ensure labels are unique within a section's `aggregates` array.
+
+**`ReportDefinitionService`/`ReportExecutionService` are tenant-scoped but don't extend `TenantScopedServiceBase`.** `ReportDefinitionService` predates the `ServiceBase` hierarchy entirely (bespoke CRUD, no validator/builder), so it hand-rolls the equivalent contract instead: a private `getTenantId()` reading `RequestContextService` (throws `NotFoundException` if unset, mirroring `TenantScopedServiceBase.getTenantId()`), stamped on `create`, filtered into `findAll`'s query builder and `findOne`'s post-fetch check (`NotFoundException` on a tenant mismatch — never confirm another tenant's definition exists). `ReportExecutionService.execute` applies the same not-found-on-mismatch check to its own direct `ReportDefinition` lookup before running the report. Any new code path that queries `ReportDefinition` directly must apply this same filter by hand — nothing enforces it structurally the way `TenantScopedServiceBase` does for services that extend it.
 
 ## Gotchas

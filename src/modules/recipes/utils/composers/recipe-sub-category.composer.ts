@@ -1,6 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
+import { RequestContextService } from '../../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { NestedCreateRecipeSubCategoryDto } from '../../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../../dto/recipe-sub-category/update-recipe-sub-category.dto';
@@ -9,8 +11,13 @@ import {
     RecipeSubCategoryEntity,
 } from '../../entities/recipe-sub-category.entity';
 
+@Injectable()
 export class RecipeSubCategoryComposer extends ComposerBase<RecipeSubCategoryEntity> {
     protected readonly entityClass = RecipeSubCategory;
+
+    constructor(private readonly requestContextService: RequestContextService) {
+        super();
+    }
 
     protected async createInTransaction(
         dto: CreateRecipeSubCategoryDto,
@@ -19,6 +26,7 @@ export class RecipeSubCategoryComposer extends ComposerBase<RecipeSubCategoryEnt
         const result = manager.create(RecipeSubCategory, {
             name: dto.name,
             parentCategory: { id: dto.parentCategoryId },
+            tenantId: this.requestContextService.get<number>('tenantId'),
         });
         return result;
     }

@@ -161,6 +161,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     dateBy?: string;
     startDate?: string;
     endDate?: string;
+    locationId?: number;
   }): Promise<PaginatedResult<TEntity['__Entity']>> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
@@ -174,6 +175,12 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
 
     // Start query with query builder
     const query = this.entityRepo.createQueryBuilder('entity');
+
+    // Unconditional (unlike applyFilters/applySearch/applyDate below, which only
+    // run when the caller supplied the relevant option): tenant/location scoping
+    // must never depend on the caller passing anything. See
+    // TenantScopedServiceBase/LocationScopedServiceBase.
+    this.applyScope(query, options);
 
     if (options.relations && options.relations.length > 0) {
       const relations = this.buildRelationStatements(options.relations);
@@ -428,6 +435,47 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
 
     // Default:
     _query.orderBy('entity.id', 'ASC');
+  }
+
+  /**
+   * Default: no scoping. Overridden by `TenantScopedServiceBase`/
+   * `LocationScopedServiceBase` to filter every `findAll` query by the
+   * caller's tenant (and location). Unlike `applyFilters`/`applySearch`/
+   * `applyDate`, this always runs, regardless of what the caller passed in
+   * `options` — a domain subclass overriding `applyFilters` for its own
+   * filters never affects this, since it's a distinct hook.
+   */
+  protected applyScope(
+    _query: SelectQueryBuilder<TEntity['__Entity']>,
+    _options?: { locationId?: number },
+  ): void {
+    // Default: do nothing.
+  }
+
+  /**
+   * Default: no scoping. Overridden by `TenantScopedServiceBase`/
+   * `LocationScopedServiceBase` so that `ControllerBase`'s cache keys fold in
+   * whatever part of the caller's identity affects query results (tenant,
+   * and for location-scoped entities, the caller's authorized locations) —
+   * otherwise a cached response for one tenant/location could be served to a
+   * different tenant/location within the cache TTL. Public (unlike
+   * `applyScope`) because `ControllerBase` — a sibling class, not a
+   * subclass — needs to call it when building cache keys.
+   */
+  public getCacheScope(): string {
+    return '';
+  }
+
+  /**
+   * The scope `ControllerBase` uses when tracking/invalidating `findAll`
+   * cache entries on create/update/remove. Defaults to `getCacheScope()`.
+   * `LocationScopedServiceBase` overrides this to drop the location
+   * component so a single write invalidates every location-view variant of
+   * the `findAll` cache within the affected tenant, not just the writer's
+   * own location scope.
+   */
+  public getCacheInvalidationScope(): string {
+    return this.getCacheScope();
   }
 
   protected abstract createEntity(

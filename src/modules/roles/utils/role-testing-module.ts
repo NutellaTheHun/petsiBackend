@@ -6,8 +6,13 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { Location } from '../../locations/entities/location.entity';
+import { UserLocation } from '../../locations/entities/user-location.entity';
+import { LocationsModule } from '../../locations/locations.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
+import { TenantsModule } from '../../tenants/tenants.module';
 import { User } from '../../users/entities/user.entities';
 import { UserModule } from '../../users/user.module';
 import { RoleController } from '../controllers/role.controller';
@@ -23,10 +28,12 @@ export async function getRoleTestingModule(opts?: {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([User, Role]),
-      TypeOrmModule.forFeature([User, Role]),
+      TypeORMPostgresTestingModule([User, Role, UserLocation, Location, Tenant]),
+      TypeOrmModule.forFeature([User, Role, UserLocation, Location, Tenant]),
       UserModule,
       RoleModule,
+      LocationsModule,
+      TenantsModule,
       AppLoggingModule,
       RequestContextModule,
       CacheModule.register(),

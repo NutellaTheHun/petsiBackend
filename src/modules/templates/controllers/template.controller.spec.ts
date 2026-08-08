@@ -10,6 +10,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { Template } from '../entities/template.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
@@ -23,7 +26,10 @@ describe('template controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: TemplateController;
     let templateRepo: Repository<Template>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let templates: Template[];
 
     beforeAll(async () => {
@@ -31,12 +37,18 @@ describe('template controller', () => {
         testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
         controller = module.get<TemplateController>(TemplateController);
         templateRepo = module.get(getRepositoryToken(Template));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ templates } = await testingUtil.seedTemplates(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ templates } = await testingUtil.seedTemplates(P, tenant.id));
     });
 
     afterAll(async () => {
         await templateRepo.delete(templates.map((t) => t.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

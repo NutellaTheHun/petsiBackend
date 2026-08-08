@@ -29,7 +29,7 @@ describe('OrderChangeDetector', () => {
             quantity: 1,
             containerOrderMenuItems: [],
             parentOrder: {} as Order,
-        } as OrderMenuItem);
+        } as unknown as OrderMenuItem);
 
     const baseOrder = (): Order =>
         ({

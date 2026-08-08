@@ -80,7 +80,10 @@ describe('ReportDefinitionController (role enforcement)', () => {
     });
 
     function token(roles: string[]): string {
-        return jwtService.sign({ sub: 1, roles }, { secret: TEST_JWT_SECRET });
+        return jwtService.sign(
+            { sub: 1, tenantId: 1, isTenantAdmin: false, locations: [{ locationId: 1, roles }] },
+            { secret: TEST_JWT_SECRET },
+        );
     }
 
     it('POST /reports/definitions returns 403 for staff JWT', async () => {

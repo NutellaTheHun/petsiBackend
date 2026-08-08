@@ -20,6 +20,7 @@
     "test:e2e": "jest --runInBand --config ./test/jest-e2e.json",
     "seedTestDb": "NODE_ENV=development ts-node src/scripts/db/seedTestDb.ts",
     "clearTestDb": "NODE_ENV=development ts-node src/scripts/db/clearTestDb.ts",
+    "provisionTenant": "NODE_ENV=development ts-node src/scripts/db/provisionTenant.ts",
     "generate:types": "openapi-typescript http://localhost:3000/docs-json --o ../petsi-frontend/src/api-types.ts"
   },
   "dependencies": {

@@ -10,7 +10,7 @@ import {
     ChangeDetectionResult,
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
@@ -48,7 +48,7 @@ import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 
 @Injectable()
-export class OrderService extends ServiceBase<OrderEntity> {
+export class OrderService extends LocationScopedServiceBase<OrderEntity> {
     constructor(
         @InjectRepository(Order)
         repo: Repository<Order>,
@@ -98,6 +98,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
             occurrenceState: dto.occurrenceState as OccurrenceState | null,
             recurrenceDate,
             templateOrderId: dto.templateOrderId ?? null,
+            tenantId: this.getTenantId(),
+            locationId: dto.locationId,
         });
 
         const savedResult = await manager.save(result);
@@ -110,6 +112,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                     [],
                     {
                         parentOrderId: savedResult.id,
+                        tenantId: savedResult.tenantId,
+                        locationId: savedResult.locationId,
                     },
                 );
 
@@ -126,6 +130,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                         manager,
                         {
                             orderId: savedResult.id,
+                            tenantId: savedResult.tenantId,
+                            locationId: savedResult.locationId,
                         },
                     );
             }
@@ -190,6 +196,10 @@ export class OrderService extends ServiceBase<OrderEntity> {
             }
         }
 
+        if (dto.locationId !== undefined) {
+            entity.locationId = dto.locationId;
+        }
+
         if (dto.occurrenceType !== undefined) {
             entity.occurrenceType = dto.occurrenceType as OccurrenceType | null;
         }
@@ -206,6 +216,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                 previous,
                 {
                     parentOrderId: entity.id,
+                    tenantId: entity.tenantId,
+                    locationId: entity.locationId,
                 },
             );
             const newIds = new Set(newItems.map((x) => x.id));
@@ -236,6 +248,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                         manager,
                         {
                             orderId: entity.id,
+                            tenantId: entity.tenantId,
+                            locationId: entity.locationId,
                         },
                     );
             }
@@ -385,6 +399,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                         ? manager.create(MenuItemSize, { id: line.sizeId })
                         : null,
                 quantity: line.quantity,
+                tenantId: order.tenantId,
+                locationId: order.locationId,
             });
             const savedLine = await manager.save(omi);
             for (const c of line.containerItems) {
@@ -397,6 +413,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                         id: c.containedItemSizeId,
                     }),
                     quantity: c.quantity,
+                    tenantId: order.tenantId,
+                    locationId: order.locationId,
                 });
                 await manager.save(oci);
             }
@@ -423,6 +441,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
                     : null,
                 timezone:
                     snap.recurrenceSchedule.timezone ?? 'America/New_York',
+                tenantId: order.tenantId,
+                locationId: order.locationId,
             });
             order.recurrenceSchedule = await manager.save(rs);
         }
@@ -434,6 +454,14 @@ export class OrderService extends ServiceBase<OrderEntity> {
         orderId: number,
         targetRevisionNumber: number,
     ): Promise<Order> {
+        // Authorize the order itself before touching revision history — the
+        // raw `manager.findOne` calls below intentionally bypass
+        // LocationScopedServiceBase's scoping (they need full relation graphs
+        // mid-transaction), so this is the one place in this method
+        // tenant/location authorization is enforced. RevisionHistoryService
+        // has no tenant/location awareness of its own.
+        await this.findOne(orderId);
+
         const row = await this.revisionHistoryService.getRevisionRow(
             REVISION_ENTITY_TYPES.ORDER,
             orderId,

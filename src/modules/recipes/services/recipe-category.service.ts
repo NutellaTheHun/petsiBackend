@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
@@ -16,7 +16,7 @@ import { RecipeCategoryChangeDetector } from '../utils/change-detectors/recipe-c
 import { RecipeCategoryValidator } from '../validators/recipe-category.validator';
 
 @Injectable()
-export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
+export class RecipeCategoryService extends TenantScopedServiceBase<RecipeCategoryEntity> {
     constructor(
         @InjectRepository(RecipeCategory)
         repo: Repository<RecipeCategory>,
@@ -42,6 +42,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
     ): Promise<RecipeCategory> {
         const result = manager.create(RecipeCategory, {
             name: dto.name,
+            tenantId: this.getTenantId(),
         });
 
         const savedEntity = await manager.save(result);

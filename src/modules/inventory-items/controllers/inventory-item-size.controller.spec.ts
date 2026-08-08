@@ -3,6 +3,9 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
@@ -24,7 +27,10 @@ describe('Inventory Item Size Controller', () => {
     let packageRepo: Repository<InventoryItemPackage>;
     let categoryRepo: Repository<InventoryItemCategory>;
     let vendorRepo: Repository<InventoryItemVendor>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: InventoryItemCategory[];
     let vendors: InventoryItemVendor[];
     let packages: InventoryItemPackage[];
@@ -41,8 +47,16 @@ describe('Inventory Item Size Controller', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
+            P,
+            tenant.id,
+        ));
     });
 
     afterAll(async () => {
@@ -51,6 +65,7 @@ describe('Inventory Item Size Controller', () => {
         await packageRepo.delete(packages.map((p) => p.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await vendorRepo.delete(vendors.map((v) => v.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

@@ -4,9 +4,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
@@ -44,7 +47,11 @@ describe('Template menu item service', () => {
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
     let itemRepo: Repository<MenuItem>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let templates: Template[];
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
@@ -52,6 +59,7 @@ describe('Template menu item service', () => {
     let fixedContainerItems: MenuItem[];
     let varContainerItems: MenuItem[];
     let templateMenuItems: TemplateMenuItem[];
+    let otherTenantTemplateItem: TemplateMenuItem;
 
     beforeAll(async () => {
         const module: TestingModule = await getTemplateTestingModule({
@@ -68,6 +76,15 @@ describe('Template menu item service', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         itemRepo = module.get(getRepositoryToken(MenuItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({
             templates,
@@ -77,16 +94,28 @@ describe('Template menu item service', () => {
             fixedContainerItems,
             varContainerItems,
             templateMenuItems,
-        } = await testingUtil.seedTemplateMenuItems(P));
+        } = await testingUtil.seedTemplateMenuItems(P, tenant.id));
+
+        otherTenantTemplateItem = await templateItemRepo.save({
+            displayName: `${P}-other-tenant-row`,
+            tablePosIndex: 999,
+            menuItem: singleItems[0],
+            parentTemplate: templates[0],
+            tenantId: otherTenant.id,
+        } as TemplateMenuItem);
     });
 
     afterAll(async () => {
-        await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
+        await templateItemRepo.delete([
+            ...templateMenuItems.map((t) => t.id),
+            otherTenantTemplateItem.id,
+        ]);
         await templateRepo.delete(templates.map((t) => t.id));
         const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -188,5 +217,25 @@ describe('Template menu item service', () => {
         await expect(templateItemService.findOne(9_999_999)).rejects.toThrow(
             NotFoundException,
         );
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const dto = plainToInstance(CreateTemplateMenuItemDto, {
+                displayName: `${P}-tenant-stamped-row`,
+                tablePosIndex: 500,
+                menuItemId: singleItems[0].id,
+                parentTemplateId: templates[0].id,
+            });
+            const created = await templateItemService.create(dto);
+            expect((created as TemplateMenuItem).tenantId).toBe(tenant.id);
+            await templateItemRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(
+                templateItemService.findOne(otherTenantTemplateItem.id),
+            ).rejects.toThrow(NotFoundException);
+        });
     });
 });

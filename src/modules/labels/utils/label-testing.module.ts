@@ -10,6 +10,7 @@ import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { TenantsModule } from '../../tenants/tenants.module';
 import { LabelTypeController } from '../controllers/label-type.controller';
 import { LabelController } from '../controllers/label.controller';
 import { LabelType } from '../entities/label-type.entity';
@@ -35,6 +36,7 @@ export async function getLabelsTestingModule(opts?: {
 
       LabelsModule,
       MenuItemsModule,
+      TenantsModule,
 
       CacheModule.register(),
       LoggerModule.forRoot({

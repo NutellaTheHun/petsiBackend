@@ -5,6 +5,7 @@ import {
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { inventoryItemCategoryExample } from '../../../common/swagger/examples/inventory-items/inventory-item-category.example';
@@ -30,6 +31,7 @@ export type InventoryItemEntity = EntityBase<
  * An element of the inventory catalog, referenced via {@link InventoryAreaItem} for inventory counts, and {@link RecipeIngredient} for recipes.
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class InventoryItem {
     @ApiProperty({
         example: 1,
@@ -38,8 +40,19 @@ export class InventoryItem {
     @PrimaryGeneratedColumn()
     id: number;
 
+    /**
+     * The Tenant this item belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
     @ApiProperty({ example: '', description: '' })
-    @Column({ unique: true })
+    @Column()
     name: string;
 
     /**

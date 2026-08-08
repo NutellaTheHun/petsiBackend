@@ -6,6 +6,7 @@ import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.e
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
 import { getTestTemplateNames } from './constants';
@@ -24,18 +25,42 @@ export class TemplateTestingUtil {
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
 
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
+
         private readonly menuItemTestUtil: MenuItemTestingUtil,
     ) { }
 
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'template-testing-util-fixture-tenant';
+    private defaultTenantId?: number;
+    public async getDefaultTenantId(): Promise<number> {
+        if (this.defaultTenantId === undefined) {
+            const existing = await this.tenantRepo.findOne({
+                where: { subdomain: TemplateTestingUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            const tenant =
+                existing ??
+                (await this.tenantRepo.save({
+                    name: 'Template Testing Util Fixture Tenant',
+                    subdomain: TemplateTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                }));
+            this.defaultTenantId = tenant.id;
+        }
+        return this.defaultTenantId;
+    }
+
     public async getTemplateEntities(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<Template[]> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const templateNames = getTestTemplateNames();
         const results: Template[] = [];
 
         for (const name of templateNames) {
             results.push({
                 name: name,
+                tenantId: effectiveTenantId,
             } as Template);
         }
         return results;
@@ -43,6 +68,7 @@ export class TemplateTestingUtil {
 
     public async initTemplateTestDatabase(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<void> {
         if (this.initTemplates) {
             return;
@@ -50,7 +76,7 @@ export class TemplateTestingUtil {
         this.initTemplates = true;
 
         testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
-        const templates = await this.getTemplateEntities(testContext);
+        const templates = await this.getTemplateEntities(testContext, tenantId);
         for (const template of templates) {
             const exists = await this.templateRepo.findOne({
                 where: { name: template.name },
@@ -67,9 +93,11 @@ export class TemplateTestingUtil {
 
     public async getTemplateMenuItemEntities(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<TemplateMenuItem[]> {
-        await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
-        await this.initTemplateTestDatabase(testContext);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        await this.menuItemTestUtil.initMenuItemTestDatabase(testContext, effectiveTenantId);
+        await this.initTemplateTestDatabase(testContext, effectiveTenantId);
 
         const items = await this.menuItemRepo.find();
         if (!items) {
@@ -91,6 +119,7 @@ export class TemplateTestingUtil {
                     menuItem: items[itemIdx % items.length],
                     tablePosIndex: itemIdx,
                     parentTemplate: template,
+                    tenantId: effectiveTenantId,
                 } as TemplateMenuItem);
                 itemIdx++;
             }
@@ -100,6 +129,7 @@ export class TemplateTestingUtil {
 
     public async initTemplateMenuItemTestDatabase(
         testContext: DatabaseTestContext,
+        tenantId?: number,
     ): Promise<void> {
         if (this.initItems) {
             return;
@@ -109,7 +139,7 @@ export class TemplateTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupTemplateMenuItemTestDatabase(),
         );
-        const templateItems = await this.getTemplateMenuItemEntities(testContext);
+        const templateItems = await this.getTemplateMenuItemEntities(testContext, tenantId);
         for (const templateItem of templateItems) {
             const exists = await this.templateItemRepo.findOne({
                 where: { menuItem: { id: templateItem.menuItem.id }, parentTemplate: { id: templateItem.parentTemplate.id } },
@@ -127,12 +157,18 @@ export class TemplateTestingUtil {
     // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
     // These do NOT register cleanup — callers are responsible for deleting by ID.
 
-    public async seedTemplates(P: string = ''): Promise<{ templates: Template[] }> {
+    public async seedTemplates(P: string = '', tenantId?: number): Promise<{ templates: Template[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestTemplateNames();
         const templates: Template[] = [];
         for (const name of names) {
             const entityName = P ? `${P}-${name}` : name;
-            templates.push(await this.templateRepo.save({ name: entityName } as Template));
+            templates.push(
+                await this.templateRepo.save({
+                    name: entityName,
+                    tenantId: effectiveTenantId,
+                } as Template),
+            );
         }
         return { templates };
     }
@@ -143,7 +179,7 @@ export class TemplateTestingUtil {
      * 3 template menu item rows per seeded template, round-robin over the combined
      * single/fixed-container/variable-container menu items.
      */
-    public async seedTemplateMenuItems(P: string = ''): Promise<{
+    public async seedTemplateMenuItems(P: string = '', tenantId?: number): Promise<{
         templates: Template[];
         categories: MenuItemCategory[];
         sizes: MenuItemSize[];
@@ -152,9 +188,10 @@ export class TemplateTestingUtil {
         varContainerItems: MenuItem[];
         templateMenuItems: TemplateMenuItem[];
     }> {
-        const { templates } = await this.seedTemplates(P);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        const { templates } = await this.seedTemplates(P, effectiveTenantId);
         const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
-            await this.menuItemTestUtil.seedItems(P);
+            await this.menuItemTestUtil.seedItems(P, effectiveTenantId);
 
         const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
         const templateMenuItems: TemplateMenuItem[] = [];
@@ -167,6 +204,7 @@ export class TemplateTestingUtil {
                     menuItem: item,
                     tablePosIndex: idx + 1,
                     parentTemplate: template,
+                    tenantId: effectiveTenantId,
                 } as TemplateMenuItem;
                 templateMenuItems.push(await this.templateItemRepo.save(entity));
                 idx++;

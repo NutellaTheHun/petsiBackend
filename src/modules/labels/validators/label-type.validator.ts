@@ -33,6 +33,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity, LabelType
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 
