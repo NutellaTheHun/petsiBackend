@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
@@ -15,7 +15,7 @@ import { InventoryItemPackageChangeDetector } from '../utils/change-detectors/in
 import { InventoryItemPackageValidator } from '../validators/inventory-item-package.validator';
 
 @Injectable()
-export class InventoryItemPackageService extends ServiceBase<InventoryItemPackageEntity> {
+export class InventoryItemPackageService extends TenantScopedServiceBase<InventoryItemPackageEntity> {
   constructor(
     @InjectRepository(InventoryItemPackage)
     repo: Repository<InventoryItemPackage>,
@@ -39,6 +39,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
   ): Promise<InventoryItemPackage> {
     const result = manager.create(InventoryItemPackage, {
       name: dto.name,
+      tenantId: this.getTenantId(),
     });
     return await manager.save(result);
   }

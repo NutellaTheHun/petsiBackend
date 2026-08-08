@@ -40,6 +40,7 @@ describe('menu item validator', () => {
     let fixedContainerItems: MenuItem[];
     let varContainerItems: MenuItem[];
     let containerLines: MenuItemContainerItem[];
+    let defaultTenantId: number;
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
@@ -51,6 +52,8 @@ describe('menu item validator', () => {
         containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
         dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+
+        defaultTenantId = await testingUtil.getDefaultTenantId();
 
         ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
             await testingUtil.seedContainerLines(P));
@@ -535,6 +538,7 @@ describe('menu item validator', () => {
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategory: null,
+            tenantId: defaultTenantId,
         });
         testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
@@ -579,6 +583,7 @@ describe('menu item validator', () => {
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategory: null,
+            tenantId: defaultTenantId,
         });
         testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
@@ -612,6 +617,7 @@ describe('menu item validator', () => {
             valueType: ValueType.EntityReference,
             valueEntityType: 'menuItem',
             valueEntityCategory: catA,
+            tenantId: defaultTenantId,
         });
         testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 
@@ -647,6 +653,7 @@ describe('menu item validator', () => {
             valueType: ValueType.Filepath,
             valueEntityType: null,
             valueEntityCategory: null,
+            tenantId: defaultTenantId,
         });
         testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
 

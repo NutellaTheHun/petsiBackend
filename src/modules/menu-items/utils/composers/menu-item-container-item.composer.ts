@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
+import { RequestContextService } from '../../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedCreateMenuItemContainerItemDto } from '../../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../../dto/menu-item-container-item/update-menu-item-container-item.dto';
@@ -16,6 +17,10 @@ import { MenuItem } from '../../entities/menu-item.entity';
 export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContainerItemEntity> {
     protected readonly entityClass = MenuItemContainerItem;
 
+    constructor(private readonly requestContextService: RequestContextService) {
+        super();
+    }
+
     protected async createInTransaction(
         dto: CreateMenuItemContainerItemDto,
         manager: EntityManager,
@@ -26,6 +31,7 @@ export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContaine
             containedMenuItem: { id: dto.containedMenuItemId },
             containedItemSize: { id: dto.containedItemSizeId },
             quantity: dto.quantity,
+            tenantId: this.requestContextService.get<number>('tenantId'),
         });
         return result;
     }

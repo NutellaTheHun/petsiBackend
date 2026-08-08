@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
@@ -16,7 +16,7 @@ import {
 import { DynamicPropertyConfigValidator } from '../validators/dynamic-property-config.validator';
 
 @Injectable()
-export class DynamicPropertyConfigService extends ServiceBase<DynamicPropertyConfigEntity> {
+export class DynamicPropertyConfigService extends TenantScopedServiceBase<DynamicPropertyConfigEntity> {
     constructor(
         @InjectRepository(DynamicPropertyConfig)
         repo: Repository<DynamicPropertyConfig>,
@@ -50,6 +50,7 @@ export class DynamicPropertyConfigService extends ServiceBase<DynamicPropertyCon
             valueType: dto.valueType,
             valueEntityType: dto.valueEntityType ?? null,
             valueEntityCategory: valueEntityCategory ?? null,
+            tenantId: this.getTenantId(),
         });
 
         const saved = await manager.save(entity);

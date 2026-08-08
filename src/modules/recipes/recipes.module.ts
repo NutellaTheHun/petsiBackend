@@ -7,6 +7,7 @@ import { InventoryItemsModule } from '../inventory-items/inventory-items.module'
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
 import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
 import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
@@ -47,6 +48,7 @@ import { RecipeValidator } from './validators/recipe.valdiator';
     ]),
     InventoryItemsModule,
     MenuItemsModule,
+    TenantsModule,
     CacheModule.register(),
     AppLoggingModule,
     RequestContextModule,

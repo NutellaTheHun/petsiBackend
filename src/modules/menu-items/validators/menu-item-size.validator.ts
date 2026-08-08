@@ -36,6 +36,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

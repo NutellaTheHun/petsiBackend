@@ -9,6 +9,7 @@ import {
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    Unique,
     UpdateDateColumn,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
@@ -47,6 +48,7 @@ export type MenuItemEntity = EntityBase<
  * An item that is a product to be sold.
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class MenuItem {
     @ApiProperty({
         example: 1,
@@ -54,6 +56,17 @@ export class MenuItem {
     })
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The Tenant this item belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
     /**
      * The date the order is inserted into the database.
@@ -74,7 +87,7 @@ export class MenuItem {
     updatedAt: Date;
 
     @ApiProperty({ example: 'Class Apple Pie', description: 'Name of the item' })
-    @Column({ unique: true })
+    @Column()
     name: string;
 
     @Column({

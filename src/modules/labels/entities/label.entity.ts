@@ -20,7 +20,7 @@ export type LabelEntity = EntityBase<Label, CreateLabelDto, UpdateLabelDto>;
  * References a {@link menuItem} with a {@link LabelType} and a url to the label image for printing.
  */
 @Entity()
-@Unique(['menuItem', 'imageUrl', 'labelType'])
+@Unique(['tenantId', 'menuItem', 'imageUrl', 'labelType'])
 export class Label {
   @ApiProperty({
     example: 1,
@@ -28,6 +28,17 @@ export class Label {
   })
   @PrimaryGeneratedColumn()
   id: number;
+
+  /**
+   * The Tenant this label belongs to. Denormalized scalar column (not a
+   * relation) so ServiceBase-level tenant filtering never needs a join.
+   */
+  @ApiProperty({
+    example: 1,
+    description: 'The Tenant this entity belongs to',
+  })
+  @Column()
+  tenantId: number;
 
   /**
    * Url of image stored in 3rd party source

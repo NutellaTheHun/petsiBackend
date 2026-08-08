@@ -38,6 +38,7 @@ export type MenuItemContainerItemEntity = NestedEntityBase<
  * - Can be { lemon: 2, trip: 2, currant: 2 }
  */
 @Unique([
+    'tenantId',
     'parentMenuItem',
     'parentItemSize',
     'containedMenuItem',
@@ -51,6 +52,17 @@ export class MenuItemContainerItem {
     })
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The Tenant this container line belongs to. Denormalized scalar column
+     * (not a relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
     /**
      * The {@link MenuItem} the component represents.

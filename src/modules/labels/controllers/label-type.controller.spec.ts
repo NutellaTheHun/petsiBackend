@@ -10,6 +10,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
@@ -23,7 +26,10 @@ describe('label type controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: LabelTypeController;
     let typeRepo: Repository<LabelType>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let labelTypes: LabelType[];
 
     beforeAll(async () => {
@@ -31,12 +37,18 @@ describe('label type controller', () => {
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
         controller = module.get<LabelTypeController>(LabelTypeController);
         typeRepo = module.get(getRepositoryToken(LabelType));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ labelTypes } = await testingUtil.seedLabelTypes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ labelTypes } = await testingUtil.seedLabelTypes(P, tenant.id));
     });
 
     afterAll(async () => {
         await typeRepo.delete(labelTypes.map((t) => t.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

@@ -10,12 +10,15 @@ import { InventoryItemPackageService } from '../inventory-items/services/invento
 import { InventoryItemSizeService } from '../inventory-items/services/inventory-item-size.service';
 import { InventoryItemVendorService } from '../inventory-items/services/inventory-item-vendor.service';
 import { InventoryItemService } from '../inventory-items/services/inventory-item.service';
+import { InventoryItemTestingUtil } from '../inventory-items/utils/inventory-item-testing.util';
 import { LabelTypeService } from '../labels/services/label-type.service';
 import { LabelService } from '../labels/services/label.service';
+import { LabelTestingUtil } from '../labels/utils/label-testing.util';
 import { MenuItemCategoryService } from '../menu-items/services/menu-item-category.service';
 import { MenuItemContainerItemService } from '../menu-items/services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../menu-items/services/menu-item-size.service';
 import { MenuItemService } from '../menu-items/services/menu-item.service';
+import { MenuItemTestingUtil } from '../menu-items/utils/menu-item-testing.util';
 import { OrderCategoryService } from '../orders/services/order-category.service';
 import { OrderContainerItemService } from '../orders/services/order-container-item.service';
 import { OrderMenuItemService } from '../orders/services/order-menu-item.service';
@@ -25,10 +28,12 @@ import { RecipeCategoryService } from '../recipes/services/recipe-category.servi
 import { RecipeIngredientService } from '../recipes/services/recipe-ingredient.service';
 import { RecipeSubCategoryService } from '../recipes/services/recipe-sub-category.service';
 import { RecipeService } from '../recipes/services/recipe.service';
+import { RecipeTestUtil } from '../recipes/utils/recipe-test.util';
 import { RequestContextService } from '../request-context/RequestContextService';
 import { RoleService } from '../roles/services/role.service';
 import { TemplateMenuItemService } from '../templates/services/template-menu-item.service';
 import { TemplateService } from '../templates/services/template.service';
+import { TemplateTestingUtil } from '../templates/utils/template-testing.util';
 import { UserService } from '../users/services/user.service';
 import { getSeedTestingModule } from './seed-testing.module';
 import { SeedService } from './seed.service';
@@ -49,14 +54,17 @@ describe('Seed Service', () => {
   let inventoryItemPackageService: InventoryItemPackageService;
   let inventoryItemVendorService: InventoryItemVendorService;
   let inventoryItemSizeService: InventoryItemSizeService;
+  let inventoryItemTestUtil: InventoryItemTestingUtil;
 
   let labelService: LabelService;
   let labelTypeService: LabelTypeService;
+  let labelTestUtil: LabelTestingUtil;
 
   let menuItemService: MenuItemService;
   let menuItemCategoryService: MenuItemCategoryService;
   let menuItemContainerItemService: MenuItemContainerItemService;
   let menuItemSizeService: MenuItemSizeService;
+  let menuItemTestUtil: MenuItemTestingUtil;
 
   let orderService: OrderService;
   let orderCategoryService: OrderCategoryService;
@@ -67,11 +75,13 @@ describe('Seed Service', () => {
   let recipeCategoryService: RecipeCategoryService;
   let recipeIngredientService: RecipeIngredientService;
   let recipeSubCategoryService: RecipeSubCategoryService;
+  let recipeTestUtil: RecipeTestUtil;
 
   let roleService: RoleService;
 
   let templateService: TemplateService;
   let templateMenuItemService: TemplateMenuItemService;
+  let templateTestUtil: TemplateTestingUtil;
 
   let userService: UserService;
 
@@ -108,10 +118,14 @@ describe('Seed Service', () => {
     inventoryItemSizeService = module.get<InventoryItemSizeService>(
       InventoryItemSizeService,
     );
+    inventoryItemTestUtil = module.get<InventoryItemTestingUtil>(
+      InventoryItemTestingUtil,
+    );
 
     // Label
     labelService = module.get<LabelService>(LabelService);
     labelTypeService = module.get<LabelTypeService>(LabelTypeService);
+    labelTestUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
 
     // Menu Item
     menuItemService = module.get<MenuItemService>(MenuItemService);
@@ -122,6 +136,7 @@ describe('Seed Service', () => {
       MenuItemContainerItemService,
     );
     menuItemSizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
+    menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
 
     // Order
     orderService = module.get<OrderService>(OrderService);
@@ -144,6 +159,7 @@ describe('Seed Service', () => {
     recipeSubCategoryService = module.get<RecipeSubCategoryService>(
       RecipeSubCategoryService,
     );
+    recipeTestUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
 
     // Role
     roleService = module.get<RoleService>(RoleService);
@@ -153,6 +169,7 @@ describe('Seed Service', () => {
     templateMenuItemService = module.get<TemplateMenuItemService>(
       TemplateMenuItemService,
     );
+    templateTestUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
 
     // user
     userService = module.get<UserService>(UserService);
@@ -198,7 +215,12 @@ describe('Seed Service', () => {
     const invAreas = await inventoryAreaService.findAll();
     expect(invAreas.items.length).toBeGreaterThan(0);
 
-    // inventory items
+    // inventory items — the *-items services are tenant-scoped
+    // (TenantScopedServiceBase); read as InventoryItemTestingUtil's own
+    // fixture tenant so findAll sees the seeded rows.
+    requestContext.setContext({
+      tenantId: await inventoryItemTestUtil.getDefaultTenantId(),
+    });
     const invItems = await inventoryItemService.findAll();
     expect(invItems.items.length).toBeGreaterThan(0);
 
@@ -214,14 +236,22 @@ describe('Seed Service', () => {
     const invSizes = await inventoryItemSizeService.findAll();
     expect(invSizes.items.length).toBeGreaterThan(0);
 
-    // labels
+    // labels — Label/LabelType are tenant-scoped; read as LabelTestingUtil's
+    // own fixture tenant.
+    requestContext.setContext({
+      tenantId: await labelTestUtil.getDefaultTenantId(),
+    });
     const labels = await labelService.findAll();
     expect(labels.items.length).toBeGreaterThan(0);
 
     const labelTypes = await labelTypeService.findAll();
     expect(labelTypes.items.length).toBeGreaterThan(0);
 
-    // Menu Items
+    // Menu Items — all tenant-scoped; read as MenuItemTestingUtil's own
+    // fixture tenant.
+    requestContext.setContext({
+      tenantId: await menuItemTestUtil.getDefaultTenantId(),
+    });
     const menuItems = await menuItemService.findAll();
     expect(menuItems.items.length).toBeGreaterThan(0);
 
@@ -253,7 +283,11 @@ describe('Seed Service', () => {
     const orderMenuItems = await orderMenuItemService.findAll();
     expect(orderMenuItems.items.length).toBeGreaterThan(0);
 
-    // Recipes
+    // Recipes — all tenant-scoped; read as RecipeTestUtil's own fixture
+    // tenant.
+    requestContext.setContext({
+      tenantId: await recipeTestUtil.getDefaultTenantId(),
+    });
     const recipes = await recipeService.findAll();
     expect(recipes.items.length).toBeGreaterThan(0);
 
@@ -266,7 +300,11 @@ describe('Seed Service', () => {
     const recipeSubCategories = await recipeSubCategoryService.findAll();
     expect(recipeSubCategories.items.length).toBeGreaterThan(0);
 
-    // Templates
+    // Templates — all tenant-scoped; read as TemplateTestingUtil's own
+    // fixture tenant.
+    requestContext.setContext({
+      tenantId: await templateTestUtil.getDefaultTenantId(),
+    });
     const templates = await templateService.findAll();
     expect(templates.items.length).toBeGreaterThan(0);
 

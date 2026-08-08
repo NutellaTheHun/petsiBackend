@@ -35,6 +35,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

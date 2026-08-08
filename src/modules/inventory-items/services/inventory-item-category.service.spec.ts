@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
@@ -36,8 +39,13 @@ describe('Inventory Item Category Service', () => {
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let categoryRepo: Repository<InventoryItemCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let categories: InventoryItemCategory[];
+    let otherTenantCategory: InventoryItemCategory;
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
@@ -49,12 +57,26 @@ describe('Inventory Item Category Service', () => {
         ) as TestableInventoryItemCategoryService;
         dataSource = module.get(DataSource);
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories } = await testingUtil.seedCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories } = await testingUtil.seedCategories(P, tenant.id));
+        otherTenantCategory = await categoryRepo.save({
+            name: `${P}-other-tenant-category`,
+            tenantId: otherTenant.id,
+        } as InventoryItemCategory);
     });
 
     afterAll(async () => {
-        await categoryRepo.delete(categories.map((c) => c.id));
+        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -133,6 +155,24 @@ describe('Inventory Item Category Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await categoryRepo.findOneOrFail({ where: { id: cat.id } });
             expect(row.name).toBe(`${P}-cat-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await service.create(
+                plainToInstance(CreateInventoryItemCategoryDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as InventoryItemCategory).tenantId).toBe(tenant.id);
+            await categoryRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(service.findOne(otherTenantCategory.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

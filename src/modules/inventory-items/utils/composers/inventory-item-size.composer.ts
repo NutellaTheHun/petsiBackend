@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
+import { RequestContextService } from '../../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../../dto/inventory-item-size/update-inventory-item-size.dto';
@@ -15,6 +16,10 @@ import {
 export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEntity> {
     protected readonly entityClass = InventoryItemSize;
 
+    constructor(private readonly requestContextService: RequestContextService) {
+        super();
+    }
+
     protected async createInTransaction(
         dto: CreateInventoryItemSizeDto,
         manager: EntityManager,
@@ -25,6 +30,7 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
             package: { id: dto.packageId },
             inventoryItem: { id: dto.inventoryItemId },
             cost: dto.cost ? dto.cost.toString() : null,
+            tenantId: this.requestContextService.get<number>('tenantId'),
         });
         return result;
     }

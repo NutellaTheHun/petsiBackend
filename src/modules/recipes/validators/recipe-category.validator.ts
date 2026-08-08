@@ -39,6 +39,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

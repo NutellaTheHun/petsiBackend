@@ -101,7 +101,10 @@ describe('Tenant Service', () => {
     });
 
     it('should find seeded tenant in findAll results', async () => {
-        const result = await tenantService.findAll();
+        // A large explicit limit, since Tenant is unscoped (sits above the
+        // tenant-scoping hierarchy) and every other module's default-fixture
+        // tenants accumulate in the same table across the whole test suite.
+        const result = await tenantService.findAll({ limit: 1000 });
         const found = result.items.find((t) => t.id === tenants[0].id);
         expect(found).toBeDefined();
     });

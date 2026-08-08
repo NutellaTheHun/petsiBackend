@@ -32,6 +32,17 @@ export class RecipeIngredient {
     id: number;
 
     /**
+     * The Tenant this ingredient belongs to. Denormalized scalar column (not
+     * a relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
      * The {@link InventoryItem} that is being used as the ingredient.
      *
      * - Example:  "flour" or "pecan halves"

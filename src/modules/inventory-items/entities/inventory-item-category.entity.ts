@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
@@ -17,6 +23,7 @@ export type InventoryItemCategoryEntity = EntityBase<
  * - Example: "paper goods", "frozen", "cleaning", "produce"
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class InventoryItemCategory {
   @ApiProperty({
     example: 1,
@@ -25,8 +32,19 @@ export class InventoryItemCategory {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * The Tenant this category belongs to. Denormalized scalar column (not a
+   * relation) so ServiceBase-level tenant filtering never needs a join.
+   */
+  @ApiProperty({
+    example: 1,
+    description: 'The Tenant this entity belongs to',
+  })
+  @Column()
+  tenantId: number;
+
   @ApiProperty({ example: 'Produce', description: 'Name of the category' })
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   /**

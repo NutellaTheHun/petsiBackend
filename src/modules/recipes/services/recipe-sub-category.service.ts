@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
@@ -16,7 +16,7 @@ import { RecipeSubCategoryChangeDetector } from '../utils/change-detectors/recip
 import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.validator';
 
 @Injectable()
-export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntity> {
+export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubCategoryEntity> {
     constructor(
         @InjectRepository(RecipeSubCategory)
         repo: Repository<RecipeSubCategory>,

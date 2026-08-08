@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
@@ -36,8 +39,13 @@ describe('menu item size service', () => {
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let sizeRepo: Repository<MenuItemSize>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let sizes: MenuItemSize[];
+    let otherTenantSize: MenuItemSize;
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
@@ -49,12 +57,26 @@ describe('menu item size service', () => {
         ) as TestableMenuItemSizeService;
         dataSource = module.get(DataSource);
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ sizes } = await testingUtil.seedSizes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ sizes } = await testingUtil.seedSizes(P, tenant.id));
+        otherTenantSize = await sizeRepo.save({
+            name: `${P}-other-tenant-size`,
+            tenantId: otherTenant.id,
+        } as MenuItemSize);
     });
 
     afterAll(async () => {
-        await sizeRepo.delete(sizes.map((s) => s.id));
+        await sizeRepo.delete([...sizes.map((s) => s.id), otherTenantSize.id]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -128,6 +150,24 @@ describe('menu item size service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await sizeRepo.findOneOrFail({ where: { id: size.id } });
             expect(row.name).toBe(`${P}-size-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await service.create(
+                plainToInstance(CreateMenuItemSizeDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as MenuItemSize).tenantId).toBe(tenant.id);
+            await sizeRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(service.findOne(otherTenantSize.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

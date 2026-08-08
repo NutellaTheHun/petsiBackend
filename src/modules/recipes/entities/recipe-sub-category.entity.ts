@@ -38,6 +38,18 @@ export class RecipeSubCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
+    /**
+     * The Tenant this sub-category belongs to. Denormalized scalar column
+     * (not a relation) so ServiceBase-level tenant filtering never needs a
+     * join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
     @ApiProperty({
         example: 'Savory Pie',
         description: 'Name of the subcategory',

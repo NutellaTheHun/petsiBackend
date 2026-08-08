@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
@@ -11,6 +12,8 @@ import { InventoryItemPackage } from '../../inventory-items/entities/inventory-i
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
@@ -60,6 +63,9 @@ describe('Inventory area item service', () => {
     let packages: InventoryItemPackage[];
     let items: InventoryItem[];
     let sizes: InventoryItemSize[];
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
+    let tenant: Tenant;
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule({
@@ -79,6 +85,16 @@ describe('Inventory area item service', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        // InventoryArea itself isn't tenant-scoped yet (that lands in a later
+        // slice), but InventoryItemSize is — and this file creates new sizes
+        // via nested-create DTOs, which route through InventoryItemSizeComposer
+        // and stamp tenantId from RequestContextService. Set a tenant so that
+        // stamp has something to write.
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({ areas, counts } = await testingUtil.seedCounts(P));
         ({ categories, vendors, packages, items, sizes } =
@@ -93,6 +109,7 @@ describe('Inventory area item service', () => {
         await categoryRepo.delete(categories.map((c) => c.id));
         await vendorRepo.delete(vendors.map((v) => v.id));
         await areaRepo.delete(areas.map((a) => a.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

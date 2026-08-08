@@ -13,6 +13,7 @@ import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { ReportDefinition, ReportVisibility } from '../entities/report-definition.entity';
 import { getReportsExecutionTestingModule } from '../reports-testing.module';
 import { ReportExecutionService } from './report-execution.service';
@@ -33,7 +34,9 @@ describe('ReportExecutionService', () => {
     let menuItemCategoryRepo: Repository<MenuItemCategory>;
     let testContextService: TestRequestContextService;
     let testCtx: DatabaseTestContext;
+    let tenantRepo: Repository<Tenant>;
 
+    let tenant: Tenant;
     let menuItem: MenuItem;
     let menuItem2: MenuItem;
     let menuItemSize: MenuItemSize;
@@ -55,12 +58,16 @@ describe('ReportExecutionService', () => {
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
         testContextService = module.get(RequestContextService) as TestRequestContextService;
 
-        menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie` });
-        menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular` });
-        menuItem = await menuItemRepo.save({ name: `${P}-apple-pie` });
-        menuItem2 = await menuItemRepo.save({ name: `${P}-cherry-pie` });
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        testContextService.setContext({ tenantId: tenant.id });
+
+        menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie`, tenantId: tenant.id } as MenuItemCategory);
+        menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular`, tenantId: tenant.id } as MenuItemSize);
+        menuItem = await menuItemRepo.save({ name: `${P}-apple-pie`, tenantId: tenant.id } as MenuItem);
+        menuItem2 = await menuItemRepo.save({ name: `${P}-cherry-pie`, tenantId: tenant.id } as MenuItem);
 
         orderAlice = await orderRepo.save({
             recipient: `${P}-alice`,
@@ -103,6 +110,7 @@ describe('ReportExecutionService', () => {
         await menuItemRepo.delete([menuItem.id, menuItem2.id]);
         await menuItemSizeRepo.delete(menuItemSize.id);
         await menuItemCategoryRepo.delete(menuItemCategory.id);
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {
@@ -123,6 +131,7 @@ describe('ReportExecutionService', () => {
             showHeader: true,
             params: [],
             sections,
+            tenantId: tenant.id,
         });
         testCtx.addCleanupFunction(async () => { await definitionRepo.delete(defn.id); });
         return defn;

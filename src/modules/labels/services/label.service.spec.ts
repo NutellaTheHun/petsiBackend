@@ -4,9 +4,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
 import { LabelType } from '../entities/label-type.entity';
@@ -44,7 +47,11 @@ describe('Label Service', () => {
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let labelTypes: LabelType[];
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
@@ -52,6 +59,7 @@ describe('Label Service', () => {
     let fixedContainerItems: MenuItem[];
     let varContainerItems: MenuItem[];
     let labels: Label[];
+    let otherTenantLabel: Label;
 
     beforeAll(async () => {
         const module: TestingModule = await getLabelsTestingModule({
@@ -66,13 +74,29 @@ describe('Label Service', () => {
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({ labelTypes, categories, sizes, singleItems, fixedContainerItems, varContainerItems, labels } =
-            await testingUtil.seedLabels(P));
+            await testingUtil.seedLabels(P, tenant.id));
+
+        otherTenantLabel = await labelRepo.save({
+            menuItem: singleItems[0],
+            imageUrl: `${P}-other-tenant-label.png`,
+            labelType: labelTypes[0],
+            tenantId: otherTenant.id,
+        } as Label);
     });
 
     afterAll(async () => {
-        await labelRepo.delete(labels.map((l) => l.id));
+        await labelRepo.delete([...labels.map((l) => l.id), otherTenantLabel.id]);
         await labelTypeRepo.delete(labelTypes.map((t) => t.id));
         await itemRepo.delete([
             ...fixedContainerItems.map((i) => i.id),
@@ -81,6 +105,7 @@ describe('Label Service', () => {
         ]);
         await categoryRepo.delete(categories.map((c) => c.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -208,6 +233,36 @@ describe('Label Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await labelRepo.findOneOrFail({ where: { id: label.id } });
             expect(row.imageUrl).toBe(`${P}-label-renamed.png`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            // A brand-new LabelType guarantees the (menuItem, labelType) pair
+            // can't collide with one of the combos seedLabels already used.
+            const freshType = await labelTypeRepo.save({
+                name: `${P}-tenant-scope-type`,
+                length: 100,
+                width: 100,
+                tenantId: tenant.id,
+            } as LabelType);
+
+            const created = await labelService.create(
+                plainToInstance(CreateLabelDto, {
+                    menuItemId: singleItems[1].id,
+                    labelTypeId: freshType.id,
+                    imageUrl: `${P}-tenant-stamped.png`,
+                }),
+            );
+            expect((created as Label).tenantId).toBe(tenant.id);
+            await labelRepo.delete(created.id);
+            await labelTypeRepo.delete(freshType.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(labelService.findOne(otherTenantLabel.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

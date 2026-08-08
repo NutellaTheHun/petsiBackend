@@ -1,6 +1,6 @@
 ---
 module: src/modules/seed
-last_reviewed: 2026-08-03
+last_reviewed: 2026-08-07
 ---
 
 ## Overview
@@ -21,5 +21,6 @@ Role/user seeding (`seedRoleTestDb`, `seedUserTestDb`) is idempotent: it looks u
 - Seed order within `seedTestDb()` follows each domain's FK dependency chain (parent entities before children, e.g. category/package/vendor before item, item before size). New seed steps must be inserted at the correct point in this chain, not appended at the end.
 - Every seeding step accepts and threads through the same `DatabaseTestContext` (`ctx`) passed into `seedTestDb()`, so callers can register cleanup or share context across the whole seed run.
 - `seedRoleTestDb`/`seedUserTestDb` write `Role`/`User` rows via their repositories directly rather than through `RoleService`/`UserService` — both extend `TenantScopedServiceBase`, which stamps `tenantId` from `RequestContextService`, and there's no request/CLS context to read that from outside an HTTP request. `src/modules/tenant-provisioning/tenant-provisioning.service.ts` (the `npm run provisionTenant` script) follows this same repository-bypass rationale for the identical reason.
+- Most domain services seeded here are now `TenantScopedServiceBase` (or `LocationScopedServiceBase`), each behind its own module's independent default-fixture `Tenant` (keyed by that module's own subdomain, e.g. `menu-item-testing-util-fixture-tenant`, `inventory-item-testing-util-fixture-tenant` — these are **not** shared with each other or with `SeedService`'s own `seed-service-fixture-tenant`). `seed.service.spec.ts`'s `findAll()` assertions must switch `RequestContextService` to the right fixture tenant (via that domain's `*TestUtil.getDefaultTenantId()`) immediately before checking each domain's `findAll()` — get the wrong tenant in context and `findAll()` returns an empty page instead of an error, since the scoping filter just silently excludes everything.
 
 ## Gotchas

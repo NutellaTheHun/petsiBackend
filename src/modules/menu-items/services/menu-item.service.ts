@@ -19,7 +19,7 @@ import {
     ChangeDetectionResult,
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
@@ -54,7 +54,7 @@ import {
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
 @Injectable()
-export class MenuItemService extends ServiceBase<MenuItemEntity> {
+export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
     constructor(
         @InjectRepository(MenuItem)
         repo: Repository<MenuItem>,
@@ -92,6 +92,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             name: dto.name,
             sizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
             variableMaxAmount: dto.variableMaxAmount ?? null,
+            tenantId: this.getTenantId(),
         });
 
         const savedResult = await manager.save(entity);

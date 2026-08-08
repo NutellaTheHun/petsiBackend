@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -39,9 +42,14 @@ describe('recipe sub category service', () => {
 
     let subCategoryRepo: Repository<RecipeSubCategory>;
     let categoryRepo: Repository<RecipeCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
     let categories: RecipeCategory[];
     let subCategories: RecipeSubCategory[];
+    let otherTenant: Tenant;
+    let otherTenantCategory: RecipeCategory;
+    let otherTenantSubCategory: RecipeSubCategory;
 
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule({
@@ -53,14 +61,37 @@ describe('recipe sub category service', () => {
         ) as TestableRecipeSubCategoryService;
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
         dataSource = module.get(DataSource);
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        const tenantId = await testingUtil.getDefaultTenantId();
+        requestContext.setContext({ tenantId });
 
         ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
+
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        otherTenantCategory = await categoryRepo.save({
+            name: `${P}-other-tenant-category`,
+            tenantId: otherTenant.id,
+        } as RecipeCategory);
+        otherTenantSubCategory = await subCategoryRepo.save({
+            name: `${P}-other-tenant-sub-category`,
+            tenantId: otherTenant.id,
+            parentCategory: otherTenantCategory,
+        } as RecipeSubCategory);
     });
 
     afterAll(async () => {
-        await subCategoryRepo.delete(subCategories.map((s) => s.id));
-        await categoryRepo.delete(categories.map((c) => c.id));
+        await subCategoryRepo.delete([
+            ...subCategories.map((s) => s.id),
+            otherTenantSubCategory.id,
+        ]);
+        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await tenantRepo.delete(otherTenant.id);
     });
 
     beforeEach(() => {
@@ -184,6 +215,29 @@ describe('recipe sub category service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await subCategoryRepo.findOneOrFail({ where: { id: subCategory.id } });
             expect(row.name).toEqual(`${P}-sub-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const dto = plainToInstance(CreateRecipeSubCategoryDto, {
+                name: `${P}-tenant-stamped-sub`,
+                parentCategoryId: categories[0].id,
+            });
+
+            let created!: RecipeSubCategory;
+            await dataSource.transaction(async (manager) => {
+                created = await subCategoryService.createEntityForTest(dto, manager);
+            });
+
+            expect(created.tenantId).toBe(await testingUtil.getDefaultTenantId());
+            await subCategoryRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(
+                subCategoryService.findOne(otherTenantSubCategory.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

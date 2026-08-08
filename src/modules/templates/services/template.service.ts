@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -14,7 +14,7 @@ import { TemplateMenuItemComposer } from '../utils/composers/template-menu-item.
 import { TemplateValidator } from '../validators/template.validator';
 
 @Injectable()
-export class TemplateService extends ServiceBase<TemplateEntity> {
+export class TemplateService extends TenantScopedServiceBase<TemplateEntity> {
     constructor(
         @InjectRepository(Template)
         repo: Repository<Template>,
@@ -34,6 +34,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     ): Promise<Template> {
         const entity = manager.create(Template, {
             name: dto.name,
+            tenantId: this.getTenantId(),
         });
 
         const savedEntity = await manager.save(entity);

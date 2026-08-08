@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
@@ -47,12 +50,17 @@ describe('Inventory Item Service', () => {
     let packageRepo: Repository<InventoryItemPackage>;
     let sizeRepo: Repository<InventoryItemSize>;
     let vendorRepo: Repository<InventoryItemVendor>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let categories: InventoryItemCategory[];
     let vendors: InventoryItemVendor[];
     let packages: InventoryItemPackage[];
     let items: InventoryItem[];
     let sizes: InventoryItemSize[];
+    let otherTenantItem: InventoryItem;
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
@@ -67,16 +75,33 @@ describe('Inventory Item Service', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
+            P,
+            tenant.id,
+        ));
+        otherTenantItem = await itemRepo.save({
+            name: `${P}-other-tenant-item`,
+            tenantId: otherTenant.id,
+        } as InventoryItem);
     });
 
     afterAll(async () => {
         await sizeRepo.delete(sizes.map((s) => s.id));
-        await itemRepo.delete(items.map((i) => i.id));
+        await itemRepo.delete([...items.map((i) => i.id), otherTenantItem.id]);
         await packageRepo.delete(packages.map((p) => p.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await vendorRepo.delete(vendors.map((v) => v.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -265,6 +290,26 @@ describe('Inventory Item Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await itemRepo.findOneOrFail({ where: { id: item.id } });
             expect(row.name).toBe(`${P}-item-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const dto = plainToInstance(CreateInventoryItemDto, {
+                name: `${P}-tenant-stamped`,
+            });
+            let created: InventoryItem;
+            await dataSource.transaction(async (manager) => {
+                created = await itemService.createEntityForTest(dto, manager);
+            });
+            expect(created!.tenantId).toBe(tenant.id);
+            await itemRepo.delete(created!.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(itemService.findOne(otherTenantItem.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

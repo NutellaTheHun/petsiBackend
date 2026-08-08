@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { InventoryItemCategoryBuilder } from './builders/inventory-item-category.builder';
 import { InventoryItemPackageBuilder } from './builders/inventory-item-package.builder';
 import { InventoryItemSizeBuilder } from './builders/inventory-item-size.builder';
@@ -49,6 +50,7 @@ import { InventoryItemValidator } from './validators/inventory-item.validator';
     CacheModule.register(),
     AppLoggingModule,
     RequestContextModule,
+    TenantsModule,
   ],
 
   controllers: [

@@ -15,6 +15,21 @@ export class ReportDefinitionService {
         private readonly requestContextService: RequestContextService,
     ) {}
 
+    /**
+     * The caller's tenant, from `RequestContextService` — never trust a
+     * client-supplied tenantId on a DTO. Mirrors
+     * `TenantScopedServiceBase.getTenantId()`; this service predates that
+     * base class and isn't wired into the `ServiceBase` hierarchy, so tenant
+     * scoping is hand-rolled here rather than inherited.
+     */
+    private getTenantId(): number {
+        const tenantId = this.requestContextService.get<number>('tenantId');
+        if (tenantId == null) {
+            throw new NotFoundException();
+        }
+        return tenantId;
+    }
+
     async create(dto: CreateReportDefinitionDto): Promise<ReportDefinition> {
         const entity = this.repo.create({
             name: dto.name,
@@ -22,6 +37,7 @@ export class ReportDefinitionService {
             showHeader: dto.showHeader ?? true,
             params: dto.params ?? [],
             sections: dto.sections ?? [],
+            tenantId: this.getTenantId(),
         });
         return this.repo.save(entity);
     }
@@ -30,16 +46,20 @@ export class ReportDefinitionService {
         const roles = this.requestContextService.get<string[]>('roles') ?? [];
         const canSeeAll = roles.includes(ROLE_MANAGER) || roles.includes(ROLE_ADMIN);
 
-        const qb = this.repo.createQueryBuilder('rd');
+        const qb = this.repo
+            .createQueryBuilder('rd')
+            .where('rd.tenantId = :tenantId', { tenantId: this.getTenantId() });
         if (!canSeeAll) {
-            qb.where('rd.visibility = :vis', { vis: 'staff' });
+            qb.andWhere('rd.visibility = :vis', { vis: 'staff' });
         }
         return qb.getMany();
     }
 
     async findOne(id: number): Promise<ReportDefinition> {
         const entity = await this.repo.findOne({ where: { id } });
-        if (!entity) {
+        // A lookup for an id belonging to a different tenant behaves like the
+        // id doesn't exist at all — never confirm another tenant's data exists.
+        if (!entity || entity.tenantId !== this.getTenantId()) {
             throw new NotFoundException(`ReportDefinition #${id} not found`);
         }
         return entity;

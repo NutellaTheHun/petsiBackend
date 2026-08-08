@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
@@ -12,7 +12,7 @@ import { LabelTypeChangeDetector } from '../utils/change-detectors/label-type.ch
 import { LabelTypeValidator } from '../validators/label-type.validator';
 
 @Injectable()
-export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
+export class LabelTypeService extends TenantScopedServiceBase<LabelTypeEntity> {
   constructor(
     @InjectRepository(LabelType)
     repo: Repository<LabelType>,
@@ -32,6 +32,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
       length: dto.length,
       width: dto.width,
       name: dto.name,
+      tenantId: this.getTenantId(),
     });
     return await manager.save(result);
   }

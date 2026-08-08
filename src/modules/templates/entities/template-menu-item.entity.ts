@@ -31,6 +31,17 @@ export class TemplateMenuItem {
     id: number;
 
     /**
+     * The Tenant this template item belongs to. Denormalized scalar column
+     * (not a relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
      * The name value to be displayed on the row, representing the referenced {@link MenuItem}
      */
     @ApiProperty({

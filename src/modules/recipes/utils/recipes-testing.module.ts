@@ -10,6 +10,7 @@ import { InventoryItemsModule } from '../../inventory-items/inventory-items.modu
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { TenantsModule } from '../../tenants/tenants.module';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
@@ -56,6 +57,7 @@ export async function getRecipeTestingModule(opts?: {
       RecipesModule,
       InventoryItemsModule,
       MenuItemsModule,
+      TenantsModule,
       CacheModule.register(),
       LoggerModule.forRoot({
         pinoHttp: { transport: { target: 'pino-pretty' } },

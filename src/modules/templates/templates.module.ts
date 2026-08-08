@@ -5,6 +5,7 @@ import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { TenantsModule } from '../tenants/tenants.module';
 import { TemplateMenuItemBuilder } from './builders/template-menu-item.builder';
 import { TemplateBuilder } from './builders/template.builder';
 import { TemplateMenuItemController } from './controllers/template-menu-item.controller';
@@ -24,6 +25,7 @@ import { TemplateValidator } from './validators/template.validator';
   imports: [
     TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
     MenuItemsModule,
+    TenantsModule,
     CacheModule.register(),
     AppLoggingModule,
     RequestContextModule,

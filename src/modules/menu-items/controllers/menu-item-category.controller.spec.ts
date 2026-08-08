@@ -9,6 +9,9 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
@@ -22,7 +25,10 @@ describe('menu item category controller', () => {
     let testCtx: DatabaseTestContext;
     let controller: MenuItemCategoryController;
     let categoryRepo: Repository<MenuItemCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: MenuItemCategory[];
 
     beforeAll(async () => {
@@ -30,12 +36,18 @@ describe('menu item category controller', () => {
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         controller = module.get<MenuItemCategoryController>(MenuItemCategoryController);
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories } = await testingUtil.seedCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories } = await testingUtil.seedCategories(P, tenant.id));
     });
 
     afterAll(async () => {
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

@@ -49,6 +49,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

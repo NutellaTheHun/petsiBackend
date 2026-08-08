@@ -1,6 +1,6 @@
 ---
 module: src/modules/menu-items
-last_reviewed: 2026-07-04
+last_reviewed: 2026-08-07
 ---
 
 ## Overview
@@ -33,7 +33,7 @@ Key relationships:
 - **`MenuItemContainerItemController`'s `create`/`update` endpoints are dead** — they unconditionally `throw new Error('Endpoint not available')`. Container lines can only be created/updated by nesting them inside a `MenuItem` create/update payload's `containerMenuItems` field.
 - **Setting `MenuItem.type` to `SINGLE` on an existing container wipes its container lines and its `variableMaxAmount`, and desynchronizes active orders.** `MenuItemService.updateEntity` clears `containerMenuItems`/`variableMaxAmount` and calls `syncOrderMenuItems`, which finds all `OrderMenuItem` rows referencing this menu item on non-frozen orders with a future `fulfillmentDate` and deletes their `OrderContainerItem` children outright (not repopulated) — any pending order for that item silently loses its container breakdown.
 - **`MenuItemService.updateEntity`'s container-line reconciliation is diff-then-remove, not replace-all.** It composes the new set, then explicitly removes any previously-existing line whose id isn't in the new result set. Omitting `containerMenuItems` from an update DTO leaves existing lines untouched; passing an empty array clears them all.
-- **`MenuItem.name` and `MenuItemSize.name`/`MenuItemCategory.name` are globally unique** (DB `@Column({ unique: true })` plus `enforceUnique` in each validator) — a hard DB constraint as well as an app-level `ALREADY_EXISTS` check, so seeding/test helpers must prefix names per test run to avoid collisions across parallel test runs.
+- **`MenuItem.name` and `MenuItemSize.name`/`MenuItemCategory.name` are unique per tenant** (DB `@Unique(['tenantId', 'name'])` plus tenant-scoped `enforceUnique` in each validator) — two tenants can use the same name, so seeding/test helpers must still prefix names per test run to avoid collisions within a tenant across parallel test runs.
 - **Menu item snapshots are versioned (`MenuItemSnapshotV1`/`V2`) and validated at read time before revert.** `MenuItemService.revertToRevision` throws `BadRequestException` if the stored payload matches neither snapshot shape rather than trusting old/foreign JSONB. V2 adds `dynamicProperties` on top of V1's `containerItems`; `applyMenuItemSnapshotV2` calls `applyMenuItemSnapshotV1` first, then separately wipes and rebuilds dynamic property value rows. A new persisted field on `MenuItem` that should survive revert requires updating the snapshot interface, the to-snapshot function, and the apply function together — the entity alone isn't enough.
 - **A `dynamicProperties` entry's `configId` must belong to a config scoped to `HolderEntityType.MenuItem`**, and if that config has a non-null `holderCategory`, the menu item's effective category must match it exactly, or `INVALID_PROPERTY_VALUE` on `configId` is raised. Separately, changing `categoryId` on an existing item is rejected if doing so would leave stale dynamic property value rows behind — category reassignment is blocked until those values are cleared first.
 - **Deleting a `MenuItem` cascades hard through the graph**: `containerMenuItems` (`orphanedRowAction: 'delete'` + `cascade: true`) and any `Label` row referencing it (`onDelete: 'CASCADE'`) are deleted; only `category` (`SET NULL`) survives.

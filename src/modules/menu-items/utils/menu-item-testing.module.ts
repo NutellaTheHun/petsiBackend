@@ -15,6 +15,7 @@ import { Order } from '../../orders/entities/order.entity';
 import { RecurringOrderSchedule } from '../../orders/entities/recurring-order-schedule.entity';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { TenantsModule } from '../../tenants/tenants.module';
 import { MenuItemCategoryController } from '../controllers/menu-item-category.controller';
 import { MenuItemContainerItemController } from '../controllers/menu-item-container-item.controller';
 import { MenuItemSizeController } from '../controllers/menu-item-size.controller';
@@ -94,6 +95,7 @@ export async function getMenuItemTestingModule(opts?: {
             }),
             AppLoggingModule,
             RequestContextModule,
+            TenantsModule,
         ],
 
         controllers: [

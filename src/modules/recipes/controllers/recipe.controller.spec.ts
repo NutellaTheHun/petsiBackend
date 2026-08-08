@@ -10,9 +10,12 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
@@ -35,7 +38,10 @@ describe('recipe controller', () => {
     let invCategoryRepo: Repository<InventoryItemCategory>;
     let invVendorRepo: Repository<InventoryItemVendor>;
     let invItemRepo: Repository<InventoryItem>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: RecipeCategory[];
     let subCategories: RecipeSubCategory[];
     let recipes: Recipe[];
@@ -55,9 +61,14 @@ describe('recipe controller', () => {
         invCategoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
-            await testingUtil.seedIngredients(P));
+            await testingUtil.seedIngredients(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -68,6 +79,7 @@ describe('recipe controller', () => {
         await invItemRepo.delete(invItems.map((i) => i.id));
         await invVendorRepo.delete(invVendors.map((v) => v.id));
         await invCategoryRepo.delete(invCategories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

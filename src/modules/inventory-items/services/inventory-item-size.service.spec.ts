@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
@@ -44,12 +47,23 @@ describe('Inventory Item Size Service', () => {
     let sizeRepo: Repository<InventoryItemSize>;
     let categoryRepo: Repository<InventoryItemCategory>;
     let vendorRepo: Repository<InventoryItemVendor>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let categories: InventoryItemCategory[];
     let vendors: InventoryItemVendor[];
     let packages: InventoryItemPackage[];
     let items: InventoryItem[];
     let sizes: InventoryItemSize[];
+
+    let otherTenantCategories: InventoryItemCategory[];
+    let otherTenantVendors: InventoryItemVendor[];
+    let otherTenantPackages: InventoryItemPackage[];
+    let otherTenantItems: InventoryItem[];
+    let otherTenantSizes: InventoryItemSize[];
+    let otherTenantSize: InventoryItemSize;
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
@@ -64,16 +78,47 @@ describe('Inventory Item Size Service', () => {
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
+            P,
+            tenant.id,
+        ));
+
+        ({
+            categories: otherTenantCategories,
+            vendors: otherTenantVendors,
+            packages: otherTenantPackages,
+            items: otherTenantItems,
+            sizes: otherTenantSizes,
+        } = await testingUtil.seedSizes(`${P}-other`, otherTenant.id));
+        otherTenantSize = otherTenantSizes[0];
     });
 
     afterAll(async () => {
-        await sizeRepo.delete(sizes.map((s) => s.id));
-        await itemRepo.delete(items.map((i) => i.id));
-        await packageRepo.delete(packages.map((p) => p.id));
-        await categoryRepo.delete(categories.map((c) => c.id));
-        await vendorRepo.delete(vendors.map((v) => v.id));
+        await sizeRepo.delete([...sizes.map((s) => s.id), ...otherTenantSizes.map((s) => s.id)]);
+        await itemRepo.delete([...items.map((i) => i.id), ...otherTenantItems.map((i) => i.id)]);
+        await packageRepo.delete([
+            ...packages.map((p) => p.id),
+            ...otherTenantPackages.map((p) => p.id),
+        ]);
+        await categoryRepo.delete([
+            ...categories.map((c) => c.id),
+            ...otherTenantCategories.map((c) => c.id),
+        ]);
+        await vendorRepo.delete([
+            ...vendors.map((v) => v.id),
+            ...otherTenantVendors.map((v) => v.id),
+        ]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -144,5 +189,29 @@ describe('Inventory Item Size Service', () => {
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
         await expect(sizeService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant via the composer', async () => {
+            const dto = plainToInstance(CreateInventoryItemSizeDto, {
+                inventoryItemId: items[0].id,
+                packageId: packages[0].id,
+                unit: 'lb',
+                measureAmount: 200,
+                cost: 3.5,
+            });
+            let created: InventoryItemSize;
+            await dataSource.transaction(async (manager) => {
+                created = await sizeService.createEntityForTest(dto, manager);
+            });
+            expect(created!.tenantId).toBe(tenant.id);
+            await sizeRepo.delete(created!.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(sizeService.findOne(otherTenantSize.id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
     });
 });

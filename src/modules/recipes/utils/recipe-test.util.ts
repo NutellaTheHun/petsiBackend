@@ -17,6 +17,7 @@ import {
     OTHER_C,
 } from '../../inventory-items/utils/constants';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { RecipeCategoryBuilder } from '../builders/recipe-category.builder';
 import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
 import { RecipeSubCategoryBuilder } from '../builders/recipe-sub-category.builder';
@@ -53,7 +54,39 @@ export class RecipeTestUtil {
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
         private readonly recipeBuilder: RecipeBuilder,
+
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
     ) { }
+
+    /**
+     * All 4 recipe-module entities (`Recipe`, `RecipeCategory`,
+     * `RecipeSubCategory`, `RecipeIngredient`) now require a tenantId (NOT
+     * NULL). Most recipe-module fixtures don't care about tenant scoping
+     * themselves — they only need a valid tenantId to satisfy the column —
+     * so this lazily provisions (or reuses, by fixed subdomain, across the
+     * whole test run) one shared fixture Tenant rather than requiring every
+     * seed method's callers to plumb a tenantId through. Tests that actually
+     * exercise tenant scoping (the `*.service.spec.ts` "tenant scoping"
+     * blocks) seed and pass their own explicit tenantId.
+     */
+    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'recipe-test-util-fixture-tenant';
+    private defaultTenantId?: number;
+    public async getDefaultTenantId(): Promise<number> {
+        if (this.defaultTenantId === undefined) {
+            const existing = await this.tenantRepo.findOne({
+                where: { subdomain: RecipeTestUtil.DEFAULT_TENANT_SUBDOMAIN },
+            });
+            const tenant =
+                existing ??
+                (await this.tenantRepo.save({
+                    name: 'Recipe Test Util Fixture Tenant',
+                    subdomain: RecipeTestUtil.DEFAULT_TENANT_SUBDOMAIN,
+                }));
+            this.defaultTenantId = tenant.id;
+        }
+        return this.defaultTenantId;
+    }
 
     /**
      * Dependencies: InventoryItems, Recipe
@@ -65,7 +98,8 @@ export class RecipeTestUtil {
         await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
         await this.initRecipeTestingDatabase(testContext);
 
-        return [
+        const tenantId = await this.getDefaultTenantId();
+        const ingredients = [
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(FOOD_A)
@@ -151,6 +185,10 @@ export class RecipeTestUtil {
                 .unit('tsp')
                 .build(),
         ];
+        for (const ingredient of ingredients) {
+            ingredient.tenantId = tenantId;
+        }
+        return ingredients;
     }
 
     /**
@@ -160,11 +198,16 @@ export class RecipeTestUtil {
     public async getTestRecipeCategoryEntities(
         testContext: DatabaseTestContext,
     ): Promise<RecipeCategory[]> {
-        return [
+        const tenantId = await this.getDefaultTenantId();
+        const categories = [
             await this.categorybuilder.reset().name(CONSTANT.REC_CAT_A).build(),
             await this.categorybuilder.reset().name(CONSTANT.REC_CAT_B).build(),
             await this.categorybuilder.reset().name(CONSTANT.REC_CAT_C).build(),
         ];
+        for (const category of categories) {
+            category.tenantId = tenantId;
+        }
+        return categories;
     }
 
     /**
@@ -176,7 +219,8 @@ export class RecipeTestUtil {
     ): Promise<RecipeSubCategory[]> {
         await this.initRecipeCategoryTestingDatabase(testContext);
 
-        return [
+        const tenantId = await this.getDefaultTenantId();
+        const subCategories = [
             await this.subCategoryBuilder
                 .reset()
                 .name(CONSTANT.REC_SUBCAT_1)
@@ -199,6 +243,10 @@ export class RecipeTestUtil {
                 .parentCategoryByName(CONSTANT.REC_CAT_B)
                 .build(),
         ];
+        for (const subCategory of subCategories) {
+            subCategory.tenantId = tenantId;
+        }
+        return subCategories;
     }
 
     /**
@@ -212,7 +260,8 @@ export class RecipeTestUtil {
         await this.initRecipeSubCategoryTestingDatabase(testContext);
         await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
 
-        return [
+        const tenantId = await this.getDefaultTenantId();
+        const recipes = [
             await this.recipeBuilder
                 .reset()
                 .name(CONSTANT.REC_A)
@@ -283,6 +332,10 @@ export class RecipeTestUtil {
                 .batchResultUnit('kg')
                 .build(),
         ];
+        for (const recipe of recipes) {
+            recipe.tenantId = tenantId;
+        }
+        return recipes;
     }
 
     /**
@@ -487,14 +540,18 @@ export class RecipeTestUtil {
     // These do not register cleanup — callers are responsible for deleting by ID.
 
     /**
-     * 3 categories: A, B, C.
+     * 3 categories: A, B, C. `tenantId` defaults to a shared fixture tenant
+     * (see `getDefaultTenantId`) — pass one explicitly when the test actually
+     * exercises tenant scoping.
      */
-    public async seedCategories(P: string = ''): Promise<{ categories: RecipeCategory[] }> {
+    public async seedCategories(P: string = '', tenantId?: number): Promise<{ categories: RecipeCategory[] }> {
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = [CONSTANT.REC_CAT_A, CONSTANT.REC_CAT_B, CONSTANT.REC_CAT_C];
         const categories: RecipeCategory[] = [];
         for (const name of names) {
             const entityName = P ? `${P}-${name}` : name;
             const entity = await this.categorybuilder.reset().name(entityName).build();
+            entity.tenantId = effectiveTenantId;
             categories.push(await this.categoryRepo.save(entity));
         }
         return { categories };
@@ -502,12 +559,15 @@ export class RecipeTestUtil {
 
     /**
      * categories order: [A, B, C]. subCategories order: [sub1, sub2] under A, [sub3, sub4] under B.
+     * `tenantId` defaults to a shared fixture tenant — pass one explicitly
+     * when the test actually exercises tenant scoping.
      */
-    public async seedSubCategories(P: string = ''): Promise<{
+    public async seedSubCategories(P: string = '', tenantId?: number): Promise<{
         categories: RecipeCategory[];
         subCategories: RecipeSubCategory[];
     }> {
-        const { categories } = await this.seedCategories(P);
+        const { categories } = await this.seedCategories(P, tenantId);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = [
             CONSTANT.REC_SUBCAT_1,
             CONSTANT.REC_SUBCAT_2,
@@ -524,6 +584,7 @@ export class RecipeTestUtil {
                 .name(entityName)
                 .parentCategoryById(parents[i].id)
                 .build();
+            entity.tenantId = effectiveTenantId;
             subCategories.push(await this.subCategoryRepo.save(entity));
         }
         return { categories, subCategories };
@@ -546,13 +607,17 @@ export class RecipeTestUtil {
      * - B: category A / sub2, isIngredient = true (usable as a sub-recipe ingredient).
      * - C: category B / sub3, not an ingredient.
      * - D: uncategorized, not an ingredient.
+     *
+     * `tenantId` defaults to a shared fixture tenant — pass one explicitly
+     * when the test actually exercises tenant scoping.
      */
-    public async seedRecipes(P: string = ''): Promise<{
+    public async seedRecipes(P: string = '', tenantId?: number): Promise<{
         categories: RecipeCategory[];
         subCategories: RecipeSubCategory[];
         recipes: Recipe[];
     }> {
-        const { categories, subCategories } = await this.seedSubCategories(P);
+        const { categories, subCategories } = await this.seedSubCategories(P, tenantId);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
 
         const specs: {
             name: string;
@@ -589,7 +654,9 @@ export class RecipeTestUtil {
             if (spec.subCategory) {
                 builder = builder.subCategoryById(spec.subCategory.id);
             }
-            recipes.push(await this.recipeRepo.save(await builder.build()));
+            const entity = await builder.build();
+            entity.tenantId = effectiveTenantId;
+            recipes.push(await this.recipeRepo.save(entity));
         }
 
         return { categories, subCategories, recipes };
@@ -599,7 +666,7 @@ export class RecipeTestUtil {
      * ingredients order: [recipeA<-invItems[0], recipeA<-recipeB, recipeC<-invItems[3]].
      * recipeB (isIngredient=true) and recipeD have no ingredients of their own.
      */
-    public async seedIngredients(P: string = ''): Promise<{
+    public async seedIngredients(P: string = '', tenantId?: number): Promise<{
         categories: RecipeCategory[];
         subCategories: RecipeSubCategory[];
         recipes: Recipe[];
@@ -608,49 +675,44 @@ export class RecipeTestUtil {
         invItems: InventoryItem[];
         ingredients: RecipeIngredient[];
     }> {
-        const { categories, subCategories, recipes } = await this.seedRecipes(P);
+        const { categories, subCategories, recipes } = await this.seedRecipes(P, tenantId);
         const { categories: invCategories, vendors: invVendors, items: invItems } =
             await this.seedInventoryItems(P);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
 
         const [recipeA, recipeB, recipeC] = recipes;
 
         const ingredients: RecipeIngredient[] = [];
 
-        ingredients.push(
-            await this.ingredientRepo.save(
-                await this.ingredientBuilder
-                    .reset()
-                    .parentRecipeById(recipeA.id)
-                    .ingredientInventoryItemById(invItems[0].id)
-                    .quantity(0.5)
-                    .unit('oz')
-                    .build(),
-            ),
-        );
+        const ingredient1 = await this.ingredientBuilder
+            .reset()
+            .parentRecipeById(recipeA.id)
+            .ingredientInventoryItemById(invItems[0].id)
+            .quantity(0.5)
+            .unit('oz')
+            .build();
+        ingredient1.tenantId = effectiveTenantId;
+        ingredients.push(await this.ingredientRepo.save(ingredient1));
 
-        ingredients.push(
-            await this.ingredientRepo.save(
-                await this.ingredientBuilder
-                    .reset()
-                    .parentRecipeById(recipeA.id)
-                    .ingredientRecipeById(recipeB.id)
-                    .quantity(1)
-                    .unit('oz')
-                    .build(),
-            ),
-        );
+        const ingredient2 = await this.ingredientBuilder
+            .reset()
+            .parentRecipeById(recipeA.id)
+            .ingredientRecipeById(recipeB.id)
+            .quantity(1)
+            .unit('oz')
+            .build();
+        ingredient2.tenantId = effectiveTenantId;
+        ingredients.push(await this.ingredientRepo.save(ingredient2));
 
-        ingredients.push(
-            await this.ingredientRepo.save(
-                await this.ingredientBuilder
-                    .reset()
-                    .parentRecipeById(recipeC.id)
-                    .ingredientInventoryItemById(invItems[3].id)
-                    .quantity(2)
-                    .unit('lb')
-                    .build(),
-            ),
-        );
+        const ingredient3 = await this.ingredientBuilder
+            .reset()
+            .parentRecipeById(recipeC.id)
+            .ingredientInventoryItemById(invItems[3].id)
+            .quantity(2)
+            .unit('lb')
+            .build();
+        ingredient3.tenantId = effectiveTenantId;
+        ingredients.push(await this.ingredientRepo.save(ingredient3));
 
         return { categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients };
     }

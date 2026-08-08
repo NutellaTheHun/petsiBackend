@@ -3,6 +3,9 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
@@ -17,7 +20,10 @@ describe('recipe sub category controller', () => {
     let controller: RecipeSubCategoryController;
     let subCategoryRepo: Repository<RecipeSubCategory>;
     let categoryRepo: Repository<RecipeCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: RecipeCategory[];
     let subCategories: RecipeSubCategory[];
 
@@ -29,13 +35,19 @@ describe('recipe sub category controller', () => {
         );
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ categories, subCategories } = await testingUtil.seedSubCategories(P, tenant.id));
     });
 
     afterAll(async () => {
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {
@@ -51,6 +63,7 @@ describe('recipe sub category controller', () => {
             subCategoryRepo.create({
                 name: `${P}-to-remove`,
                 parentCategory: categories[0],
+                tenantId: tenant.id,
             }),
         );
         await controller.remove(toRemove.id);

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { templateMenuItemExample } from '../../../common/swagger/examples/templates/template-menu-item.example';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -18,6 +18,7 @@ export type TemplateEntity = EntityBase<
  * Per buisness logic, templates display either pie or pastry products.
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class Template {
     @ApiProperty({
         example: 1,
@@ -27,10 +28,21 @@ export class Template {
     id: number;
 
     /**
+     * The Tenant this template belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
      * Example: "Summer Pies", "Spring Pastries"
      */
     @ApiProperty({ example: 'Spring Pies', description: 'Name of the template' })
-    @Column({ unique: true })
+    @Column()
     name: string;
 
     /**

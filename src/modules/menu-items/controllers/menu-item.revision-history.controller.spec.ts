@@ -3,6 +3,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
@@ -24,7 +27,10 @@ describe('menu item revision history (controller)', () => {
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
     let singleItems: MenuItem[];
@@ -38,9 +44,14 @@ describe('menu item revision history (controller)', () => {
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
-            await testingUtil.seedItems(P));
+            await testingUtil.seedItems(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -51,6 +62,7 @@ describe('menu item revision history (controller)', () => {
         ]);
         await categoryRepo.delete(categories.map((c) => c.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
+        await tenantRepo.delete(tenant.id);
         await module.close();
     });
 

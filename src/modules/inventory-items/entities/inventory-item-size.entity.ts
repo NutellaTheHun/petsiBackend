@@ -44,6 +44,17 @@ export class InventoryItemSize {
     id: number;
 
     /**
+     * The Tenant this size belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
      * The parent {@link InventoryItem} that this specific unit of measurement/package type combination refers to.
      *
      * An item can have multiple valid InventoryItemSizes

@@ -5,8 +5,11 @@ import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
 import { UpdateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/update-dynamic-property-config.dto';
 import {
@@ -41,9 +44,13 @@ describe('DynamicPropertyConfigService', () => {
     let configRepo: Repository<DynamicPropertyConfig>;
     let menuItemRepo: Repository<MenuItem>;
     let dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let lockTestMenuItem: MenuItem;
 
     beforeAll(async () => {
@@ -55,13 +62,26 @@ describe('DynamicPropertyConfigService', () => {
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
         dataSource = module.get(DataSource);
 
-        lockTestMenuItem = await menuItemRepo.save({ name: `${P}-lock-test-item` });
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        lockTestMenuItem = await menuItemRepo.save({
+            name: `${P}-lock-test-item`,
+            tenantId: tenant.id,
+        } as MenuItem);
     });
 
     afterAll(async () => {
         await menuItemRepo.delete(lockTestMenuItem.id);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -269,5 +289,35 @@ describe('DynamicPropertyConfigService', () => {
             }),
         );
         expect(updated.valueType).toEqual(ValueType.EntityReference);
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await service.create(
+                plainToInstance(CreateDynamicPropertyConfigDto, {
+                    holderEntityType: HolderEntityType.MenuItem,
+                    propertyName: `${P}-tenant-stamped-prop`,
+                    valueType: ValueType.Filepath,
+                    valueEntityType: null,
+                }),
+            );
+            testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
+            expect((created as DynamicPropertyConfig).tenantId).toBe(tenant.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            const otherTenantConfig = await configRepo.save({
+                holderEntityType: HolderEntityType.MenuItem,
+                propertyName: `${P}-other-tenant-prop`,
+                valueType: ValueType.Filepath,
+                valueEntityType: null,
+                tenantId: otherTenant.id,
+            } as DynamicPropertyConfig);
+            testCtx.addCleanupFunction(async () => { await configRepo.delete(otherTenantConfig.id); });
+
+            await expect(service.findOne(otherTenantConfig.id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
     });
 });

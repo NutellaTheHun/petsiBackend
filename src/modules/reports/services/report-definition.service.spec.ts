@@ -6,6 +6,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateReportDefinitionDto } from '../dto/create-report-definition.dto';
 import { UpdateReportDefinitionDto } from '../dto/update-report-definition.dto';
 import { ReportDefinition } from '../entities/report-definition.entity';
@@ -17,14 +18,30 @@ const P = `t${Date.now()}`;
 describe('ReportDefinitionService', () => {
     let service: ReportDefinitionService;
     let repo: Repository<ReportDefinition>;
+    let tenantRepo: Repository<Tenant>;
     let testCtx: DatabaseTestContext;
     let testContextService: TestRequestContextService;
+
+    let tenant: Tenant;
+    let otherTenant: Tenant;
 
     beforeAll(async () => {
         const module: TestingModule = await getReportsTestingModule();
         service = module.get(ReportDefinitionService);
         repo = module.get(getRepositoryToken(ReportDefinition));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
         testContextService = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        testContextService.setContext({ tenantId: tenant.id });
+    });
+
+    afterAll(async () => {
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -124,6 +141,34 @@ describe('ReportDefinitionService', () => {
             const ids = results.map((r) => r.id);
             expect(ids).not.toContain(mgmtDef.id);
             expect(ids).toContain(staffDef.id);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await service.create({
+                name: `${P}-tenant-stamped`,
+                visibility: 'staff',
+            });
+            expect(created.tenantId).toBe(tenant.id);
+            await repo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            const otherTenantDef = await repo.save({
+                name: `${P}-other-tenant-report`,
+                visibility: 'staff',
+                showHeader: true,
+                params: [],
+                sections: [],
+                tenantId: otherTenant.id,
+            });
+
+            await expect(service.findOne(otherTenantDef.id)).rejects.toThrow(
+                NotFoundException,
+            );
+
+            await repo.delete(otherTenantDef.id);
         });
     });
 });

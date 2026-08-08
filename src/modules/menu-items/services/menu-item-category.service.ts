@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
@@ -15,7 +15,7 @@ import { MenuItemCategoryChangeDetector } from '../utils/change-detectors/menu-i
 import { MenuItemCategoryValidator } from '../validators/menu-item-category.validator';
 
 @Injectable()
-export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity> {
+export class MenuItemCategoryService extends TenantScopedServiceBase<MenuItemCategoryEntity> {
   constructor(
     @InjectRepository(MenuItemCategory)
     repo: Repository<MenuItemCategory>,
@@ -39,6 +39,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
   ): Promise<MenuItemCategory> {
     const result = manager.create(MenuItemCategory, {
       name: dto.name,
+      tenantId: this.getTenantId(),
     });
     return await manager.save(result);
   }

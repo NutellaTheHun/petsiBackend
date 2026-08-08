@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
@@ -35,8 +38,13 @@ describe('Label type Service', () => {
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let typeRepo: Repository<LabelType>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let labelTypes: LabelType[];
+    let otherTenantLabelType: LabelType;
 
     beforeAll(async () => {
         const module: TestingModule = await getLabelsTestingModule({
@@ -47,12 +55,28 @@ describe('Label type Service', () => {
         typeService = module.get(LabelTypeService) as TestableLabelTypeService;
         dataSource = module.get(DataSource);
         typeRepo = module.get(getRepositoryToken(LabelType));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ labelTypes } = await testingUtil.seedLabelTypes(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ labelTypes } = await testingUtil.seedLabelTypes(P, tenant.id));
+        otherTenantLabelType = await typeRepo.save({
+            name: `${P}-other-tenant-type`,
+            length: 100,
+            width: 100,
+            tenantId: otherTenant.id,
+        } as LabelType);
     });
 
     afterAll(async () => {
-        await typeRepo.delete(labelTypes.map((t) => t.id));
+        await typeRepo.delete([...labelTypes.map((t) => t.id), otherTenantLabelType.id]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -152,6 +176,26 @@ describe('Label type Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await typeRepo.findOneOrFail({ where: { id: type.id } });
             expect(row.name).toBe(`${P}-type-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await typeService.create(
+                plainToInstance(CreateLabelTypeDto, {
+                    name: `${P}-tenant-stamped`,
+                    length: 100,
+                    width: 100,
+                }),
+            );
+            expect((created as LabelType).tenantId).toBe(tenant.id);
+            await typeRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(typeService.findOne(otherTenantLabelType.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

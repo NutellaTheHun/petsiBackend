@@ -3,9 +3,12 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
@@ -23,7 +26,10 @@ describe('template menu item controller', () => {
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
     let itemRepo: Repository<MenuItem>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
     let templates: Template[];
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
@@ -44,6 +50,11 @@ describe('template menu item controller', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         itemRepo = module.get(getRepositoryToken(MenuItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({
             templates,
@@ -53,7 +64,7 @@ describe('template menu item controller', () => {
             fixedContainerItems,
             varContainerItems,
             templateMenuItems,
-        } = await testingUtil.seedTemplateMenuItems(P));
+        } = await testingUtil.seedTemplateMenuItems(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -63,6 +74,7 @@ describe('template menu item controller', () => {
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete(tenant.id);
     });
 
     beforeEach(() => {

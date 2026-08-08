@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
@@ -40,9 +43,13 @@ describe('recipe category service', () => {
 
     let categoryRepo: Repository<RecipeCategory>;
     let subCategoryRepo: Repository<RecipeSubCategory>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
     let categories: RecipeCategory[];
     let subCategories: RecipeSubCategory[];
+    let otherTenant: Tenant;
+    let otherTenantCategory: RecipeCategory;
 
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule({
@@ -55,14 +62,29 @@ describe('recipe category service', () => {
         ) as TestableRecipeCategoryService;
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
         dataSource = module.get(DataSource);
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        const tenantId = await testUtil.getDefaultTenantId();
+        requestContext.setContext({ tenantId });
 
         ({ categories, subCategories } = await testUtil.seedSubCategories(P));
+
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        otherTenantCategory = await categoryRepo.save({
+            name: `${P}-other-tenant-category`,
+            tenantId: otherTenant.id,
+        } as RecipeCategory);
     });
 
     afterAll(async () => {
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
-        await categoryRepo.delete(categories.map((c) => c.id));
+        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await tenantRepo.delete(otherTenant.id);
     });
 
     beforeEach(() => {
@@ -237,6 +259,26 @@ describe('recipe category service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await categoryRepo.findOneOrFail({ where: { id: category.id } });
             expect(row.name).toEqual(`${P}-category-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await categoryService.create(
+                plainToInstance(CreateRecipeCategoryDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as RecipeCategory).tenantId).toBe(
+                await testUtil.getDefaultTenantId(),
+            );
+            await categoryRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(
+                categoryService.findOne(otherTenantCategory.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

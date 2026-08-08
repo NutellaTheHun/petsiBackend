@@ -36,6 +36,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
                 'name',
                 errorMap,
                 id,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

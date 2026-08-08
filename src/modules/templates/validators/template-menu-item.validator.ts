@@ -54,6 +54,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
                 'displayName',
                 errorMap,
                 typeof id === 'number' ? id : undefined,
+                { tenantId: this.requestContextService.get<number>('tenantId') },
             );
         }
 

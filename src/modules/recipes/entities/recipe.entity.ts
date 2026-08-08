@@ -8,6 +8,7 @@ import {
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 
 import { EntityBase } from '../../../common/base/entity.base';
@@ -32,6 +33,7 @@ export type RecipeEntity = EntityBase<Recipe, CreateRecipeDto, UpdateRecipeDto>;
  * A Recipe can map to a {@link MenuItem}, or be used in another Recipe.
  */
 @Entity()
+@Unique(['tenantId', 'name'])
 export class Recipe {
     @ApiProperty({
         example: 1,
@@ -40,8 +42,19 @@ export class Recipe {
     @PrimaryGeneratedColumn()
     id: number;
 
+    /**
+     * The Tenant this recipe belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
     @ApiProperty({ example: 'Apple Mix', description: 'Name of the recipe' })
-    @Column({ unique: true })
+    @Column()
     name: string;
 
     /**

@@ -4,9 +4,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
@@ -46,7 +49,11 @@ describe('Template Service', () => {
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
     let itemRepo: Repository<MenuItem>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let templates: Template[];
     let categories: MenuItemCategory[];
     let sizes: MenuItemSize[];
@@ -54,6 +61,7 @@ describe('Template Service', () => {
     let fixedContainerItems: MenuItem[];
     let varContainerItems: MenuItem[];
     let templateMenuItems: TemplateMenuItem[];
+    let otherTenantTemplate: Template;
 
     beforeAll(async () => {
         const module: TestingModule = await getTemplateTestingModule({
@@ -68,6 +76,15 @@ describe('Template Service', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         itemRepo = module.get(getRepositoryToken(MenuItem));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
 
         ({
             templates,
@@ -77,16 +94,22 @@ describe('Template Service', () => {
             fixedContainerItems,
             varContainerItems,
             templateMenuItems,
-        } = await testingUtil.seedTemplateMenuItems(P));
+        } = await testingUtil.seedTemplateMenuItems(P, tenant.id));
+
+        otherTenantTemplate = await templateRepo.save({
+            name: `${P}-other-tenant-template`,
+            tenantId: otherTenant.id,
+        } as Template);
     });
 
     afterAll(async () => {
         await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
-        await templateRepo.delete(templates.map((t) => t.id));
+        await templateRepo.delete([...templates.map((t) => t.id), otherTenantTemplate.id]);
         const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -240,6 +263,24 @@ describe('Template Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await templateRepo.findOneOrFail({ where: { id: entity.id } });
             expect(row.name).toBe(`${P}-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await templateService.create(
+                plainToInstance(CreateTemplateDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as Template).tenantId).toBe(tenant.id);
+            await templateRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(
+                templateService.findOne(otherTenantTemplate.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

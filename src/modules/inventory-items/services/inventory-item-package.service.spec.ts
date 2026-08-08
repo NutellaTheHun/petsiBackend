@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
@@ -36,8 +39,13 @@ describe('Inventory Item Package Service', () => {
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
     let packageRepo: Repository<InventoryItemPackage>;
+    let tenantRepo: Repository<Tenant>;
+    let requestContext: TestRequestContextService;
 
+    let tenant: Tenant;
+    let otherTenant: Tenant;
     let packages: InventoryItemPackage[];
+    let otherTenantPackage: InventoryItemPackage;
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
@@ -49,12 +57,26 @@ describe('Inventory Item Package Service', () => {
         ) as TestableInventoryItemPackageService;
         dataSource = module.get(DataSource);
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ packages } = await testingUtil.seedPackages(P));
+        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        otherTenant = await tenantRepo.save({
+            name: `${P}-other-tenant`,
+            subdomain: `${P}-other-subdomain`,
+        });
+        requestContext.setContext({ tenantId: tenant.id });
+
+        ({ packages } = await testingUtil.seedPackages(P, tenant.id));
+        otherTenantPackage = await packageRepo.save({
+            name: `${P}-other-tenant-package`,
+            tenantId: otherTenant.id,
+        } as InventoryItemPackage);
     });
 
     afterAll(async () => {
-        await packageRepo.delete(packages.map((p) => p.id));
+        await packageRepo.delete([...packages.map((p) => p.id), otherTenantPackage.id]);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -127,6 +149,24 @@ describe('Inventory Item Package Service', () => {
             expect(spy).toHaveBeenCalled();
             const row = await packageRepo.findOneOrFail({ where: { id: pkg.id } });
             expect(row.name).toBe(`${P}-pkg-renamed`);
+        });
+    });
+
+    describe('tenant scoping', () => {
+        it('create stamps the caller tenant, not client input', async () => {
+            const created = await packageService.create(
+                plainToInstance(CreateInventoryItemPackageDto, {
+                    name: `${P}-tenant-stamped`,
+                }),
+            );
+            expect((created as InventoryItemPackage).tenantId).toBe(tenant.id);
+            await packageRepo.delete(created.id);
+        });
+
+        it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
+            await expect(packageService.findOne(otherTenantPackage.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 });

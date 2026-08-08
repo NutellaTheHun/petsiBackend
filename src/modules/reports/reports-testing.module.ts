@@ -1,6 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { DynamicPropertyConfig } from '../dynamic-properties/entities/dynamic-property-config.entity';
 import { MenuItemCategory } from '../menu-items/entities/menu-item-category.entity';
@@ -16,6 +17,7 @@ import { RecurringOrderSchedule } from '../orders/entities/recurring-order-sched
 import { TestRequestContextService } from '../../test/mocks/test-request-context.service';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { RequestContextService } from '../request-context/RequestContextService';
+import { TenantsModule } from '../tenants/tenants.module';
 import { ReportDefinitionController } from './controllers/report-definition.controller';
 import { ReportDefinition } from './entities/report-definition.entity';
 import { ReportDefinitionService } from './services/report-definition.service';
@@ -30,6 +32,10 @@ export async function getReportsTestingModule(opts?: {
             TypeORMPostgresTestingModule([ReportDefinition]),
             TypeOrmModule.forFeature([ReportDefinition]),
             RequestContextModule,
+            TenantsModule,
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } },
+            }),
         ],
         controllers: [ReportDefinitionController],
         providers: [
@@ -69,6 +75,10 @@ export async function getReportsExecutionTestingModule(): Promise<TestingModule>
                 DynamicPropertyConfig,
             ]),
             RequestContextModule,
+            TenantsModule,
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } },
+            }),
         ],
         providers: [ReportDefinitionService, ReportExecutionService],
     })
