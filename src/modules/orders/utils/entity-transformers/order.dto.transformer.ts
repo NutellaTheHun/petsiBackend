@@ -22,6 +22,7 @@ export function orderToUpdateDto(order: Order, merge: Partial<UpdateOrderDto> = 
         note: order.note ?? undefined,
         isFrozen: order.isFrozen ?? undefined,
         categoryId: order.category?.id ?? null,
+        locationId: order.locationId,
         occurrenceType: order.occurrenceType ?? undefined,
         occurrenceState: order.occurrenceState ?? undefined,
         reccurenceDate: order.recurrenceDate ?? undefined,

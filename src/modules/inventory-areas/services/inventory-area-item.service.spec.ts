@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -12,6 +12,8 @@ import { InventoryItemPackage } from '../../inventory-items/entities/inventory-i
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { Location } from '../../locations/entities/location.entity';
+import { LocationTestUtil } from '../../locations/utils/location-test.util';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
@@ -43,6 +45,7 @@ const P = `t${Date.now()}`;
 
 describe('Inventory area item service', () => {
     let testingUtil: InventoryAreaTestUtil;
+    let locationTestUtil: LocationTestUtil;
     let areaItemService: TestableInventoryAreaItemService;
     let testCtx: DatabaseTestContext;
     let dataSource: DataSource;
@@ -66,12 +69,23 @@ describe('Inventory area item service', () => {
     let tenantRepo: Repository<Tenant>;
     let requestContext: TestRequestContextService;
     let tenant: Tenant;
+    let location: Location;
+    let otherTenant: Tenant;
+    let otherTenantLocation: Location;
+
+    const setAdminContext = () =>
+        requestContext.setContext({
+            tenantId: tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule({
             areaItemServiceClass: TestableInventoryAreaItemService,
         });
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
         areaItemService = module.get(
             InventoryAreaItemService,
         ) as TestableInventoryAreaItemService;
@@ -88,15 +102,18 @@ describe('Inventory area item service', () => {
         tenantRepo = module.get(getRepositoryToken(Tenant));
         requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        // InventoryArea itself isn't tenant-scoped yet (that lands in a later
-        // slice), but InventoryItemSize is — and this file creates new sizes
-        // via nested-create DTOs, which route through InventoryItemSizeComposer
-        // and stamp tenantId from RequestContextService. Set a tenant so that
-        // stamp has something to write.
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
-        requestContext.setContext({ tenantId: tenant.id });
+        // InventoryItemSize is tenant-scoped — this file creates new sizes via
+        // nested-create DTOs, which route through InventoryItemSizeComposer
+        // and stamp tenantId from RequestContextService. Set a tenant/location
+        // so that stamp (and InventoryAreaItem's own tenant/location columns,
+        // stamped straight from the create DTO in these direct-service tests)
+        // has something consistent to write.
+        ({ tenant, locations: [location] } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({ tenant: otherTenant, locations: [otherTenantLocation] } =
+            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        setAdminContext();
 
-        ({ areas, counts } = await testingUtil.seedCounts(P));
+        ({ areas, counts } = await testingUtil.seedCounts(P, tenant.id, location.id));
         ({ categories, vendors, packages, items, sizes } =
             await testingUtil.seedInventoryItems(P));
     });
@@ -109,11 +126,12 @@ describe('Inventory area item service', () => {
         await categoryRepo.delete(categories.map((c) => c.id));
         await vendorRepo.delete(vendors.map((v) => v.id));
         await areaRepo.delete(areas.map((a) => a.id));
-        await tenantRepo.delete(tenant.id);
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
         testCtx = new DatabaseTestContext();
+        setAdminContext();
     });
 
     afterEach(async () => {
@@ -129,6 +147,8 @@ describe('Inventory area item service', () => {
                 countedInventoryItemId: items[0].id,
                 countedItemSizeId: sizes[0].id,
                 amount: 5,
+                tenantId: counts[0].tenantId,
+                locationId: counts[0].locationId,
             });
             await dataSource.transaction(async (manager) => {
                 areaItem = await areaItemService.createEntityForTest(dto, manager);
@@ -178,6 +198,8 @@ describe('Inventory area item service', () => {
             countedInventoryItemId: items[1].id,
             countedItemSize: sizeDto,
             amount: 4,
+            tenantId: counts[0].tenantId,
+            locationId: counts[0].locationId,
         });
 
         let created: InventoryAreaItem;
@@ -205,6 +227,8 @@ describe('Inventory area item service', () => {
                     countedInventoryItemId: items[2].id,
                     countedItemSizeId: sizes[4].id,
                     amount: 1,
+                    tenantId: counts[0].tenantId,
+                    locationId: counts[0].locationId,
                 }),
                 manager,
             );
@@ -245,6 +269,8 @@ describe('Inventory area item service', () => {
                     countedInventoryItemId: items[3].id,
                     countedItemSizeId: sizes[6].id,
                     amount: 1,
+                    tenantId: counts[1].tenantId,
+                    locationId: counts[1].locationId,
                 }),
                 manager,
             );
@@ -270,6 +296,8 @@ describe('Inventory area item service', () => {
                     countedInventoryItemId: items[0].id,
                     countedItemSizeId: sizes[0].id,
                     amount: 1,
+                    tenantId: counts[1].tenantId,
+                    locationId: counts[1].locationId,
                 }),
                 manager,
             );
@@ -302,6 +330,8 @@ describe('Inventory area item service', () => {
                     countedInventoryItemId: items[0].id,
                     countedItemSizeId: sizes[0].id,
                     amount: 1,
+                    tenantId: counts[0].tenantId,
+                    locationId: counts[0].locationId,
                 }),
                 manager,
             );
@@ -323,5 +353,49 @@ describe('Inventory area item service', () => {
         await expect(areaItemService.findOne(9_999_999)).rejects.toThrow(
             NotFoundException,
         );
+    });
+
+    describe('tenant/location scoping (inherited from LocationScopedServiceBase)', () => {
+        it('findOne throws NotFoundException for an item belonging to a different tenant', async () => {
+            const otherArea = await areaRepo.save({
+                name: `${P}-other-tenant-area`,
+                tenantId: otherTenant.id,
+                locationId: otherTenantLocation.id,
+            } as InventoryArea);
+            const otherCount = await countRepo.save({
+                inventoryArea: otherArea,
+                tenantId: otherTenant.id,
+                locationId: otherTenantLocation.id,
+            } as InventoryAreaCount);
+            const otherItem = await areaItemRepo.save({
+                parentInventoryCount: otherCount,
+                countedInventoryItem: { id: items[0].id },
+                countedItemSize: { id: sizes[0].id },
+                amount: 1,
+                tenantId: otherTenant.id,
+                locationId: otherTenantLocation.id,
+            } as InventoryAreaItem);
+
+            await expect(areaItemService.findOne(otherItem.id)).rejects.toThrow(
+                NotFoundException,
+            );
+
+            await areaItemRepo.delete(otherItem.id);
+            await countRepo.delete(otherCount.id);
+            await areaRepo.delete(otherArea.id);
+        });
+
+        it('findAll excludes items belonging to a location the caller is not assigned to (non-admin)', async () => {
+            requestContext.setContext({
+                tenantId: tenant.id,
+                isTenantAdmin: false,
+                locations: [{ locationId: location.id, roles: ['staff'] }],
+            });
+
+            const result = await areaItemService.findAll({ limit: 100 });
+            expect(result.items.every((i) => i.locationId === location.id)).toBe(
+                true,
+            );
+        });
     });
 });

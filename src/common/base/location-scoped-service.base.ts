@@ -58,8 +58,20 @@ export abstract class LocationScopedServiceBase<
     }
   }
 
+  /**
+   * Only pre-checks when the create DTO carries an explicit `locationId` —
+   * some location-bound entities (nested children stamped from an
+   * already-authorized parent, e.g. `OrderMenuItem`, or entities whose
+   * location is derived from a referenced entity, e.g. `InventoryAreaCount`
+   * via its `inventoryAreaId`) never put `locationId` on the create DTO at
+   * all. Those domains are responsible for authorizing the *derived*
+   * location themselves inside `createEntity` (via `assertLocationAuthorized`,
+   * inherited below) — this mirrors `update()`'s existing conditional check.
+   */
   async create(createDto: any): Promise<TEntity['__Entity']> {
-    this.assertLocationAuthorized(createDto?.locationId);
+    if (createDto?.locationId != null) {
+      this.assertLocationAuthorized(createDto.locationId);
+    }
     return super.create(createDto);
   }
 

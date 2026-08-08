@@ -4,6 +4,7 @@ import {
     IsArray,
     IsBoolean,
     IsDate,
+    IsInt,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -136,6 +137,14 @@ export class UpdateOrderDto {
     @IsNotEmpty()
     @IsPositive()
     readonly categoryId: EntityId<OrderCategory>;
+
+    @ApiProperty({
+        description: 'Id of the Location this order belongs to.',
+        example: 1,
+        type: 'number',
+    })
+    @IsInt()
+    readonly locationId: number;
 
     @ApiProperty({
         description:

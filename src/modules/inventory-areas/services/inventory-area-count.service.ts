@@ -1,8 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
+import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
@@ -18,7 +18,7 @@ import { InventoryAreaCountChangeDetector } from '../utils/change-detectors/inve
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
 @Injectable()
-export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEntity> {
+export class InventoryAreaCountService extends LocationScopedServiceBase<InventoryAreaCountEntity> {
     constructor(
         @InjectRepository(InventoryAreaCount)
         repo: Repository<InventoryAreaCount>,
@@ -43,8 +43,23 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         dto: CreateInventoryAreaCountDto,
         manager: EntityManager,
     ): Promise<InventoryAreaCount> {
+        const area = await manager.findOne(InventoryArea, {
+            where: { id: dto.inventoryAreaId },
+        });
+        if (!area) {
+            throw new NotFoundException();
+        }
+        // CreateInventoryAreaCountDto has no client-facing locationId — the
+        // location is derived from the referenced InventoryArea, so
+        // authorization (skipped by LocationScopedServiceBase.create()'s
+        // generic pre-check, since createDto.locationId is undefined here)
+        // must happen here instead.
+        this.assertLocationAuthorized(area.locationId);
+
         const entity = manager.create(InventoryAreaCount, {
             inventoryArea: { id: dto.inventoryAreaId },
+            tenantId: area.tenantId,
+            locationId: area.locationId,
         });
 
         const savedEntity = await manager.save(entity);
@@ -55,7 +70,11 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
                     dto.countedInventoryItems,
                     manager,
                     [],
-                    { parentInventoryCountId: savedEntity.id },
+                    {
+                        parentInventoryCountId: savedEntity.id,
+                        tenantId: savedEntity.tenantId,
+                        locationId: savedEntity.locationId,
+                    },
                 );
             await manager.save(savedEntity);
         }
@@ -69,9 +88,23 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         entity: InventoryAreaCount,
     ): Promise<void> {
         if (dto.inventoryAreaId !== undefined) {
+            const area = await manager.findOne(InventoryArea, {
+                where: { id: dto.inventoryAreaId },
+            });
+            if (!area) {
+                throw new NotFoundException();
+            }
+            // Moving a count to a different area can move it to a different
+            // location too — authorize the new (derived) location the same
+            // way createEntity does, since there's no client-facing
+            // locationId for LocationScopedServiceBase.update() to check.
+            this.assertLocationAuthorized(area.locationId);
+
             entity.inventoryArea = manager.create(InventoryArea, {
                 id: dto.inventoryAreaId,
             });
+            entity.tenantId = area.tenantId;
+            entity.locationId = area.locationId;
         }
 
         if (dto.countedInventoryItems !== undefined) {
@@ -96,7 +129,11 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
                     dto.countedInventoryItems,
                     manager,
                     entity.countedInventoryItems ?? [],
-                    { parentInventoryCountId: entity.id },
+                    {
+                        parentInventoryCountId: entity.id,
+                        tenantId: entity.tenantId,
+                        locationId: entity.locationId,
+                    },
                 );
         }
 

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray } from 'class-validator';
 import {
+    Column,
     CreateDateColumn,
     Entity,
     ManyToOne,
@@ -35,6 +36,30 @@ export class InventoryAreaCount {
     })
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The Tenant this count belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join —
+     * mirrors {@link InventoryArea.tenantId}, always copied from the
+     * referenced InventoryArea, never re-derived independently.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
+     * The Location this count belongs to. Denormalized scalar column, same
+     * reasoning as tenantId.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Location this entity belongs to',
+    })
+    @Column()
+    locationId: number;
 
     /**
      * The date the {@link InventoryAreaCount} occurs (automatically handled by the database)

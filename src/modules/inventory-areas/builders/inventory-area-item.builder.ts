@@ -182,4 +182,12 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
       id,
     );
   }
+
+  public tenantId(tenantId: number): this {
+    return this.setPropByVal('tenantId', tenantId);
+  }
+
+  public locationId(locationId: number): this {
+    return this.setPropByVal('locationId', locationId);
+  }
 }

@@ -1,9 +1,11 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Between, DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -69,6 +71,16 @@ describe('order service', () => {
     let recurringOrder: Order;
     let menuItemCategories: MenuItemCategory[];
     let menuItemSizes: MenuItemSize[];
+    let requestContext: TestRequestContextService;
+    let fixtureTenantId: number;
+    let fixtureLocationId: number;
+
+    const setAdminContext = () =>
+        requestContext.setContext({
+            tenantId: fixtureTenantId,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule({
@@ -77,6 +89,7 @@ describe('order service', () => {
 
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         dataSource = module.get(DataSource);
+        requestContext = module.get(RequestContextService) as TestRequestContextService;
 
         orderService = module.get(OrderService) as TestableOrderService;
         orderRepo = module.get(getRepositoryToken(Order));
@@ -87,6 +100,10 @@ describe('order service', () => {
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         recurringOrderScheduleRepo = module.get(getRepositoryToken(RecurringOrderSchedule));
+
+        fixtureTenantId = await testingUtil.getDefaultTenantId();
+        fixtureLocationId = await testingUtil.getDefaultLocationId();
+        setAdminContext();
 
         ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, recurringOrder, menuItemCategories, menuItemSizes } =
             await testingUtil.seedRecurringOrder(P));
@@ -104,6 +121,7 @@ describe('order service', () => {
 
     beforeEach(() => {
         testCtx = new DatabaseTestContext();
+        setAdminContext();
     });
 
     afterEach(async () => {
@@ -120,6 +138,7 @@ describe('order service', () => {
             fulfillmentDate: new Date('2026-02-01'),
             fulfillmentType: 'pickup',
             categoryId: category.id,
+            locationId: fixtureLocationId,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o1',
@@ -157,6 +176,7 @@ describe('order service', () => {
             deliveryAddress: `${P}-address`,
             phoneNumber: `${P}-phone`,
             categoryId: category.id,
+            locationId: fixtureLocationId,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'o2',
@@ -281,6 +301,7 @@ describe('order service', () => {
             fulfillmentDate,
             fulfillmentType: 'pickup',
             categoryId: category.id,
+            locationId: fixtureLocationId,
             occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
@@ -478,6 +499,7 @@ describe('order service', () => {
             fulfillmentDate: new Date(new Date().setDate(new Date().getDate() + 3)),
             fulfillmentType: 'pickup',
             categoryId: category.id,
+            locationId: fixtureLocationId,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
@@ -572,6 +594,7 @@ describe('order service', () => {
                 fulfillmentDate: new Date(new Date().setDate(new Date().getDate() + 3)),
                 fulfillmentType: 'pickup',
                 categoryId: categories[0].id,
+                locationId: fixtureLocationId,
                 orderedItems: [
                     plainToInstance(NestedCreateOrderMenuItemDto, {
                         createId: 'c1',
@@ -652,6 +675,7 @@ describe('order service', () => {
                 fulfillmentDate: new Date('2026-03-01'),
                 fulfillmentType: 'pickup',
                 categoryId: categories[0].id,
+                locationId: fixtureLocationId,
                 orderedItems: [
                     plainToInstance(NestedCreateOrderMenuItemDto, {
                         createId: 'o1',
@@ -671,6 +695,69 @@ describe('order service', () => {
             const deleteResult = await orderService.remove(order.id);
             expect(deleteResult).toBe(true);
             await expect(orderService.findOne(order.id)).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('tenant/location scoping (inherited from LocationScopedServiceBase)', () => {
+        it('create stamps the caller tenant and rejects an unauthorized locationId', async () => {
+            const dto = plainToInstance(CreateOrderDto, {
+                recipient: `${P}-scoping-recipient`,
+                fulfillmentDate: new Date('2026-04-01'),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                locationId: fixtureLocationId,
+                orderedItems: [
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: 'o1',
+                        menuItemId: singleItems[0].id,
+                        sizeId: singleItems[0].sizes[0].id,
+                        quantity: 1,
+                    }),
+                ],
+            });
+
+            const created = await orderService.create(dto);
+            expect((created as Order).tenantId).toBe(fixtureTenantId);
+            await orderRepo.delete(created.id);
+
+            requestContext.setContext({
+                tenantId: fixtureTenantId,
+                isTenantAdmin: false,
+                locations: [],
+            });
+            await expect(orderService.create(dto)).rejects.toThrow(ForbiddenException);
+        });
+
+        it('findOne throws NotFoundException for an order belonging to a different tenant', async () => {
+            const otherOrder = await orderRepo.save({
+                recipient: `${P}-other-tenant-order`,
+                fulfillmentDate: new Date(),
+                fulfillmentType: 'pickup',
+                isFrozen: false,
+                tenantId: fixtureTenantId + 999_999,
+                locationId: fixtureLocationId,
+            } as Order);
+
+            await expect(orderService.findOne(otherOrder.id)).rejects.toThrow(
+                NotFoundException,
+            );
+
+            await orderRepo.delete(otherOrder.id);
+        });
+
+        it('findOne rejects a non-admin caller not assigned to the order\'s location, isTenantAdmin bypasses that check', async () => {
+            requestContext.setContext({
+                tenantId: fixtureTenantId,
+                isTenantAdmin: false,
+                locations: [],
+            });
+            await expect(orderService.findOne(orders[0].id)).rejects.toThrow(
+                NotFoundException,
+            );
+
+            setAdminContext();
+            const result = await orderService.findOne(orders[0].id);
+            expect(result.id).toBe(orders[0].id);
         });
     });
 });

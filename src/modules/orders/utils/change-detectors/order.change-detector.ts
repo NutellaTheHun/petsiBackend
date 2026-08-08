@@ -138,6 +138,16 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
             });
         }
 
+        if (!this.unchanged(entity.locationId, dto.locationId)) {
+            patch.locationId = dto.locationId;
+            changes.push({
+                op: 'reference',
+                path: 'locationId',
+                previousValue: entity.locationId,
+                nextValue: dto.locationId,
+            });
+        }
+
         if (!this.unchanged(entity.occurrenceType ?? null, dto.occurrenceType ?? null)) {
             patch.occurrenceType = dto.occurrenceType;
             changes.push({

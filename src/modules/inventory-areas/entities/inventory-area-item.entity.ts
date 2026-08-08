@@ -36,6 +36,29 @@ export class InventoryAreaItem {
     id: number;
 
     /**
+     * The Tenant this item belongs to. Denormalized scalar column (not a
+     * relation), always copied from the parent {@link InventoryAreaCount},
+     * never re-derived independently.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
+
+    /**
+     * The Location this item belongs to. Denormalized scalar column, same
+     * reasoning as tenantId.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Location this entity belongs to',
+    })
+    @Column()
+    locationId: number;
+
+    /**
      * The {@link InventoryItem} being counted during the {@link InventoryAreaCount}.
      * - example: 6 pack of 28oz can of evaporated milk(countedItem.name)
      * - example: 10 lb flour(countedItem.name)

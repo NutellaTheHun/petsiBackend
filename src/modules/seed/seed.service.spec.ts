@@ -196,22 +196,24 @@ describe('Seed Service', () => {
   it('should seed the entire database', async () => {
     await seedService.seedTestDb(textContext);
 
-    // inventory areas
-    const invAreaCounts = await inventoryAreaCountService.findAll();
-    expect(invAreaCounts.items.length).toBeGreaterThan(0);
-
-    const invAreaItemCounts = await inventoryAreaItemService.findAll();
-    expect(invAreaItemCounts.items.length).toBeGreaterThan(0);
-
-    // InventoryAreaService is tenant/location-scoped (TenantScopedServiceBase/
-    // LocationScopedServiceBase) — read as the fixture tenant-admin so findAll
-    // sees every location's seeded areas under that tenant.
+    // inventory areas — InventoryAreaService/InventoryAreaCountService/
+    // InventoryAreaItemService are all tenant/location-scoped
+    // (TenantScopedServiceBase/LocationScopedServiceBase) — read as the
+    // fixture tenant-admin so findAll sees every location's seeded rows
+    // under that tenant.
     const fixtureLocation = await inventoryAreaTestUtil.getDefaultLocation();
     requestContext.setContext({
       tenantId: fixtureLocation.tenant.id,
       isTenantAdmin: true,
       locations: [],
     });
+
+    const invAreaCounts = await inventoryAreaCountService.findAll();
+    expect(invAreaCounts.items.length).toBeGreaterThan(0);
+
+    const invAreaItemCounts = await inventoryAreaItemService.findAll();
+    expect(invAreaItemCounts.items.length).toBeGreaterThan(0);
+
     const invAreas = await inventoryAreaService.findAll();
     expect(invAreas.items.length).toBeGreaterThan(0);
 
@@ -266,14 +268,19 @@ describe('Seed Service', () => {
     const menuSizes = await menuItemSizeService.findAll();
     expect(menuSizes.items.length).toBeGreaterThan(0);
 
-    // Orders
+    // Orders — Order/OrderMenuItem/OrderContainerItem are tenant/location-
+    // scoped (LocationScopedServiceBase), OrderCategory is tenant-scoped
+    // (TenantScopedServiceBase); all read as the OrderTestingUtil fixture
+    // tenant-admin so findAll sees every seeded row.
+    const orderFixtureTenantId = await orderTestingUtil.getDefaultTenantId();
+    requestContext.setContext({
+      tenantId: orderFixtureTenantId,
+      isTenantAdmin: true,
+      locations: [],
+    });
     const orders = await orderService.findAll();
     expect(orders.items.length).toBeGreaterThan(0);
 
-    // OrderCategoryService is tenant-scoped (TenantScopedServiceBase) — read as
-    // the OrderTestingUtil fixture tenant so findAll sees the seeded categories.
-    const orderFixtureTenantId = await orderTestingUtil.getDefaultTenantId();
-    requestContext.setContext({ tenantId: orderFixtureTenantId });
     const orderCategories = await orderCategoryService.findAll();
     expect(orderCategories.items.length).toBeGreaterThan(0);
 

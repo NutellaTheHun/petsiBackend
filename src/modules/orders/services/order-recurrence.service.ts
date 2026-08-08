@@ -157,6 +157,12 @@ export class OrderRecurrenceService {
             occurrenceState: OCCURRENCE_STATES.GENERATED,
             templateOrderId: templateOrder.id,
             recurrenceSchedule: null,
+            // Denormalized tenantId/locationId are always copied from the
+            // template order being cloned, never independently re-derived
+            // (this runs outside any request context, e.g. from the hourly
+            // cron — there is no caller tenant/location to read).
+            tenantId: templateOrder.tenantId,
+            locationId: templateOrder.locationId,
         });
 
         clone.orderedItems = (templateOrder.orderedItems ?? []).map((omi) =>
@@ -164,11 +170,15 @@ export class OrderRecurrenceService {
                 menuItem: { id: omi.menuItem.id },
                 size: omi.size ? { id: omi.size.id } : null,
                 quantity: omi.quantity,
+                tenantId: templateOrder.tenantId,
+                locationId: templateOrder.locationId,
                 containerOrderMenuItems: (omi.containerOrderMenuItems ?? []).map((c) =>
                     m.create(OrderContainerItem, {
                         containedMenuItem: { id: c.containedMenuItem.id },
                         containedItemSize: { id: c.containedItemSize.id },
                         quantity: c.quantity,
+                        tenantId: templateOrder.tenantId,
+                        locationId: templateOrder.locationId,
                     }),
                 ),
             }),

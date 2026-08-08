@@ -126,17 +126,27 @@ export class InventoryAreaTestUtil {
     ): Promise<InventoryAreaCount[]> {
         await this.initInventoryAreaTestDatabase(testContext);
 
+        const buildForArea = async (name: string): Promise<InventoryAreaCount> => {
+            const area = await this.areaRepo.findOneOrFail({ where: { name } });
+            return this.areaCountBuilder
+                .reset()
+                .inventoryAreaById(area.id)
+                .tenantId(area.tenantId)
+                .locationId(area.locationId)
+                .build();
+        };
+
         return [
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_A).build(),
+            await buildForArea(AREA_A),
 
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_B).build(),
+            await buildForArea(AREA_B),
 
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_C).build(),
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_C).build(),
+            await buildForArea(AREA_C),
+            await buildForArea(AREA_C),
 
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_D).build(),
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_D).build(),
-            await this.areaCountBuilder.reset().inventoryAreaByName(AREA_D).build(),
+            await buildForArea(AREA_D),
+            await buildForArea(AREA_D),
+            await buildForArea(AREA_D),
         ];
     }
 
@@ -175,6 +185,8 @@ export class InventoryAreaTestUtil {
                     .countedItemById(itemA.id)
                     .countedItemSizeById(sizeA.id)
                     .amount(1)
+                    .tenantId(counts[i].tenantId)
+                    .locationId(counts[i].locationId)
                     .build(),
             );
 
@@ -190,6 +202,8 @@ export class InventoryAreaTestUtil {
                     .countedItemById(itemB.id)
                     .countedItemSizeById(sizeB.id)
                     .amount(1)
+                    .tenantId(counts[i].tenantId)
+                    .locationId(counts[i].locationId)
                     .build(),
             );
         }
@@ -384,11 +398,15 @@ export class InventoryAreaTestUtil {
      * areas order: [A, B, C, D].
      * counts order: 1 for A, 1 for B, 2 for C, 3 for D (7 total).
      */
-    public async seedCounts(P: string = ''): Promise<{
+    public async seedCounts(
+        P: string = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{
         areas: InventoryArea[];
         counts: InventoryAreaCount[];
     }> {
-        const { areas } = await this.seedAreas(P);
+        const { areas } = await this.seedAreas(P, tenantId, locationId);
         const countsPerArea = [1, 1, 2, 3];
 
         const counts: InventoryAreaCount[] = [];
@@ -397,6 +415,8 @@ export class InventoryAreaTestUtil {
                 const entity = await this.areaCountBuilder
                     .reset()
                     .inventoryAreaById(areas[i].id)
+                    .tenantId(areas[i].tenantId)
+                    .locationId(areas[i].locationId)
                     .build();
                 counts.push(await this.areaCountRepo.save(entity));
             }
@@ -432,6 +452,8 @@ export class InventoryAreaTestUtil {
                     .countedItemById(items[idx].id)
                     .countedItemSizeById(sizes[idx * 2].id)
                     .amount(1)
+                    .tenantId(count.tenantId)
+                    .locationId(count.locationId)
                     .build();
                 areaItems.push(await this.areaItemRepo.save(entity));
             }

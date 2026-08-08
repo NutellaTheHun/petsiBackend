@@ -11,6 +11,8 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -48,6 +50,7 @@ describe('order controller', () => {
     let orderMenuItems: OrderMenuItem[];
     let menuItemCategories: MenuItemCategory[];
     let menuItemSizes: MenuItemSize[];
+    let fixtureLocationId: number;
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
@@ -61,6 +64,17 @@ describe('order controller', () => {
         menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        const requestContext = module.get(
+            RequestContextService,
+        ) as TestRequestContextService;
+
+        const fixtureTenantId = await testingUtil.getDefaultTenantId();
+        fixtureLocationId = await testingUtil.getDefaultLocationId();
+        requestContext.setContext({
+            tenantId: fixtureTenantId,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
         ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, menuItemCategories, menuItemSizes } =
             await testingUtil.seedOrderMenuItems(P));
@@ -93,6 +107,7 @@ describe('order controller', () => {
             fulfillmentDate: new Date(),
             fulfillmentType: 'invalid_type',
             categoryId: category.id,
+            locationId: fixtureLocationId,
             orderedItems: [
                 plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
@@ -138,6 +153,7 @@ describe('order controller', () => {
                 fulfillmentDate: new Date('2026-03-01'),
                 fulfillmentType: 'pickup',
                 categoryId: category.id,
+                locationId: fixtureLocationId,
                 orderedItems: [
                     plainToInstance(NestedCreateOrderMenuItemDto, {
                         createId: 'rm1',

@@ -22,6 +22,9 @@ const P = `t${Date.now()}`;
 
 const DATE_1 = new Date('2025-01-15T00:00:00.000Z');
 const DATE_2 = new Date('2025-01-16T00:00:00.000Z');
+// No FK constraint on Order/OrderMenuItem/OrderContainerItem.locationId —
+// a real Location row isn't needed to satisfy the NOT NULL column.
+const FIXTURE_LOCATION_ID = 1;
 
 describe('ReportExecutionService', () => {
     let module: TestingModule;
@@ -62,7 +65,15 @@ describe('ReportExecutionService', () => {
         testContextService = module.get(RequestContextService) as TestRequestContextService;
 
         tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
-        testContextService.setContext({ tenantId: tenant.id });
+        // Order/OrderMenuItem/OrderContainerItem are location-bound (NOT
+        // NULL locationId) but ReportExecutionService queries them
+        // unscoped (see reports/CLAUDE.md) — no real Location row is
+        // needed here, locationId has no FK constraint.
+        testContextService.setContext({
+            tenantId: tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
         menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie`, tenantId: tenant.id } as MenuItemCategory);
         menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular`, tenantId: tenant.id } as MenuItemSize);
@@ -74,18 +85,24 @@ describe('ReportExecutionService', () => {
             fulfillmentDate: DATE_1,
             fulfillmentType: 'pickup',
             isFrozen: false,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
         orderBob = await orderRepo.save({
             recipient: `${P}-bob`,
             fulfillmentDate: DATE_2,
             fulfillmentType: 'delivery',
             isFrozen: false,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
         orderFrozen = await orderRepo.save({
             recipient: `${P}-frozen`,
             fulfillmentDate: DATE_1,
             fulfillmentType: 'pickup',
             isFrozen: true,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
 
         orderMenuItemAlice = await orderMenuItemRepo.save({
@@ -93,12 +110,16 @@ describe('ReportExecutionService', () => {
             size: menuItemSize,
             quantity: 2,
             parentOrder: orderAlice,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
         orderMenuItemBob = await orderMenuItemRepo.save({
             menuItem: menuItem2,
             size: menuItemSize,
             quantity: 3,
             parentOrder: orderBob,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
         });
 
         testContextService.run(() => {}, { roles: [ROLE_MANAGER] });
@@ -483,6 +504,8 @@ describe('ReportExecutionService', () => {
                 fulfillmentDate: DATE_1,
                 fulfillmentType: 'pickup',
                 isFrozen: false,
+                tenantId: tenant.id,
+                locationId: FIXTURE_LOCATION_ID,
             });
             testCtx.addCleanupFunction(async () => { await orderRepo.delete(containerOrder.id); });
 
@@ -491,9 +514,11 @@ describe('ReportExecutionService', () => {
                 size: menuItemSize,
                 quantity: 1,
                 parentOrder: containerOrder,
+                tenantId: tenant.id,
+                locationId: FIXTURE_LOCATION_ID,
                 containerOrderMenuItems: [
-                    { containedMenuItem: menuItem, containedItemSize: menuItemSize, quantity: 2 },
-                    { containedMenuItem: menuItem2, containedItemSize: menuItemSize, quantity: 3 },
+                    { containedMenuItem: menuItem, containedItemSize: menuItemSize, quantity: 2, tenantId: tenant.id, locationId: FIXTURE_LOCATION_ID },
+                    { containedMenuItem: menuItem2, containedItemSize: menuItemSize, quantity: 3, tenantId: tenant.id, locationId: FIXTURE_LOCATION_ID },
                 ],
             } as any);
             testCtx.addCleanupFunction(async () => { await orderMenuItemRepo.delete(containerOrderMenuItem.id); });

@@ -79,4 +79,27 @@ export class CreateOrderMenuItemDto {
     @IsNotEmpty()
     @IsPositive()
     readonly parentOrderId: EntityId<Order>;
+
+    /**
+     * Stamped from the parent Order's own tenantId/locationId (see
+     * resolveCreateDto in OrderMenuItemComposer) — never supplied by a
+     * client and never independently re-derived from request context.
+     */
+    @ApiProperty({
+        description: "The parent Order's tenantId. Populated internally, not client-supplied.",
+        example: 1,
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    readonly tenantId: number;
+
+    @ApiProperty({
+        description: "The parent Order's locationId. Populated internally, not client-supplied.",
+        example: 1,
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    readonly locationId: number;
 }

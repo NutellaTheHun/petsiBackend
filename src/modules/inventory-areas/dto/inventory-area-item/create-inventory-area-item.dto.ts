@@ -67,4 +67,29 @@ export class CreateInventoryAreaItemDto {
     @IsPositive()
     @IsNotEmpty()
     readonly parentInventoryCountId: EntityId<InventoryAreaCount>;
+
+    /**
+     * Stamped from the parent InventoryAreaCount's own tenantId/locationId
+     * (see resolveCreateDto in InventoryAreaItemComposer) — never supplied by
+     * a client and never independently re-derived from request context.
+     */
+    @ApiProperty({
+        description: "The parent InventoryAreaCount's tenantId. Populated internally, not client-supplied.",
+        type: Number,
+        required: false,
+    })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly tenantId: number;
+
+    @ApiProperty({
+        description: "The parent InventoryAreaCount's locationId. Populated internally, not client-supplied.",
+        type: Number,
+        required: false,
+    })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly locationId: number;
 }

@@ -3,6 +3,8 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -50,6 +52,16 @@ describe('order menu item controller', () => {
         menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        const requestContext = module.get(
+            RequestContextService,
+        ) as TestRequestContextService;
+
+        const fixtureTenantId = await testingUtil.getDefaultTenantId();
+        requestContext.setContext({
+            tenantId: fixtureTenantId,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
         ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, menuItemCategories, menuItemSizes } =
             await testingUtil.seedOrderMenuItems(P));

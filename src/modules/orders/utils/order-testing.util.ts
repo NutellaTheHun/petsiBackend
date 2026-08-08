@@ -9,6 +9,7 @@ import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
+import { Location } from '../../locations/entities/location.entity';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
@@ -45,6 +46,9 @@ export class OrderTestingUtil {
 
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
+
+        @InjectRepository(Location)
+        private readonly locationRepo: Repository<Location>,
     ) {
         this.orderTypeInit = false;
         this.orderInit = false;
@@ -76,6 +80,31 @@ export class OrderTestingUtil {
             this.defaultTenantId = tenant.id;
         }
         return this.defaultTenantId;
+    }
+
+    /**
+     * Order/OrderMenuItem/OrderContainerItem/RecurringOrderSchedule now
+     * require a locationId (NOT NULL) too. Same lazy shared-fixture
+     * rationale as `getDefaultTenantId` — one fixture Location under the
+     * default fixture Tenant, reused across the whole test run.
+     */
+    private defaultLocationId?: number;
+    public async getDefaultLocationId(): Promise<number> {
+        if (this.defaultLocationId === undefined) {
+            const tenantId = await this.getDefaultTenantId();
+            const existing = await this.locationRepo.findOne({
+                where: { tenant: { id: tenantId }, name: 'fixture-location' },
+                relations: ['tenant'],
+            });
+            const location =
+                existing ??
+                (await this.locationRepo.save({
+                    tenant: { id: tenantId } as Tenant,
+                    name: 'fixture-location',
+                }));
+            this.defaultLocationId = location.id;
+        }
+        return this.defaultLocationId;
     }
 
     // Order Category
@@ -160,6 +189,8 @@ export class OrderTestingUtil {
                     menuItem,
                     quantity: quantity++,
                     size,
+                    tenantId: order.tenantId,
+                    locationId: order.locationId,
                 } as OrderMenuItem);
             }
         }
@@ -188,6 +219,8 @@ export class OrderTestingUtil {
                     menuItem: containerMenuItem,
                     quantity: 1,
                     size: containerMenuItem.sizes[0],
+                    tenantId: order.tenantId,
+                    locationId: order.locationId,
                     containerOrderMenuItems: [] as any,
                 });
                 for (const validItem of validContainerMenuItems) { // factor in container size with valid container menu items
@@ -197,6 +230,8 @@ export class OrderTestingUtil {
                             containedMenuItem: validItem.containedMenuItem,
                             containedItemSize: validItem.containedItemSize,
                             quantity: containerMenuItem.variableMaxAmount,
+                            tenantId: order.tenantId,
+                            locationId: order.locationId,
                         });
                     }
 
@@ -209,6 +244,8 @@ export class OrderTestingUtil {
                     menuItem: containerMenuItem,
                     quantity: 1,
                     size: containerMenuItem.sizes[0],
+                    tenantId: order.tenantId,
+                    locationId: order.locationId,
                     containerOrderMenuItems: [] as any,
                 });
                 for (const validItem of validContainerMenuItems) { // factor in container size with valid container menu items
@@ -218,6 +255,8 @@ export class OrderTestingUtil {
                             containedMenuItem: validItem.containedMenuItem,
                             containedItemSize: validItem.containedItemSize,
                             quantity: validItem.quantity,
+                            tenantId: order.tenantId,
+                            locationId: order.locationId,
                         });
                     }
                 }
@@ -253,6 +292,9 @@ export class OrderTestingUtil {
         testContext: DatabaseTestContext,
     ): Promise<Order[]> {
         await this.initOrderCategoryTestDatabase(testContext);
+
+        const tenantId = await this.getDefaultTenantId();
+        const locationId = await this.getDefaultLocationId();
 
         const recipients: string[] = [
             'recipient_a',
@@ -290,6 +332,8 @@ export class OrderTestingUtil {
                 email: 'email' + idx,
                 note: 'note' + idx,
                 isFrozen: false,
+                tenantId,
+                locationId,
             } as Order);
             idx++;
         }
@@ -303,10 +347,14 @@ export class OrderTestingUtil {
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             isFrozen: false,
+            tenantId,
+            locationId,
             recurrenceSchedule: {
                 rrule: `${dtstartDate}\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;TZID=America/New_York;`,
                 startDate: new Date(),
                 timezone: 'America/New_York',
+                tenantId,
+                locationId,
             } as RecurringOrderSchedule,
         } as Order)
         return results;
@@ -412,12 +460,21 @@ export class OrderTestingUtil {
 
     /**
      * 7 orders (recipient-a .. recipient-g), rotating through categories and fulfillment types.
+     * `tenantId`/`locationId` default to a shared fixture Location (see
+     * `getDefaultLocationId`) — pass them explicitly when the test actually
+     * exercises tenant/location scoping.
      */
-    public async seedOrders(P = ''): Promise<{
+    public async seedOrders(
+        P = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{
         categories: OrderCategory[];
         orders: Order[];
     }> {
-        const { categories } = await this.seedCategories(P);
+        const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
+        const effectiveLocationId = locationId ?? (await this.getDefaultLocationId());
+        const { categories } = await this.seedCategories(P, effectiveTenantId);
 
         const recipients = [
             'recipient-a',
@@ -450,6 +507,8 @@ export class OrderTestingUtil {
                     email: `${entityName}-email@example.com`,
                     note: `${entityName}-note`,
                     isFrozen: false,
+                    tenantId: effectiveTenantId,
+                    locationId: effectiveLocationId,
                 } as Order),
             );
             idx++;
@@ -467,7 +526,11 @@ export class OrderTestingUtil {
      * `orderMenuItems` is the flat list of every OrderMenuItem line created (reloaded with relations).
      * `containerOrderMenuItems` is the subset of `orderMenuItems` whose menuItem is a container.
      */
-    public async seedOrderMenuItems(P = ''): Promise<{
+    public async seedOrderMenuItems(
+        P = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{
         categories: OrderCategory[];
         orders: Order[];
         menuItemCategories: MenuItemCategory[];
@@ -479,7 +542,7 @@ export class OrderTestingUtil {
         orderMenuItems: OrderMenuItem[];
         containerOrderMenuItems: OrderMenuItem[];
     }> {
-        const { categories, orders } = await this.seedOrders(P);
+        const { categories, orders } = await this.seedOrders(P, tenantId, locationId);
         const { menuItemCategories, menuItemSizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
             await this.seedMenuItems(P);
 
@@ -507,6 +570,8 @@ export class OrderTestingUtil {
                     menuItem,
                     quantity: qty++,
                     size,
+                    tenantId: order.tenantId,
+                    locationId: order.locationId,
                 } as OrderMenuItem);
                 orderMenuItems.push(
                     await this.orderMenuItemRepo.findOneOrFail({
@@ -530,6 +595,8 @@ export class OrderTestingUtil {
                 menuItem: container,
                 quantity: 1,
                 size,
+                tenantId: order.tenantId,
+                locationId: order.locationId,
             } as OrderMenuItem);
 
             const relevantLines = containerLines.filter(
@@ -541,6 +608,8 @@ export class OrderTestingUtil {
                     containedMenuItem: line.containedMenuItem,
                     containedItemSize: line.containedItemSize,
                     quantity: line.quantity,
+                    tenantId: order.tenantId,
+                    locationId: order.locationId,
                 } as OrderContainerItem);
             }
 
@@ -570,7 +639,11 @@ export class OrderTestingUtil {
      * Seeds everything from seedOrderMenuItems, then adds one additional order with a
      * nested weekly RecurringOrderSchedule.
      */
-    public async seedRecurringOrder(P = ''): Promise<{
+    public async seedRecurringOrder(
+        P = '',
+        tenantId?: number,
+        locationId?: number,
+    ): Promise<{
         categories: OrderCategory[];
         orders: Order[];
         menuItemCategories: MenuItemCategory[];
@@ -584,8 +657,10 @@ export class OrderTestingUtil {
         recurringOrder: Order;
         recurringOrderSchedule: RecurringOrderSchedule;
     }> {
-        const seeded = await this.seedOrderMenuItems(P);
+        const seeded = await this.seedOrderMenuItems(P, tenantId, locationId);
         const entityName = P ? `${P}-recurring-recipient` : 'recurring-recipient';
+        const effectiveTenantId = seeded.orders[0].tenantId;
+        const effectiveLocationId = seeded.orders[0].locationId;
 
         const dtstartDate = buildRRULEDateString(new Date());
         const saved = await this.orderRepo.save({
@@ -594,10 +669,14 @@ export class OrderTestingUtil {
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             isFrozen: false,
+            tenantId: effectiveTenantId,
+            locationId: effectiveLocationId,
             recurrenceSchedule: {
                 rrule: `${dtstartDate}\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;TZID=America/New_York;`,
                 startDate: new Date(),
                 timezone: 'America/New_York',
+                tenantId: effectiveTenantId,
+                locationId: effectiveLocationId,
             } as RecurringOrderSchedule,
         } as Order);
 
