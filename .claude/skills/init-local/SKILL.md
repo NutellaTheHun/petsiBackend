@@ -27,7 +27,7 @@ Read what's actually there — entities, services, controllers, validators, buil
 - **Overview** — what this directory/module does, the key entities and how they relate to each other (and to entities in other modules, if the relationship is central to understanding this one).
 - **Enforced Patterns** — rules that must be followed here, and *why*. Look for things enforced by validators, base-class overrides, lifecycle hook usage, non-obvious builder/composer wiring, or domain-specific constraints a newcomer would get wrong. Ground every claim in code you actually read. Do not invent a pattern that isn't actually enforced somewhere in this directory.
 
-Do not derive or write anything for Gotchas — that section is populated only by explicitly applying a `review-debrief` recommendation, never by this skill.
+Do not derive or write anything for Gotchas — that section is maintained by hand (typically by the user applying a suggestion from a `do-task` run), never by this skill.
 
 ### 3. Check for an existing `<path>/CLAUDE.md`
 
