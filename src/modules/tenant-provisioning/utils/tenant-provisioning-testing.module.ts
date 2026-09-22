@@ -8,6 +8,9 @@ import { TestRequestContextService } from '../../../test/mocks/test-request-cont
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { AuthModule } from '../../auth/auth.module';
 import { AuthService } from '../../auth/services/auth.service';
+import { RoleFeature } from '../../feature-flags/entities/role-feature.entity';
+import { TenantFeature } from '../../feature-flags/entities/tenant-feature.entity';
+import { FeatureFlagsModule } from '../../feature-flags/feature-flags.module';
 import { Location } from '../../locations/entities/location.entity';
 import { UserLocation } from '../../locations/entities/user-location.entity';
 import { LocationsModule } from '../../locations/locations.module';
@@ -27,8 +30,24 @@ export async function getTenantProvisioningTestingModule(): Promise<TestingModul
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
 
-      TypeORMPostgresTestingModule([User, Role, UserLocation, Location, Tenant]),
-      TypeOrmModule.forFeature([User, Role, UserLocation, Location, Tenant]),
+      TypeORMPostgresTestingModule([
+        User,
+        Role,
+        UserLocation,
+        Location,
+        Tenant,
+        TenantFeature,
+        RoleFeature,
+      ]),
+      TypeOrmModule.forFeature([
+        User,
+        Role,
+        UserLocation,
+        Location,
+        Tenant,
+        TenantFeature,
+        RoleFeature,
+      ]),
 
       JwtModule.registerAsync({
         imports: [ConfigModule],
@@ -52,6 +71,7 @@ export async function getTenantProvisioningTestingModule(): Promise<TestingModul
       RoleModule,
       LocationsModule,
       TenantsModule,
+      FeatureFlagsModule,
     ],
 
     providers: [TenantProvisioningService, AuthService],
