@@ -25,6 +25,8 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../app-logging/app-logger';
@@ -41,6 +43,7 @@ import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 @ApiTags('Recipe Ingredient')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.RECIPE_MANAGEMENT)
 @Controller('recipe-ingredients')
 @ApiExtraModels(RecipeIngredient)
 export class RecipeIngredientController extends ControllerBase<RecipeIngredientEntity> {

@@ -31,6 +31,8 @@ import { Cache } from 'cache-manager';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -53,6 +55,7 @@ import { RevisionHistoryService } from '../../revision-history/revision-history.
 @ApiTags('Order')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT)
 @Controller('orders')
 @ApiExtraModels(Order, RevisionHistoryListItemDto, RevisionHistoryDetailDto)
 export class OrderController extends ControllerBase<OrderEntity> {

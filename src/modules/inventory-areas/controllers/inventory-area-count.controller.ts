@@ -30,6 +30,8 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -45,6 +47,7 @@ import { InventoryAreaCountService } from '../services/inventory-area-count.serv
 @ApiTags('Inventory Area Count')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
 @Controller('inventory-area-counts')
 @ApiExtraModels(InventoryAreaCount)
 export class InventoryAreaCountController extends ControllerBase<InventoryAreaCountEntity> {

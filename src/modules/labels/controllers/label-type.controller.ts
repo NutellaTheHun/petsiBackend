@@ -30,6 +30,8 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -46,6 +48,7 @@ import { LabelTypeService } from '../services/label-type.service';
 @ApiTags('Label Type')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.LABEL_PRINTING)
 @Controller('label-types')
 @ApiExtraModels(LabelType)
 export class LabelTypeController extends ControllerBase<LabelTypeEntity> {
