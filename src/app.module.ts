@@ -19,6 +19,8 @@ import { AppLoggingModule } from './modules/app-logging/app-logging.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { DynamicPropertiesModule } from './modules/dynamic-properties/dynamic-properties.module';
+import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
+import { FeatureGuard } from './modules/feature-flags/guards/feature.guard';
 import { InventoryAreasModule } from './modules/inventory-areas/inventory-areas.module';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
 import { LabelsModule } from './modules/labels/labels.module';
@@ -99,6 +101,7 @@ import { UserModule } from './modules/users/user.module';
     LocationsModule,
     TenantProvisioningModule,
     SettingsModule,
+    FeatureFlagsModule,
   ],
 
   controllers: [AppController],
@@ -112,6 +115,10 @@ import { UserModule } from './modules/users/user.module';
     {
       provide: APP_GUARD,
       useClass: RoleGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: FeatureGuard,
     },
     {
       provide: APP_GUARD,

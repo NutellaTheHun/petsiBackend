@@ -24,12 +24,12 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import {
@@ -40,7 +40,7 @@ import { InventoryItemSizeService } from '../services/inventory-item-size.servic
 
 @ApiTags('Inventory Item Size')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
 @Controller('inventory-item-sizes')
 @ApiExtraModels(InventoryItemSize)
 export class InventoryItemSizeController extends ControllerBase<InventoryItemSizeEntity> {

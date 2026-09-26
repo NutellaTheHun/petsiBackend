@@ -3,6 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/services/auth.service';
+import { TenantFeature } from '../feature-flags/entities/tenant-feature.entity';
 import { Location } from '../locations/entities/location.entity';
 import { UserLocation } from '../locations/entities/user-location.entity';
 import { Role } from '../roles/entities/role.entity';
@@ -27,6 +28,7 @@ describe('TenantProvisioningService', () => {
   let roleRepo: Repository<Role>;
   let userRepo: Repository<User>;
   let userLocationRepo: Repository<UserLocation>;
+  let tenantFeatureRepo: Repository<TenantFeature>;
 
   const provisionedTenantIds: number[] = [];
 
@@ -42,11 +44,13 @@ describe('TenantProvisioningService', () => {
     roleRepo = module.get(getRepositoryToken(Role));
     userRepo = module.get(getRepositoryToken(User));
     userLocationRepo = module.get(getRepositoryToken(UserLocation));
+    tenantFeatureRepo = module.get(getRepositoryToken(TenantFeature));
   });
 
   afterAll(async () => {
-    // FK-safe LIFO order: users -> roles -> locations -> tenants
+    // FK-safe LIFO order: tenant features -> users -> roles -> locations -> tenants
     for (const tenantId of provisionedTenantIds) {
+      await tenantFeatureRepo.delete({ tenantId });
       await userRepo.delete({ tenantId });
       await roleRepo.delete({ tenantId });
       await locationRepo.delete({ tenant: { id: tenantId } });
@@ -57,13 +61,14 @@ describe('TenantProvisioningService', () => {
   describe('provisionTenant', () => {
     let result: ProvisionTenantResult;
 
-    it('provisions a tenant, its first location, its role set, and a tenant-admin user in one call', async () => {
+    it('provisions a tenant, its first location, its role set, its enabled features, and a tenant-admin user in one call', async () => {
       result = await service.provisionTenant({
         tenantName: `${P}-tenant-a`,
         subdomain: `${P}-subdomain-a`,
         locationName: `${P}-location-a`,
         adminName: `${P}-owner`,
         adminPassword: 'ownerPass123',
+        features: ['ORDER_MANAGEMENT', 'INVENTORY_MANAGEMENT'],
       });
       provisionedTenantIds.push(result.tenant.id);
 
@@ -74,6 +79,16 @@ describe('TenantProvisioningService', () => {
       );
       expect(result.adminUser.id).toBeDefined();
       expect(result.adminUser.isTenantAdmin).toBe(true);
+      expect(result.tenantFeatures.map((f) => f.feature).sort()).toEqual(
+        ['INVENTORY_MANAGEMENT', 'ORDER_MANAGEMENT'].sort(),
+      );
+    });
+
+    it('persists a TenantFeature row per requested feature, scoped to the provisioned tenant', async () => {
+      const rows = await tenantFeatureRepo.find({ where: { tenantId: result.tenant.id } });
+      expect(rows.map((r) => r.feature).sort()).toEqual(
+        ['INVENTORY_MANAGEMENT', 'ORDER_MANAGEMENT'].sort(),
+      );
     });
 
     it('does not create a UserLocation row for the tenant-admin (isTenantAdmin alone grants every location)', async () => {

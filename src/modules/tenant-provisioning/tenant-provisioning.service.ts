@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hashPassword } from '../auth/utils/hash';
+import { TenantFeature } from '../feature-flags/entities/tenant-feature.entity';
+import { Feature } from '../feature-flags/utils/feature.registry';
 import { Location } from '../locations/entities/location.entity';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../roles/utils/constants';
 import { Role } from '../roles/entities/role.entity';
@@ -18,6 +20,7 @@ export interface ProvisionTenantInput {
   adminName: string;
   adminPassword: string;
   adminEmail?: string;
+  features?: Feature[];
 }
 
 export interface ProvisionTenantResult {
@@ -25,6 +28,7 @@ export interface ProvisionTenantResult {
   location: Location;
   roles: Role[];
   adminUser: User;
+  tenantFeatures: TenantFeature[];
 }
 
 /**
@@ -52,6 +56,8 @@ export class TenantProvisioningService {
     private readonly roleRepo: Repository<Role>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(TenantFeature)
+    private readonly tenantFeatureRepo: Repository<TenantFeature>,
   ) {}
 
   async provisionTenant(input: ProvisionTenantInput): Promise<ProvisionTenantResult> {
@@ -88,6 +94,11 @@ export class TenantProvisioningService {
       isTenantAdmin: true,
     });
 
-    return { tenant, location, roles, adminUser };
+    const tenantFeatures: TenantFeature[] = [];
+    for (const feature of input.features ?? []) {
+      tenantFeatures.push(await this.tenantFeatureRepo.save({ tenantId: tenant.id, feature }));
+    }
+
+    return { tenant, location, roles, adminUser, tenantFeatures };
   }
 }

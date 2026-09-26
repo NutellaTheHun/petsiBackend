@@ -29,36 +29,32 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { LocationScope } from '../../../common/decorators/LocationScope';
-import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
-import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
+import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
-import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
-import {
-    InventoryArea,
-    InventoryAreaEntity,
-} from '../entities/inventory-area.entity';
-import { InventoryAreaService } from '../services/inventory-area.service';
+import { ROLE_ADMIN } from '../../roles/utils/constants';
+import { CreateRoleFeatureDto } from '../dto/create-role-feature.dto';
+import { UpdateRoleFeatureDto } from '../dto/update-role-feature.dto';
+import { RoleFeature, RoleFeatureEntity } from '../entities/role-feature.entity';
+import { RoleFeatureService } from '../services/role-feature.service';
 
-@ApiTags('Inventory Area')
+@ApiTags('RoleFeature')
 @ApiBearerAuth('access-token')
-@RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
-@Controller('inventory-areas')
-@ApiExtraModels(InventoryArea)
-export class InventoryAreaController extends ControllerBase<InventoryAreaEntity> {
+@Roles(ROLE_ADMIN)
+@Controller('role-features')
+@ApiExtraModels(RoleFeature)
+export class RoleFeatureController extends ControllerBase<RoleFeatureEntity> {
     constructor(
-        areaService: InventoryAreaService,
+        roleFeatureService: RoleFeatureService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(
-            areaService,
+            roleFeatureService,
             cacheManager,
-            'InventoryAreaController',
+            'RoleFeatureController',
             requestContextService,
             logger,
         );
@@ -66,54 +62,45 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    @LocationScope('body', 'locationId')
-    @ApiOperation({ summary: 'Creates a Inventory Area' })
-    @ApiCreatedResponse({
-        description: 'Inventory Area successfully created',
-        type: InventoryArea,
-    })
+    @ApiOperation({ summary: 'Grants a Feature to a Role' })
+    @ApiCreatedResponse({ description: 'RoleFeature successfully created', type: RoleFeature })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateInventoryAreaDto })
-    async create(@Body() dto: CreateInventoryAreaDto): Promise<InventoryArea> {
+    @ApiBody({ type: CreateRoleFeatureDto })
+    async create(@Body() dto: CreateRoleFeatureDto): Promise<RoleFeature> {
         return super.create(dto);
     }
 
     @Put(':id')
-    @LocationScope('body', 'locationId')
-    @ApiOperation({ summary: 'Updates a Inventory Area' })
-    @ApiOkResponse({
-        description: 'Inventory Area successfully updated',
-        type: InventoryArea,
-    })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiNotFoundResponse({ description: 'Inventory Area to update not found.' })
-    @ApiBody({ type: UpdateInventoryAreaDto })
+    @ApiOperation({ summary: 'No-op: RoleFeature grants are added/removed, never edited in place' })
+    @ApiOkResponse({ description: 'RoleFeature unchanged', type: RoleFeature })
+    @ApiNotFoundResponse({ description: 'RoleFeature to update not found.' })
+    @ApiBody({ type: UpdateRoleFeatureDto })
     async update(
         @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateInventoryAreaDto,
-    ): Promise<InventoryArea> {
+        @Body() dto: UpdateRoleFeatureDto,
+    ): Promise<RoleFeature> {
         return super.update(id, dto);
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiOperation({ summary: 'Removes a Inventory Area' })
-    @ApiNoContentResponse({ description: 'Inventory Area successfully removed' })
-    @ApiNotFoundResponse({ description: 'Inventory Area not found' })
+    @ApiOperation({ summary: 'Revokes a Feature grant from a Role' })
+    @ApiNoContentResponse({ description: 'RoleFeature successfully removed' })
+    @ApiNotFoundResponse({ description: 'RoleFeature not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return super.remove(id);
     }
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves an array of Inventory Areas' })
+    @ApiOperation({ summary: 'Retrieves an array of RoleFeatures' })
     @ApiOkResponse({
         schema: {
             type: 'object',
             properties: {
                 items: {
                     type: 'array',
-                    items: { $ref: getSchemaPath(InventoryArea) },
+                    items: { $ref: getSchemaPath(RoleFeature) },
                 },
                 nextCursor: {
                     type: 'string',
@@ -126,13 +113,6 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
-        name: 'sortBy',
-        required: false,
-        type: String,
-        description: `Field to sort by. Available options:\n
-          - areaName`,
-    })
-    @ApiQuery({
         name: 'sortOrder',
         required: false,
         enum: ['ASC', 'DESC'],
@@ -144,12 +124,7 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
         @Query('offset') cursor?: string,
         @Query('sortBy') sortBy?: string,
         @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
-        //@Query('search') search?: string,
-        //@Query('filters') filters?: string[],
-        //@Query('dateBy') dateBy?: string,
-        //@Query('startDate') startDate?: string,  // ISO format string
-        //@Query('endDate') endDate?: string, // ISO format string
-    ): Promise<PaginatedResult<InventoryArea>> {
+    ): Promise<PaginatedResult<RoleFeature>> {
         return super.findAll(
             rawRelations,
             limit,
@@ -166,10 +141,10 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves one Inventory Area' })
-    @ApiOkResponse({ description: 'Inventory Area found', type: InventoryArea })
-    @ApiNotFoundResponse({ description: 'Inventory Area not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<InventoryArea> {
+    @ApiOperation({ summary: 'Retrieves one RoleFeature' })
+    @ApiOkResponse({ description: 'RoleFeature found', type: RoleFeature })
+    @ApiNotFoundResponse({ description: 'RoleFeature not found' })
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<RoleFeature> {
         return super.findOne(id);
     }
 }

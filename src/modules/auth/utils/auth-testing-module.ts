@@ -6,6 +6,9 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { RoleFeature } from '../../feature-flags/entities/role-feature.entity';
+import { TenantFeature } from '../../feature-flags/entities/tenant-feature.entity';
+import { FeatureFlagsModule } from '../../feature-flags/feature-flags.module';
 import { Location } from '../../locations/entities/location.entity';
 import { UserLocation } from '../../locations/entities/user-location.entity';
 import { LocationsModule } from '../../locations/locations.module';
@@ -26,8 +29,24 @@ export async function getAuthTestingModule(): Promise<TestingModule> {
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
 
-      TypeORMPostgresTestingModule([User, Role, UserLocation, Location, Tenant]),
-      TypeOrmModule.forFeature([User, Role, UserLocation, Location, Tenant]),
+      TypeORMPostgresTestingModule([
+        User,
+        Role,
+        UserLocation,
+        Location,
+        Tenant,
+        TenantFeature,
+        RoleFeature,
+      ]),
+      TypeOrmModule.forFeature([
+        User,
+        Role,
+        UserLocation,
+        Location,
+        Tenant,
+        TenantFeature,
+        RoleFeature,
+      ]),
 
       JwtModule.registerAsync({
         imports: [ConfigModule],
@@ -50,6 +69,7 @@ export async function getAuthTestingModule(): Promise<TestingModule> {
       RoleModule,
       LocationsModule,
       TenantsModule,
+      FeatureFlagsModule,
     ],
 
     controllers: [AuthController],

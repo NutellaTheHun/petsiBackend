@@ -10,4 +10,11 @@ export class AuthResponseDto {
     type: [String],
   })
   roles: string[];
+
+  @ApiProperty({
+    description: 'for frontend rendering, not for any authentication reasons',
+    example: ['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT'],
+    type: [String],
+  })
+  features: string[];
 }

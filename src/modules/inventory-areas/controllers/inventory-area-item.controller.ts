@@ -24,12 +24,12 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import {
@@ -40,7 +40,7 @@ import { InventoryAreaItemService } from '../services/inventory-area-item.servic
 
 @ApiTags('Inventory Area Item')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
 @Controller('inventory-area-items')
 @ApiExtraModels(InventoryAreaItem)
 export class InventoryAreaItemController extends ControllerBase<InventoryAreaItemEntity> {

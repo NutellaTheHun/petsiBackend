@@ -47,7 +47,7 @@ describe('AuthController', () => {
         const user = users.find((user) => user.name === username);
         if (!user || !(await isPassHashMatch(inputPass, user.password)))
           throw new UnauthorizedException();
-        return { access_token: 'mock_token', roles: ['role'] };
+        return { access_token: 'mock_token', roles: ['role'], features: [] };
       });
   });
 

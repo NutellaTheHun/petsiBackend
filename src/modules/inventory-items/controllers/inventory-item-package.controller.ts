@@ -29,11 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
+import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
+import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import {
@@ -44,7 +44,7 @@ import { InventoryItemPackageService } from '../services/inventory-item-package.
 
 @ApiTags('Inventory Item Package')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_MANAGER, ROLE_ADMIN)
+@RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
 @Controller('inventory-item-packages')
 @ApiExtraModels(InventoryItemPackage)
 export class InventoryItemPackageController extends ControllerBase<InventoryItemPackageEntity> {
