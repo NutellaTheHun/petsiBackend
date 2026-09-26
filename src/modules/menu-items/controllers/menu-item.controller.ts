@@ -30,17 +30,11 @@ import {
 import { Cache } from 'cache-manager';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import {
-    ROLE_ADMIN,
-    ROLE_MANAGER,
-    ROLE_STAFF,
-} from '../../roles/utils/constants';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
@@ -52,7 +46,6 @@ import { RevisionHistoryService } from '../../revision-history/revision-history.
 
 @ApiTags('Menu Item')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT, FEATURE_REGISTRY.RECIPE_MANAGEMENT)
 @Controller('menu-items')
 @ApiExtraModels(MenuItem, RevisionHistoryListItemDto, RevisionHistoryDetailDto)

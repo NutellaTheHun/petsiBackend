@@ -29,17 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import {
-    ROLE_ADMIN,
-    ROLE_MANAGER,
-    ROLE_STAFF,
-} from '../../roles/utils/constants';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
 import { Label, LabelEntity } from '../entities/label.entity';
@@ -47,7 +41,6 @@ import { LabelService } from '../services/label.service';
 
 @ApiTags('Label')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.LABEL_PRINTING)
 @Controller('labels')
 @ApiExtraModels(Label)

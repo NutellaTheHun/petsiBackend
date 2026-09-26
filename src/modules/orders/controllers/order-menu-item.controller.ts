@@ -24,18 +24,12 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import {
-    ROLE_ADMIN,
-    ROLE_MANAGER,
-    ROLE_STAFF,
-} from '../../roles/utils/constants';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import {
@@ -46,7 +40,6 @@ import { OrderMenuItemService } from '../services/order-menu-item.service';
 
 @ApiTags('Order Menu Item')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT)
 @Controller('order-menu-items')
 @ApiExtraModels(OrderMenuItem)

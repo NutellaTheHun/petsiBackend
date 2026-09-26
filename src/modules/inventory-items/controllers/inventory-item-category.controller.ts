@@ -29,13 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import {
@@ -46,7 +44,6 @@ import { InventoryItemCategoryService } from '../services/inventory-item-categor
 
 @ApiTags('Inventory Item Category')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
 @Controller('inventory-item-categories')
 @ApiExtraModels(InventoryItemCategory)

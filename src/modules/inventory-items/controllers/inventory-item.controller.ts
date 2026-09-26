@@ -29,13 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import {
@@ -46,7 +44,6 @@ import { InventoryItemService } from '../services/inventory-item.service';
 
 @ApiTags('Inventory Item')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.INVENTORY_MANAGEMENT)
 @Controller('inventory-items')
 @ApiExtraModels(InventoryItem)

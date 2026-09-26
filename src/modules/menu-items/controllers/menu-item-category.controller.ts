@@ -29,17 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import {
-    ROLE_ADMIN,
-    ROLE_MANAGER,
-    ROLE_STAFF,
-} from '../../roles/utils/constants';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import {
@@ -50,7 +44,6 @@ import { MenuItemCategoryService } from '../services/menu-item-category.service'
 
 @ApiTags('Menu Item Category')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT, FEATURE_REGISTRY.RECIPE_MANAGEMENT)
 @Controller('menu-item-categories')
 @ApiExtraModels(MenuItemCategory)

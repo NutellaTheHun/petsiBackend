@@ -29,13 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
-import { Roles } from '../../../common/decorators/PublicRole';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import {
@@ -46,7 +44,6 @@ import { RecipeCategoryService } from '../services/recipe-category.service';
 
 @ApiTags('Recipe Category')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_MANAGER, ROLE_ADMIN)
 @RequiresFeature(FEATURE_REGISTRY.RECIPE_MANAGEMENT)
 @Controller('recipe-categories')
 @ApiExtraModels(RecipeCategory)
