@@ -120,6 +120,9 @@ category = await seedCategory(categoryRepo, P);
 await categoryRepo.delete(category.id);
 ```
 
+#### HTTP tests
+For assertions on status, body, headers or logged output, build the app with `createHttpTestApp(await get<Domain>TestingModule())` from `src/test/http-test-app.ts`. It applies the production `setupApp` and injects a `RecordingLogger` into the exception filter (`logger.logs`). Use `beforeInit` to add global guards.
+
 #### What to test and what to skip
 
 **Always test:**

@@ -12,6 +12,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ExceptionsModule } from './common/exceptions/exceptions.module';
+import { pinoHttpRequestIdOptions } from './common/middleware/request-id';
 import { RequestIdMiddleware } from './common/middleware/RequestIdMiddleware';
 import { TenantResolutionMiddleware } from './common/middleware/TenantResolutionMiddleware';
 import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.module';
@@ -66,10 +68,7 @@ import { UserModule } from './modules/users/user.module';
 
     LoggerModule.forRoot({
       pinoHttp: {
-        genReqId: (req) => req['requestId'],
-        customProps: (req) => ({
-          requestId: req['requestId'],
-        }),
+        ...pinoHttpRequestIdOptions,
         transport: {
           target: 'pino-pretty',
           options: {
@@ -81,6 +80,7 @@ import { UserModule } from './modules/users/user.module';
       },
     }),
 
+    ExceptionsModule,
     AuthModule,
     AppLoggingModule,
     RequestContextModule,
