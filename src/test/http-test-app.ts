@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { setupApp } from '../app.setup';
+import { RequestContextService } from '../modules/request-context/RequestContextService';
 import {
     ExceptionFilterLogger,
     GlobalHttpExceptionFilter,
@@ -61,7 +62,10 @@ export async function createHttpTestApp(
 ): Promise<{ app: INestApplication; logger: RecordingLogger }> {
     const logger = new RecordingLogger();
     const app = module.createNestApplication();
-    setupApp(app, { exceptionFilter: new GlobalHttpExceptionFilter(logger) });
+    const requestContext = module.get(RequestContextService, { strict: false });
+    setupApp(app, {
+        exceptionFilter: new GlobalHttpExceptionFilter(logger, requestContext),
+    });
     opts?.beforeInit?.(app);
     await app.init();
     return { app, logger };

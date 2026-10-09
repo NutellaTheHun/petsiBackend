@@ -90,18 +90,12 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
       }
     }
 
-    // retrieve entity from DB
-    let toUpdate: TEntity['__Entity'];
-    try {
-      toUpdate = await this.findOne(id, this.getUpdateDiffRelations());
-    } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'UPDATE',
-      );
-    }
+    // retrieve entity from DB. Not wrapped: findOne already converts DB errors,
+    // and its NotFoundException must surface as a 404, not a DatabaseException.
+    const toUpdate: TEntity['__Entity'] = await this.findOne(
+      id,
+      this.getUpdateDiffRelations(),
+    );
 
     let effectiveUpdateDto = updateDto as TEntity['__UDto'];
     let detectionResult: ChangeDetectionResult<TEntity['__UDto']> | undefined;

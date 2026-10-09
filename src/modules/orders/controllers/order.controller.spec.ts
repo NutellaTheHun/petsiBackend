@@ -3,7 +3,6 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { DatabaseException } from '../../../common/exceptions/database-exception';
 import {
     createValidationErrorPayload,
     expectValidationErrorPayload,
@@ -134,13 +133,13 @@ describe('order controller', () => {
         }
     });
 
-    it('updateOrderResponse surfaces missing entity via DatabaseException', async () => {
+    it('updateOrderResponse throws NotFoundException for a missing order', async () => {
         const dto = plainToInstance(UpdateOrderDto, {
             recipient: 'DoesNotMatter',
         });
         await expect(
             controller.updateOrderResponse(9_999_999, dto),
-        ).rejects.toThrow(DatabaseException);
+        ).rejects.toThrow(NotFoundException);
     });
 
     it('remove deletes a created order then findOne fails', async () => {
