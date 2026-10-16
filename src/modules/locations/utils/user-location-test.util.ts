@@ -18,7 +18,7 @@ export class UserLocationTestUtil {
         private readonly locationTestUtil: LocationTestUtil,
         private readonly userTestUtil: UserTestUtil,
         private readonly roleTestUtil: RoleTestUtil,
-    ) { }
+    ) {}
 
     // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
     // These do not register cleanup — callers are responsible for deleting by ID.
@@ -31,8 +31,10 @@ export class UserLocationTestUtil {
         roles: Role[];
         userLocations: UserLocation[];
     }> {
-        const { tenant, locations: [location, otherLocation] } =
-            await this.locationTestUtil.seedLocations(P, undefined, 2);
+        const {
+            tenant,
+            locations: [location, otherLocation],
+        } = await this.locationTestUtil.seedLocations(P, undefined, 2);
         const { users } = await this.userTestUtil.seedUsers(P, tenant.id);
         const { roles } = await this.roleTestUtil.seedRoles(P, tenant.id);
 

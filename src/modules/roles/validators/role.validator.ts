@@ -10,8 +10,10 @@ import { Role, RoleEntity } from '../entities/role.entity';
 import { RoleValidatorIdentity } from './identities/role.validator.identity.interface';
 
 @Injectable()
-export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdentity> {
-
+export class RoleValidator extends ValidatorBase<
+    RoleEntity,
+    RoleValidatorIdentity
+> {
     constructor(
         @InjectRepository(Role)
         private readonly repo: Repository<Role>,
@@ -20,7 +22,10 @@ export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdenti
         super(repo, 'Role', requestContextService);
     }
 
-    protected async validateIdentity(identity: RoleValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: RoleValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -30,16 +35,22 @@ export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdenti
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRoleDto | UpdateRoleDto, _id: number | string): Promise<RoleValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateRoleDto | UpdateRoleDto,
+        _id: number | string,
+    ): Promise<RoleValidatorIdentity> {
         return {
             name: dto.name,
-        } as RoleValidatorIdentity;
+        };
     }
 }

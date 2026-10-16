@@ -19,8 +19,15 @@ export interface ComputeEffectiveFeaturesInput {
  * contributes anything — deny-by-default is structural to the inputs, not a
  * special case here.
  */
-export function computeEffectiveFeatures(input: ComputeEffectiveFeaturesInput): Feature[] {
-    const { tenantEnabledFeatures, roleGrantsByRoleId, userRoleIdsByLocation, isTenantAdmin } = input;
+export function computeEffectiveFeatures(
+    input: ComputeEffectiveFeaturesInput,
+): Feature[] {
+    const {
+        tenantEnabledFeatures,
+        roleGrantsByRoleId,
+        userRoleIdsByLocation,
+        isTenantAdmin,
+    } = input;
 
     if (isTenantAdmin) {
         return [...tenantEnabledFeatures];

@@ -8,7 +8,8 @@ import { RecipeSubCategoryChangeDetector } from './recipe-sub-category.change-de
 describe('RecipeSubCategoryChangeDetector', () => {
     const detector = new RecipeSubCategoryChangeDetector();
 
-    const baseEntity = (): RecipeSubCategory => ({ id: 1, name: 'Pies' } as RecipeSubCategory);
+    const baseEntity = (): RecipeSubCategory =>
+        ({ id: 1, name: 'Pies' }) as RecipeSubCategory;
 
     it('returns empty patch for UpdateDto when dto matches entity', () => {
         const entity = baseEntity();
@@ -28,7 +29,9 @@ describe('RecipeSubCategoryChangeDetector', () => {
 
     it('detects name change', () => {
         const entity = baseEntity();
-        const dto = recipeSubCategoryToNestedUpdateDto(entity, { name: 'Tarts' });
+        const dto = recipeSubCategoryToNestedUpdateDto(entity, {
+            name: 'Tarts',
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({ id: 1, name: 'Tarts' });

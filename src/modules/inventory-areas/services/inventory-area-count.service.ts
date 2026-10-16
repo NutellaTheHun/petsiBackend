@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
@@ -107,15 +112,17 @@ export class InventoryAreaCountService extends LocationScopedServiceBase<Invento
         if (dto.countedInventoryItems !== undefined) {
             const existingItems = entity.countedInventoryItems ?? [];
             const incomingIds = dto.countedInventoryItems
-                .map((i: any) => ('id' in i ? i.id : undefined))
-                .filter((id: any): id is number => typeof id === 'number');
+                .map((i) => ('id' in i ? i.id : undefined))
+                .filter((id): id is number => typeof id === 'number');
 
             const idsToRemove = existingItems
                 .map((i) => i.id)
                 .filter((id) => !incomingIds.includes(id));
 
             if (idsToRemove.length) {
-                await manager.delete(InventoryAreaItem, { id: In(idsToRemove) });
+                await manager.delete(InventoryAreaItem, {
+                    id: In(idsToRemove),
+                });
                 entity.countedInventoryItems = existingItems.filter(
                     (i) => !idsToRemove.includes(i.id),
                 );

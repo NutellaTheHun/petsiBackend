@@ -46,13 +46,23 @@ describe('menu item revision history (controller)', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
-            await testingUtil.seedItems(P, tenant.id));
+        ({
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+        } = await testingUtil.seedItems(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -77,7 +87,9 @@ describe('menu item revision history (controller)', () => {
 
     it('creates revisions on create/update and records revert', async () => {
         const rhs = module.get(RevisionHistoryService);
-        expect(typeof (rhs as any).listRevisions).toEqual('function');
+        expect(
+            typeof (rhs as unknown as Record<string, unknown>).listRevisions,
+        ).toEqual('function');
 
         const dto = plainToInstance(CreateMenuItemDto, {
             name: `${P}-revision-item`,
@@ -87,7 +99,9 @@ describe('menu item revision history (controller)', () => {
         });
 
         const created = await controller.create(dto);
-        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
 
         const afterCreate = await rhs.listRevisions('menu_item', created.id);
         expect(afterCreate.length).toBeGreaterThanOrEqual(1);
@@ -104,7 +118,9 @@ describe('menu item revision history (controller)', () => {
                 'containerMenuItems.containedItemSize',
             ],
         });
-        const updateDto = menuItemToUpdateDto(row, { name: `${P}-revision-item-v2` });
+        const updateDto = menuItemToUpdateDto(row, {
+            name: `${P}-revision-item-v2`,
+        });
         await controller.update(created.id, updateDto);
 
         const afterUpdate = await rhs.listRevisions('menu_item', created.id);
@@ -131,10 +147,13 @@ describe('menu item revision history (controller)', () => {
                 sizeIds: [sizes[0].id],
             }),
         );
-        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
 
         const revisions = await rhs.listRevisions('menu_item', created.id);
-        if (!revisions.length) throw new Error('expected menu item to have revisions');
+        if (!revisions.length)
+            throw new Error('expected menu item to have revisions');
 
         const rev = await rhs.getRevisionOrThrow(
             'menu_item',
@@ -155,13 +174,17 @@ describe('menu item revision history (controller)', () => {
                 sizeIds: [sizes[0].id],
             }),
         );
-        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
 
         const otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
-        testCtx.addCleanupFunction(async () => { await tenantRepo.delete(otherTenant.id); });
+        testCtx.addCleanupFunction(async () => {
+            await tenantRepo.delete(otherTenant.id);
+        });
 
         requestContext.setContext({ tenantId: otherTenant.id });
         try {

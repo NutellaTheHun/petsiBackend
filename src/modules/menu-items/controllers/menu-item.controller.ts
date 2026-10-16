@@ -46,7 +46,10 @@ import { RevisionHistoryService } from '../../revision-history/revision-history.
 
 @ApiTags('Menu Item')
 @ApiBearerAuth('access-token')
-@RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT, FEATURE_REGISTRY.RECIPE_MANAGEMENT)
+@RequiresFeature(
+    FEATURE_REGISTRY.ORDER_MANAGEMENT,
+    FEATURE_REGISTRY.RECIPE_MANAGEMENT,
+)
 @Controller('menu-items')
 @ApiExtraModels(MenuItem, RevisionHistoryListItemDto, RevisionHistoryDetailDto)
 export class MenuItemController extends ControllerBase<MenuItemEntity> {
@@ -97,7 +100,9 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
 
     @Get(':id/revisions')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Lists revision history for a menu item (metadata only)' })
+    @ApiOperation({
+        summary: 'Lists revision history for a menu item (metadata only)',
+    })
     @ApiOkResponse({ type: [RevisionHistoryListItemDto] })
     async listMenuItemRevisions(
         @Param('id', ParseIntPipe) id: number,
@@ -172,7 +177,12 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

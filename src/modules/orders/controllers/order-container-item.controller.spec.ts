@@ -45,17 +45,21 @@ describe('order container item controller', () => {
         const module: TestingModule = await getOrdersTestingModule();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
 
-        controller = module.get<OrderContainerItemController>(OrderContainerItemController);
+        controller = module.get<OrderContainerItemController>(
+            OrderContainerItemController,
+        );
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        const requestContext = module.get(
+        const requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         const fixtureTenantId = await testingUtil.getDefaultTenantId();
         requestContext.setContext({
@@ -64,8 +68,18 @@ describe('order container item controller', () => {
             locations: [],
         });
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, containerOrderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            containerOrderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -73,7 +87,11 @@ describe('order container item controller', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
@@ -96,7 +114,9 @@ describe('order container item controller', () => {
     it('remove deletes a container line then findOne fails', async () => {
         const line = containerOrderMenuItems[0].containerOrderMenuItems![0];
         await controller.remove(line.id);
-        await expect(controller.findOne(line.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(line.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     it('remove throws NotFoundException when id does not exist', async () => {

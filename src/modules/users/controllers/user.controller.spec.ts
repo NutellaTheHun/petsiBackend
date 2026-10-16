@@ -35,7 +35,9 @@ describe('UserController', () => {
         testingUtil = module.get<UserTestUtil>(UserTestUtil);
         controller = module.get(UserController);
         userRepo = module.get(getRepositoryToken(User));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         ({ tenantId, users } = await testingUtil.seedUsers(P));
         requestContext.setContext({ tenantId });

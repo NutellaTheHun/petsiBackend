@@ -86,7 +86,8 @@ export class CreateOrderMenuItemDto {
      * client and never independently re-derived from request context.
      */
     @ApiProperty({
-        description: "The parent Order's tenantId. Populated internally, not client-supplied.",
+        description:
+            "The parent Order's tenantId. Populated internally, not client-supplied.",
         example: 1,
     })
     @IsNumber()
@@ -95,7 +96,8 @@ export class CreateOrderMenuItemDto {
     readonly tenantId: number;
 
     @ApiProperty({
-        description: "The parent Order's locationId. Populated internally, not client-supplied.",
+        description:
+            "The parent Order's locationId. Populated internally, not client-supplied.",
         example: 1,
     })
     @IsNumber()

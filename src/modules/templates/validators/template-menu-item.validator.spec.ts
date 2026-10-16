@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -39,7 +43,9 @@ describe('template menu item validator', () => {
     beforeAll(async () => {
         const module: TestingModule = await getTemplateTestingModule();
         testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-        validator = module.get<TemplateMenuItemValidator>(TemplateMenuItemValidator);
+        validator = module.get<TemplateMenuItemValidator>(
+            TemplateMenuItemValidator,
+        );
 
         templateRepo = module.get(getRepositoryToken(Template));
         templateItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
@@ -61,7 +67,11 @@ describe('template menu item validator', () => {
     afterAll(async () => {
         await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
         await templateRepo.delete(templates.map((t) => t.id));
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
@@ -77,59 +87,81 @@ describe('template menu item validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
-            displayName: `${P}-new-row`,
-            tablePosIndex: 1,
-            menuItemId: singleItems[0].id,
-            parentTemplateId: templates[0].id,
-        });
+        const dto: CreateTemplateMenuItemDto = plainToInstance(
+            CreateTemplateMenuItemDto,
+            {
+                displayName: `${P}-new-row`,
+                tablePosIndex: 1,
+                menuItemId: singleItems[0].id,
+                parentTemplateId: templates[0].id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: positional index cannot be less than 0', async () => {
-        const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
-            displayName: `${P}-new-row-bad-pos`,
-            tablePosIndex: -1,
-            menuItemId: singleItems[0].id,
-            parentTemplateId: templates[0].id,
-        });
+        const dto: CreateTemplateMenuItemDto = plainToInstance(
+            CreateTemplateMenuItemDto,
+            {
+                displayName: `${P}-new-row-bad-pos`,
+                tablePosIndex: -1,
+                menuItemId: singleItems[0].id,
+                parentTemplateId: templates[0].id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'tablePosIndex',
+            ]),
         );
     });
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const dto: UpdateTemplateMenuItemDto = plainToInstance(UpdateTemplateMenuItemDto, {
-            tablePosIndex: 500,
-            menuItemId: singleItems[1].id,
-            displayName: `${P}-updated-row`,
-        });
+        const dto: UpdateTemplateMenuItemDto = plainToInstance(
+            UpdateTemplateMenuItemDto,
+            {
+                tablePosIndex: 500,
+                menuItemId: singleItems[1].id,
+                displayName: `${P}-updated-row`,
+            },
+        );
 
-        const errors = await validator.validateDto(dto, templateMenuItems[0].id);
+        const errors = await validator.validateDto(
+            dto,
+            templateMenuItems[0].id,
+        );
         expect(errors).toBeNull();
     });
 
     it('fail validate update: positional index cannot be less than 0', async () => {
-        const dto: UpdateTemplateMenuItemDto = plainToInstance(UpdateTemplateMenuItemDto, {
-            tablePosIndex: -1,
-            displayName: `${P}-updated-row-bad-pos`,
-            menuItemId: templateMenuItems[0].menuItem.id,
-        });
+        const dto: UpdateTemplateMenuItemDto = plainToInstance(
+            UpdateTemplateMenuItemDto,
+            {
+                tablePosIndex: -1,
+                displayName: `${P}-updated-row-bad-pos`,
+                menuItemId: templateMenuItems[0].menuItem.id,
+            },
+        );
 
-        const errors = await validator.validateDto(dto, templateMenuItems[0].id);
+        const errors = await validator.validateDto(
+            dto,
+            templateMenuItems[0].id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'tablePosIndex',
+            ]),
         );
     });
 });

@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+    Column,
+    Entity,
+    ManyToMany,
+    PrimaryGeneratedColumn,
+    Unique,
+} from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { userLocationExample } from '../../../common/swagger/examples/locations/user-location.example';
 import { UserLocation } from '../../locations/entities/user-location.entity';
@@ -45,7 +51,8 @@ export class Role {
      */
     @ApiProperty({
         example: [userLocationExample(new Set<string>(), true)],
-        description: 'List of location assignments where a user holds this role',
+        description:
+            'List of location assignments where a user holds this role',
         type: () => UserLocation,
         isArray: true,
     })

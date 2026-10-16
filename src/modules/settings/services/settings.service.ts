@@ -7,9 +7,20 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateSettingDto } from '../dto/create-setting.dto';
 import { EffectiveSettingDto } from '../dto/effective-setting.dto';
 import { UpdateSettingDto } from '../dto/update-setting.dto';
-import { Setting, SettingEntity, SettingValueType } from '../entities/setting.entity';
-import { getRegisteredValueType, isRegisteredSettingKey } from '../utils/setting-key.registry';
-import { deserializeSettingValue, serializeSettingValue } from '../utils/setting-value.util';
+import {
+    Setting,
+    SettingEntity,
+    SettingValueType,
+} from '../entities/setting.entity';
+import {
+    getRegisteredValueType,
+    isRegisteredSettingKey,
+} from '../utils/setting-key.registry';
+import {
+    deserializeSettingValue,
+    SettingValue,
+    serializeSettingValue,
+} from '../utils/setting-value.util';
 import { SettingChangeDetector } from '../utils/change-detectors/setting.change-detector';
 import { SettingValidator } from '../validators/setting.validator';
 
@@ -24,7 +35,10 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
         super(repo, 'SettingsService', requestContextService, validator);
     }
 
-    protected async createEntity(dto: CreateSettingDto, manager: EntityManager): Promise<Setting> {
+    protected async createEntity(
+        dto: CreateSettingDto,
+        manager: EntityManager,
+    ): Promise<Setting> {
         const valueType = getRegisteredValueType(dto.name)!;
         const result = manager.create(Setting, {
             tenantId: this.getTenantId(),
@@ -62,19 +76,35 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
      * order's location during background processing).
      */
     async getString(name: string, locationId?: number): Promise<string> {
-        return (await this.getTypedValue(name, SettingValueType.String, locationId)) as string;
+        return (await this.getTypedValue(
+            name,
+            SettingValueType.String,
+            locationId,
+        )) as string;
     }
 
     async getNumber(name: string, locationId?: number): Promise<number> {
-        return (await this.getTypedValue(name, SettingValueType.Number, locationId)) as number;
+        return (await this.getTypedValue(
+            name,
+            SettingValueType.Number,
+            locationId,
+        )) as number;
     }
 
     async getBoolean(name: string, locationId?: number): Promise<boolean> {
-        return (await this.getTypedValue(name, SettingValueType.Boolean, locationId)) as boolean;
+        return (await this.getTypedValue(
+            name,
+            SettingValueType.Boolean,
+            locationId,
+        )) as boolean;
     }
 
     async getJson<T = any>(name: string, locationId?: number): Promise<T> {
-        return (await this.getTypedValue(name, SettingValueType.Json, locationId)) as T;
+        return (await this.getTypedValue(
+            name,
+            SettingValueType.Json,
+            locationId,
+        )) as T;
     }
 
     /**
@@ -85,16 +115,22 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
      * a non-tenant-admin caller may only request their own assigned
      * locations.
      */
-    async getEffectiveSettings(locationId?: number): Promise<EffectiveSettingDto[]> {
+    async getEffectiveSettings(
+        locationId?: number,
+    ): Promise<EffectiveSettingDto[]> {
         if (locationId != null) {
             this.assertLocationAuthorized(locationId);
         }
 
         const tenantId = this.getTenantId();
-        const defaults = await this.entityRepo.find({ where: { tenantId, locationId: IsNull() } });
+        const defaults = await this.entityRepo.find({
+            where: { tenantId, locationId: IsNull() },
+        });
         const overrides =
             locationId != null
-                ? await this.entityRepo.find({ where: { tenantId, locationId } })
+                ? await this.entityRepo.find({
+                      where: { tenantId, locationId },
+                  })
                 : [];
 
         const overrideByName = new Map(overrides.map((o) => [o.name, o]));
@@ -115,7 +151,10 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
                 merged.push({
                     name: override.name,
                     valueType: override.valueType,
-                    value: deserializeSettingValue(override.valueType, override.value),
+                    value: deserializeSettingValue(
+                        override.valueType,
+                        override.value,
+                    ),
                     isOverridden: true,
                 });
             }
@@ -128,7 +167,7 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
         name: string,
         expectedType: SettingValueType,
         locationId?: number,
-    ): Promise<string | number | boolean | any> {
+    ): Promise<SettingValue> {
         if (!isRegisteredSettingKey(name)) {
             throw new AppHttpException(
                 `Unregistered setting key: ${name}`,
@@ -148,21 +187,30 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
 
         const row = await this.resolveEffectiveRow(name, locationId);
         if (!row) {
-            throw new NotFoundException(`Setting "${name}" is not configured for this tenant`);
+            throw new NotFoundException(
+                `Setting "${name}" is not configured for this tenant`,
+            );
         }
         return deserializeSettingValue(row.valueType, row.value);
     }
 
-    private async resolveEffectiveRow(name: string, locationId?: number): Promise<Setting | null> {
+    private async resolveEffectiveRow(
+        name: string,
+        locationId?: number,
+    ): Promise<Setting | null> {
         const tenantId = this.getTenantId();
 
         if (locationId != null) {
-            const override = await this.entityRepo.findOne({ where: { tenantId, locationId, name } });
+            const override = await this.entityRepo.findOne({
+                where: { tenantId, locationId, name },
+            });
             if (override) {
                 return override;
             }
         }
 
-        return this.entityRepo.findOne({ where: { tenantId, locationId: IsNull(), name } });
+        return this.entityRepo.findOne({
+            where: { tenantId, locationId: IsNull(), name },
+        });
     }
 }

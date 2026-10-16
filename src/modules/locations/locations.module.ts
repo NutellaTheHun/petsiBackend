@@ -43,6 +43,12 @@ import { UserLocationValidator } from './validators/user-location.validator';
         UserLocationTestUtil,
         UserLocationChangeDetector,
     ],
-    exports: [LocationService, LocationTestUtil, UserLocationService, UserLocationTestUtil, TypeOrmModule],
+    exports: [
+        LocationService,
+        LocationTestUtil,
+        UserLocationService,
+        UserLocationTestUtil,
+        TypeOrmModule,
+    ],
 })
-export class LocationsModule { }
+export class LocationsModule {}

@@ -48,8 +48,12 @@ describe('Inventory Item Controller', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        controller = module.get<InventoryItemController>(InventoryItemController);
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        controller = module.get<InventoryItemController>(
+            InventoryItemController,
+        );
 
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
@@ -57,15 +61,18 @@ describe('Inventory Item Controller', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
-            P,
-            tenant.id,
-        ));
+        ({ categories, vendors, packages, items, sizes } =
+            await testingUtil.seedSizes(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -102,7 +109,9 @@ describe('Inventory Item Controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });
@@ -125,6 +134,8 @@ describe('Inventory Item Controller', () => {
             }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

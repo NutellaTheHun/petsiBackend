@@ -33,7 +33,9 @@ describe('LocationController', () => {
         tenantRepo = module.get(getRepositoryToken(Tenant));
 
         ({ tenant, locations } = await testingUtil.seedLocations(P));
-        (module.get(RequestContextService) as TestRequestContextService).setContext({ tenantId: tenant.id });
+        module
+            .get<TestRequestContextService>(RequestContextService)
+            .setContext({ tenantId: tenant.id });
     });
 
     afterAll(async () => {

@@ -57,7 +57,9 @@ export class TenantService extends ServiceBase<TenantEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Tenant, UpdateTenantDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Tenant, UpdateTenantDto>
+        | undefined {
         return this.tenantChangeDetector;
     }
 }

@@ -37,7 +37,9 @@ export async function getOrdersTestingModule(opts?: {
     orderContainerItemServiceClass?: new (
         ...args: any[]
     ) => OrderContainerItemService;
-    orderRecurrenceServiceClass?: new (...args: any[]) => OrderRecurrenceService;
+    orderRecurrenceServiceClass?: new (
+        ...args: any[]
+    ) => OrderRecurrenceService;
     mockRevisionHistory?: boolean;
 }): Promise<TestingModule> {
     const mockRevisionHistory = opts?.mockRevisionHistory ?? true;
@@ -72,7 +74,10 @@ export async function getOrdersTestingModule(opts?: {
             ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
             RequestContextModule,
         ],
@@ -97,7 +102,9 @@ export async function getOrdersTestingModule(opts?: {
         .overrideProvider(OrderService)
         .useClass(opts?.orderServiceClass || OrderService)
         .overrideProvider(OrderContainerItemService)
-        .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
+        .useClass(
+            opts?.orderContainerItemServiceClass || OrderContainerItemService,
+        )
         .overrideProvider(OrderRecurrenceService)
         .useClass(opts?.orderRecurrenceServiceClass || OrderRecurrenceService);
 

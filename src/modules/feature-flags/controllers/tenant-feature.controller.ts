@@ -35,8 +35,15 @@ export class TenantFeatureController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Retrieves the caller's tenant's enabled features (tenant-admin only)" })
-    @ApiOkResponse({ description: 'The tenant\'s enabled features', isArray: true, type: String })
+    @ApiOperation({
+        summary:
+            "Retrieves the caller's tenant's enabled features (tenant-admin only)",
+    })
+    @ApiOkResponse({
+        description: "The tenant's enabled features",
+        isArray: true,
+        type: String,
+    })
     @ApiForbiddenResponse({ description: 'Caller is not a tenant admin' })
     async findEnabled(): Promise<Feature[]> {
         if (this.requestContextService.get<boolean>('isTenantAdmin') !== true) {

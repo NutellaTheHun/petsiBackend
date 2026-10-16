@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -139,7 +139,12 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -159,7 +164,8 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
         name: 'search',
         required: false,
         type: String,
-        description: 'Search by menu item name (case-insensitive partial match)',
+        description:
+            'Search by menu item name (case-insensitive partial match)',
     })
     @ApiQuery({
         name: 'filters',

@@ -30,7 +30,8 @@ export class Tenant {
     name: string;
 
     @ApiProperty({
-        description: 'Unique subdomain the tenant is resolved from (e.g. tenant1.app.com).',
+        description:
+            'Unique subdomain the tenant is resolved from (e.g. tenant1.app.com).',
         example: 'petsi',
     })
     @Column({ unique: true })

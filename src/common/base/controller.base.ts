@@ -11,7 +11,7 @@ import {
     ParseIntPipe,
     Post,
     Put,
-    Query
+    Query,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { parse, stringify } from 'flatted';
@@ -24,16 +24,14 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { EntityBase } from './entity.base';
 import { ServiceBase } from './service.base';
 
-export class ControllerBase<
-    TEntity extends EntityBase<any, any, any>,
-> {
+export class ControllerBase<TEntity extends EntityBase<any, any, any>> {
     constructor(
         protected readonly entityService: ServiceBase<TEntity>,
         @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
         public controllerPrefix: string,
         private readonly requestContextService: RequestContextService,
         private readonly logger: PinoLogger,
-    ) { }
+    ) {}
 
     private logCacheEvent(
         event: 'CACHE HIT' | 'RESULT CACHED' | 'CACHE INVALIDATED',
@@ -79,18 +77,20 @@ export class ControllerBase<
     ): Promise<{ items: TEntity['__Entity'][]; nextCursor?: string }> {
         let relations: string[] = [];
         if (rawRelations) {
-            relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
+            relations = Array.isArray(rawRelations)
+                ? rawRelations
+                : [rawRelations];
 
             relations = relations.filter(
                 (r) => r !== undefined && r !== 'undefined',
-            ) as string[];
+            );
         }
 
         const filterArray = Array.isArray(filters)
             ? filters
             : filters
-                ? [filters]
-                : [];
+              ? [filters]
+              : [];
 
         // Build cache key — scoped by the caller's tenant (and, for
         // location-scoped entities, authorized locations) so a cached
@@ -115,7 +115,10 @@ export class ControllerBase<
         const cached = await this.cacheManager.get<string>(cacheKey);
         if (cached) {
             this.logCacheEvent('CACHE HIT', 'FIND_ALL', cacheKey);
-            return parse(cached);
+            return parse(cached) as {
+                items: TEntity['__Entity'][];
+                nextCursor?: string;
+            };
         }
 
         // Query DB
@@ -156,11 +159,13 @@ export class ControllerBase<
     ): Promise<TEntity['__Entity']> {
         let relations: string[] = [];
         if (rawRelations) {
-            relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
+            relations = Array.isArray(rawRelations)
+                ? rawRelations
+                : [rawRelations];
 
             relations = relations.filter(
                 (r) => r !== undefined && r !== 'undefined',
-            ) as string[];
+            );
         }
 
         // Build cache key — scoped by the caller's tenant (and, for
@@ -173,7 +178,7 @@ export class ControllerBase<
             this.logCacheEvent('CACHE HIT', 'FIND_ONE', cacheKey);
 
             // return if cache hit
-            return parse(cached);
+            return parse(cached) as TEntity['__Entity'];
         }
 
         // Query DB

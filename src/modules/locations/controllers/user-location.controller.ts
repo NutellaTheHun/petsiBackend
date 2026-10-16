@@ -38,7 +38,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateUserLocationDto } from '../dto/create-user-location.dto';
 import { UpdateUserLocationDto } from '../dto/update-user-location.dto';
-import { UserLocation, UserLocationEntity } from '../entities/user-location.entity';
+import {
+    UserLocation,
+    UserLocationEntity,
+} from '../entities/user-location.entity';
 import { UserLocationService } from '../services/user-location.service';
 
 @ApiTags('UserLocation')
@@ -65,10 +68,17 @@ export class UserLocationController extends ControllerBase<UserLocationEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @LocationScope('body', 'locationId')
-    @ApiOperation({ summary: 'Assigns a User to a Location with a set of Roles' })
-    @ApiCreatedResponse({ description: 'UserLocation successfully created', type: UserLocation })
+    @ApiOperation({
+        summary: 'Assigns a User to a Location with a set of Roles',
+    })
+    @ApiCreatedResponse({
+        description: 'UserLocation successfully created',
+        type: UserLocation,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiForbiddenResponse({ description: 'Caller is not authorized for the target location' })
+    @ApiForbiddenResponse({
+        description: 'Caller is not authorized for the target location',
+    })
     @ApiBody({ type: CreateUserLocationDto })
     async create(@Body() dto: CreateUserLocationDto): Promise<UserLocation> {
         return super.create(dto);
@@ -76,10 +86,15 @@ export class UserLocationController extends ControllerBase<UserLocationEntity> {
 
     @Put(':id')
     @ApiOperation({ summary: 'Updates a UserLocation assignment' })
-    @ApiOkResponse({ description: 'UserLocation successfully updated', type: UserLocation })
+    @ApiOkResponse({
+        description: 'UserLocation successfully updated',
+        type: UserLocation,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'UserLocation to update not found.' })
-    @ApiForbiddenResponse({ description: 'Caller is not authorized for the target location' })
+    @ApiForbiddenResponse({
+        description: 'Caller is not authorized for the target location',
+    })
     @ApiBody({ type: UpdateUserLocationDto })
     async update(
         @Param('id', ParseIntPipe) id: number,
@@ -115,7 +130,12 @@ export class UserLocationController extends ControllerBase<UserLocationEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -156,7 +176,9 @@ export class UserLocationController extends ControllerBase<UserLocationEntity> {
     @ApiOperation({ summary: 'Retrieves one UserLocation assignment' })
     @ApiOkResponse({ description: 'UserLocation found', type: UserLocation })
     @ApiNotFoundResponse({ description: 'UserLocation not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserLocation> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<UserLocation> {
         return super.findOne(id);
     }
 }

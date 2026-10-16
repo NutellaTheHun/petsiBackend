@@ -17,7 +17,8 @@ export class RevisionHistoryDetailDto {
     @ApiProperty({
         type: 'object',
         additionalProperties: true,
-        description: 'Versioned aggregate snapshot (shape depends on entity type and payloadVersion)',
+        description:
+            'Versioned aggregate snapshot (shape depends on entity type and payloadVersion)',
     })
     payload: Record<string, unknown>;
 }

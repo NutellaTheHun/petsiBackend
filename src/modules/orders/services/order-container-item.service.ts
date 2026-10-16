@@ -44,7 +44,7 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
         manager: EntityManager,
         entity: OrderContainerItem,
     ): Promise<void> {
-        await this.containerItemComposer.composeUpdate(dto, manager, entity)
+        await this.containerItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -64,10 +64,16 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
         query: SelectQueryBuilder<OrderContainerItem>,
         filters: Record<string, string[]>,
     ): void {
-        if (filters.parentOrderMenuItem && filters.parentOrderMenuItem.length > 0) {
-            query.andWhere('entity.parentOrderMenuItem IN (:...parentOrderMenuItems)', {
-                parentOrderMenuItems: filters.parentOrderMenuItem,
-            });
+        if (
+            filters.parentOrderMenuItem &&
+            filters.parentOrderMenuItem.length > 0
+        ) {
+            query.andWhere(
+                'entity.parentOrderMenuItem IN (:...parentOrderMenuItems)',
+                {
+                    parentOrderMenuItems: filters.parentOrderMenuItem,
+                },
+            );
         }
     }
 }

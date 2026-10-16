@@ -21,32 +21,47 @@ import { RoleService } from '../services/role.service';
 import { RoleChangeDetector } from './change-detectors/role.change-detector';
 
 export async function getRoleTestingModule(opts?: {
-  roleServiceClass?: new (...args: any[]) => RoleService;
-  roleChangeDetectorClass?: new (...args: any[]) => RoleChangeDetector;
+    roleServiceClass?: new (...args: any[]) => RoleService;
+    roleChangeDetectorClass?: new (...args: any[]) => RoleChangeDetector;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([User, Role, UserLocation, Location, Tenant]),
-      TypeOrmModule.forFeature([User, Role, UserLocation, Location, Tenant]),
-      UserModule,
-      RoleModule,
-      LocationsModule,
-      TenantsModule,
-      RequestContextModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
-      }),
-    ],
-    controllers: [RoleController],
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(RoleService)
-    .useClass(opts?.roleServiceClass || RoleService)
-    .overrideProvider(RoleChangeDetector)
-    .useClass(opts?.roleChangeDetectorClass || RoleChangeDetector)
-    .compile();
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+            ]),
+            TypeOrmModule.forFeature([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+            ]),
+            UserModule,
+            RoleModule,
+            LocationsModule,
+            TenantsModule,
+            RequestContextModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+        ],
+        controllers: [RoleController],
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(RoleService)
+        .useClass(opts?.roleServiceClass || RoleService)
+        .overrideProvider(RoleChangeDetector)
+        .useClass(opts?.roleChangeDetectorClass || RoleChangeDetector)
+        .compile();
 }

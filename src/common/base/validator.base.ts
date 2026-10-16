@@ -49,7 +49,11 @@ export abstract class ValidatorBase<
         id?: number | string,
     ): Promise<ValidationErrorMap>;
 
-    public async validateNestedIdentity(field: string, nestedIdentity: I, rootErrorMap: ValidationErrorMap, /*id: number | string*/): Promise<void> {
+    public async validateNestedIdentity(
+        field: string,
+        nestedIdentity: I,
+        rootErrorMap: ValidationErrorMap /*id: number | string*/,
+    ): Promise<void> {
         const id = nestedIdentity.id ?? nestedIdentity.createId;
         if (!id) {
             throw new Error('Nested identity id is required');

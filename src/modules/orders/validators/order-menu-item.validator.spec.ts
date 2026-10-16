@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
@@ -46,7 +50,11 @@ describe('order menu item validator', () => {
     let menuItemSizes: MenuItemSize[];
 
     const linesFor = (menuItemId: number, sizeId: number) =>
-        containerLines.filter((l) => l.parentMenuItem.id === menuItemId && l.parentItemSize.id === sizeId);
+        containerLines.filter(
+            (l) =>
+                l.parentMenuItem.id === menuItemId &&
+                l.parentItemSize.id === sizeId,
+        );
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
@@ -59,11 +67,23 @@ describe('order menu item validator', () => {
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, containerOrderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            containerOrderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -71,7 +91,11 @@ describe('order menu item validator', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await sizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
@@ -91,30 +115,33 @@ describe('order menu item validator', () => {
         const containerSize = containerMenuItem.sizes[0];
         const lines = linesFor(containerMenuItem.id, containerSize.id);
 
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: containerMenuItem.id,
-            sizeId: containerSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: 2,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c2',
-                    containedMenuItemId: lines[1].containedMenuItem.id,
-                    containedItemSizeId: lines[1].containedItemSize.id,
-                    quantity: 3,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: containerMenuItem.id,
+                sizeId: containerSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: 2,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c2',
+                        containedMenuItemId: lines[1].containedMenuItem.id,
+                        containedItemSizeId: lines[1].containedItemSize.id,
+                        quantity: 3,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -125,92 +152,121 @@ describe('order menu item validator', () => {
         const menuItem = singleItems[0];
 
         const allSizes = await sizeRepo.find();
-        const invalidSize = allSizes.find((s) => !menuItem.sizes?.some((ms) => ms.id === s.id));
+        const invalidSize = allSizes.find(
+            (s) => !menuItem.sizes?.some((ms) => ms.id === s.id),
+        );
         if (!invalidSize) throw new Error('invalid size not found');
 
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: menuItem.id,
-            sizeId: invalidSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_REFERENCE', undefined, ['size']));
-    });
-
-    it('fail validate create: duplicate container item', async () => {
-        const order = orders[0];
-        const containerMenuItem = varContainerItems[0];
-        if (!containerMenuItem.variableMaxAmount) throw new Error('container menu item does not have variableMaxAmount');
-        const containerSize = containerMenuItem.sizes[0];
-        const lines = linesFor(containerMenuItem.id, containerSize.id);
-
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: containerMenuItem.id,
-            sizeId: containerSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: containerMenuItem.variableMaxAmount - 1,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c2',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: 1,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: menuItem.id,
+                sizeId: invalidSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['containerOrderMenuItems']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'size',
+            ]),
+        );
+    });
+
+    it('fail validate create: duplicate container item', async () => {
+        const order = orders[0];
+        const containerMenuItem = varContainerItems[0];
+        if (!containerMenuItem.variableMaxAmount)
+            throw new Error(
+                'container menu item does not have variableMaxAmount',
+            );
+        const containerSize = containerMenuItem.sizes[0];
+        const lines = linesFor(containerMenuItem.id, containerSize.id);
+
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: containerMenuItem.id,
+                sizeId: containerSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: containerMenuItem.variableMaxAmount - 1,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c2',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: 1,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['containerOrderMenuItems'],
+            ),
         );
     });
 
     it('fail validate create: container quantity not equal to variable max amount', async () => {
         const order = orders[0];
         const containerMenuItem = varContainerItems[0];
-        if (!containerMenuItem.variableMaxAmount) throw new Error('container menu item does not have variableMaxAmount');
+        if (!containerMenuItem.variableMaxAmount)
+            throw new Error(
+                'container menu item does not have variableMaxAmount',
+            );
         const containerSize = containerMenuItem.sizes[0];
         const lines = linesFor(containerMenuItem.id, containerSize.id);
 
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: containerMenuItem.id,
-            sizeId: containerSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: containerMenuItem.variableMaxAmount + 1,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: containerMenuItem.id,
+                sizeId: containerSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: containerMenuItem.variableMaxAmount + 1,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'containerOrderMenuItems',
+            ]),
         );
     });
 
@@ -221,32 +277,39 @@ describe('order menu item validator', () => {
         const lines = linesFor(containerMenuItem.id, containerSize.id);
         const containedItem = lines[0].containedMenuItem;
         const containedItemSize = lines[0].containedItemSize;
-        const invalidSize = containedItem.sizes.find((s) => s.id !== containedItemSize.id);
+        const invalidSize = containedItem.sizes.find(
+            (s) => s.id !== containedItemSize.id,
+        );
         if (!invalidSize) throw new Error('invalid size not found');
 
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: containerMenuItem.id,
-            sizeId: containerSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: invalidSize.id,
-                    quantity: 2,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: containerMenuItem.id,
+                sizeId: containerSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: containedItem.id,
+                        containedItemSizeId: invalidSize.id,
+                        quantity: 2,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'containedItemSize',
+            ]),
         );
     });
 
@@ -256,62 +319,75 @@ describe('order menu item validator', () => {
         const containerSize = containerMenuItem.sizes[0];
         const lines = linesFor(containerMenuItem.id, containerSize.id);
 
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: containerMenuItem.id,
-            sizeId: containerSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: 0,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: containerMenuItem.id,
+                sizeId: containerSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: 0,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
     it('fail validate create: nested containerOrderMenuItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {
         const order = orders[0];
         const containerMenuItem = varContainerItems[1];
-        if (!containerMenuItem.variableMaxAmount) throw new Error('container menu item does not have variableMaxAmount');
+        if (!containerMenuItem.variableMaxAmount)
+            throw new Error(
+                'container menu item does not have variableMaxAmount',
+            );
         const containerSize = containerMenuItem.sizes[0];
         const lines = linesFor(containerMenuItem.id, containerSize.id);
 
-        const dto: CreateOrderMenuItemDto = plainToInstance(CreateOrderMenuItemDto, {
-            menuItemId: containerMenuItem.id,
-            sizeId: containerSize.id,
-            quantity: 1,
-            parentOrderId: order.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: containerMenuItem.variableMaxAmount + 1,
-                    parentMenuItemIdCtx: containerMenuItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: CreateOrderMenuItemDto = plainToInstance(
+            CreateOrderMenuItemDto,
+            {
+                menuItemId: containerMenuItem.id,
+                sizeId: containerSize.id,
+                quantity: 1,
+                parentOrderId: order.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: containerMenuItem.variableMaxAmount + 1,
+                        parentMenuItemIdCtx: containerMenuItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'containerOrderMenuItems',
+            ]),
         );
     });
 
@@ -319,41 +395,50 @@ describe('order menu item validator', () => {
     it('successfully validate update: no validation errors', async () => {
         const orderMenuItemToUpdate = orderMenuItems[0];
         const newContainerItem = varContainerItems[0];
-        if (!newContainerItem.variableMaxAmount) throw new Error('container item does not have variableMaxAmount');
+        if (!newContainerItem.variableMaxAmount)
+            throw new Error('container item does not have variableMaxAmount');
         const containerSize = newContainerItem.sizes[0];
         const lines = linesFor(newContainerItem.id, containerSize.id);
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            quantity: 5,
-            menuItemId: newContainerItem.id,
-            sizeId: containerSize.id,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: newContainerItem.variableMaxAmount - 1,
-                    parentMenuItemIdCtx: newContainerItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c2',
-                    containedMenuItemId: lines[1].containedMenuItem.id,
-                    containedItemSizeId: lines[1].containedItemSize.id,
-                    quantity: 1,
-                    parentMenuItemIdCtx: newContainerItem.id,
-                    parentMenuItemSizeIdCtx: containerSize.id,
-                }),
-            ],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                quantity: 5,
+                menuItemId: newContainerItem.id,
+                sizeId: containerSize.id,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: newContainerItem.variableMaxAmount - 1,
+                        parentMenuItemIdCtx: newContainerItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c2',
+                        containedMenuItemId: lines[1].containedMenuItem.id,
+                        containedItemSizeId: lines[1].containedItemSize.id,
+                        quantity: 1,
+                        parentMenuItemIdCtx: newContainerItem.id,
+                        parentMenuItemSizeIdCtx: containerSize.id,
+                    }),
+                ],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, orderMenuItemToUpdate.id);
+        const errors = await validator.validateDto(
+            dto,
+            orderMenuItemToUpdate.id,
+        );
         expect(errors).toBeNull();
     });
 
     it('fail validate update: invalid size', async () => {
         const orderMenuItemToUpdate = orderMenuItems[0];
-        const menuItem = singleItems.find((mi) => mi.id === orderMenuItemToUpdate.menuItem.id);
+        const menuItem = singleItems.find(
+            (mi) => mi.id === orderMenuItemToUpdate.menuItem.id,
+        );
         if (!menuItem) throw new Error('menu item not found');
 
         const allSizes = await sizeRepo.find();
@@ -362,16 +447,28 @@ describe('order menu item validator', () => {
         );
         if (!invalidSize) throw new Error('invalid size not found');
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            sizeId: invalidSize.id,
-            menuItemId: orderMenuItemToUpdate.menuItem.id,
-            quantity: orderMenuItemToUpdate.quantity,
-            containerOrderMenuItems: [],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                sizeId: invalidSize.id,
+                menuItemId: orderMenuItemToUpdate.menuItem.id,
+                quantity: orderMenuItemToUpdate.quantity,
+                containerOrderMenuItems: [],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, orderMenuItemToUpdate.id);
+        const errors = await validator.validateDto(
+            dto,
+            orderMenuItemToUpdate.id,
+        );
         expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_REFERENCE', undefined, ['size']));
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'size',
+            ]),
+        );
     });
 
     it('fail validate update: duplicate container item', async () => {
@@ -380,36 +477,46 @@ describe('order menu item validator', () => {
         const size = containerOrderMenuItem.size!;
         const lines = linesFor(menuItem.id, size.id);
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            menuItemId: menuItem.id,
-            sizeId: size.id,
-            quantity: containerOrderMenuItem.quantity,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: 2,
-                    parentMenuItemIdCtx: menuItem.id,
-                    parentMenuItemSizeIdCtx: size.id,
-                }),
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c2',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: 3,
-                    parentMenuItemIdCtx: menuItem.id,
-                    parentMenuItemSizeIdCtx: size.id,
-                }),
-            ],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                menuItemId: menuItem.id,
+                sizeId: size.id,
+                quantity: containerOrderMenuItem.quantity,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: 2,
+                        parentMenuItemIdCtx: menuItem.id,
+                        parentMenuItemSizeIdCtx: size.id,
+                    }),
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c2',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: 3,
+                        parentMenuItemIdCtx: menuItem.id,
+                        parentMenuItemSizeIdCtx: size.id,
+                    }),
+                ],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerOrderMenuItem.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerOrderMenuItem.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['containerOrderMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['containerOrderMenuItems'],
+            ),
         );
     });
 
@@ -419,32 +526,43 @@ describe('order menu item validator', () => {
             relations: ['menuItem', 'size'],
         });
         const menuItem = containerOrderMenuItem.menuItem;
-        if (!menuItem.variableMaxAmount) throw new Error('container menu item does not have variableMaxAmount');
+        if (!menuItem.variableMaxAmount)
+            throw new Error(
+                'container menu item does not have variableMaxAmount',
+            );
         const size = containerOrderMenuItem.size!;
         const lines = linesFor(menuItem.id, size.id);
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            menuItemId: menuItem.id,
-            sizeId: size.id,
-            quantity: containerOrderMenuItem.quantity,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: menuItem.variableMaxAmount + 1,
-                    parentMenuItemIdCtx: menuItem.id,
-                    parentMenuItemSizeIdCtx: size.id,
-                }),
-            ],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                menuItemId: menuItem.id,
+                sizeId: size.id,
+                quantity: containerOrderMenuItem.quantity,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: menuItem.variableMaxAmount + 1,
+                        parentMenuItemIdCtx: menuItem.id,
+                        parentMenuItemSizeIdCtx: size.id,
+                    }),
+                ],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerOrderMenuItem.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerOrderMenuItem.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'containerOrderMenuItems',
+            ]),
         );
     });
 
@@ -455,31 +573,41 @@ describe('order menu item validator', () => {
         const lines = linesFor(menuItem.id, size.id);
         const containedItem = lines[0].containedMenuItem;
         const containedItemSize = lines[0].containedItemSize;
-        const invalidSize = containedItem.sizes.find((s) => s.id !== containedItemSize.id);
+        const invalidSize = containedItem.sizes.find(
+            (s) => s.id !== containedItemSize.id,
+        );
         if (!invalidSize) throw new Error('invalid size not found');
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            menuItemId: menuItem.id,
-            sizeId: size.id,
-            quantity: containerOrderMenuItem.quantity,
-            containerOrderMenuItems: [
-                plainToInstance(NestedCreateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: containedItem.id,
-                    containedItemSizeId: invalidSize.id,
-                    quantity: 2,
-                    parentMenuItemIdCtx: menuItem.id,
-                    parentMenuItemSizeIdCtx: size.id,
-                }),
-            ],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                menuItemId: menuItem.id,
+                sizeId: size.id,
+                quantity: containerOrderMenuItem.quantity,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedCreateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: containedItem.id,
+                        containedItemSizeId: invalidSize.id,
+                        quantity: 2,
+                        parentMenuItemIdCtx: menuItem.id,
+                        parentMenuItemSizeIdCtx: size.id,
+                    }),
+                ],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerOrderMenuItem.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerOrderMenuItem.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'containedItemSize',
+            ]),
         );
     });
 
@@ -490,28 +618,36 @@ describe('order menu item validator', () => {
         const existingLine = containerOrderMenuItem.containerOrderMenuItems![0];
         const lines = linesFor(menuItem.id, size.id);
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            menuItemId: menuItem.id,
-            sizeId: size.id,
-            quantity: containerOrderMenuItem.quantity,
-            containerOrderMenuItems: [
-                plainToInstance(NestedUpdateOrderContainerItemDto, {
-                    id: existingLine.id,
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: 0,
-                    parentMenuItemIdCtx: menuItem.id,
-                    parentMenuItemSizeIdCtx: size.id,
-                }),
-            ],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                menuItemId: menuItem.id,
+                sizeId: size.id,
+                quantity: containerOrderMenuItem.quantity,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedUpdateOrderContainerItemDto, {
+                        id: existingLine.id,
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: 0,
+                        parentMenuItemIdCtx: menuItem.id,
+                        parentMenuItemSizeIdCtx: size.id,
+                    }),
+                ],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerOrderMenuItem.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerOrderMenuItem.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: existingLine.id }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
@@ -521,32 +657,43 @@ describe('order menu item validator', () => {
             relations: ['menuItem', 'size'],
         });
         const menuItem = containerOrderMenuItem.menuItem;
-        if (!menuItem.variableMaxAmount) throw new Error('container menu item does not have variableMaxAmount');
+        if (!menuItem.variableMaxAmount)
+            throw new Error(
+                'container menu item does not have variableMaxAmount',
+            );
         const size = containerOrderMenuItem.size!;
         const lines = linesFor(menuItem.id, size.id);
 
-        const dto: UpdateOrderMenuItemDto = plainToInstance(UpdateOrderMenuItemDto, {
-            menuItemId: menuItem.id,
-            sizeId: size.id,
-            quantity: containerOrderMenuItem.quantity,
-            containerOrderMenuItems: [
-                plainToInstance(NestedUpdateOrderContainerItemDto, {
-                    createId: 'c1',
-                    containedMenuItemId: lines[0].containedMenuItem.id,
-                    containedItemSizeId: lines[0].containedItemSize.id,
-                    quantity: menuItem.variableMaxAmount + 1,
-                    parentMenuItemIdCtx: menuItem.id,
-                    parentMenuItemSizeIdCtx: size.id,
-                }),
-            ],
-        });
+        const dto: UpdateOrderMenuItemDto = plainToInstance(
+            UpdateOrderMenuItemDto,
+            {
+                menuItemId: menuItem.id,
+                sizeId: size.id,
+                quantity: containerOrderMenuItem.quantity,
+                containerOrderMenuItems: [
+                    plainToInstance(NestedUpdateOrderContainerItemDto, {
+                        createId: 'c1',
+                        containedMenuItemId: lines[0].containedMenuItem.id,
+                        containedItemSizeId: lines[0].containedItemSize.id,
+                        quantity: menuItem.variableMaxAmount + 1,
+                        parentMenuItemIdCtx: menuItem.id,
+                        parentMenuItemSizeIdCtx: size.id,
+                    }),
+                ],
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerOrderMenuItem.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerOrderMenuItem.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'containerOrderMenuItems',
+            ]),
         );
     });
 });

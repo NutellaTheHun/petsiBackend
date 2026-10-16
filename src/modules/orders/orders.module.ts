@@ -53,7 +53,7 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
             RecurringOrderSchedule,
             MenuItem,
             MenuItemSize,
-            MenuItemContainerItem
+            MenuItemContainerItem,
         ]),
         MenuItemsModule,
         RevisionHistoryModule,
@@ -108,4 +108,4 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
         OrderTestingUtil,
     ],
 })
-export class OrdersModule { }
+export class OrdersModule {}

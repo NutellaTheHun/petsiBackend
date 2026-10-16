@@ -16,6 +16,8 @@ npm run clearTestDb   # wipe the test PostgreSQL database
 npm run generate:types  # generate OpenAPI types into ../petsi-frontend/src/api-types.ts
 ```
 
+`npm run lint` rewrites files repo-wide. The repo is lint-clean (0 errors), so keep it that way: fix new errors with real types rather than `eslint-disable` or `as any`.
+
 To run a single test file:
 
 ```bash

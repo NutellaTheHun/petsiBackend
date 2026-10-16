@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -34,9 +38,14 @@ describe('label type validator', () => {
         validator = module.get<LabelTypeValidator>(LabelTypeValidator);
         typeRepo = module.get(getRepositoryToken(LabelType));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         ({ labelTypes } = await testingUtil.seedLabelTypes(P, tenant.id));
@@ -95,7 +104,7 @@ describe('label type validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['length']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, ['length']),
         );
     });
 
@@ -111,7 +120,7 @@ describe('label type validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['width']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, ['width']),
         );
     });
 
@@ -162,7 +171,7 @@ describe('label type validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['length']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, ['length']),
         );
     });
 
@@ -180,7 +189,7 @@ describe('label type validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['width']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, ['width']),
         );
     });
 });

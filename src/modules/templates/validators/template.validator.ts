@@ -13,7 +13,10 @@ import { TemplateValidatorIdentity } from './identities/template.validator.ident
 import { TemplateMenuItemValidator } from './template-menu-item.validator';
 
 @Injectable()
-export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateValidatorIdentity> {
+export class TemplateValidator extends ValidatorBase<
+    TemplateEntity,
+    TemplateValidatorIdentity
+> {
     constructor(
         @InjectRepository(Template)
         private readonly repo: Repository<Template>,
@@ -23,7 +26,10 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
         super(repo, 'Template', requestContextService);
     }
 
-    protected async validateIdentity(identity: TemplateValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: TemplateValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -33,16 +39,21 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         if (identity.templateMenuItems && identity.templateMenuItems.length) {
-
             // enforce no duplicate menuItem
             this.helper.enforceNoDuplicateElements(
                 identity.templateMenuItems,
-                (tmi) => ({ id: tmi.id ?? tmi.createId, identity: `${tmi.menuItemId}` }),
+                (tmi) => ({
+                    id: tmi.id ?? tmi.createId,
+                    identity: `${tmi.menuItemId}`,
+                }),
                 'templateMenuItems',
                 errorMap,
             );
@@ -50,7 +61,10 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
             // enforce no duplicate tablePosIndex
             this.helper.enforceNoDuplicateElements(
                 identity.templateMenuItems,
-                (tmi) => ({ id: tmi.id ?? tmi.createId, identity: `${tmi.tablePosIndex}` }),
+                (tmi) => ({
+                    id: tmi.id ?? tmi.createId,
+                    identity: `${tmi.tablePosIndex}`,
+                }),
                 'templateMenuItems',
                 errorMap,
             );
@@ -67,18 +81,29 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateTemplateDto | UpdateTemplateDto, _id: number | string): Promise<TemplateValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateTemplateDto | UpdateTemplateDto,
+        _id: number | string,
+    ): Promise<TemplateValidatorIdentity> {
         const templateMenuItems: TemplateMenuItemValidatorIdentity[] = [];
         if (dto.templateMenuItems && dto.templateMenuItems.length) {
             for (const tmi of dto.templateMenuItems) {
-                const itemId = tmi instanceof NestedCreateTemplateMenuItemDto ? tmi.createId : tmi.id;
-                templateMenuItems.push(await this.templateItemValidator.resolveIdentity(tmi, itemId));
+                const itemId =
+                    tmi instanceof NestedCreateTemplateMenuItemDto
+                        ? tmi.createId
+                        : tmi.id;
+                templateMenuItems.push(
+                    await this.templateItemValidator.resolveIdentity(
+                        tmi,
+                        itemId,
+                    ),
+                );
             }
         }
 
         return {
             name: dto.name,
             templateMenuItems: templateMenuItems,
-        } as TemplateValidatorIdentity;
+        };
     }
 }

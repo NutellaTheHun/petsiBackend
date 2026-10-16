@@ -19,25 +19,37 @@ export class DynamicPropertyConfigBuilder extends BuilderBase<DynamicPropertyCon
         private readonly categoryRepo: Repository<MenuItemCategory>,
         requestContextService: RequestContextService,
     ) {
-        super(DynamicPropertyConfig, 'DynamicPropertyConfigBuilder', requestContextService);
+        super(
+            DynamicPropertyConfig,
+            'DynamicPropertyConfigBuilder',
+            requestContextService,
+        );
     }
 
     protected createEntity(dto: CreateDynamicPropertyConfigDto): void {
-        if (dto.holderEntityType !== undefined) this.holderEntityType(dto.holderEntityType);
-        if (dto.holderCategoryId !== undefined) this.holderCategoryById(dto.holderCategoryId);
+        if (dto.holderEntityType !== undefined)
+            this.holderEntityType(dto.holderEntityType);
+        if (dto.holderCategoryId !== undefined)
+            this.holderCategoryById(dto.holderCategoryId);
         if (dto.propertyName !== undefined) this.propertyName(dto.propertyName);
         if (dto.valueType !== undefined) this.valueType(dto.valueType);
-        if (dto.valueEntityType !== undefined) this.valueEntityType(dto.valueEntityType);
-        if (dto.valueEntityCategoryId !== undefined) this.valueEntityCategoryById(dto.valueEntityCategoryId);
+        if (dto.valueEntityType !== undefined)
+            this.valueEntityType(dto.valueEntityType);
+        if (dto.valueEntityCategoryId !== undefined)
+            this.valueEntityCategoryById(dto.valueEntityCategoryId);
     }
 
     protected updateEntity(dto: UpdateDynamicPropertyConfigDto): void {
-        if (dto.holderEntityType !== undefined) this.holderEntityType(dto.holderEntityType);
-        if (dto.holderCategoryId !== undefined) this.holderCategoryById(dto.holderCategoryId);
+        if (dto.holderEntityType !== undefined)
+            this.holderEntityType(dto.holderEntityType);
+        if (dto.holderCategoryId !== undefined)
+            this.holderCategoryById(dto.holderCategoryId);
         if (dto.propertyName !== undefined) this.propertyName(dto.propertyName);
         if (dto.valueType !== undefined) this.valueType(dto.valueType);
-        if (dto.valueEntityType !== undefined) this.valueEntityType(dto.valueEntityType);
-        if (dto.valueEntityCategoryId !== undefined) this.valueEntityCategoryById(dto.valueEntityCategoryId);
+        if (dto.valueEntityType !== undefined)
+            this.valueEntityType(dto.valueEntityType);
+        if (dto.valueEntityCategoryId !== undefined)
+            this.valueEntityCategoryById(dto.valueEntityCategoryId);
     }
 
     public holderEntityType(val: HolderEntityType): this {

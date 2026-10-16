@@ -16,7 +16,7 @@ describe('InventoryAreaItemChangeDetector', () => {
             countedInventoryItem: { id: 10 } as InventoryItem,
             amount: 4,
             countedItemSize: { id: 20 } as InventoryItemSize,
-        } as InventoryAreaItem);
+        }) as InventoryAreaItem;
 
     it('returns empty patch for UpdateDto when dto matches entity', () => {
         const entity = baseEntity();
@@ -36,9 +36,16 @@ describe('InventoryAreaItemChangeDetector', () => {
 
     it('detects amount and countedItemSizeId changes', () => {
         const entity = baseEntity();
-        const dto = inventoryAreaItemToNestedUpdateDto(entity, { amount: 8, countedInventoryItemId: 99 });
+        const dto = inventoryAreaItemToNestedUpdateDto(entity, {
+            amount: 8,
+            countedInventoryItemId: 99,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ id: 1, amount: 8, countedInventoryItemId: 99 });
+        expect(result.patch).toEqual({
+            id: 1,
+            amount: 8,
+            countedInventoryItemId: 99,
+        });
     });
 });

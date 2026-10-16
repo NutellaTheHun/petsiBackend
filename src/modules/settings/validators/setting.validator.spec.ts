@@ -43,9 +43,14 @@ describe('setting validator', () => {
         validator = module.get<SettingValidator>(SettingValidator);
         settingRepo = module.get(getRepositoryToken(Setting));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA] } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({
+            tenant,
+            locations: [locationA],
+        } = await locationTestUtil.seedLocations(P, undefined, 1));
         requestContext.setContext({ tenantId: tenant.id });
 
         existingDefault = await testingUtil.seedSetting(
@@ -90,7 +95,9 @@ describe('setting validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['name']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'name',
+            ]),
         );
     });
 
@@ -105,7 +112,9 @@ describe('setting validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['value']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'value',
+            ]),
         );
     });
 
@@ -135,22 +144,26 @@ describe('setting validator', () => {
         expect(errors).toBeNull();
     });
 
-    it('successfully validate update: value matches the existing key\'s registered type', async () => {
+    it("successfully validate update: value matches the existing key's registered type", async () => {
         const dto = plainToInstance(UpdateSettingDto, { value: 0.11 });
 
         const errors = await validator.validateDto(dto, existingDefault.id);
         expect(errors).toBeNull();
     });
 
-    it('fail validate update: value type does not match the existing key\'s registered type', async () => {
-        const dto = plainToInstance(UpdateSettingDto, { value: 'not-a-number' });
+    it("fail validate update: value type does not match the existing key's registered type", async () => {
+        const dto = plainToInstance(UpdateSettingDto, {
+            value: 'not-a-number',
+        });
 
         const errors = await validator.validateDto(dto, existingDefault.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['value']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'value',
+            ]),
         );
     });
 });

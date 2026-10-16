@@ -19,8 +19,10 @@ import {
 import { InventoryAreaItemValidatorIdentity } from './identities/inventory-area-item.validator.identity.interface';
 
 @Injectable()
-export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAreaItemEntity, InventoryAreaItemValidatorIdentity> {
-
+export class InventoryAreaItemValidator extends NestedValidatorBase<
+    InventoryAreaItemEntity,
+    InventoryAreaItemValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryAreaItem)
         private readonly repo: Repository<InventoryAreaItem>,
@@ -35,7 +37,10 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
         super(repo, 'InventoryAreaItem', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryAreaItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryAreaItemValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         // Enforce only one of countedItemSizeId or countedItemSize
@@ -70,9 +75,13 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
 
         if (identity.countedItemSize) {
             // Nested validator call, must include inventoryItemId to check if it exists already.
-            let resolvedIdentity: InventoryItemSizeValidatorIdentity = identity.countedItemSize;
+            let resolvedIdentity: InventoryItemSizeValidatorIdentity =
+                identity.countedItemSize;
             if (identity.countedInventoryItemId) {
-                resolvedIdentity = { ...resolvedIdentity, inventoryItemId: identity.countedInventoryItemId };
+                resolvedIdentity = {
+                    ...resolvedIdentity,
+                    inventoryItemId: identity.countedInventoryItemId,
+                };
             }
 
             await this.itemSizeValidator.validateNestedIdentity(
@@ -84,34 +93,59 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
 
         if (identity.amount !== undefined) {
             // Enforce positive amount
-            this.helper.enforcePositive(
-                identity.amount,
-                'amount',
-                errorMap,
-            );
+            this.helper.enforcePositive(identity.amount, 'amount', errorMap);
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto | NestedCreateInventoryAreaItemDto | NestedUpdateInventoryAreaItemDto, _id: number | string): Promise<ValidatorIdentityBaseInterface> {
-        if (dto instanceof NestedCreateInventoryAreaItemDto || dto instanceof CreateInventoryAreaItemDto) {
+    public async resolveIdentity(
+        dto:
+            | CreateInventoryAreaItemDto
+            | UpdateInventoryAreaItemDto
+            | NestedCreateInventoryAreaItemDto
+            | NestedUpdateInventoryAreaItemDto,
+        _id: number | string,
+    ): Promise<ValidatorIdentityBaseInterface> {
+        if (
+            dto instanceof NestedCreateInventoryAreaItemDto ||
+            dto instanceof CreateInventoryAreaItemDto
+        ) {
             return {
-                createId: dto instanceof NestedCreateInventoryAreaItemDto ? dto.createId : undefined,
+                createId:
+                    dto instanceof NestedCreateInventoryAreaItemDto
+                        ? dto.createId
+                        : undefined,
                 countedInventoryItemId: dto.countedInventoryItemId,
                 amount: dto.amount,
                 countedItemSizeId: dto.countedItemSizeId,
-                countedItemSize: dto.countedItemSize ? await this.itemSizeValidator.resolveIdentity(dto.countedItemSize, dto.countedItemSize.createId) : undefined,
-                parentInventoryCountId: dto instanceof CreateInventoryAreaItemDto ? dto.parentInventoryCountId : undefined,
+                countedItemSize: dto.countedItemSize
+                    ? await this.itemSizeValidator.resolveIdentity(
+                          dto.countedItemSize,
+                          dto.countedItemSize.createId,
+                      )
+                    : undefined,
+                parentInventoryCountId:
+                    dto instanceof CreateInventoryAreaItemDto
+                        ? dto.parentInventoryCountId
+                        : undefined,
             } as InventoryAreaItemValidatorIdentity;
         }
 
         return {
-            id: dto instanceof NestedUpdateInventoryAreaItemDto ? dto.id : undefined,
+            id:
+                dto instanceof NestedUpdateInventoryAreaItemDto
+                    ? dto.id
+                    : undefined,
             countedInventoryItemId: dto.countedInventoryItemId,
             amount: dto.amount,
             countedItemSizeId: dto.countedItemSizeId,
-            countedItemSize: dto.countedItemSize ? await this.itemSizeValidator.resolveIdentity(dto.countedItemSize, dto.countedItemSize.createId) : undefined,
-        } as InventoryAreaItemValidatorIdentity
+            countedItemSize: dto.countedItemSize
+                ? await this.itemSizeValidator.resolveIdentity(
+                      dto.countedItemSize,
+                      dto.countedItemSize.createId,
+                  )
+                : undefined,
+        } as InventoryAreaItemValidatorIdentity;
     }
 }

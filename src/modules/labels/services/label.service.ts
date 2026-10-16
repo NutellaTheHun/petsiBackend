@@ -14,91 +14,93 @@ import { LabelValidator } from '../validators/label.validator';
 
 @Injectable()
 export class LabelService extends TenantScopedServiceBase<LabelEntity> {
-  constructor(
-    @InjectRepository(Label)
-    repo: Repository<Label>,
-    requestContextService: RequestContextService,
-    validator: LabelValidator,
-    private readonly labelChangeDetector: LabelChangeDetector,
-  ) {
-    super(repo, 'LabelService', requestContextService, validator);
-  }
-
-  protected async createEntity(
-    dto: CreateLabelDto,
-    manager: EntityManager,
-  ): Promise<Label> {
-    const result = manager.create(Label, {
-      menuItem: { id: dto.menuItemId },
-      imageUrl: dto.imageUrl,
-      labelType: { id: dto.labelTypeId },
-      tenantId: this.getTenantId(),
-    });
-    return await manager.save(result);
-  }
-
-  protected async updateEntity(
-    dto: UpdateLabelDto,
-    manager: EntityManager,
-    entity: Label,
-  ): Promise<void> {
-    if (dto.imageUrl !== undefined) {
-      entity.imageUrl = dto.imageUrl;
+    constructor(
+        @InjectRepository(Label)
+        repo: Repository<Label>,
+        requestContextService: RequestContextService,
+        validator: LabelValidator,
+        private readonly labelChangeDetector: LabelChangeDetector,
+    ) {
+        super(repo, 'LabelService', requestContextService, validator);
     }
 
-    if (dto.labelTypeId !== undefined) {
-      entity.labelType = manager.create(LabelType, {
-        id: dto.labelTypeId,
-      });
+    protected async createEntity(
+        dto: CreateLabelDto,
+        manager: EntityManager,
+    ): Promise<Label> {
+        const result = manager.create(Label, {
+            menuItem: { id: dto.menuItemId },
+            imageUrl: dto.imageUrl,
+            labelType: { id: dto.labelTypeId },
+            tenantId: this.getTenantId(),
+        });
+        return await manager.save(result);
     }
 
-    if (dto.menuItemId !== undefined) {
-      entity.menuItem = manager.create(MenuItem, {
-        id: dto.menuItemId,
-      });
+    protected async updateEntity(
+        dto: UpdateLabelDto,
+        manager: EntityManager,
+        entity: Label,
+    ): Promise<void> {
+        if (dto.imageUrl !== undefined) {
+            entity.imageUrl = dto.imageUrl;
+        }
+
+        if (dto.labelTypeId !== undefined) {
+            entity.labelType = manager.create(LabelType, {
+                id: dto.labelTypeId,
+            });
+        }
+
+        if (dto.menuItemId !== undefined) {
+            entity.menuItem = manager.create(MenuItem, {
+                id: dto.menuItemId,
+            });
+        }
+
+        await manager.save(entity);
     }
 
-    await manager.save(entity);
-  }
-
-  protected applySearch(
-    query: SelectQueryBuilder<Label>,
-    search: string,
-  ): void {
-    query
-      .leftJoin('entity.menuItem', 'menuItem')
-      .andWhere('(LOWER(menuItem.name) LIKE :search)', {
-        search: `%${search.toLowerCase()}%`,
-      });
-  }
-
-  protected applyFilters(
-    query: SelectQueryBuilder<Label>,
-    filters: Record<string, string[]>,
-  ): void {
-    if (filters.labelType && filters.labelType.length > 0) {
-      query.andWhere('entity.labelType IN (:...labelTypes)', {
-        labelTypes: filters.labelType,
-      });
+    protected applySearch(
+        query: SelectQueryBuilder<Label>,
+        search: string,
+    ): void {
+        query
+            .leftJoin('entity.menuItem', 'menuItem')
+            .andWhere('(LOWER(menuItem.name) LIKE :search)', {
+                search: `%${search.toLowerCase()}%`,
+            });
     }
-  }
 
-  protected applySortBy(
-    query: SelectQueryBuilder<Label>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'labelType') {
-      query.leftJoinAndSelect('entity.labelType', 'labelType');
-      query.orderBy('labelType.name', sortOrder);
+    protected applyFilters(
+        query: SelectQueryBuilder<Label>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.labelType && filters.labelType.length > 0) {
+            query.andWhere('entity.labelType IN (:...labelTypes)', {
+                labelTypes: filters.labelType,
+            });
+        }
     }
-  }
 
-  protected getChangeDetector(): ChangeDetectorBase<Label, UpdateLabelDto> | undefined {
-    return this.labelChangeDetector;
-  }
+    protected applySortBy(
+        query: SelectQueryBuilder<Label>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'labelType') {
+            query.leftJoinAndSelect('entity.labelType', 'labelType');
+            query.orderBy('labelType.name', sortOrder);
+        }
+    }
 
-  protected getUpdateDiffRelations(): string[] {
-    return ['menuItem', 'labelType'];
-  }
+    protected getChangeDetector():
+        | ChangeDetectorBase<Label, UpdateLabelDto>
+        | undefined {
+        return this.labelChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return ['menuItem', 'labelType'];
+    }
 }

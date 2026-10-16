@@ -28,7 +28,8 @@ export function setupApp(app: INestApplication, opts?: SetupAppOptions): void {
             whitelist: true, // strips unknown properties
             forbidNonWhitelisted: true, // throws on unknown properties
             transform: true, // auto-transform payload to DTO instances
-            exceptionFactory: (errors) => DtoValidationException.fromErrors(errors),
+            exceptionFactory: (errors) =>
+                DtoValidationException.fromErrors(errors),
         }),
     );
 

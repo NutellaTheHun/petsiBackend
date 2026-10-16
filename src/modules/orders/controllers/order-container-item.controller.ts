@@ -119,7 +119,9 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves an array of Order Menu Item Component' })
+    @ApiOperation({
+        summary: 'Retrieves an array of Order Menu Item Component',
+    })
     @ApiOkResponse({
         schema: {
             type: 'object',
@@ -135,7 +137,12 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -16,7 +16,12 @@ import { SettingValidator } from './validators/setting.validator';
         RequestContextModule,
     ],
     controllers: [SettingsController],
-    providers: [SettingsService, SettingValidator, SettingChangeDetector, SettingTestUtil],
+    providers: [
+        SettingsService,
+        SettingValidator,
+        SettingChangeDetector,
+        SettingTestUtil,
+    ],
     exports: [SettingsService, SettingTestUtil, TypeOrmModule],
 })
 export class SettingsModule {}

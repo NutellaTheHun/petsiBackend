@@ -2,12 +2,12 @@ import { handleSetHas } from '../handlers/handlers';
 import { menuItemExample } from './menu-item.example';
 
 export function menuItemCategoryExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(menuItemCategoryExample.name);
-  return {
-    id: 1,
+    fnSet.add(menuItemCategoryExample.name);
+    return {
+        id: 1,
 
-    name: 'pie',
+        name: 'pie',
 
-    menuItems: [handleSetHas(shallow, fnSet, menuItemExample, false)],
-  };
+        menuItems: [handleSetHas(shallow, fnSet, menuItemExample, false)],
+    };
 }

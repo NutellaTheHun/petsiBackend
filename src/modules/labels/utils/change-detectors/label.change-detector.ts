@@ -9,8 +9,14 @@ import { UpdateLabelDto } from '../../dto/label/update-label.dto';
 import { Label } from '../../entities/label.entity';
 
 @Injectable()
-export class LabelChangeDetector extends ChangeDetectorBase<Label, UpdateLabelDto> {
-    detect(entity: Label, dto: UpdateLabelDto): ChangeDetectionResult<UpdateLabelDto> {
+export class LabelChangeDetector extends ChangeDetectorBase<
+    Label,
+    UpdateLabelDto
+> {
+    detect(
+        entity: Label,
+        dto: UpdateLabelDto,
+    ): ChangeDetectionResult<UpdateLabelDto> {
         const patch: MutablePartial<UpdateLabelDto> = {};
         const changes: ChangeDetectorChange[] = [];
 

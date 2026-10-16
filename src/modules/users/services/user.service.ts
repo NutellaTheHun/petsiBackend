@@ -73,7 +73,10 @@ export class UserService extends TenantScopedServiceBase<UserEntity> {
         await manager.save(entity);
     }
 
-    protected applySearch(query: SelectQueryBuilder<User>, search: string): void {
+    protected applySearch(
+        query: SelectQueryBuilder<User>,
+        search: string,
+    ): void {
         query.andWhere('(LOWER(entity.name) LIKE :search)', {
             search: `%${search.toLowerCase()}%`,
         });
@@ -89,7 +92,9 @@ export class UserService extends TenantScopedServiceBase<UserEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<User, UpdateUserDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<User, UpdateUserDto>
+        | undefined {
         return this.userChangeDetector;
     }
 }

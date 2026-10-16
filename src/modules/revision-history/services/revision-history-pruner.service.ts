@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, LessThan, Repository } from 'typeorm';
-import { REVISION_ENTITY_TYPES_ARRAY, RevisionEntityType } from '../constants/revision-entity-type';
+import {
+    REVISION_ENTITY_TYPES_ARRAY,
+    RevisionEntityType,
+} from '../constants/revision-entity-type';
 import { RevisionHistory } from '../entities/revision-history.entity';
 import { RevisionHistoryRetentionPolicyService } from './revision-history-retention-policy.service';
 
@@ -22,7 +25,7 @@ export class RevisionHistoryPrunerService {
         @InjectRepository(RevisionHistory)
         private readonly repo: Repository<RevisionHistory>,
         private readonly policyService: RevisionHistoryRetentionPolicyService,
-    ) { }
+    ) {}
 
     /**
      * Nightly off-peak pruning of revision_history.
@@ -70,8 +73,10 @@ export class RevisionHistoryPrunerService {
             if (!policy.enabled) continue;
             dryRun = dryRun && policy.dryRun;
 
-            const { scanned, candidates, deleted } =
-                await this.pruneEntityType(entityType, policy);
+            const { scanned, candidates, deleted } = await this.pruneEntityType(
+                entityType,
+                policy,
+            );
             scannedEntityGroups += scanned;
             candidateRows += candidates;
             deletedRows += deleted;
@@ -95,7 +100,9 @@ export class RevisionHistoryPrunerService {
             minAgeDays: number;
         },
     ): Promise<{ scanned: number; candidates: number; deleted: number }> {
-        const cutoff = new Date(Date.now() - policy.minAgeDays * 24 * 60 * 60 * 1000);
+        const cutoff = new Date(
+            Date.now() - policy.minAgeDays * 24 * 60 * 60 * 1000,
+        );
 
         // Find all entityIds that have old revisions (excluding rev 1) – keeps scanning bounded.
         const groups = await this.repo
@@ -118,9 +125,13 @@ export class RevisionHistoryPrunerService {
 
             const entityId = Number(g.entityId);
             const headRev = Number(g.headRev);
-            if (!Number.isFinite(entityId) || !Number.isFinite(headRev)) continue;
+            if (!Number.isFinite(entityId) || !Number.isFinite(headRev))
+                continue;
 
-            const keepFrom = Math.max(2, headRev - policy.maxRevisionsExcludingCreate + 1);
+            const keepFrom = Math.max(
+                2,
+                headRev - policy.maxRevisionsExcludingCreate + 1,
+            );
 
             // Only delete revisions older than cutoff AND outside keep window AND not revision 1.
             const toDelete = await this.repo.find({
@@ -155,4 +166,3 @@ export class RevisionHistoryPrunerService {
         return { scanned, candidates, deleted };
     }
 }
-

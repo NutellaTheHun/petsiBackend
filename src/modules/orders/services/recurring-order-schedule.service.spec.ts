@@ -34,10 +34,16 @@ describe('RecurringOrderScheduleService', () => {
         const module: TestingModule = await getOrdersTestingModule();
 
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        service = module.get<RecurringOrderScheduleService>(RecurringOrderScheduleService);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        service = module.get<RecurringOrderScheduleService>(
+            RecurringOrderScheduleService,
+        );
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
         orderRepo = module.get(getRepositoryToken(Order));
-        recurringOrderScheduleRepo = module.get(getRepositoryToken(RecurringOrderSchedule));
+        recurringOrderScheduleRepo = module.get(
+            getRepositoryToken(RecurringOrderSchedule),
+        );
 
         fixtureTenantId = await testingUtil.getDefaultTenantId();
         fixtureLocationId = await testingUtil.getDefaultLocationId();
@@ -73,16 +79,20 @@ describe('RecurringOrderScheduleService', () => {
                 locations: [],
             });
 
-            await expect(service.findOne(schedule.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(schedule.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
 
-        it('findOne rejects a non-admin caller not assigned to the schedule\'s location, isTenantAdmin bypasses that check', async () => {
+        it("findOne rejects a non-admin caller not assigned to the schedule's location, isTenantAdmin bypasses that check", async () => {
             requestContext.setContext({
                 tenantId: fixtureTenantId,
                 isTenantAdmin: false,
                 locations: [],
             });
-            await expect(service.findOne(schedule.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(schedule.id)).rejects.toThrow(
+                NotFoundException,
+            );
 
             requestContext.setContext({
                 tenantId: fixtureTenantId,

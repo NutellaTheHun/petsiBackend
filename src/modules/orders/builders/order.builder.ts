@@ -139,7 +139,8 @@ export class OrderBuilder extends BuilderBase<Order> {
 
     public categoryById(id: number): this {
         return this.setPropById(
-            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            async (id: number) =>
+                await this.categoryRepo.findOne({ where: { id } }),
             'category',
             id,
         );
@@ -222,12 +223,19 @@ export class OrderBuilder extends BuilderBase<Order> {
         );
     }
 
-    public recurrenceScheduleByBuilder(dto: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto | null): this {
+    public recurrenceScheduleByBuilder(
+        dto:
+            | NestedCreateRecurringOrderScheduleDto
+            | NestedUpdateRecurringOrderScheduleDto
+            | null,
+    ): this {
         if (dto === null) {
             return this.setPropByVal('recurrenceSchedule', null);
         }
         return this.setPropByBuilder(
-            this.recurrenceScheduleBuilder.build.bind(this.recurrenceScheduleBuilder),
+            this.recurrenceScheduleBuilder.build.bind(
+                this.recurrenceScheduleBuilder,
+            ),
             'recurrenceSchedule',
             this.entity,
             dto,

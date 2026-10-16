@@ -5,9 +5,9 @@ import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/cre
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 
 export type InventoryItemPackageEntity = EntityBase<
-  InventoryItemPackage,
-  CreateInventoryItemPackageDto,
-  UpdateInventoryItemPackageDto
+    InventoryItemPackage,
+    CreateInventoryItemPackageDto,
+    UpdateInventoryItemPackageDto
 >;
 
 /**
@@ -17,28 +17,28 @@ export type InventoryItemPackageEntity = EntityBase<
 @Entity()
 @Unique(['tenantId', 'name'])
 export class InventoryItemPackage {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * The Tenant this package belongs to. Denormalized scalar column (not a
-   * relation) so ServiceBase-level tenant filtering never needs a join.
-   */
-  @ApiProperty({
-    example: 1,
-    description: 'The Tenant this entity belongs to',
-  })
-  @Column()
-  tenantId: number;
+    /**
+     * The Tenant this package belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
-  @ApiProperty({
-    example: 'Box',
-    description: 'Name description of a package type',
-  })
-  @Column()
-  name: string;
+    @ApiProperty({
+        example: 'Box',
+        description: 'Name description of a package type',
+    })
+    @Column()
+    name: string;
 }

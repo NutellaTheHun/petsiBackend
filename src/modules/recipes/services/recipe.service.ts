@@ -164,8 +164,8 @@ export class RecipeService extends TenantScopedServiceBase<RecipeEntity> {
             });
 
             const incomingIds = dto.ingredients
-                .map((i: any) => ('id' in i ? i.id : undefined))
-                .filter((id: any): id is number => typeof id === 'number');
+                .map((i) => ('id' in i ? i.id : undefined))
+                .filter((id): id is number => typeof id === 'number');
 
             const idsToRemove = existingIngreds
                 .map((i) => i.id)
@@ -186,8 +186,6 @@ export class RecipeService extends TenantScopedServiceBase<RecipeEntity> {
 
         await manager.save(entity);
     }
-
-
 
     protected applySearch(
         query: SelectQueryBuilder<Recipe>,
@@ -239,7 +237,9 @@ export class RecipeService extends TenantScopedServiceBase<RecipeEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Recipe, UpdateRecipeDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Recipe, UpdateRecipeDto>
+        | undefined {
         return this.recipeChangeDetector;
     }
 

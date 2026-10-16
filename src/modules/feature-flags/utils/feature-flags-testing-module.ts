@@ -55,7 +55,10 @@ export async function getFeatureFlagsTestingModule(opts?: {
             RequestContextModule,
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
         ],
         controllers: [RoleFeatureController, TenantFeatureController],

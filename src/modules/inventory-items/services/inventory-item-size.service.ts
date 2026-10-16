@@ -48,7 +48,7 @@ export class InventoryItemSizeService extends TenantScopedServiceBase<InventoryI
         manager: EntityManager,
         entity: InventoryItemSize,
     ): Promise<void> {
-        await this.itemSizeComposer.composeUpdate(dto, manager, entity)
+        await this.itemSizeComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -65,9 +65,6 @@ export class InventoryItemSizeService extends TenantScopedServiceBase<InventoryI
     protected getChangeDetector():
         | ChangeDetectorBase<InventoryItemSize, UpdateInventoryItemSizeDto>
         | undefined {
-        return this.itemSizeChangeDetector as unknown as ChangeDetectorBase<
-            InventoryItemSize,
-            UpdateInventoryItemSizeDto
-        >;
+        return this.itemSizeChangeDetector;
     }
 }

@@ -10,41 +10,41 @@ import { InventoryItem } from '../entities/inventory-item.entity';
 
 @Injectable()
 export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor> {
-  constructor(
-    @InjectRepository(InventoryItem)
-    private readonly itemRepo: Repository<InventoryItem>,
+    constructor(
+        @InjectRepository(InventoryItem)
+        private readonly itemRepo: Repository<InventoryItem>,
 
-    requestContextService: RequestContextService,
-  ) {
-    super(
-      InventoryItemVendor,
-      'InventoryItemVendorBuilder',
-      requestContextService,
-    );
-  }
-
-  protected createEntity(dto: CreateInventoryItemVendorDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+        requestContextService: RequestContextService,
+    ) {
+        super(
+            InventoryItemVendor,
+            'InventoryItemVendorBuilder',
+            requestContextService,
+        );
     }
-  }
 
-  protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected createEntity(dto: CreateInventoryItemVendorDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
+    protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+    }
 
-  public vendorItemsByIds(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.itemRepo.find({ where: { id: In(ids) } }),
-      'inventoryItems',
-      ids,
-    );
-  }
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
+    }
+
+    public vendorItemsByIds(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.itemRepo.find({ where: { id: In(ids) } }),
+            'inventoryItems',
+            ids,
+        );
+    }
 }

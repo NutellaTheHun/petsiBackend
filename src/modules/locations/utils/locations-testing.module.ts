@@ -25,15 +25,31 @@ import { UserLocationChangeDetector } from './change-detectors/user-location.cha
 
 export async function getLocationsTestingModule(opts?: {
     locationServiceClass?: new (...args: any[]) => LocationService;
-    locationChangeDetectorClass?: new (...args: any[]) => LocationChangeDetector;
+    locationChangeDetectorClass?: new (
+        ...args: any[]
+    ) => LocationChangeDetector;
     userLocationServiceClass?: new (...args: any[]) => UserLocationService;
-    userLocationChangeDetectorClass?: new (...args: any[]) => UserLocationChangeDetector;
+    userLocationChangeDetectorClass?: new (
+        ...args: any[]
+    ) => UserLocationChangeDetector;
 }): Promise<TestingModule> {
     return await Test.createTestingModule({
         imports: [
             ConfigModule.forRoot({ isGlobal: true }),
-            TypeORMPostgresTestingModule([Location, Tenant, UserLocation, User, Role]),
-            TypeOrmModule.forFeature([Location, Tenant, UserLocation, User, Role]),
+            TypeORMPostgresTestingModule([
+                Location,
+                Tenant,
+                UserLocation,
+                User,
+                Role,
+            ]),
+            TypeOrmModule.forFeature([
+                Location,
+                Tenant,
+                UserLocation,
+                User,
+                Role,
+            ]),
             LocationsModule,
             TenantsModule,
             UserModule,
@@ -41,7 +57,10 @@ export async function getLocationsTestingModule(opts?: {
             RequestContextModule,
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
         ],
         controllers: [LocationController, UserLocationController],
@@ -56,6 +75,8 @@ export async function getLocationsTestingModule(opts?: {
         .overrideProvider(UserLocationService)
         .useClass(opts?.userLocationServiceClass || UserLocationService)
         .overrideProvider(UserLocationChangeDetector)
-        .useClass(opts?.userLocationChangeDetectorClass || UserLocationChangeDetector)
+        .useClass(
+            opts?.userLocationChangeDetectorClass || UserLocationChangeDetector,
+        )
         .compile();
 }

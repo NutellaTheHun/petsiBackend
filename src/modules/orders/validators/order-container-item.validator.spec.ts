@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
@@ -47,18 +51,32 @@ describe('order container item validator', () => {
         const module: TestingModule = await getOrdersTestingModule();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
 
-        validator = module.get<OrderContainerItemValidator>(OrderContainerItemValidator);
+        validator = module.get<OrderContainerItemValidator>(
+            OrderContainerItemValidator,
+        );
 
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, containerOrderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            containerOrderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -66,7 +84,11 @@ describe('order container item validator', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
@@ -84,12 +106,15 @@ describe('order container item validator', () => {
         const parentOrderMenuItem = containerOrderMenuItems[0];
         const existingLine = parentOrderMenuItem.containerOrderMenuItems![0];
 
-        const dto: CreateOrderContainerItemDto = plainToInstance(CreateOrderContainerItemDto, {
-            containedMenuItemId: existingLine.containedMenuItem.id,
-            containedItemSizeId: existingLine.containedItemSize.id,
-            quantity: 2,
-            parentOrderMenuItemId: parentOrderMenuItem.id,
-        });
+        const dto: CreateOrderContainerItemDto = plainToInstance(
+            CreateOrderContainerItemDto,
+            {
+                containedMenuItemId: existingLine.containedMenuItem.id,
+                containedItemSizeId: existingLine.containedItemSize.id,
+                quantity: 2,
+                parentOrderMenuItemId: parentOrderMenuItem.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -99,19 +124,24 @@ describe('order container item validator', () => {
         const parentOrderMenuItem = containerOrderMenuItems[1];
         const containerItem = fixedContainerItems[0];
 
-        const dto: CreateOrderContainerItemDto = plainToInstance(CreateOrderContainerItemDto, {
-            containedMenuItemId: containerItem.id,
-            containedItemSizeId: containerItem.sizes[0].id,
-            quantity: 2,
-            parentOrderMenuItemId: parentOrderMenuItem.id,
-        });
+        const dto: CreateOrderContainerItemDto = plainToInstance(
+            CreateOrderContainerItemDto,
+            {
+                containedMenuItemId: containerItem.id,
+                containedItemSizeId: containerItem.sizes[0].id,
+                quantity: 2,
+                parentOrderMenuItemId: parentOrderMenuItem.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'containedMenuItem',
+            ]),
         );
     });
 
@@ -119,74 +149,105 @@ describe('order container item validator', () => {
         const parentOrderMenuItem = containerOrderMenuItems[0];
         const existingLine = parentOrderMenuItem.containerOrderMenuItems![0];
 
-        const dto: CreateOrderContainerItemDto = plainToInstance(CreateOrderContainerItemDto, {
-            containedMenuItemId: existingLine.containedMenuItem.id,
-            containedItemSizeId: existingLine.containedItemSize.id,
-            quantity: 0,
-            parentOrderMenuItemId: parentOrderMenuItem.id,
-        });
+        const dto: CreateOrderContainerItemDto = plainToInstance(
+            CreateOrderContainerItemDto,
+            {
+                containedMenuItemId: existingLine.containedMenuItem.id,
+                containedItemSizeId: existingLine.containedItemSize.id,
+                quantity: 0,
+                parentOrderMenuItemId: parentOrderMenuItem.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const containerItemToUpdate = containerOrderMenuItems[0].containerOrderMenuItems![0];
-        const otherLine = containerOrderMenuItems[0].containerOrderMenuItems!.find(
-            (l) => l.id !== containerItemToUpdate.id,
-        );
+        const containerItemToUpdate =
+            containerOrderMenuItems[0].containerOrderMenuItems![0];
+        const otherLine =
+            containerOrderMenuItems[0].containerOrderMenuItems!.find(
+                (l) => l.id !== containerItemToUpdate.id,
+            );
         if (!otherLine) throw new Error('other line not found');
 
-        const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
-            containedMenuItemId: otherLine.containedMenuItem.id,
-            containedItemSizeId: otherLine.containedItemSize.id,
-            quantity: containerItemToUpdate.quantity,
-        });
+        const dto: UpdateOrderContainerItemDto = plainToInstance(
+            UpdateOrderContainerItemDto,
+            {
+                containedMenuItemId: otherLine.containedMenuItem.id,
+                containedItemSizeId: otherLine.containedItemSize.id,
+                quantity: containerItemToUpdate.quantity,
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerItemToUpdate.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerItemToUpdate.id,
+        );
         expect(errors).toBeNull();
     });
 
     it('fail validate update: contained item not of type single', async () => {
-        const containerItemToUpdate = containerOrderMenuItems[0].containerOrderMenuItems![0];
+        const containerItemToUpdate =
+            containerOrderMenuItems[0].containerOrderMenuItems![0];
         const containerItem = fixedContainerItems[1];
 
-        const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
-            containedMenuItemId: containerItem.id,
-            containedItemSizeId: containerItem.sizes[0].id,
-            quantity: 2,
-        });
+        const dto: UpdateOrderContainerItemDto = plainToInstance(
+            UpdateOrderContainerItemDto,
+            {
+                containedMenuItemId: containerItem.id,
+                containedItemSizeId: containerItem.sizes[0].id,
+                quantity: 2,
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerItemToUpdate.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerItemToUpdate.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'containedMenuItem',
+            ]),
         );
     });
 
     it('fail validate update: quantity with value 0', async () => {
-        const containerItemToUpdate = containerOrderMenuItems[1].containerOrderMenuItems![0];
+        const containerItemToUpdate =
+            containerOrderMenuItems[1].containerOrderMenuItems![0];
 
-        const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
-            quantity: 0,
-            containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
-            containedItemSizeId: containerItemToUpdate.containedItemSize.id,
-        });
+        const dto: UpdateOrderContainerItemDto = plainToInstance(
+            UpdateOrderContainerItemDto,
+            {
+                quantity: 0,
+                containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
+                containedItemSizeId: containerItemToUpdate.containedItemSize.id,
+            },
+        );
 
-        const errors = await validator.validateDto(dto, containerItemToUpdate.id);
+        const errors = await validator.validateDto(
+            dto,
+            containerItemToUpdate.id,
+        );
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 });

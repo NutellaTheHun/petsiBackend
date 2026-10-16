@@ -13,8 +13,10 @@ import {
 import { InventoryItemVendorValidatorIdentity } from './identities/inventory-item-vendor.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVendorEntity, InventoryItemVendorValidatorIdentity> {
-
+export class InventoryItemVendorValidator extends ValidatorBase<
+    InventoryItemVendorEntity,
+    InventoryItemVendorValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryItemVendor)
         private readonly repo: Repository<InventoryItemVendor>,
@@ -23,7 +25,10 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
         super(repo, 'InventoryItemVendor', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryItemVendorValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryItemVendorValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -33,15 +38,21 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateInventoryItemVendorDto | UpdateInventoryItemVendorDto, _id: number | string): Promise<InventoryItemVendorValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateInventoryItemVendorDto | UpdateInventoryItemVendorDto,
+        _id: number | string,
+    ): Promise<InventoryItemVendorValidatorIdentity> {
         return {
             name: dto.name,
-        } as InventoryItemVendorValidatorIdentity;
+        };
     }
 }

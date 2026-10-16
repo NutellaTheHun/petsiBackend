@@ -2,7 +2,7 @@ import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { FeatureGuard } from './feature.guard';
 
-function buildContext(user: any): ExecutionContext {
+function buildContext(user: unknown): ExecutionContext {
     const req = { user };
     return {
         getHandler: () => ({}),
@@ -23,10 +23,12 @@ describe('FeatureGuard', () => {
     });
 
     function mockMetadata(features: string[] | undefined) {
-        jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: unknown) => {
-            if (key === 'features') return features;
-            return undefined;
-        });
+        jest.spyOn(reflector, 'getAllAndOverride').mockImplementation(
+            (key: unknown) => {
+                if (key === 'features') return features;
+                return undefined;
+            },
+        );
     }
 
     it('allows the request through when no features are required', () => {

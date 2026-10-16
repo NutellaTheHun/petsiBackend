@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -63,7 +67,11 @@ describe('template validator', () => {
     afterAll(async () => {
         await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
         await templateRepo.delete(templates.map((t) => t.id));
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
@@ -140,7 +148,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -168,7 +180,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -190,7 +206,9 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'templateMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'tablePosIndex',
+            ]),
         );
     });
 
@@ -208,7 +226,8 @@ describe('template validator', () => {
                     id: templateToUpdate.templateMenuItems[0].id,
                     tablePosIndex: 500,
                     displayName: `${P}-updated-item`,
-                    menuItemId: templateToUpdate.templateMenuItems[0].menuItem.id,
+                    menuItemId:
+                        templateToUpdate.templateMenuItems[0].menuItem.id,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
@@ -262,7 +281,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -290,7 +313,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -312,7 +339,9 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'templateMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'tablePosIndex',
+            ]),
         );
     });
 });

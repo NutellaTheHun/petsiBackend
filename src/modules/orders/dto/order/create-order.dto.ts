@@ -43,7 +43,8 @@ export class CreateOrderDto {
     readonly fulfillmentType: string;
 
     @ApiProperty({
-        description: 'Name of who is picking up the order or reciving the delivery',
+        description:
+            'Name of who is picking up the order or reciving the delivery',
         example: 'Jane Doe',
         type: 'string',
         nullable: true,
@@ -113,7 +114,8 @@ export class CreateOrderDto {
     readonly isWeekly?: boolean;
 
     @ApiProperty({
-        description: 'If is weekly, is the day of the week the order is fulfilled',
+        description:
+            'If is weekly, is the day of the week the order is fulfilled',
         example: 'sunday',
         type: 'string',
         nullable: true,
@@ -172,7 +174,8 @@ export class CreateOrderDto {
 
     @ApiProperty({
         example: 1,
-        description: 'The unique identifier of the template order that this occurence is based on',
+        description:
+            'The unique identifier of the template order that this occurence is based on',
         type: 'number',
         nullable: true,
     })
@@ -202,7 +205,8 @@ export class CreateOrderDto {
 
     @ApiProperty({
         example: '2025-01-01',
-        description: 'The original of the occurence, used to properly regenerated orders',
+        description:
+            'The original of the occurence, used to properly regenerated orders',
         nullable: true,
     })
     @IsDate()

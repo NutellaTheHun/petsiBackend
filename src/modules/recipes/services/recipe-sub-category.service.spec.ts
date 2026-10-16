@@ -63,12 +63,15 @@ describe('recipe sub category service', () => {
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
         dataSource = module.get(DataSource);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         const tenantId = await testingUtil.getDefaultTenantId();
         requestContext.setContext({ tenantId });
 
-        ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
+        ({ categories, subCategories } =
+            await testingUtil.seedSubCategories(P));
 
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
@@ -90,7 +93,10 @@ describe('recipe sub category service', () => {
             ...subCategories.map((s) => s.id),
             otherTenantSubCategory.id,
         ]);
-        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await categoryRepo.delete([
+            ...categories.map((c) => c.id),
+            otherTenantCategory.id,
+        ]);
         await tenantRepo.delete(otherTenant.id);
     });
 
@@ -112,7 +118,10 @@ describe('recipe sub category service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                subCategory = await subCategoryService.createEntityForTest(dto, manager);
+                subCategory = await subCategoryService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(subCategory.id).toBeDefined();
             expect(subCategory.name).toEqual(dto.name);
@@ -124,7 +133,11 @@ describe('recipe sub category service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                await subCategoryService.updateEntityForTest(dto, subCategory, manager);
+                await subCategoryService.updateEntityForTest(
+                    dto,
+                    subCategory,
+                    manager,
+                );
             });
 
             const result = await subCategoryRepo.findOneOrFail({
@@ -135,9 +148,9 @@ describe('recipe sub category service', () => {
 
         it('should remove recipe sub category', async () => {
             await subCategoryService.remove(subCategory.id);
-            await expect(subCategoryService.findOne(subCategory.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                subCategoryService.findOne(subCategory.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -158,7 +171,9 @@ describe('recipe sub category service', () => {
             expect.arrayContaining([subCategories[0].id, subCategories[1].id]),
         );
         expect(
-            result.items.every((s) => s.parentCategory?.id === categories[0].id),
+            result.items.every(
+                (s) => s.parentCategory?.id === categories[0].id,
+            ),
         ).toBe(true);
     });
 
@@ -213,7 +228,9 @@ describe('recipe sub category service', () => {
             });
             await subCategoryService.update(subCategory.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await subCategoryRepo.findOneOrFail({ where: { id: subCategory.id } });
+            const row = await subCategoryRepo.findOneOrFail({
+                where: { id: subCategory.id },
+            });
             expect(row.name).toEqual(`${P}-sub-renamed`);
         });
     });
@@ -227,10 +244,15 @@ describe('recipe sub category service', () => {
 
             let created!: RecipeSubCategory;
             await dataSource.transaction(async (manager) => {
-                created = await subCategoryService.createEntityForTest(dto, manager);
+                created = await subCategoryService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
 
-            expect(created.tenantId).toBe(await testingUtil.getDefaultTenantId());
+            expect(created.tenantId).toBe(
+                await testingUtil.getDefaultTenantId(),
+            );
             await subCategoryRepo.delete(created.id);
         });
 

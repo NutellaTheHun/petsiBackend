@@ -107,18 +107,16 @@ export abstract class ComposerBase<
         context?: ResolverContext,
     ): Promise<T['__Entity']> {
         if ('createId' in dto) {
-            const fullDto = this.resolveCreateDto(dto as T['__NcDto'], context);
+            const fullDto = this.resolveCreateDto(dto, context);
             return this.createInTransaction(fullDto, manager);
         } else {
             const entity = await manager.findOneOrFail(this.entityClass, {
-                where: { id: (dto as T['__NuDto']).id } as unknown as FindOptionsWhere<T['__Entity']>,
+                where: {
+                    id: dto.id,
+                } as unknown as FindOptionsWhere<T['__Entity']>,
             });
-            await this.updateInTransaction(
-                dto as T['__NuDto'],
-                manager,
-                entity as T['__Entity'],
-            );
-            return entity as T['__Entity'];
+            await this.updateInTransaction(dto, manager, entity);
+            return entity;
         }
     }
 
@@ -147,23 +145,28 @@ export abstract class ComposerBase<
 
         for (const dto of dtos) {
             if ('createId' in dto) {
-                const fullDto = this.resolveCreateDto(dto as T['__NcDto'], context);
-                const created = await this.createInTransaction(fullDto, manager);
-                map.set((dto as T['__NcDto']).createId, created);
+                const fullDto = this.resolveCreateDto(dto, context);
+                const created = await this.createInTransaction(
+                    fullDto,
+                    manager,
+                );
+                map.set(dto.createId, created);
             } else {
-                let entity = map.get((dto as any).id);
+                let entity = map.get(dto.id);
                 if (!entity) {
                     //throw new Error(`Entity with id ${(dto as any).id} not found`);
                     entity = await manager.findOneOrFail(this.entityClass, {
-                        where: { id: (dto as T['__NuDto']).id } as unknown as FindOptionsWhere<T['__Entity']>,
+                        where: {
+                            id: dto.id,
+                        } as unknown as FindOptionsWhere<T['__Entity']>,
                     });
                     if (!entity) {
-                        throw new Error(`Entity with id ${(dto as T['__NuDto']).id} not found`);
+                        throw new Error(`Entity with id ${dto.id} not found`);
                     }
-                    map.set((dto as T['__NuDto']).id, entity);
+                    map.set(dto.id, entity);
                 }
 
-                await this.updateInTransaction(dto as T['__NuDto'], manager, entity);
+                await this.updateInTransaction(dto, manager, entity);
             }
         }
 

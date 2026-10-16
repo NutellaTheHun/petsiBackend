@@ -1,4 +1,9 @@
-import { ForbiddenException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    ForbiddenException,
+    HttpStatus,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import { AppHttpException } from '../../../common/exceptions/app-http-exception';
@@ -7,7 +12,11 @@ import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
-import { ColumnDefDto, ReportResultDto, ReportSectionResultDto } from '../dto/report-result.dto';
+import {
+    ColumnDefDto,
+    ReportResultDto,
+    ReportSectionResultDto,
+} from '../dto/report-result.dto';
 import {
     JsonMetricReportSection,
     JsonTableReportSection,
@@ -17,10 +26,13 @@ import {
 import { FIELD_REGISTRY } from '../registries';
 import { FieldRegistryEntry } from '../registries/field-registry.types';
 
-const ENTITY_QUERY_CONFIG: Record<string, { entityClass: any; alias: string }> = {
-    orders: { entityClass: Order, alias: 'order' },
-    orderMenuItems: { entityClass: OrderMenuItem, alias: 'orderMenuItem' },
-};
+type ReportRow = Record<string, unknown>;
+
+const ENTITY_QUERY_CONFIG: Record<string, { entityClass: any; alias: string }> =
+    {
+        orders: { entityClass: Order, alias: 'order' },
+        orderMenuItems: { entityClass: OrderMenuItem, alias: 'orderMenuItem' },
+    };
 
 @Injectable()
 export class ReportExecutionService {
@@ -33,31 +45,45 @@ export class ReportExecutionService {
         private readonly requestContextService: RequestContextService,
     ) {}
 
-    async execute(definitionId: number, runtimeParams: Record<string, any>): Promise<ReportResultDto> {
-        const definition = await this.definitionRepo.findOne({ where: { id: definitionId } });
+    async execute(
+        definitionId: number,
+        runtimeParams: Record<string, any>,
+    ): Promise<ReportResultDto> {
+        const definition = await this.definitionRepo.findOne({
+            where: { id: definitionId },
+        });
         // A lookup for an id belonging to a different tenant behaves like the
         // id doesn't exist at all — never confirm another tenant's data exists.
         const tenantId = this.requestContextService.get<number>('tenantId');
         if (!definition || definition.tenantId !== tenantId) {
-            throw new NotFoundException(`ReportDefinition #${definitionId} not found`);
+            throw new NotFoundException(
+                `ReportDefinition #${definitionId} not found`,
+            );
         }
 
         const roles = this.requestContextService.get<string[]>('roles') ?? [];
-        const canSeeMgmt = roles.includes(ROLE_MANAGER) || roles.includes(ROLE_ADMIN);
+        const canSeeMgmt =
+            roles.includes(ROLE_MANAGER) || roles.includes(ROLE_ADMIN);
         if (definition.visibility === 'management' && !canSeeMgmt) {
             throw new ForbiddenException('Access denied to management report');
         }
 
-        const sortedSections = [...definition.sections].sort((a, b) => a.order - b.order);
+        const sortedSections = [...definition.sections].sort(
+            (a, b) => a.order - b.order,
+        );
         const sections: ReportSectionResultDto[] = [];
 
         for (const section of sortedSections) {
             if (section.type === 'text') {
                 sections.push(this.processTextSection(section));
             } else if (section.type === 'table') {
-                sections.push(await this.processTableSection(section, runtimeParams));
+                sections.push(
+                    await this.processTableSection(section, runtimeParams),
+                );
             } else if (section.type === 'metric') {
-                sections.push(await this.processMetricSection(section, runtimeParams));
+                sections.push(
+                    await this.processMetricSection(section, runtimeParams),
+                );
             }
         }
 
@@ -70,7 +96,9 @@ export class ReportExecutionService {
         };
     }
 
-    protected processTextSection(section: JsonTextReportSection): ReportSectionResultDto {
+    protected processTextSection(
+        section: JsonTextReportSection,
+    ): ReportSectionResultDto {
         return { type: 'text', title: section.title, content: section.content };
     }
 
@@ -80,16 +108,24 @@ export class ReportExecutionService {
     ): Promise<ReportSectionResultDto> {
         const entityConfig = ENTITY_QUERY_CONFIG[section.entity];
         if (!entityConfig) {
-            throw new AppHttpException(`Unknown entity: ${section.entity}`, HttpStatus.BAD_REQUEST);
+            throw new AppHttpException(
+                `Unknown entity: ${section.entity}`,
+                HttpStatus.BAD_REQUEST,
+            );
         }
 
         const entityRegistry = FIELD_REGISTRY[section.entity];
 
         const hasChildrenExpansion = section.columns.some(
-            (col) => entityRegistry.fields[col.fieldKey]?.isChildrenExpansion === true,
+            (col) =>
+                entityRegistry.fields[col.fieldKey]?.isChildrenExpansion ===
+                true,
         );
 
-        const columnEntries: Array<{ fieldEntry: FieldRegistryEntry; label: string }> = [];
+        const columnEntries: Array<{
+            fieldEntry: FieldRegistryEntry;
+            label: string;
+        }> = [];
         for (const col of section.columns) {
             const fieldEntry = entityRegistry.fields[col.fieldKey];
             if (!fieldEntry) {
@@ -99,15 +135,26 @@ export class ReportExecutionService {
                 );
             }
             if (fieldEntry.select) {
-                columnEntries.push({ fieldEntry, label: col.label ?? fieldEntry.label });
+                columnEntries.push({
+                    fieldEntry,
+                    label: col.label ?? fieldEntry.label,
+                });
             }
         }
 
         if (columnEntries.length === 0) {
-            return { type: 'table', title: section.title, columns: [], rows: [] };
+            return {
+                type: 'table',
+                title: section.title,
+                columns: [],
+                rows: [],
+            };
         }
 
-        const qb = this.dataSource.createQueryBuilder(entityConfig.entityClass, entityConfig.alias);
+        const qb = this.dataSource.createQueryBuilder(
+            entityConfig.entityClass,
+            entityConfig.alias,
+        );
         const addedJoinAliases = new Set<string>();
 
         const applyJoins = (fieldEntry: FieldRegistryEntry) => {
@@ -119,10 +166,16 @@ export class ReportExecutionService {
             }
         };
 
-        qb.select(columnEntries[0].fieldEntry.select, columnEntries[0].fieldEntry.alias);
+        qb.select(
+            columnEntries[0].fieldEntry.select,
+            columnEntries[0].fieldEntry.alias,
+        );
         applyJoins(columnEntries[0].fieldEntry);
         for (let i = 1; i < columnEntries.length; i++) {
-            qb.addSelect(columnEntries[i].fieldEntry.select, columnEntries[i].fieldEntry.alias);
+            qb.addSelect(
+                columnEntries[i].fieldEntry.select,
+                columnEntries[i].fieldEntry.alias,
+            );
             applyJoins(columnEntries[i].fieldEntry);
         }
 
@@ -131,7 +184,9 @@ export class ReportExecutionService {
         }
 
         if (section.entity === 'orders') {
-            qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, { isFrozen: false });
+            qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, {
+                isFrozen: false,
+            });
         }
 
         for (let i = 0; i < (section.filters ?? []).length; i++) {
@@ -145,12 +200,17 @@ export class ReportExecutionService {
             }
             applyJoins(filterFieldEntry);
 
-            const value =
-                filter.source === 'param' ? runtimeParams[filter.paramName] : filter.value;
+            const value: unknown =
+                filter.source === 'param'
+                    ? runtimeParams[filter.paramName]
+                    : filter.value;
             const paramKey = `fp_${i}`;
-            qb.andWhere(`${filterFieldEntry.select} ${filter.operator} :${paramKey}`, {
-                [paramKey]: value,
-            });
+            qb.andWhere(
+                `${filterFieldEntry.select} ${filter.operator} :${paramKey}`,
+                {
+                    [paramKey]: value,
+                },
+            );
         }
 
         if (section.groupBy && section.groupBy.length > 0) {
@@ -167,7 +227,9 @@ export class ReportExecutionService {
             }
         }
 
-        const hasAggregates = !!(section.aggregates && section.aggregates.length > 0);
+        const hasAggregates = !!(
+            section.aggregates && section.aggregates.length > 0
+        );
         if (hasAggregates) {
             for (let i = 0; i < section.aggregates!.length; i++) {
                 const agg = section.aggregates![i];
@@ -179,15 +241,18 @@ export class ReportExecutionService {
                     );
                 }
                 applyJoins(fieldEntry);
-                qb.addSelect(`${agg.fn.toUpperCase()}(${fieldEntry.select})`, `__agg_${i}`);
+                qb.addSelect(
+                    `${agg.fn.toUpperCase()}(${fieldEntry.select})`,
+                    `__agg_${i}`,
+                );
             }
         }
 
-        const rows = await qb.getRawMany();
+        const rows = await qb.getRawMany<ReportRow>();
 
         const mappedRows = hasAggregates
             ? rows.map((row) => {
-                  const mapped: Record<string, any> = { ...row };
+                  const mapped: ReportRow = { ...row };
                   section.aggregates!.forEach((agg, i) => {
                       mapped[agg.label] = Number(row[`__agg_${i}`]);
                       delete mapped[`__agg_${i}`];
@@ -197,20 +262,24 @@ export class ReportExecutionService {
             : rows;
 
         if (hasChildrenExpansion) {
-            const parentIds = [...new Set(mappedRows.map((r) => r.__parentId))].filter(
-                (id): id is number => id != null,
-            );
+            const parentIds = [
+                ...new Set(mappedRows.map((r) => r.__parentId)),
+            ].filter((id): id is number => id != null);
             const childrenByParentId = new Map<number, OrderContainerItem[]>();
             if (parentIds.length > 0) {
                 const parentEntities = await this.orderMenuItemRepo.find({
                     where: { id: In(parentIds) },
                 });
                 for (const parent of parentEntities) {
-                    childrenByParentId.set(parent.id, parent.containerOrderMenuItems ?? []);
+                    childrenByParentId.set(
+                        parent.id,
+                        parent.containerOrderMenuItems ?? [],
+                    );
                 }
             }
             for (const row of mappedRows) {
-                const containers = childrenByParentId.get(row.__parentId) ?? [];
+                const containers =
+                    childrenByParentId.get(row.__parentId as number) ?? [];
                 row.children = containers.map((ci) => ({
                     itemName: ci.containedMenuItem?.name ?? null,
                     sizeName: ci.containedItemSize?.name ?? null,
@@ -220,19 +289,30 @@ export class ReportExecutionService {
             }
         }
 
-        const columns: ColumnDefDto[] = columnEntries.map(({ fieldEntry, label }) => ({
-            key: fieldEntry.alias,
-            label,
-            dataType: fieldEntry.dataType,
-        }));
+        const columns: ColumnDefDto[] = columnEntries.map(
+            ({ fieldEntry, label }) => ({
+                key: fieldEntry.alias,
+                label,
+                dataType: fieldEntry.dataType,
+            }),
+        );
 
         if (hasAggregates) {
             for (const agg of section.aggregates!) {
-                columns.push({ key: agg.label, label: agg.label, dataType: 'number' });
+                columns.push({
+                    key: agg.label,
+                    label: agg.label,
+                    dataType: 'number',
+                });
             }
         }
 
-        return { type: 'table', title: section.title, columns, rows: mappedRows };
+        return {
+            type: 'table',
+            title: section.title,
+            columns,
+            rows: mappedRows,
+        };
     }
 
     protected async processMetricSection(
@@ -241,7 +321,10 @@ export class ReportExecutionService {
     ): Promise<ReportSectionResultDto> {
         const entityConfig = ENTITY_QUERY_CONFIG[section.entity];
         if (!entityConfig) {
-            throw new AppHttpException(`Unknown entity: ${section.entity}`, HttpStatus.BAD_REQUEST);
+            throw new AppHttpException(
+                `Unknown entity: ${section.entity}`,
+                HttpStatus.BAD_REQUEST,
+            );
         }
 
         if (!section.aggregates || section.aggregates.length === 0) {
@@ -249,7 +332,10 @@ export class ReportExecutionService {
         }
 
         const entityRegistry = FIELD_REGISTRY[section.entity];
-        const qb = this.dataSource.createQueryBuilder(entityConfig.entityClass, entityConfig.alias);
+        const qb = this.dataSource.createQueryBuilder(
+            entityConfig.entityClass,
+            entityConfig.alias,
+        );
         const addedJoinAliases = new Set<string>();
 
         const applyJoins = (fieldEntry: FieldRegistryEntry) => {
@@ -270,7 +356,10 @@ export class ReportExecutionService {
             );
         }
         applyJoins(firstFieldEntry);
-        qb.select(`${firstAgg.fn.toUpperCase()}(${firstFieldEntry.select})`, `__agg_0`);
+        qb.select(
+            `${firstAgg.fn.toUpperCase()}(${firstFieldEntry.select})`,
+            `__agg_0`,
+        );
 
         for (let i = 1; i < section.aggregates.length; i++) {
             const agg = section.aggregates[i];
@@ -282,11 +371,16 @@ export class ReportExecutionService {
                 );
             }
             applyJoins(fieldEntry);
-            qb.addSelect(`${agg.fn.toUpperCase()}(${fieldEntry.select})`, `__agg_${i}`);
+            qb.addSelect(
+                `${agg.fn.toUpperCase()}(${fieldEntry.select})`,
+                `__agg_${i}`,
+            );
         }
 
         if (section.entity === 'orders') {
-            qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, { isFrozen: false });
+            qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, {
+                isFrozen: false,
+            });
         }
 
         for (let i = 0; i < (section.filters ?? []).length; i++) {
@@ -299,15 +393,20 @@ export class ReportExecutionService {
                 );
             }
             applyJoins(filterFieldEntry);
-            const value =
-                filter.source === 'param' ? runtimeParams[filter.paramName] : filter.value;
+            const value: unknown =
+                filter.source === 'param'
+                    ? runtimeParams[filter.paramName]
+                    : filter.value;
             const paramKey = `fp_${i}`;
-            qb.andWhere(`${filterFieldEntry.select} ${filter.operator} :${paramKey}`, {
-                [paramKey]: value,
-            });
+            qb.andWhere(
+                `${filterFieldEntry.select} ${filter.operator} :${paramKey}`,
+                {
+                    [paramKey]: value,
+                },
+            );
         }
 
-        const [row] = await qb.getRawMany();
+        const [row] = await qb.getRawMany<ReportRow>();
 
         const metrics = section.aggregates.map((agg, i) => ({
             label: agg.label,

@@ -60,12 +60,14 @@ describe('order controller', () => {
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        const requestContext = module.get(
+        const requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         const fixtureTenantId = await testingUtil.getDefaultTenantId();
         fixtureLocationId = await testingUtil.getDefaultLocationId();
@@ -75,8 +77,17 @@ describe('order controller', () => {
             locations: [],
         });
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -84,7 +95,11 @@ describe('order controller', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
@@ -126,7 +141,7 @@ describe('order controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, [
+                createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
                     'fulfillmentType',
                 ]),
             );
@@ -164,9 +179,9 @@ describe('order controller', () => {
             }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOneOrderResponse(created.id)).rejects.toThrow(
-            NotFoundException,
-        );
+        await expect(
+            controller.findOneOrderResponse(created.id),
+        ).rejects.toThrow(NotFoundException);
     });
 
     it('remove throws NotFoundException when id does not exist', async () => {

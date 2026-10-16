@@ -32,7 +32,10 @@ export async function getSettingsTestingModule(opts?: {
             RequestContextModule,
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
         ],
         controllers: [SettingsController],

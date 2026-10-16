@@ -47,7 +47,7 @@ export class MenuItemContainerItemService extends TenantScopedServiceBase<MenuIt
         manager: EntityManager,
         entity: MenuItemContainerItem,
     ): Promise<void> {
-        await this.containerItemComposer.composeUpdate(dto, manager, entity)
+        await this.containerItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -75,11 +75,11 @@ export class MenuItemContainerItemService extends TenantScopedServiceBase<MenuIt
     }
 
     protected getChangeDetector():
-        | ChangeDetectorBase<MenuItemContainerItem, UpdateMenuItemContainerItemDto>
+        | ChangeDetectorBase<
+              MenuItemContainerItem,
+              UpdateMenuItemContainerItemDto
+          >
         | undefined {
-        return this.containerItemChangeDetector as unknown as ChangeDetectorBase<
-            MenuItemContainerItem,
-            UpdateMenuItemContainerItemDto
-        >;
+        return this.containerItemChangeDetector;
     }
 }

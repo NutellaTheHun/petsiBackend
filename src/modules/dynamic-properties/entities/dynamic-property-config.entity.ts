@@ -30,7 +30,9 @@ export enum ValueType {
 export type FieldRenderType = 'entity-select' | 'file-upload';
 
 export function deriveFieldRenderType(valueType: ValueType): FieldRenderType {
-    return valueType === ValueType.EntityReference ? 'entity-select' : 'file-upload';
+    return valueType === ValueType.EntityReference
+        ? 'entity-select'
+        : 'file-upload';
 }
 
 @Unique(['tenantId', 'holderEntityType', 'propertyName'])
@@ -56,7 +58,11 @@ export class DynamicPropertyConfig {
     holderEntityType: HolderEntityType;
 
     @ApiProperty({ type: () => MenuItemCategory, nullable: true })
-    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL', eager: true })
+    @ManyToOne(() => MenuItemCategory, {
+        nullable: true,
+        onDelete: 'SET NULL',
+        eager: true,
+    })
     holderCategory: MenuItemCategory | null = null;
 
     @ApiProperty()
@@ -72,7 +78,11 @@ export class DynamicPropertyConfig {
     valueEntityType: string | null = null;
 
     @ApiProperty({ type: () => MenuItemCategory, nullable: true })
-    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL', eager: true })
+    @ManyToOne(() => MenuItemCategory, {
+        nullable: true,
+        onDelete: 'SET NULL',
+        eager: true,
+    })
     valueEntityCategory: MenuItemCategory | null = null;
 
     @ApiProperty({ enum: ['entity-select', 'file-upload'] })

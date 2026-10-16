@@ -1,8 +1,11 @@
-import { plainToInstance } from "class-transformer";
-import { UpdateLocationDto } from "../../dto/update-location.dto";
-import { Location } from "../../entities/location.entity";
+import { plainToInstance } from 'class-transformer';
+import { UpdateLocationDto } from '../../dto/update-location.dto';
+import { Location } from '../../entities/location.entity';
 
-export function locationToUpdateDto(location: Location, merge: Partial<UpdateLocationDto> = {}): UpdateLocationDto {
+export function locationToUpdateDto(
+    location: Location,
+    merge: Partial<UpdateLocationDto> = {},
+): UpdateLocationDto {
     return plainToInstance(UpdateLocationDto, {
         name: location.name,
         address: location.address ?? undefined,

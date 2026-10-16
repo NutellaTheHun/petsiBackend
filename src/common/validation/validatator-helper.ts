@@ -12,7 +12,6 @@ export class ValidatorHelper<
      * @param arrayVal any array
      * @param field array property of entity
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
     public enforceArrayNotEmpty<
         DtoProp extends ArrayKeys<TIdentity>,
@@ -34,9 +33,11 @@ export class ValidatorHelper<
      * @param repo repository of the entity
      * @param field property of the entity
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
-    public async enforceExists<Entity extends ObjectLiteral, Prop extends keyof TEntity>(
+    public async enforceExists<
+        Entity extends ObjectLiteral,
+        Prop extends keyof TEntity,
+    >(
         id: number,
         repo: Repository<Entity>,
         field: Prop,
@@ -46,7 +47,12 @@ export class ValidatorHelper<
             where: { id } as unknown as FindOptionsWhere<Entity>,
         });
         if (!exists) {
-            rootErrMap.addError('REFERENCE_NOT_FOUND', undefined, [String(field)], { value: id });
+            rootErrMap.addError(
+                'REFERENCE_NOT_FOUND',
+                undefined,
+                [String(field)],
+                { value: id },
+            );
         }
     }
 
@@ -58,9 +64,11 @@ export class ValidatorHelper<
      * @param targetValue target value of the property
      * @param repo repository of the entity
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
-    public async enforcePropertyState<Entity extends ObjectLiteral, Prop extends keyof Entity>(
+    public async enforcePropertyState<
+        Entity extends ObjectLiteral,
+        Prop extends keyof Entity,
+    >(
         id: number,
         field: Prop,
         targetValue: string | number | null | undefined,
@@ -73,24 +81,33 @@ export class ValidatorHelper<
             where: { id } as unknown as FindOptionsWhere<Entity>,
         });
         if (!entity) {
-            rootErrMap.addError('REFERENCE_NOT_FOUND', undefined, [String(field)], { value: id });
+            rootErrMap.addError(
+                'REFERENCE_NOT_FOUND',
+                undefined,
+                [String(field)],
+                { value: id },
+            );
             return;
         }
 
         if (entity[field] !== targetValue) {
-            rootErrMap.addError('INVALID_REFERENCE', undefined, [String(field)], { value: id });
+            rootErrMap.addError(
+                'INVALID_REFERENCE',
+                undefined,
+                [String(field)],
+                { value: id },
+            );
         }
     }
 
     /**
-     * Value must be greater than 0. Returns 'INVALID_PROPERTY_VALUE' error if not greater than 0.
+     * Value must be greater than 0. Returns 'OUT_OF_RANGE' error if not greater than 0.
      * Fails if value is less than or equal to 0,
      * VALUE CANNOT EQUAL 0
      * ignores validation if value is null or undefined
      * @param val Value being evaluated
      * @param field corresponding property of entity
      * @param rootErrMap error map to add error to
-     * @param errMsg message detailing the error
      */
     public enforcePositive<
         DtoProp extends NumericKeys<TIdentity>,
@@ -103,18 +120,17 @@ export class ValidatorHelper<
         if (val == null) return;
 
         if ((val as number) <= 0) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+            rootErrMap.addError('OUT_OF_RANGE', undefined, [String(field)]);
         }
     }
 
     /**
-     * Value must be equal to or greater than 0. Returns 'INVALID_PROPERTY_VALUE' error if not greater than 0.
+     * Value must be equal to or greater than 0. Returns 'OUT_OF_RANGE' error if less than 0.
      * Fails if value is less than 0,
      * VALUE CAN BE 0
      * @param val Value being evaluated
      * @param field corresponding property of entity
      * @param rootErrMap error map to add error to
-     * @param errMsg message detailing the error
      */
     public enforceNonNegative<
         DtoProp extends NumericKeys<TIdentity>,
@@ -126,7 +142,7 @@ export class ValidatorHelper<
     ): void {
         if (val == null) return;
         if ((val as number) < 0) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+            rootErrMap.addError('OUT_OF_RANGE', undefined, [String(field)]);
         }
     }
 
@@ -152,14 +168,16 @@ export class ValidatorHelper<
     }
 
     /**
-     * Value must be found in array. Returns 'INVALID_PROPERTY_VALUE' error if not found.
+     * Value must be found in array. Returns 'INCONSISTENT_STATE' error if not found.
      * @param val value to be found in array
      * @param list array to be searched
      * @param prop property the value represents
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
-    public enforceValueInList<Entity extends ObjectLiteral, Prop extends keyof Entity>(
+    public enforceValueInList<
+        Entity extends ObjectLiteral,
+        Prop extends keyof Entity,
+    >(
         val: string | number | null | undefined,
         list: (string | number)[],
         field: Entity[Prop],
@@ -168,7 +186,9 @@ export class ValidatorHelper<
         if (val == null) return;
 
         if (!list.includes(val)) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+            rootErrMap.addError('INCONSISTENT_STATE', undefined, [
+                String(field),
+            ]);
         }
     }
 
@@ -189,7 +209,6 @@ export class ValidatorHelper<
      * @param foreignEntitySizeArrayProp propery of entity contained the list of valid sizes, typically will be from a foreign entity
      * @param field property of entity being validated
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      * @param id id of the entity being validated
      */
     public async enforceValidSize<
@@ -211,9 +230,14 @@ export class ValidatorHelper<
             relations: [foreignEntitySizeArrayProp as string],
         });
         if (!entity) {
-            rootErrMap.addError('REFERENCE_NOT_FOUND', undefined, [String(field)], {
-                value: foreignEntityId as number,
-            });
+            rootErrMap.addError(
+                'REFERENCE_NOT_FOUND',
+                undefined,
+                [String(field)],
+                {
+                    value: foreignEntityId as number,
+                },
+            );
             return;
         }
 
@@ -222,7 +246,12 @@ export class ValidatorHelper<
         }>;
 
         if (!sizeArray.some((s) => s.id === sizeId)) {
-            rootErrMap.addError('INVALID_REFERENCE', undefined, [String(field)], { value: sizeId });
+            rootErrMap.addError(
+                'INVALID_REFERENCE',
+                undefined,
+                [String(field)],
+                { value: sizeId },
+            );
         }
     }
 
@@ -232,7 +261,6 @@ export class ValidatorHelper<
      * @param field Name of property being checked for uniqueness
      * @param val value being checked against prop for uniqueness
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
     public async enforceUnique<
         Entity extends ObjectLiteral,
@@ -252,9 +280,11 @@ export class ValidatorHelper<
         });
         if (exists && exists.length > 0) {
             // if the id is the same as the existing id, not a validation error, createIds are strings and will always fail this check.
-            for (const exist of exists as Entity[]) {
+            for (const exist of exists) {
                 if (exist.id !== id) {
-                    rootErrMap.addError('ALREADY_EXISTS', undefined, [String(field)]);
+                    rootErrMap.addError('ALREADY_EXISTS', undefined, [
+                        String(field),
+                    ]);
                     break;
                 }
             }
@@ -262,12 +292,11 @@ export class ValidatorHelper<
     }
 
     /**
-     * Value must not be found within the provided array. Returns 'INVALID_PROPERTY_VALUE' error if found.
+     * Value must not be found within the provided array. Returns 'CONFLICTING_VALUES' error if found.
      * @param list list of strings being checked against
      * @param prop property being checked for uniqueness
      * @param val value being checked against list for uniqueness
      * @param rootErrMap error map to add error to
-     * @param errMsg message describing error
      */
     public enforceNotInList<Prop extends keyof TEntity>(
         val: string | number | null | undefined,
@@ -278,7 +307,9 @@ export class ValidatorHelper<
         if (val == null) return;
 
         if (list.includes(val)) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+            rootErrMap.addError('CONFLICTING_VALUES', undefined, [
+                String(field),
+            ]);
         }
     }
 
@@ -289,11 +320,13 @@ export class ValidatorHelper<
      * @param keyExtractor Function that extracts a unique key from each item
      * @param prop Property name for error reporting
      * @param rootErrMap error map to add error to
-     * @param errMsg Message describing the error
      */
     public enforceNoDuplicateElements<TItem>(
         items: TItem[] | null | undefined,
-        keyExtractor: (item: TItem) => { id: string | number | undefined, identity: string | number },
+        keyExtractor: (item: TItem) => {
+            id: string | number | undefined;
+            identity: string | number;
+        },
         field: keyof TEntity,
         rootErrMap: ValidationErrorMap,
     ): void {
@@ -324,7 +357,6 @@ export class ValidatorHelper<
      * @param hingeValue the state of the hinge property that requires the dependents
      * @param dependents the properties that must be populated if the hinge is set to the hingeValue
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
     public enforceConditionalRequired<
         Prop extends keyof TIdentity,
@@ -345,18 +377,19 @@ export class ValidatorHelper<
                 const val = identity[dep];
                 if (val == null || (Array.isArray(val) && val.length === 0)) {
                     // Should probably pass the dependent Props, or both, not just hinge
-                    rootErrMap.addError('MISSING_PROPERTY', undefined, [String(dep)]);
+                    rootErrMap.addError('MISSING_PROPERTY', undefined, [
+                        String(dep),
+                    ]);
                 }
             }
         }
     }
 
     /**
-     * All properties within mutuals array must all be the same state, either undefined/null or populated. Returns 'INVALID_PROPERTY_VALUE' error.
+     * All properties within mutuals array must all be the same state, either undefined/null or populated. Returns 'CONFLICTING_VALUES' error.
      * @param dto source DTO
      * @param mutuals array of properties that are grouped together
      * @param rootErrMap error map to add error to
-     * @param errMsg description of error
      */
     public enforceMutualRequired<Dep extends readonly (keyof TIdentity)[]>(
         dto: TIdentity,
@@ -369,18 +402,18 @@ export class ValidatorHelper<
         const hasMissing = mutuals.some((field) => dto[field] == undefined);
 
         if (hasAny && hasMissing) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [...mutuals.map((field) => String(field))]);
+            rootErrMap.addError('CONFLICTING_VALUES', undefined, [
+                ...mutuals.map((field) => String(field)),
+            ]);
         }
     }
 
     /**
-     * Only one of the two given properties must be populated. Returns 'ONLY_ONE' error.
+     * Only one of the two given properties must be populated. Returns 'INCONSISTENT_STATE' error.
      * Cannot both be populated or both be vacant.
      * @param firstProp any prop of dto, must match entity property name (the nested dto)
      * @param secondProp any prop of dto, the (id property)
      * @param rootErrMap error map to add error to
-     * @param errMsgMissing description of error when both properties are missing
-     * @param errMsgPopulated description of error when both props are populated
      */
     public enforceOnlyOne<Prop extends keyof TIdentity>(
         identity: TIdentity,
@@ -392,10 +425,16 @@ export class ValidatorHelper<
         const secondVal = identity[secondfield];
 
         if (firstVal && secondVal) {
-            rootErrMap.addError('ONLY_ONE', undefined, [String(firstfield), String(secondfield)]);
+            rootErrMap.addError('INCONSISTENT_STATE', undefined, [
+                String(firstfield),
+                String(secondfield),
+            ]);
         }
         if (!firstVal && !secondVal) {
-            rootErrMap.addError('ONLY_ONE', undefined, [String(firstfield), String(secondfield)]);
+            rootErrMap.addError('INCONSISTENT_STATE', undefined, [
+                String(firstfield),
+                String(secondfield),
+            ]);
         }
     }
 }

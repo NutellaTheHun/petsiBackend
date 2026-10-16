@@ -1,4 +1,10 @@
-import { IsArray, IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
+import {
+    IsArray,
+    IsBoolean,
+    IsIn,
+    IsOptional,
+    IsString,
+} from 'class-validator';
 import {
     JsonReportParam,
     JsonReportSection,

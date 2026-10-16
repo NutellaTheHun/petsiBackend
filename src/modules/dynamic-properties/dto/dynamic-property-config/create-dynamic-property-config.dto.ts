@@ -1,6 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf } from 'class-validator';
-import { HolderEntityType, ValueType } from '../../entities/dynamic-property-config.entity';
+import {
+    IsEnum,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    ValidateIf,
+} from 'class-validator';
+import {
+    HolderEntityType,
+    ValueType,
+} from '../../entities/dynamic-property-config.entity';
 
 export class CreateDynamicPropertyConfigDto {
     @ApiProperty({ enum: HolderEntityType })
@@ -25,7 +35,10 @@ export class CreateDynamicPropertyConfigDto {
 
     @ApiPropertyOptional({ nullable: true })
     @IsString()
-    @ValidateIf((o) => o.valueType === ValueType.EntityReference)
+    @ValidateIf(
+        (o: CreateDynamicPropertyConfigDto) =>
+            o.valueType === ValueType.EntityReference,
+    )
     @IsNotEmpty()
     readonly valueEntityType: string | null;
 

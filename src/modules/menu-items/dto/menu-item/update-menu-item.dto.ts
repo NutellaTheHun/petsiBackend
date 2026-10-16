@@ -6,10 +6,10 @@ import {
     IsOptional,
     IsPositive,
     IsString,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 
-import { plainToInstance, Transform, TransformFnParams, Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import { EntityId } from '../../../../common/types';
 import { MenuItemCategory } from '../../entities/menu-item-category.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
@@ -17,7 +17,10 @@ import { NestedCreateMenuItemContainerItemDto } from '../menu-item-container-ite
 import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { DynamicPropertyValueDto } from './dynamic-property-value.dto';
 
-@ApiExtraModels(NestedCreateMenuItemContainerItemDto, NestedUpdateMenuItemContainerItemDto)
+@ApiExtraModels(
+    NestedCreateMenuItemContainerItemDto,
+    NestedUpdateMenuItemContainerItemDto,
+)
 export class UpdateMenuItemDto {
     @ApiProperty({
         description: 'Name of MenuItem entity.',
@@ -92,18 +95,20 @@ export class UpdateMenuItemDto {
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateMenuItemContainerItemDto, item)
-                : plainToInstance(NestedUpdateMenuItemContainerItemDto, item)
+                : plainToInstance(NestedUpdateMenuItemContainerItemDto, item),
         );
     })
-    readonly containerMenuItems?: (
-        | NestedCreateMenuItemContainerItemDto
-        | NestedUpdateMenuItemContainerItemDto
-    )[] | null;
+    readonly containerMenuItems?:
+        | (
+              | NestedCreateMenuItemContainerItemDto
+              | NestedUpdateMenuItemContainerItemDto
+          )[]
+        | null;
 
     @ApiProperty({
         description:
@@ -119,7 +124,8 @@ export class UpdateMenuItemDto {
     readonly variableMaxAmount?: number | null;
 
     @ApiProperty({
-        description: 'Dynamic property values to upsert or clear. Omit a configId to leave that value unchanged.',
+        description:
+            'Dynamic property values to upsert or clear. Omit a configId to leave that value unchanged.',
         type: () => [DynamicPropertyValueDto],
         required: false,
     })

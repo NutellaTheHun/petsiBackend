@@ -1,4 +1,7 @@
-import { ValidationErrorMap, ValidationErrorResponse } from './validation-error';
+import {
+    ValidationErrorMap,
+    ValidationErrorResponse,
+} from './validation-error';
 
 export class ValidationException extends Error {
     /** Client-facing tree, without log-only context. */

@@ -36,7 +36,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateRoleFeatureDto } from '../dto/create-role-feature.dto';
 import { UpdateRoleFeatureDto } from '../dto/update-role-feature.dto';
-import { RoleFeature, RoleFeatureEntity } from '../entities/role-feature.entity';
+import {
+    RoleFeature,
+    RoleFeatureEntity,
+} from '../entities/role-feature.entity';
 import { RoleFeatureService } from '../services/role-feature.service';
 
 @ApiTags('RoleFeature')
@@ -63,7 +66,10 @@ export class RoleFeatureController extends ControllerBase<RoleFeatureEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Grants a Feature to a Role' })
-    @ApiCreatedResponse({ description: 'RoleFeature successfully created', type: RoleFeature })
+    @ApiCreatedResponse({
+        description: 'RoleFeature successfully created',
+        type: RoleFeature,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRoleFeatureDto })
     async create(@Body() dto: CreateRoleFeatureDto): Promise<RoleFeature> {
@@ -71,7 +77,10 @@ export class RoleFeatureController extends ControllerBase<RoleFeatureEntity> {
     }
 
     @Put(':id')
-    @ApiOperation({ summary: 'No-op: RoleFeature grants are added/removed, never edited in place' })
+    @ApiOperation({
+        summary:
+            'No-op: RoleFeature grants are added/removed, never edited in place',
+    })
     @ApiOkResponse({ description: 'RoleFeature unchanged', type: RoleFeature })
     @ApiNotFoundResponse({ description: 'RoleFeature to update not found.' })
     @ApiBody({ type: UpdateRoleFeatureDto })
@@ -109,7 +118,12 @@ export class RoleFeatureController extends ControllerBase<RoleFeatureEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -4,7 +4,10 @@ export class ActorDto {
     @ApiProperty({ enum: ['user', 'system', 'square_webhook'] })
     type: 'user' | 'system' | 'square_webhook';
 
-    @ApiProperty({ required: false, description: 'User id when type is user; optional for system' })
+    @ApiProperty({
+        required: false,
+        description: 'User id when type is user; optional for system',
+    })
     id?: number;
 }
 
@@ -66,7 +69,13 @@ export type ChangeLogChangeDto =
     | AggregateChangeDto
     | ReferenceChangeDto;
 
-@ApiExtraModels(ScalarChangeDto, AggregateChangeDto, ReferenceChangeDto, ActorDto, RevertInfoDto)
+@ApiExtraModels(
+    ScalarChangeDto,
+    AggregateChangeDto,
+    ReferenceChangeDto,
+    ActorDto,
+    RevertInfoDto,
+)
 export class ChangeLogDto {
     @ApiProperty({ example: 1 })
     schemaVersion: number;

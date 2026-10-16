@@ -50,7 +50,7 @@ export class InventoryAreaTestUtil {
         private readonly locationRepo: Repository<Location>,
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
-    ) { }
+    ) {}
 
     /**
      * InventoryArea now requires tenantId/locationId (NOT NULL). Most
@@ -62,12 +62,15 @@ export class InventoryAreaTestUtil {
      * exercise tenant/location scoping (inventory-area.*.spec.ts) seed and
      * pass their own explicit tenant/location.
      */
-    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'inventory-area-test-util-fixture-tenant';
+    private static readonly DEFAULT_TENANT_SUBDOMAIN =
+        'inventory-area-test-util-fixture-tenant';
     private defaultLocation?: Location;
     public async getDefaultLocation(): Promise<Location> {
         if (!this.defaultLocation) {
             let tenant = await this.tenantRepo.findOne({
-                where: { subdomain: InventoryAreaTestUtil.DEFAULT_TENANT_SUBDOMAIN },
+                where: {
+                    subdomain: InventoryAreaTestUtil.DEFAULT_TENANT_SUBDOMAIN,
+                },
             });
             if (!tenant) {
                 tenant = await this.tenantRepo.save({
@@ -126,7 +129,9 @@ export class InventoryAreaTestUtil {
     ): Promise<InventoryAreaCount[]> {
         await this.initInventoryAreaTestDatabase(testContext);
 
-        const buildForArea = async (name: string): Promise<InventoryAreaCount> => {
+        const buildForArea = async (
+            name: string,
+        ): Promise<InventoryAreaCount> => {
             const area = await this.areaRepo.findOneOrFail({ where: { name } });
             return this.areaCountBuilder
                 .reset()
@@ -360,7 +365,10 @@ export class InventoryAreaTestUtil {
     ): Promise<{ areas: InventoryArea[] }> {
         let effectiveTenantId = tenantId;
         let effectiveLocationId = locationId;
-        if (effectiveTenantId === undefined || effectiveLocationId === undefined) {
+        if (
+            effectiveTenantId === undefined ||
+            effectiveLocationId === undefined
+        ) {
             const location = await this.getDefaultLocation();
             effectiveTenantId ??= location.tenant.id;
             effectiveLocationId ??= location.id;
@@ -439,7 +447,8 @@ export class InventoryAreaTestUtil {
         areaItems: InventoryAreaItem[];
     }> {
         const { areas, counts } = await this.seedCounts(P);
-        const { categories, vendors, packages, items, sizes } = await this.seedInventoryItems(P);
+        const { categories, vendors, packages, items, sizes } =
+            await this.seedInventoryItems(P);
 
         const areaItems: InventoryAreaItem[] = [];
         let itemPtr = 0;
@@ -459,6 +468,15 @@ export class InventoryAreaTestUtil {
             }
         }
 
-        return { areas, counts, categories, vendors, packages, items, sizes, areaItems };
+        return {
+            areas,
+            counts,
+            categories,
+            vendors,
+            packages,
+            items,
+            sizes,
+            areaItems,
+        };
     }
 }

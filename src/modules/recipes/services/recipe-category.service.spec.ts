@@ -57,14 +57,16 @@ describe('recipe category service', () => {
         });
 
         testUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        categoryService = module.get(
+        categoryService = module.get<TestableRecipeCategoryService>(
             RecipeCategoryService,
-        ) as TestableRecipeCategoryService;
+        );
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
         dataSource = module.get(DataSource);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         const tenantId = await testUtil.getDefaultTenantId();
         requestContext.setContext({ tenantId });
@@ -83,7 +85,10 @@ describe('recipe category service', () => {
 
     afterAll(async () => {
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
-        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await categoryRepo.delete([
+            ...categories.map((c) => c.id),
+            otherTenantCategory.id,
+        ]);
         await tenantRepo.delete(otherTenant.id);
     });
 
@@ -103,7 +108,10 @@ describe('recipe category service', () => {
                 name: `${P}-lifecycle-category`,
             });
             await dataSource.transaction(async (manager) => {
-                category = await categoryService.createEntityForTest(dto, manager);
+                category = await categoryService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(category.id).toBeDefined();
             expect(category.name).toEqual(dto.name);
@@ -114,7 +122,11 @@ describe('recipe category service', () => {
                 name: `${P}-lifecycle-category-updated`,
             });
             await dataSource.transaction(async (manager) => {
-                await categoryService.updateEntityForTest(dto, category, manager);
+                await categoryService.updateEntityForTest(
+                    dto,
+                    category,
+                    manager,
+                );
             });
             const reloaded = await categoryRepo.findOneOrFail({
                 where: { id: category.id },
@@ -188,7 +200,9 @@ describe('recipe category service', () => {
             where: { id: cat.id },
             relations: ['subCategories'],
         });
-        const updatedSub = updated.subCategories.find((s) => s.id === existing.id);
+        const updatedSub = updated.subCategories.find(
+            (s) => s.id === existing.id,
+        );
         expect(updatedSub?.name).toEqual(`${P}-updated-sub`);
         const newSub = updated.subCategories.find(
             (s) => s.name === `${P}-new-sub`,
@@ -227,7 +241,10 @@ describe('recipe category service', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(RecipeCategoryService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                RecipeCategoryService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -257,7 +274,9 @@ describe('recipe category service', () => {
             });
             await categoryService.update(category.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await categoryRepo.findOneOrFail({ where: { id: category.id } });
+            const row = await categoryRepo.findOneOrFail({
+                where: { id: category.id },
+            });
             expect(row.name).toEqual(`${P}-category-renamed`);
         });
     });
@@ -269,9 +288,7 @@ describe('recipe category service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as RecipeCategory).tenantId).toBe(
-                await testUtil.getDefaultTenantId(),
-            );
+            expect(created.tenantId).toBe(await testUtil.getDefaultTenantId());
             await categoryRepo.delete(created.id);
         });
 

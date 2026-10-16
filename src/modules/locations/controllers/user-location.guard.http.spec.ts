@@ -5,7 +5,10 @@ import * as request from 'supertest';
 import { Repository } from 'typeorm';
 import { createHttpTestApp } from '../../../test/http-test-app';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { TestUser, useTestUserAndRoleGuards } from '../../../test/test-user-guard';
+import {
+    TestUser,
+    useTestUserAndRoleGuards,
+} from '../../../test/test-user-guard';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { Location } from '../entities/location.entity';
@@ -31,13 +34,20 @@ describe('user location controller (location scope enforcement)', () => {
     beforeAll(async () => {
         const module: TestingModule = await getLocationsTestingModule();
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        const requestContext = module.get(RequestContextService) as TestRequestContextService;
+        const requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
 
         ({ app } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(() => currentUser, requestContext),
+            beforeInit: useTestUserAndRoleGuards(
+                () => currentUser,
+                requestContext,
+            ),
         }));
     });
 

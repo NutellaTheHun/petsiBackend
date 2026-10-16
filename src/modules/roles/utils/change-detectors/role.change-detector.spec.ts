@@ -5,7 +5,7 @@ import { RoleChangeDetector } from './role.change-detector';
 describe('RoleChangeDetector', () => {
     const detector = new RoleChangeDetector();
 
-    const baseEntity = (): Role => ({ id: 1, name: 'Admin' } as Role);
+    const baseEntity = (): Role => ({ id: 1, name: 'Admin' }) as Role;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

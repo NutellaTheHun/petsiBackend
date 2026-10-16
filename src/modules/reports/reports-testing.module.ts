@@ -24,7 +24,9 @@ import { ReportDefinitionService } from './services/report-definition.service';
 import { ReportExecutionService } from './services/report-execution.service';
 
 export async function getReportsTestingModule(opts?: {
-    reportDefinitionServiceClass?: new (...args: any[]) => ReportDefinitionService;
+    reportDefinitionServiceClass?: new (
+        ...args: any[]
+    ) => ReportDefinitionService;
 }): Promise<TestingModule> {
     return Test.createTestingModule({
         imports: [
@@ -34,18 +36,30 @@ export async function getReportsTestingModule(opts?: {
             RequestContextModule,
             TenantsModule,
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
         ],
         controllers: [ReportDefinitionController],
         providers: [
             opts?.reportDefinitionServiceClass
-                ? { provide: ReportDefinitionService, useClass: opts.reportDefinitionServiceClass }
+                ? {
+                      provide: ReportDefinitionService,
+                      useClass: opts.reportDefinitionServiceClass,
+                  }
                 : ReportDefinitionService,
             {
                 provide: ReportExecutionService,
                 useValue: {
-                    execute: jest.fn().mockResolvedValue({ reportId: 0, name: '', generatedAt: new Date(), params: {}, sections: [] }),
+                    execute: jest.fn().mockResolvedValue({
+                        reportId: 0,
+                        name: '',
+                        generatedAt: new Date(),
+                        params: {},
+                        sections: [],
+                    }),
                 },
             },
         ],
@@ -77,7 +91,10 @@ export async function getReportsExecutionTestingModule(): Promise<TestingModule>
             RequestContextModule,
             TenantsModule,
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
         ],
         providers: [ReportDefinitionService, ReportExecutionService],

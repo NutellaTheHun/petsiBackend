@@ -9,16 +9,18 @@ import { InventoryItemSizeChangeDetector } from './inventory-item-size.change-de
 import { InventoryItemChangeDetector } from './inventory-item.change-detector';
 
 describe('InventoryItemChangeDetector', () => {
-    const detector = new InventoryItemChangeDetector(new InventoryItemSizeChangeDetector());
+    const detector = new InventoryItemChangeDetector(
+        new InventoryItemSizeChangeDetector(),
+    );
 
     const sizeEntity = (id: number): InventoryItemSize =>
         ({
             id,
             package: { id: 100 } as InventoryItemPackage,
-            unit: 'lb' as AppUnit,
+            unit: 'lb',
             measureAmount: 1,
             cost: '5.00',
-        } as InventoryItemSize);
+        }) as InventoryItemSize;
 
     const baseEntity = (): InventoryItem =>
         ({
@@ -27,7 +29,7 @@ describe('InventoryItemChangeDetector', () => {
             category: { id: 10 } as InventoryItemCategory,
             vendor: { id: 20 } as InventoryItemVendor,
             sizes: [sizeEntity(30)],
-        } as InventoryItem);
+        }) as InventoryItem;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -39,10 +41,18 @@ describe('InventoryItemChangeDetector', () => {
 
     it('detects root field changes without nested changes', () => {
         const entity = baseEntity();
-        const dto = inventoryItemToUpdateDto(entity, { name: 'Salt', categoryId: 11, vendorId: 21 });
+        const dto = inventoryItemToUpdateDto(entity, {
+            name: 'Salt',
+            categoryId: 11,
+            vendorId: 21,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toMatchObject({ name: 'Salt', categoryId: 11, vendorId: 21 });
+        expect(result.patch).toMatchObject({
+            name: 'Salt',
+            categoryId: 11,
+            vendorId: 21,
+        });
         expect(result.patch.sizes).toBeUndefined();
     });
 
@@ -64,7 +74,15 @@ describe('InventoryItemChangeDetector', () => {
     it('patches only changed size child', () => {
         const entity = baseEntity();
         const dto = inventoryItemToUpdateDto(entity, {
-            sizes: [{ id: 30, packageId: 100, unit: 'lb' as AppUnit, measureAmount: 1, cost: 9 }],
+            sizes: [
+                {
+                    id: 30,
+                    packageId: 100,
+                    unit: 'lb' as AppUnit,
+                    measureAmount: 1,
+                    cost: 9,
+                },
+            ],
         });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);

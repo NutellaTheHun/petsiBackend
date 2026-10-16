@@ -1,10 +1,10 @@
 export function inventoryItemPackageExample(
-  fnSet: Set<string>,
-  _shallow: boolean,
+    fnSet: Set<string>,
+    _shallow: boolean,
 ) {
-  fnSet.add(inventoryItemPackageExample.name);
-  return {
-    id: 1,
-    name: 'box',
-  };
+    fnSet.add(inventoryItemPackageExample.name);
+    return {
+        id: 1,
+        name: 'box',
+    };
 }

@@ -9,8 +9,14 @@ import { UpdateUserDto } from '../../dto/update-user.dto';
 import { User } from '../../entities/user.entities';
 
 @Injectable()
-export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> {
-    detect(entity: User, dto: UpdateUserDto): ChangeDetectionResult<UpdateUserDto> {
+export class UserChangeDetector extends ChangeDetectorBase<
+    User,
+    UpdateUserDto
+> {
+    detect(
+        entity: User,
+        dto: UpdateUserDto,
+    ): ChangeDetectionResult<UpdateUserDto> {
         const patch: MutablePartial<UpdateUserDto> = {};
         const changes: ChangeDetectorChange[] = [];
 
@@ -34,7 +40,10 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
             });
         }
 
-        if (dto.isTenantAdmin !== undefined && !this.unchanged(entity.isTenantAdmin, dto.isTenantAdmin)) {
+        if (
+            dto.isTenantAdmin !== undefined &&
+            !this.unchanged(entity.isTenantAdmin, dto.isTenantAdmin)
+        ) {
             patch.isTenantAdmin = dto.isTenantAdmin;
             changes.push({
                 op: 'scalar',

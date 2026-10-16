@@ -1,5 +1,11 @@
-import { CanActivate, ExecutionContext, INestApplication, Injectable } from '@nestjs/common';
+import {
+    CanActivate,
+    ExecutionContext,
+    INestApplication,
+    Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { AppRequest } from '../modules/auth/utils/jwt-payload';
 import { RoleGuard } from '../modules/roles/guards/role.guard';
 import { TestRequestContextService } from './mocks/test-request-context.service';
 
@@ -20,11 +26,11 @@ export class TestUserGuard implements CanActivate {
     constructor(
         private readonly getUser: () => TestUser,
         private readonly requestContext: TestRequestContextService,
-    ) { }
+    ) {}
 
     canActivate(context: ExecutionContext): boolean {
         const user = this.getUser();
-        context.switchToHttp().getRequest().user = user;
+        context.switchToHttp().getRequest<AppRequest>().user = user;
         this.requestContext.setContext(user);
         return true;
     }

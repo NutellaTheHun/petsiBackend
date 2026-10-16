@@ -38,7 +38,9 @@ export class InventoryAreaItemComposer extends ComposerBase<InventoryAreaItemEnt
                 { inventoryItemId: dto.countedInventoryItemId },
             );
         } else {
-            throw new Error('countedItemSize or countedItemSizeDto is required');
+            throw new Error(
+                'countedItemSize or countedItemSizeDto is required',
+            );
         }
 
         return manager.create(InventoryAreaItem, {

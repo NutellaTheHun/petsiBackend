@@ -11,24 +11,33 @@ describe('UserLocationChangeDetector', () => {
             tenantId: 1,
             locationId: 10,
             roles: [{ id: 100 } as Role, { id: 200 } as Role],
-        } as UserLocation);
+        }) as UserLocation;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
-        const result = detector.detect(entity, { locationId: 10, roleIds: [200, 100] });
+        const result = detector.detect(entity, {
+            locationId: 10,
+            roleIds: [200, 100],
+        });
         expect(result.hasChanges).toBe(false);
         expect(result.patch).toEqual({});
     });
 
     it('does not flag roleIds when same ids in different order', () => {
         const entity = baseEntity();
-        const result = detector.detect(entity, { locationId: 10, roleIds: [200, 100] });
+        const result = detector.detect(entity, {
+            locationId: 10,
+            roleIds: [200, 100],
+        });
         expect(result.hasChanges).toBe(false);
     });
 
     it('detects roleIds change', () => {
         const entity = baseEntity();
-        const result = detector.detect(entity, { locationId: 10, roleIds: [300] });
+        const result = detector.detect(entity, {
+            locationId: 10,
+            roleIds: [300],
+        });
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({ roleIds: [300] });
     });

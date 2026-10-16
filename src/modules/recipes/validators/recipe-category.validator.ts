@@ -15,7 +15,10 @@ import { RecipeCategoryValidatorIdentity } from './identities/recipe-category.va
 import { RecipeSubCategoryValidatorIdentity } from './identities/recipe-sub-category.validator.identity.interface';
 import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
 @Injectable()
-export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity, RecipeCategoryValidatorIdentity> {
+export class RecipeCategoryValidator extends ValidatorBase<
+    RecipeCategoryEntity,
+    RecipeCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(RecipeCategory)
         private readonly repo: Repository<RecipeCategory>,
@@ -26,7 +29,10 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         super(repo, 'RecipeCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: RecipeCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: RecipeCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -36,15 +42,20 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         if (identity.subCategories && identity.subCategories.length) {
-
             this.helper.enforceNoDuplicateElements(
                 identity.subCategories,
-                (item) => ({ id: item.id ?? item.createId, identity: item.name ?? '' }),
+                (item) => ({
+                    id: item.id ?? item.createId,
+                    identity: item.name ?? '',
+                }),
                 'subCategories',
                 errorMap,
             );
@@ -61,15 +72,22 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRecipeCategoryDto | UpdateRecipeCategoryDto, id: number | string): Promise<RecipeCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateRecipeCategoryDto | UpdateRecipeCategoryDto,
+        id: number | string,
+    ): Promise<RecipeCategoryValidatorIdentity> {
         const subCategories: RecipeSubCategoryValidatorIdentity[] = [];
         if (dto.subCategories && dto.subCategories.length) {
             for (const subCategory of dto.subCategories) {
-                const subCategoryId = subCategory instanceof NestedCreateRecipeSubCategoryDto ? subCategory.createId : subCategory.id;
-                const resolved = await this.subCategoryValidator.resolveIdentity(
-                    subCategory,
-                    subCategoryId,
-                );
+                const subCategoryId =
+                    subCategory instanceof NestedCreateRecipeSubCategoryDto
+                        ? subCategory.createId
+                        : subCategory.id;
+                const resolved =
+                    await this.subCategoryValidator.resolveIdentity(
+                        subCategory,
+                        subCategoryId,
+                    );
                 if (
                     dto instanceof UpdateRecipeCategoryDto &&
                     subCategory instanceof NestedCreateRecipeSubCategoryDto
@@ -86,6 +104,6 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         return {
             name: dto.name,
             subCategories: subCategories,
-        } as RecipeCategoryValidatorIdentity;
+        };
     }
 }

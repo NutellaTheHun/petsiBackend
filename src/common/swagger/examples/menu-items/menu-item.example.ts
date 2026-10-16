@@ -4,26 +4,26 @@ import { menuItemContainerItemExample } from './menu-item-container-item.example
 import { menuItemSizeExample } from './menu-item-size.example';
 
 export function menuItemExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(menuItemExample.name);
-  return {
-    id: 1,
+    fnSet.add(menuItemExample.name);
+    return {
+        id: 1,
 
-    createdAt: new Date(),
+        createdAt: new Date(),
 
-    updatedAt: new Date(),
+        updatedAt: new Date(),
 
-    type: 'container',
+        type: 'container',
 
-    name: 'Classic Apple',
+        name: 'Classic Apple',
 
-    category: handleSetHas(shallow, fnSet, menuItemCategoryExample, false),
+        category: handleSetHas(shallow, fnSet, menuItemCategoryExample, false),
 
-    sizes: [handleShallow(shallow, fnSet, menuItemSizeExample, false)],
+        sizes: [handleShallow(shallow, fnSet, menuItemSizeExample, false)],
 
-    containerMenuItems: [
-      handleSetHas(shallow, fnSet, menuItemContainerItemExample, false),
-    ],
+        containerMenuItems: [
+            handleSetHas(shallow, fnSet, menuItemContainerItemExample, false),
+        ],
 
-    variableMaxAmount: 6,
-  };
+        variableMaxAmount: 6,
+    };
 }

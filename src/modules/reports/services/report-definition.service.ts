@@ -44,7 +44,8 @@ export class ReportDefinitionService {
 
     async findAll(): Promise<ReportDefinition[]> {
         const roles = this.requestContextService.get<string[]>('roles') ?? [];
-        const canSeeAll = roles.includes(ROLE_MANAGER) || roles.includes(ROLE_ADMIN);
+        const canSeeAll =
+            roles.includes(ROLE_MANAGER) || roles.includes(ROLE_ADMIN);
 
         const qb = this.repo
             .createQueryBuilder('rd')
@@ -65,7 +66,10 @@ export class ReportDefinitionService {
         return entity;
     }
 
-    async update(id: number, dto: UpdateReportDefinitionDto): Promise<ReportDefinition> {
+    async update(
+        id: number,
+        dto: UpdateReportDefinitionDto,
+    ): Promise<ReportDefinition> {
         const entity = await this.findOne(id);
         if (dto.name !== undefined) entity.name = dto.name;
         if (dto.visibility !== undefined) entity.visibility = dto.visibility;

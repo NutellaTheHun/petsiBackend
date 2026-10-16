@@ -25,12 +25,7 @@ export class RecipeCategoryService extends TenantScopedServiceBase<RecipeCategor
         private readonly subCategoryComposer: RecipeSubCategoryComposer,
         private readonly recipeCategoryChangeDetector: RecipeCategoryChangeDetector,
     ) {
-        super(
-            repo,
-            'RecipeCategoryService',
-            requestContextService,
-            validator,
-        );
+        super(repo, 'RecipeCategoryService', requestContextService, validator);
     }
 
     protected async createEntity(

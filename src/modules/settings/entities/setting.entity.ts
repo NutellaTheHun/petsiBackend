@@ -11,7 +11,11 @@ import { EntityBase } from '../../../common/base/entity.base';
 import { CreateSettingDto } from '../dto/create-setting.dto';
 import { UpdateSettingDto } from '../dto/update-setting.dto';
 
-export type SettingEntity = EntityBase<Setting, CreateSettingDto, UpdateSettingDto>;
+export type SettingEntity = EntityBase<
+    Setting,
+    CreateSettingDto,
+    UpdateSettingDto
+>;
 
 export enum SettingValueType {
     String = 'string',
@@ -63,7 +67,8 @@ export class Setting {
      */
     @ApiProperty({
         example: 1,
-        description: 'The Location this setting overrides, or null for the tenant-wide default',
+        description:
+            'The Location this setting overrides, or null for the tenant-wide default',
         nullable: true,
     })
     @Column({ type: 'int', nullable: true })
@@ -77,7 +82,10 @@ export class Setting {
     @Column()
     name: string;
 
-    @ApiProperty({ enum: SettingValueType, description: 'The declared type of `value`' })
+    @ApiProperty({
+        enum: SettingValueType,
+        description: 'The declared type of `value`',
+    })
     @Column({ type: 'enum', enum: SettingValueType })
     valueType: SettingValueType;
 
@@ -86,7 +94,10 @@ export class Setting {
      * `serializeSettingValue`/`deserializeSettingValue`. Never parse this
      * column directly outside those helpers.
      */
-    @ApiProperty({ example: '0.08', description: 'The raw stored value, serialized per valueType' })
+    @ApiProperty({
+        example: '0.08',
+        description: 'The raw stored value, serialized per valueType',
+    })
     @Column({ type: 'text' })
     value: string;
 

@@ -38,16 +38,26 @@ describe('recipe category controller', () => {
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        controller = module.get<RecipeCategoryController>(RecipeCategoryController);
+        controller = module.get<RecipeCategoryController>(
+            RecipeCategoryController,
+        );
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, subCategories } = await testingUtil.seedSubCategories(P, tenant.id));
+        ({ categories, subCategories } = await testingUtil.seedSubCategories(
+            P,
+            tenant.id,
+        ));
     });
 
     afterAll(async () => {
@@ -78,7 +88,9 @@ describe('recipe category controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });

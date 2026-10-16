@@ -14,7 +14,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { RevisionHistory } from '../../revision-history/entities/revision-history.entity';
 import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
 import { Tenant } from '../../tenants/entities/tenant.entity';
-import { MenuItemSnapshotV2, MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION } from '../utils/snapshots/menu-item-snapshot.v2';
+import {
+    MenuItemSnapshotV2,
+    MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION,
+} from '../utils/snapshots/menu-item-snapshot.v2';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
@@ -79,28 +82,48 @@ describe('menu item service', () => {
             menuItemServiceClass: TestableMenuItemService,
         });
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        service = module.get<MenuItemService>(MenuItemService) as TestableMenuItemService;
+        service = module.get<MenuItemService>(
+            MenuItemService,
+        ) as TestableMenuItemService;
         dataSource = module.get(DataSource);
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
-        valueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+        containerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
+        valueRepo = module.get(
+            getRepositoryToken(MenuItemDynamicPropertyValue),
+        );
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
-            await testingUtil.seedContainerLines(P, tenant.id));
+        ({
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+        } = await testingUtil.seedContainerLines(P, tenant.id));
 
-        const otherItemsSeed = await testingUtil.seedItems(`${P}-other`, otherTenant.id);
+        const otherItemsSeed = await testingUtil.seedItems(
+            `${P}-other`,
+            otherTenant.id,
+        );
         otherTenantCategories = otherItemsSeed.categories;
         otherTenantSizes = otherItemsSeed.sizes;
         otherTenantItems = [
@@ -158,7 +181,9 @@ describe('menu item service', () => {
 
         it('should remove single item', async () => {
             await service.remove(created.id);
-            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -195,16 +220,26 @@ describe('menu item service', () => {
             expect(created.variableMaxAmount == null).toBe(true);
             expect(created.containerMenuItems).not.toBeNull();
             expect(created.containerMenuItems?.length).toBe(1);
-            expect(created.containerMenuItems?.[0].containedMenuItem.id).toBe(containedItem.id);
+            expect(created.containerMenuItems?.[0].containedMenuItem.id).toBe(
+                containedItem.id,
+            );
         });
 
         it('should update container item (add nested container line)', async () => {
             const parent = await itemRepo.findOneOrFail({
                 where: { id: created.id },
-                relations: ['containerMenuItems', 'sizes', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize', 'category'],
+                relations: [
+                    'containerMenuItems',
+                    'sizes',
+                    'containerMenuItems.containedMenuItem',
+                    'containerMenuItems.containedItemSize',
+                    'category',
+                ],
             });
             if (!parent.containerMenuItems?.length || !parent.sizes?.length)
-                throw new Error('container item or its containerMenuItems not found');
+                throw new Error(
+                    'container item or its containerMenuItems not found',
+                );
 
             const existingLine = parent.containerMenuItems[0];
             const newContained = singleItems[1];
@@ -272,9 +307,13 @@ describe('menu item service', () => {
             filters: [`type=${MENU_ITEM_TYPES.SINGLE}`],
             limit: 100,
         });
-        const seededSingle = result.items.find((i) => i.id === singleItems[0].id);
+        const seededSingle = result.items.find(
+            (i) => i.id === singleItems[0].id,
+        );
         expect(seededSingle).toBeDefined();
-        expect(result.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE)).toBe(true);
+        expect(
+            result.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE),
+        ).toBe(true);
     });
 
     it('should find one item with relations', async () => {
@@ -294,7 +333,9 @@ describe('menu item service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('dynamic property value write path', () => {
@@ -326,7 +367,10 @@ describe('menu item service', () => {
         afterAll(async () => {
             if (dpTestItemId) await itemRepo.delete(dpTestItemId);
             if (dpOmitTestItemId) await itemRepo.delete(dpOmitTestItemId);
-            await configRepo.delete([testFilepathConfig.id, testEntityRefConfig.id]);
+            await configRepo.delete([
+                testFilepathConfig.id,
+                testEntityRefConfig.id,
+            ]);
         });
 
         it('should persist value rows when creating MenuItem with dynamicProperties', async () => {
@@ -335,7 +379,12 @@ describe('menu item service', () => {
                 type: MENU_ITEM_TYPES.SINGLE,
                 categoryId: categories[0].id,
                 sizeIds: [sizes[0].id],
-                dynamicProperties: [{ configId: testFilepathConfig.id, value: '/images/test.jpg' }],
+                dynamicProperties: [
+                    {
+                        configId: testFilepathConfig.id,
+                        value: '/images/test.jpg',
+                    },
+                ],
             });
 
             await dataSource.transaction(async (manager) => {
@@ -344,7 +393,10 @@ describe('menu item service', () => {
             });
 
             const row = await valueRepo.findOne({
-                where: { menuItem: { id: dpTestItemId }, config: { id: testFilepathConfig.id } },
+                where: {
+                    menuItem: { id: dpTestItemId },
+                    config: { id: testFilepathConfig.id },
+                },
             });
             expect(row).not.toBeNull();
             expect(row!.valueText).toBe('/images/test.jpg');
@@ -359,7 +411,12 @@ describe('menu item service', () => {
             const dto = plainToInstance(UpdateMenuItemDto, {
                 name: full.name,
                 categoryId: full.category?.id ?? null,
-                dynamicProperties: [{ configId: testFilepathConfig.id, value: '/images/updated.jpg' }],
+                dynamicProperties: [
+                    {
+                        configId: testFilepathConfig.id,
+                        value: '/images/updated.jpg',
+                    },
+                ],
             });
 
             await dataSource.transaction(async (manager) => {
@@ -367,7 +424,10 @@ describe('menu item service', () => {
             });
 
             const row = await valueRepo.findOne({
-                where: { menuItem: { id: dpTestItemId }, config: { id: testFilepathConfig.id } },
+                where: {
+                    menuItem: { id: dpTestItemId },
+                    config: { id: testFilepathConfig.id },
+                },
             });
             expect(row).not.toBeNull();
             expect(row!.valueText).toBe('/images/updated.jpg');
@@ -382,7 +442,9 @@ describe('menu item service', () => {
             const dto = plainToInstance(UpdateMenuItemDto, {
                 name: full.name,
                 categoryId: full.category?.id ?? null,
-                dynamicProperties: [{ configId: testFilepathConfig.id, value: null }],
+                dynamicProperties: [
+                    { configId: testFilepathConfig.id, value: null },
+                ],
             });
 
             await dataSource.transaction(async (manager) => {
@@ -390,7 +452,10 @@ describe('menu item service', () => {
             });
 
             const row = await valueRepo.findOne({
-                where: { menuItem: { id: dpTestItemId }, config: { id: testFilepathConfig.id } },
+                where: {
+                    menuItem: { id: dpTestItemId },
+                    config: { id: testFilepathConfig.id },
+                },
             });
             expect(row).toBeNull();
         });
@@ -401,7 +466,12 @@ describe('menu item service', () => {
                 type: MENU_ITEM_TYPES.SINGLE,
                 categoryId: categories[0].id,
                 sizeIds: [sizes[0].id],
-                dynamicProperties: [{ configId: testFilepathConfig.id, value: '/keep/this.jpg' }],
+                dynamicProperties: [
+                    {
+                        configId: testFilepathConfig.id,
+                        value: '/keep/this.jpg',
+                    },
+                ],
             });
 
             await dataSource.transaction(async (manager) => {
@@ -424,7 +494,10 @@ describe('menu item service', () => {
             });
 
             const row = await valueRepo.findOne({
-                where: { menuItem: { id: dpOmitTestItemId }, config: { id: testFilepathConfig.id } },
+                where: {
+                    menuItem: { id: dpOmitTestItemId },
+                    config: { id: testFilepathConfig.id },
+                },
             });
             expect(row).not.toBeNull();
             expect(row!.valueText).toBe('/keep/this.jpg');
@@ -454,17 +527,25 @@ describe('menu item service', () => {
                         categoryId: categories[0].id,
                         sizeIds: [sizes[0].id],
                         dynamicProperties: [
-                            { configId: testEntityRefConfig.id, value: String(refItemId) },
+                            {
+                                configId: testEntityRefConfig.id,
+                                value: String(refItemId),
+                            },
                         ],
                     }),
                     manager,
                 );
                 holderItemId = holder.id;
             });
-            testCtx.addCleanupFunction(async () => { await itemRepo.delete(holderItemId); });
+            testCtx.addCleanupFunction(async () => {
+                await itemRepo.delete(holderItemId);
+            });
 
             let row = await valueRepo.findOne({
-                where: { menuItem: { id: holderItemId }, config: { id: testEntityRefConfig.id } },
+                where: {
+                    menuItem: { id: holderItemId },
+                    config: { id: testEntityRefConfig.id },
+                },
                 relations: ['valueEntity'],
             });
             expect(row).not.toBeNull();
@@ -473,7 +554,10 @@ describe('menu item service', () => {
             await service.remove(refItemId);
 
             row = await valueRepo.findOne({
-                where: { menuItem: { id: holderItemId }, config: { id: testEntityRefConfig.id } },
+                where: {
+                    menuItem: { id: holderItemId },
+                    config: { id: testEntityRefConfig.id },
+                },
                 relations: ['valueEntity'],
             });
             expect(row).not.toBeNull();
@@ -490,7 +574,7 @@ describe('menu item service', () => {
                 sizeIds: [sizes[0].id],
             });
             const created = await service.create(dto);
-            expect((created as MenuItem).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await itemRepo.delete(created.id);
         });
 
@@ -523,7 +607,8 @@ describe('menu item service – revision history snapshots', () => {
         const module: TestingModule = await getMenuItemTestingModule({
             mockRevisionHistory: false,
         });
-        const testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+        const testingUtil =
+            module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         itemService = module.get(MenuItemService);
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
@@ -531,9 +616,14 @@ describe('menu item service – revision history snapshots', () => {
         revisionRepo = module.get(getRepositoryToken(RevisionHistory));
         itemRepo = module.get(getRepositoryToken(MenuItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        const requestContext = module.get(RequestContextService) as TestRequestContextService;
+        const requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${PR}-tenant`, subdomain: `${PR}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${PR}-tenant`,
+            subdomain: `${PR}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         const seedResult = await testingUtil.seedItems(PR, tenant.id);
@@ -591,7 +681,9 @@ describe('menu item service – revision history snapshots', () => {
                 type: MENU_ITEM_TYPES.SINGLE,
                 categoryId: categories[0].id,
                 sizeIds: [sizes[0].id],
-                dynamicProperties: [{ configId: testConfig.id, value: '/images/snap.jpg' }],
+                dynamicProperties: [
+                    { configId: testConfig.id, value: '/images/snap.jpg' },
+                ],
             });
 
             createdItem = await itemService.create(dto);
@@ -606,11 +698,15 @@ describe('menu item service – revision history snapshots', () => {
 
             expect(revision).not.toBeNull();
             const snap = revision!.payload as unknown as MenuItemSnapshotV2;
-            expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
+            expect(snap.payloadVersion).toBe(
+                MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION,
+            );
             expect(Array.isArray(snap.dynamicProperties)).toBe(true);
             expect(snap.dynamicProperties).toHaveLength(1);
             expect(snap.dynamicProperties[0].configId).toBe(testConfig.id);
-            expect(snap.dynamicProperties[0].valueText).toBe('/images/snap.jpg');
+            expect(snap.dynamicProperties[0].valueText).toBe(
+                '/images/snap.jpg',
+            );
             expect(snap.dynamicProperties[0].valueEntityId).toBeNull();
         });
 
@@ -622,7 +718,12 @@ describe('menu item service – revision history snapshots', () => {
 
             const dto = plainToInstance(UpdateMenuItemDto, {
                 name: item.name,
-                dynamicProperties: [{ configId: testConfig.id, value: '/images/updated-snap.jpg' }],
+                dynamicProperties: [
+                    {
+                        configId: testConfig.id,
+                        value: '/images/updated-snap.jpg',
+                    },
+                ],
             });
 
             await itemService.update(item.id, dto);
@@ -637,8 +738,12 @@ describe('menu item service – revision history snapshots', () => {
 
             expect(revision).not.toBeNull();
             const snap = revision!.payload as unknown as MenuItemSnapshotV2;
-            expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
-            expect(snap.dynamicProperties[0].valueText).toBe('/images/updated-snap.jpg');
+            expect(snap.payloadVersion).toBe(
+                MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION,
+            );
+            expect(snap.dynamicProperties[0].valueText).toBe(
+                '/images/updated-snap.jpg',
+            );
         });
     });
 
@@ -651,7 +756,9 @@ describe('menu item service – revision history snapshots', () => {
         });
 
         const created = await itemService.create(dto);
-        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
 
         const revision = await revisionRepo.findOne({
             where: {

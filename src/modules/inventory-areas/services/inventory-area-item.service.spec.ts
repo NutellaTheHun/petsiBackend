@@ -86,9 +86,9 @@ describe('Inventory area item service', () => {
         });
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
-        areaItemService = module.get(
+        areaItemService = module.get<TestableInventoryAreaItemService>(
             InventoryAreaItemService,
-        ) as TestableInventoryAreaItemService;
+        );
         dataSource = module.get(DataSource);
 
         areaRepo = module.get(getRepositoryToken(InventoryArea));
@@ -100,7 +100,9 @@ describe('Inventory area item service', () => {
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         // InventoryItemSize is tenant-scoped — this file creates new sizes via
         // nested-create DTOs, which route through InventoryItemSizeComposer
@@ -108,12 +110,21 @@ describe('Inventory area item service', () => {
         // so that stamp (and InventoryAreaItem's own tenant/location columns,
         // stamped straight from the create DTO in these direct-service tests)
         // has something consistent to write.
-        ({ tenant, locations: [location] } = await locationTestUtil.seedLocations(P, undefined, 1));
-        ({ tenant: otherTenant, locations: [otherTenantLocation] } =
-            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        ({
+            tenant,
+            locations: [location],
+        } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({
+            tenant: otherTenant,
+            locations: [otherTenantLocation],
+        } = await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
         setAdminContext();
 
-        ({ areas, counts } = await testingUtil.seedCounts(P, tenant.id, location.id));
+        ({ areas, counts } = await testingUtil.seedCounts(
+            P,
+            tenant.id,
+            location.id,
+        ));
         ({ categories, vendors, packages, items, sizes } =
             await testingUtil.seedInventoryItems(P));
     });
@@ -151,7 +162,10 @@ describe('Inventory area item service', () => {
                 locationId: counts[0].locationId,
             });
             await dataSource.transaction(async (manager) => {
-                areaItem = await areaItemService.createEntityForTest(dto, manager);
+                areaItem = await areaItemService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(areaItem.id).toBeDefined();
             expect(areaItem.parentInventoryCount.id).toBe(counts[0].id);
@@ -167,7 +181,11 @@ describe('Inventory area item service', () => {
                 amount: 7,
             });
             await dataSource.transaction(async (manager) => {
-                await areaItemService.updateEntityForTest(dto, areaItem, manager);
+                await areaItemService.updateEntityForTest(
+                    dto,
+                    areaItem,
+                    manager,
+                );
             });
             const reloaded = await areaItemRepo.findOneOrFail({
                 where: { id: areaItem.id },
@@ -393,9 +411,9 @@ describe('Inventory area item service', () => {
             });
 
             const result = await areaItemService.findAll({ limit: 100 });
-            expect(result.items.every((i) => i.locationId === location.id)).toBe(
-                true,
-            );
+            expect(
+                result.items.every((i) => i.locationId === location.id),
+            ).toBe(true);
         });
     });
 });

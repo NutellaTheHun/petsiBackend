@@ -100,4 +100,4 @@ import { MenuItemValidator } from './validators/menu-item.validator';
         MenuItemTestingUtil,
     ],
 })
-export class MenuItemsModule { }
+export class MenuItemsModule {}

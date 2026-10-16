@@ -68,7 +68,7 @@ describe('Template Service', () => {
             templateServiceClass: TestableTemplateService,
         });
         testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-        templateService = module.get(TemplateService) as TestableTemplateService;
+        templateService = module.get<TestableTemplateService>(TemplateService);
         dataSource = module.get(DataSource);
 
         templateRepo = module.get(getRepositoryToken(Template));
@@ -77,9 +77,14 @@ describe('Template Service', () => {
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         itemRepo = module.get(getRepositoryToken(MenuItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -104,8 +109,15 @@ describe('Template Service', () => {
 
     afterAll(async () => {
         await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
-        await templateRepo.delete([...templates.map((t) => t.id), otherTenantTemplate.id]);
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        await templateRepo.delete([
+            ...templates.map((t) => t.id),
+            otherTenantTemplate.id,
+        ]);
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
@@ -128,7 +140,10 @@ describe('Template Service', () => {
                 name: `${P}-lifecycle-template`,
             });
             await dataSource.transaction(async (manager) => {
-                template = await templateService.createEntityForTest(dto, manager);
+                template = await templateService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(template.id).toBeDefined();
             expect(template.name).toBe(dto.name);
@@ -139,9 +154,15 @@ describe('Template Service', () => {
                 name: `${P}-lifecycle-template-updated`,
             });
             await dataSource.transaction(async (manager) => {
-                await templateService.updateEntityForTest(dto, template, manager);
+                await templateService.updateEntityForTest(
+                    dto,
+                    template,
+                    manager,
+                );
             });
-            const reloaded = await templateRepo.findOneOrFail({ where: { id: template.id } });
+            const reloaded = await templateRepo.findOneOrFail({
+                where: { id: template.id },
+            });
             expect(reloaded.name).toBe(`${P}-lifecycle-template-updated`);
         });
 
@@ -177,7 +198,9 @@ describe('Template Service', () => {
             created = await templateService.createEntityForTest(dto, manager);
         });
         testCtx.addCleanupFunction(async () => {
-            await templateItemRepo.delete({ parentTemplate: { id: created.id } });
+            await templateItemRepo.delete({
+                parentTemplate: { id: created.id },
+            });
             await templateRepo.delete(created.id);
         });
 
@@ -261,7 +284,9 @@ describe('Template Service', () => {
             const dto = templateToUpdateDto(entity, { name: `${P}-renamed` });
             await templateService.update(entity.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await templateRepo.findOneOrFail({ where: { id: entity.id } });
+            const row = await templateRepo.findOneOrFail({
+                where: { id: entity.id },
+            });
             expect(row.name).toBe(`${P}-renamed`);
         });
     });
@@ -273,7 +298,7 @@ describe('Template Service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as Template).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await templateRepo.delete(created.id);
         });
 

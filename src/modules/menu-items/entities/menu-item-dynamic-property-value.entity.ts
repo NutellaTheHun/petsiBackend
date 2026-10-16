@@ -1,7 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, RelationId, Unique } from 'typeorm';
 import {
-    DynamicPropertyConfig,
-} from '../../dynamic-properties/entities/dynamic-property-config.entity';
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    RelationId,
+    Unique,
+} from 'typeorm';
+import { DynamicPropertyConfig } from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { MenuItem } from './menu-item.entity';
 
 @Unique(['menuItem', 'config'])

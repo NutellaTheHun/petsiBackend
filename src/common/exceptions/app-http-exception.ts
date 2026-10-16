@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 // fit ValidationError, Service Error/DataBase error in here, builderError?
 export class AppHttpException extends HttpException {
@@ -6,7 +6,7 @@ export class AppHttpException extends HttpException {
         message: string,
         status: HttpStatus,
         public readonly code?: string,
-        public readonly details?: any,
+        public readonly details?: Record<string, unknown>,
     ) {
         super({ message, code, details }, status);
     }

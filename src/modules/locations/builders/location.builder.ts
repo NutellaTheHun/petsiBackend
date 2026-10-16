@@ -7,9 +7,7 @@ import { Location } from '../entities/location.entity';
 
 @Injectable()
 export class LocationBuilder extends BuilderBase<Location> {
-    constructor(
-        requestContextService: RequestContextService,
-    ) {
+    constructor(requestContextService: RequestContextService) {
         super(Location, 'LocationBuilder', requestContextService);
     }
 

@@ -13,8 +13,10 @@ import {
 import { InventoryItemPackageValidatorIdentity } from './identities/inventory-item-package.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPackageEntity, InventoryItemPackageValidatorIdentity> {
-
+export class InventoryItemPackageValidator extends ValidatorBase<
+    InventoryItemPackageEntity,
+    InventoryItemPackageValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryItemPackage)
         private readonly repo: Repository<InventoryItemPackage>,
@@ -23,7 +25,10 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
         super(repo, 'InventoryItemPackage', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryItemPackageValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryItemPackageValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -33,16 +38,22 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateInventoryItemPackageDto | UpdateInventoryItemPackageDto, _id: number | string): Promise<InventoryItemPackageValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateInventoryItemPackageDto | UpdateInventoryItemPackageDto,
+        _id: number | string,
+    ): Promise<InventoryItemPackageValidatorIdentity> {
         return {
             name: dto.name,
-        } as InventoryItemPackageValidatorIdentity;
+        };
     }
 }

@@ -13,7 +13,7 @@ describe('OrderContainerItemChangeDetector', () => {
             containedMenuItem: { id: 10 } as MenuItem,
             containedItemSize: { id: 20 } as MenuItemSize,
             quantity: 2,
-        } as OrderContainerItem);
+        }) as OrderContainerItem;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

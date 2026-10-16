@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Check, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    Check,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 import { NestedEntityBase } from '../../../common/base/entity.base';
 import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
 import { templateExample } from '../../../common/swagger/examples/templates/template.example';

@@ -72,7 +72,10 @@ export class TenantController extends ControllerBase<TenantEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Tenant' })
-    @ApiCreatedResponse({ description: 'Tenant successfully created', type: Tenant })
+    @ApiCreatedResponse({
+        description: 'Tenant successfully created',
+        type: Tenant,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateTenantDto })
     async create(@Body() dto: CreateTenantDto): Promise<Tenant> {
@@ -119,7 +122,12 @@ export class TenantController extends ControllerBase<TenantEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

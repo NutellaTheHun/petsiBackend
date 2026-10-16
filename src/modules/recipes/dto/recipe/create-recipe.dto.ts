@@ -52,7 +52,8 @@ export class CreateRecipeDto {
     readonly batchResultQuantity?: number | null;
 
     @ApiProperty({
-        description: 'Unit symbol expressing the unit size of what the recipe produces.',
+        description:
+            'Unit symbol expressing the unit size of what the recipe produces.',
         example: 'oz',
         nullable: true,
     })
@@ -61,7 +62,8 @@ export class CreateRecipeDto {
     readonly batchResultUnit?: AppUnit | null;
 
     @ApiProperty({
-        description: 'The unit amount of the servingSizeUnit describing the amount that is sold.',
+        description:
+            'The unit amount of the servingSizeUnit describing the amount that is sold.',
         example: 4,
         type: 'number',
         format: 'decimal',
@@ -93,7 +95,8 @@ export class CreateRecipeDto {
     readonly salesPrice?: number | null;
 
     @ApiProperty({
-        description: 'If the recipe is used as an ingredient.(Not sold directly)',
+        description:
+            'If the recipe is used as an ingredient.(Not sold directly)',
         example: false,
     })
     @IsBoolean()

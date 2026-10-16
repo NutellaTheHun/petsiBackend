@@ -11,7 +11,7 @@ describe('LabelTypeChangeDetector', () => {
             name: 'Standard',
             length: 4,
             width: 6,
-        } as LabelType);
+        }) as LabelType;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

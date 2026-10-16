@@ -121,7 +121,9 @@ export class OrderMenuItemChangeDetector extends ChangeDetectorBase<
                 dto,
             );
             if (childResult.hasChanges) {
-                patchDtos.push(childResult.patch as NestedUpdateOrderContainerItemDto);
+                patchDtos.push(
+                    childResult.patch as NestedUpdateOrderContainerItemDto,
+                );
             }
         }
 

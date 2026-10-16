@@ -19,8 +19,10 @@ import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { OrderContainerItemValidatorIdentity } from './identities/order-container-item.validator.identity.interface';
 
 @Injectable()
-export class OrderContainerItemValidator extends NestedValidatorBase<OrderContainerItemEntity, OrderContainerItemValidatorIdentity> {
-
+export class OrderContainerItemValidator extends NestedValidatorBase<
+    OrderContainerItemEntity,
+    OrderContainerItemValidatorIdentity
+> {
     constructor(
         @InjectRepository(OrderContainerItem)
         private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
@@ -42,7 +44,14 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         );
     }
 
-    public async resolveIdentity(dto: CreateOrderContainerItemDto | UpdateOrderContainerItemDto | NestedCreateOrderContainerItemDto | NestedUpdateOrderContainerItemDto, _id: number | string): Promise<OrderContainerItemValidatorIdentity> {
+    public async resolveIdentity(
+        dto:
+            | CreateOrderContainerItemDto
+            | UpdateOrderContainerItemDto
+            | NestedCreateOrderContainerItemDto
+            | NestedUpdateOrderContainerItemDto,
+        _id: number | string,
+    ): Promise<OrderContainerItemValidatorIdentity> {
         const containedMenuItem = await this.menuItemRepo.findOne({
             where: { id: dto.containedMenuItemId },
         });
@@ -51,20 +60,32 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         }
 
         return {
-            id: dto instanceof NestedUpdateOrderContainerItemDto ? dto.id : undefined,
-            createId: dto instanceof NestedCreateOrderContainerItemDto ? dto.createId : undefined,
+            id:
+                dto instanceof NestedUpdateOrderContainerItemDto
+                    ? dto.id
+                    : undefined,
+            createId:
+                dto instanceof NestedCreateOrderContainerItemDto
+                    ? dto.createId
+                    : undefined,
             containedMenuItemId: dto.containedMenuItemId,
             containedItemSizeId: dto.containedItemSizeId,
             quantity: dto.quantity,
-            parentOrderMenuItemId: dto instanceof CreateOrderContainerItemDto ? dto.parentOrderMenuItemId : undefined,
+            parentOrderMenuItemId:
+                dto instanceof CreateOrderContainerItemDto
+                    ? dto.parentOrderMenuItemId
+                    : undefined,
             containedMenuItemType: containedMenuItem.type,
-        } as OrderContainerItemValidatorIdentity;
+        };
     }
 
     /**
      * OrderMenuItem validator checks that contained item and size is valid in parent container, and checks that variable max amount is respected
      */
-    protected async validateIdentity(identity: OrderContainerItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: OrderContainerItemValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         // validate parent order menu item exists
@@ -108,7 +129,9 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
 
         // validate contained item is single
         if (identity.containedMenuItemType !== MENU_ITEM_TYPES.SINGLE) {
-            errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']);
+            errorMap.addError('INCONSISTENT_STATE', undefined, [
+                'containedMenuItem',
+            ]);
         }
 
         return errorMap;

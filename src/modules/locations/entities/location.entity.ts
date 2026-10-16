@@ -14,7 +14,11 @@ import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
 
-export type LocationEntity = EntityBase<Location, CreateLocationDto, UpdateLocationDto>;
+export type LocationEntity = EntityBase<
+    Location,
+    CreateLocationDto,
+    UpdateLocationDto
+>;
 
 /**
  * A physical site belonging to a {@link Tenant}. Operational data (orders,

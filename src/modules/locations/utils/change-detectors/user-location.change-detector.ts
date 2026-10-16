@@ -9,8 +9,14 @@ import { UpdateUserLocationDto } from '../../dto/update-user-location.dto';
 import { UserLocation } from '../../entities/user-location.entity';
 
 @Injectable()
-export class UserLocationChangeDetector extends ChangeDetectorBase<UserLocation, UpdateUserLocationDto> {
-    detect(entity: UserLocation, dto: UpdateUserLocationDto): ChangeDetectionResult<UpdateUserLocationDto> {
+export class UserLocationChangeDetector extends ChangeDetectorBase<
+    UserLocation,
+    UpdateUserLocationDto
+> {
+    detect(
+        entity: UserLocation,
+        dto: UpdateUserLocationDto,
+    ): ChangeDetectionResult<UpdateUserLocationDto> {
         const patch: MutablePartial<UpdateUserLocationDto> = {};
         const changes: ChangeDetectorChange[] = [];
 

@@ -13,9 +13,10 @@ describe('UserChangeDetector', () => {
             email: 'a@example.com',
             password: 'hashed',
             isTenantAdmin: false,
-        } as User);
+        }) as User;
 
-    const dtoNoPassword = (user: User) => userToUpdateDto(user, { password: undefined });
+    const dtoNoPassword = (user: User) =>
+        userToUpdateDto(user, { password: undefined });
 
     it('returns empty patch when dto matches entity (password omitted)', () => {
         const entity = baseEntity();
@@ -26,7 +27,10 @@ describe('UserChangeDetector', () => {
 
     it('detects name change', () => {
         const entity = baseEntity();
-        const dto = userToUpdateDto(entity, { name: 'Bob', password: undefined });
+        const dto = userToUpdateDto(entity, {
+            name: 'Bob',
+            password: undefined,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({ name: 'Bob' });
@@ -34,7 +38,10 @@ describe('UserChangeDetector', () => {
 
     it('detects email change', () => {
         const entity = baseEntity();
-        const dto = userToUpdateDto(entity, { email: 'new@example.com', password: undefined });
+        const dto = userToUpdateDto(entity, {
+            email: 'new@example.com',
+            password: undefined,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({ email: 'new@example.com' });
@@ -42,7 +49,10 @@ describe('UserChangeDetector', () => {
 
     it('detects isTenantAdmin change', () => {
         const entity = baseEntity();
-        const dto = userToUpdateDto(entity, { isTenantAdmin: true, password: undefined });
+        const dto = userToUpdateDto(entity, {
+            isTenantAdmin: true,
+            password: undefined,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({ isTenantAdmin: true });

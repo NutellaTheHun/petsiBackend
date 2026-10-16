@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -112,7 +112,10 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         const result = await super.remove(id);
 
-        await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
+        await invalidateFindAllCache(
+            'RecipeCategoryService',
+            this.cacheManager,
+        );
 
         return result;
     }
@@ -135,7 +138,12 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -36,59 +36,59 @@ import { RecipeSubCategoryValidator } from './validators/recipe-sub-category.val
 import { RecipeValidator } from './validators/recipe.valdiator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Recipe,
-      RecipeCategory,
-      RecipeSubCategory,
-      RecipeIngredient,
-      InventoryItem,
-      MenuItem,
-    ]),
-    InventoryItemsModule,
-    MenuItemsModule,
-    TenantsModule,
-    CacheModule.register(),
-    RequestContextModule,
-  ],
-  controllers: [
-    RecipeController,
-    RecipeCategoryController,
-    RecipeSubCategoryController,
-    RecipeIngredientController,
-  ],
-  providers: [
-    RecipeService,
-    RecipeCategoryService,
-    RecipeSubCategoryService,
-    RecipeIngredientService,
+    imports: [
+        TypeOrmModule.forFeature([
+            Recipe,
+            RecipeCategory,
+            RecipeSubCategory,
+            RecipeIngredient,
+            InventoryItem,
+            MenuItem,
+        ]),
+        InventoryItemsModule,
+        MenuItemsModule,
+        TenantsModule,
+        CacheModule.register(),
+        RequestContextModule,
+    ],
+    controllers: [
+        RecipeController,
+        RecipeCategoryController,
+        RecipeSubCategoryController,
+        RecipeIngredientController,
+    ],
+    providers: [
+        RecipeService,
+        RecipeCategoryService,
+        RecipeSubCategoryService,
+        RecipeIngredientService,
 
-    RecipeBuilder,
-    RecipeIngredientBuilder,
-    RecipeCategoryBuilder,
-    RecipeSubCategoryBuilder,
+        RecipeBuilder,
+        RecipeIngredientBuilder,
+        RecipeCategoryBuilder,
+        RecipeSubCategoryBuilder,
 
-    RecipeValidator,
-    RecipeIngredientValidator,
-    RecipeCategoryValidator,
-    RecipeSubCategoryValidator,
+        RecipeValidator,
+        RecipeIngredientValidator,
+        RecipeCategoryValidator,
+        RecipeSubCategoryValidator,
 
-    RecipeIngredientComposer,
-    RecipeSubCategoryComposer,
-    RecipeSubCategoryChangeDetector,
-    RecipeIngredientChangeDetector,
-    RecipeCategoryChangeDetector,
-    RecipeChangeDetector,
+        RecipeIngredientComposer,
+        RecipeSubCategoryComposer,
+        RecipeSubCategoryChangeDetector,
+        RecipeIngredientChangeDetector,
+        RecipeCategoryChangeDetector,
+        RecipeChangeDetector,
 
-    RecipeTestUtil,
-  ],
-  exports: [
-    RecipeService,
-    RecipeCategoryService,
-    RecipeSubCategoryService,
-    RecipeIngredientService,
+        RecipeTestUtil,
+    ],
+    exports: [
+        RecipeService,
+        RecipeCategoryService,
+        RecipeSubCategoryService,
+        RecipeIngredientService,
 
-    RecipeTestUtil,
-  ],
+        RecipeTestUtil,
+    ],
 })
 export class RecipesModule {}

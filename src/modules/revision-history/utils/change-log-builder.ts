@@ -12,9 +12,9 @@ export const CHANGE_LOG_SCHEMA_VERSION = 1;
 
 export type PersistedChangeLog = Omit<ChangeLogDto, 'changes'> & {
     changes: Array<
-        | Omit<ScalarChangeDto, 'op'> & { op: 'scalar' }
-        | Omit<AggregateChangeDto, 'op'> & { op: 'aggregate' }
-        | Omit<ReferenceChangeDto, 'op'> & { op: 'reference' }
+        | (Omit<ScalarChangeDto, 'op'> & { op: 'scalar' })
+        | (Omit<AggregateChangeDto, 'op'> & { op: 'aggregate' })
+        | (Omit<ReferenceChangeDto, 'op'> & { op: 'reference' })
     >;
 };
 
@@ -29,8 +29,12 @@ export function persistedChangeLogToDto(raw: unknown): ChangeLogDto {
     }
     const schemaVersion = Number(raw.schemaVersion);
     const kind = raw.kind;
-    const occurredAt = String(raw.occurredAt ?? '');
-    if (!Number.isFinite(schemaVersion) || typeof kind !== 'string' || !occurredAt) {
+    const occurredAt = typeof raw.occurredAt === 'string' ? raw.occurredAt : '';
+    if (
+        !Number.isFinite(schemaVersion) ||
+        typeof kind !== 'string' ||
+        !occurredAt
+    ) {
         throw new Error('Invalid change_log: missing required fields');
     }
     const changesRaw = Array.isArray(raw.changes) ? raw.changes : [];
@@ -44,7 +48,7 @@ export function persistedChangeLogToDto(raw: unknown): ChangeLogDto {
                 path: String(c.path),
                 from: c.from,
                 to: c.to,
-            } as ScalarChangeDto;
+            };
         }
         if (c.op === 'aggregate') {
             return {
@@ -53,7 +57,7 @@ export function persistedChangeLogToDto(raw: unknown): ChangeLogDto {
                 added: Number(c.added ?? 0),
                 removed: Number(c.removed ?? 0),
                 modified: Boolean(c.modified ?? false),
-            } as AggregateChangeDto;
+            };
         }
         if (c.op === 'reference') {
             return {
@@ -61,8 +65,8 @@ export function persistedChangeLogToDto(raw: unknown): ChangeLogDto {
                 path: String(c.path),
                 from: c.from as number | string | null | undefined,
                 to: c.to as number | string | null | undefined,
-                reason: c.reason !== undefined ? String(c.reason) : undefined,
-            } as ReferenceChangeDto;
+                reason: typeof c.reason === 'string' ? c.reason : undefined,
+            };
         }
         throw new Error(`Unknown change op: ${c.op}`);
     });
@@ -138,7 +142,11 @@ export function detectorChangesToPersistedChanges(
             continue;
         }
 
-        if (ch.op === 'reference' || ch.path === 'categoryId' || ch.path.endsWith('Id')) {
+        if (
+            ch.op === 'reference' ||
+            ch.path === 'categoryId' ||
+            ch.path.endsWith('Id')
+        ) {
             out.push({
                 op: 'reference',
                 path: ch.path,
@@ -170,12 +178,15 @@ function computeAggregateSummary(
     const prevIds =
         Array.isArray(previousValue) &&
         previousValue.every((x) => typeof x === 'number')
-            ? (previousValue as number[])
+            ? previousValue
             : [];
 
     // Shape B: previousValue and nextValue are both number[] (e.g. sizeIds)
-    if (Array.isArray(nextValue) && nextValue.every((x) => typeof x === 'number')) {
-        const nextIds = nextValue as number[];
+    if (
+        Array.isArray(nextValue) &&
+        nextValue.every((x) => typeof x === 'number')
+    ) {
+        const nextIds = nextValue;
         const prevSet = new Set(prevIds);
         const nextSet = new Set(nextIds);
         const added = nextIds.filter((id) => !prevSet.has(id)).length;

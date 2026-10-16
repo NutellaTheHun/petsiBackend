@@ -53,13 +53,18 @@ describe('Role Service', () => {
             roleServiceClass: TestableRoleService,
         });
         roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);
-        roleService = module.get(RoleService) as TestableRoleService;
+        roleService = module.get<TestableRoleService>(RoleService);
         dataSource = module.get(DataSource);
         roleRepo = module.get(getRepositoryToken(Role));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -91,7 +96,9 @@ describe('Role Service', () => {
         let role: Role;
 
         it('should create role', async () => {
-            const dto = plainToInstance(CreateRoleDto, { name: `${P}-role-create` });
+            const dto = plainToInstance(CreateRoleDto, {
+                name: `${P}-role-create`,
+            });
             await dataSource.transaction(async (manager) => {
                 role = await roleService.createEntityForTest(dto, manager);
             });
@@ -101,18 +108,24 @@ describe('Role Service', () => {
         });
 
         it('should update role', async () => {
-            const dto = plainToInstance(UpdateRoleDto, { name: `${P}-role-updated` });
+            const dto = plainToInstance(UpdateRoleDto, {
+                name: `${P}-role-updated`,
+            });
             await dataSource.transaction(async (manager) => {
                 await roleService.updateEntityForTest(dto, role, manager);
             });
-            const result = await roleRepo.findOneOrFail({ where: { id: role.id } });
+            const result = await roleRepo.findOneOrFail({
+                where: { id: role.id },
+            });
             expect(result.name).toEqual(dto.name);
         });
 
         it('should remove role', async () => {
             const deleteResult = await roleService.remove(role.id);
             expect(deleteResult).toBe(true);
-            await expect(roleService.findOne(role.id)).rejects.toThrow(NotFoundException);
+            await expect(roleService.findOne(role.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -123,13 +136,17 @@ describe('Role Service', () => {
     });
 
     it('should find one role with relations', async () => {
-        const result = await roleService.findOne(roles[0].id, ['userLocations']);
+        const result = await roleService.findOne(roles[0].id, [
+            'userLocations',
+        ]);
         expect(result.id).toEqual(roles[0].id);
         expect(Array.isArray(result.userLocations)).toBe(true);
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(roleService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(roleService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
@@ -155,7 +172,9 @@ describe('Role Service', () => {
             const dto = roleToUpdateDto(role, { name: `${P}-role-renamed` });
             await roleService.update(role.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await roleRepo.findOneOrFail({ where: { id: role.id } });
+            const row = await roleRepo.findOneOrFail({
+                where: { id: role.id },
+            });
             expect(row.name).toEqual(`${P}-role-renamed`);
         });
     });
@@ -165,14 +184,14 @@ describe('Role Service', () => {
             const created = await roleService.create(
                 plainToInstance(CreateRoleDto, { name: `${P}-tenant-stamped` }),
             );
-            expect((created as Role).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await roleRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(roleService.findOne(otherTenantRole.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                roleService.findOne(otherTenantRole.id),
+            ).rejects.toThrow(NotFoundException);
         });
 
         it('two different tenants can each have a role named "admin"', async () => {
@@ -186,7 +205,7 @@ describe('Role Service', () => {
             );
             requestContext.setContext({ tenantId: tenant.id });
 
-            expect((mine as Role).id).not.toEqual((theirs as Role).id);
+            expect(mine.id).not.toEqual(theirs.id);
             await roleRepo.delete([mine.id, theirs.id]);
         });
     });

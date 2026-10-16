@@ -7,64 +7,64 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import {
-  InventoryItemVendor,
-  InventoryItemVendorEntity,
+    InventoryItemVendor,
+    InventoryItemVendorEntity,
 } from '../entities/inventory-item-vendor.entity';
 import { InventoryItemVendorChangeDetector } from '../utils/change-detectors/inventory-item-vendor.change-detector';
 import { InventoryItemVendorValidator } from '../validators/inventory-item-vendor.validator';
 
 @Injectable()
 export class InventoryItemVendorService extends TenantScopedServiceBase<InventoryItemVendorEntity> {
-  constructor(
-    @InjectRepository(InventoryItemVendor)
-    repo: Repository<InventoryItemVendor>,
-    requestContextService: RequestContextService,
-    validator: InventoryItemVendorValidator,
-    private readonly inventoryItemVendorChangeDetector: InventoryItemVendorChangeDetector,
-  ) {
-    super(
-      repo,
-      'InventoryItemVendorService',
-      requestContextService,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateInventoryItemVendorDto,
-    manager: EntityManager,
-  ): Promise<InventoryItemVendor> {
-    const result = manager.create(InventoryItemVendor, {
-      name: dto.name,
-      tenantId: this.getTenantId(),
-    });
-    return await manager.save(result);
-  }
-
-  protected async updateEntity(
-    dto: UpdateInventoryItemVendorDto,
-    manager: EntityManager,
-    entity: InventoryItemVendor,
-  ): Promise<void> {
-    if (dto.name !== undefined) {
-      entity.name = dto.name;
+    constructor(
+        @InjectRepository(InventoryItemVendor)
+        repo: Repository<InventoryItemVendor>,
+        requestContextService: RequestContextService,
+        validator: InventoryItemVendorValidator,
+        private readonly inventoryItemVendorChangeDetector: InventoryItemVendorChangeDetector,
+    ) {
+        super(
+            repo,
+            'InventoryItemVendorService',
+            requestContextService,
+            validator,
+        );
     }
-    await manager.save(entity);
-  }
 
-  protected applySortBy(
-    query: SelectQueryBuilder<InventoryItemVendor>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'name') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
+    protected async createEntity(
+        dto: CreateInventoryItemVendorDto,
+        manager: EntityManager,
+    ): Promise<InventoryItemVendor> {
+        const result = manager.create(InventoryItemVendor, {
+            name: dto.name,
+            tenantId: this.getTenantId(),
+        });
+        return await manager.save(result);
     }
-  }
 
-  protected getChangeDetector():
-    | ChangeDetectorBase<InventoryItemVendor, UpdateInventoryItemVendorDto>
-    | undefined {
-    return this.inventoryItemVendorChangeDetector;
-  }
+    protected async updateEntity(
+        dto: UpdateInventoryItemVendorDto,
+        manager: EntityManager,
+        entity: InventoryItemVendor,
+    ): Promise<void> {
+        if (dto.name !== undefined) {
+            entity.name = dto.name;
+        }
+        await manager.save(entity);
+    }
+
+    protected applySortBy(
+        query: SelectQueryBuilder<InventoryItemVendor>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<InventoryItemVendor, UpdateInventoryItemVendorDto>
+        | undefined {
+        return this.inventoryItemVendorChangeDetector;
+    }
 }

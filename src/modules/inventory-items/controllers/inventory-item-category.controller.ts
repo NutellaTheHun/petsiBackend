@@ -109,7 +109,9 @@ export class InventoryItemCategoryController extends ControllerBase<InventoryIte
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves an array of Inventory Item Categories' })
+    @ApiOperation({
+        summary: 'Retrieves an array of Inventory Item Categories',
+    })
     @ApiOkResponse({
         schema: {
             type: 'object',
@@ -125,7 +127,12 @@ export class InventoryItemCategoryController extends ControllerBase<InventoryIte
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -13,8 +13,10 @@ import {
 import { MenuItemSizeValidatorIdentity } from './identities/menu-item-size.validator.identity.interface';
 
 @Injectable()
-export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, MenuItemSizeValidatorIdentity> {
-
+export class MenuItemSizeValidator extends ValidatorBase<
+    MenuItemSizeEntity,
+    MenuItemSizeValidatorIdentity
+> {
     constructor(
         @InjectRepository(MenuItemSize)
         private readonly repo: Repository<MenuItemSize>,
@@ -23,7 +25,10 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
         super(repo, 'MenuItemSize', requestContextService);
     }
 
-    protected async validateIdentity(identity: MenuItemSizeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: MenuItemSizeValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -33,15 +38,21 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateMenuItemSizeDto | UpdateMenuItemSizeDto, _id: number | string): Promise<MenuItemSizeValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateMenuItemSizeDto | UpdateMenuItemSizeDto,
+        _id: number | string,
+    ): Promise<MenuItemSizeValidatorIdentity> {
         return {
             name: dto.name,
-        } as MenuItemSizeValidatorIdentity;
+        };
     }
 }

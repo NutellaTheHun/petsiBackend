@@ -37,70 +37,70 @@ import { InventoryItemVendorValidator } from './validators/inventory-item-vendor
 import { InventoryItemValidator } from './validators/inventory-item.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      InventoryItem,
-      InventoryItemCategory,
-      InventoryItemPackage,
-      InventoryItemSize,
-      InventoryItemVendor,
-    ]),
+    imports: [
+        TypeOrmModule.forFeature([
+            InventoryItem,
+            InventoryItemCategory,
+            InventoryItemPackage,
+            InventoryItemSize,
+            InventoryItemVendor,
+        ]),
 
-    CacheModule.register(),
-    RequestContextModule,
-    TenantsModule,
-  ],
+        CacheModule.register(),
+        RequestContextModule,
+        TenantsModule,
+    ],
 
-  controllers: [
-    InventoryItemController,
-    InventoryItemCategoryController,
-    InventoryItemPackageController,
-    InventoryItemSizeController,
-    InventoryItemVendorController,
-  ],
+    controllers: [
+        InventoryItemController,
+        InventoryItemCategoryController,
+        InventoryItemPackageController,
+        InventoryItemSizeController,
+        InventoryItemVendorController,
+    ],
 
-  providers: [
-    InventoryItemService,
-    InventoryItemCategoryService,
-    InventoryItemPackageService,
-    InventoryItemSizeService,
-    InventoryItemVendorService,
+    providers: [
+        InventoryItemService,
+        InventoryItemCategoryService,
+        InventoryItemPackageService,
+        InventoryItemSizeService,
+        InventoryItemVendorService,
 
-    InventoryItemBuilder,
-    InventoryItemCategoryBuilder,
-    InventoryItemPackageBuilder,
-    InventoryItemSizeBuilder,
-    InventoryItemVendorBuilder,
+        InventoryItemBuilder,
+        InventoryItemCategoryBuilder,
+        InventoryItemPackageBuilder,
+        InventoryItemSizeBuilder,
+        InventoryItemVendorBuilder,
 
-    InventoryItemValidator,
-    InventoryItemCategoryValidator,
-    InventoryItemPackageValidator,
-    InventoryItemSizeValidator,
-    InventoryItemVendorValidator,
+        InventoryItemValidator,
+        InventoryItemCategoryValidator,
+        InventoryItemPackageValidator,
+        InventoryItemSizeValidator,
+        InventoryItemVendorValidator,
 
-    InventoryItemSizeComposer,
-    InventoryItemCategoryChangeDetector,
-    InventoryItemPackageChangeDetector,
-    InventoryItemVendorChangeDetector,
-    InventoryItemSizeChangeDetector,
-    InventoryItemChangeDetector,
+        InventoryItemSizeComposer,
+        InventoryItemCategoryChangeDetector,
+        InventoryItemPackageChangeDetector,
+        InventoryItemVendorChangeDetector,
+        InventoryItemSizeChangeDetector,
+        InventoryItemChangeDetector,
 
-    InventoryItemTestingUtil,
-  ],
+        InventoryItemTestingUtil,
+    ],
 
-  exports: [
-    InventoryItemService,
-    InventoryItemCategoryService,
-    InventoryItemPackageService,
-    InventoryItemSizeService,
-    InventoryItemVendorService,
+    exports: [
+        InventoryItemService,
+        InventoryItemCategoryService,
+        InventoryItemPackageService,
+        InventoryItemSizeService,
+        InventoryItemVendorService,
 
-    InventoryItemSizeBuilder,
-    InventoryItemSizeComposer,
+        InventoryItemSizeBuilder,
+        InventoryItemSizeComposer,
 
-    InventoryItemSizeValidator,
+        InventoryItemSizeValidator,
 
-    InventoryItemTestingUtil,
-  ],
+        InventoryItemTestingUtil,
+    ],
 })
 export class InventoryItemsModule {}

@@ -2,9 +2,17 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { DynamicPropertyConfig, HolderEntityType, ValueType } from '../../dynamic-properties/entities/dynamic-property-config.entity';
+import {
+    DynamicPropertyConfig,
+    HolderEntityType,
+    ValueType,
+} from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
@@ -49,14 +57,24 @@ describe('menu item validator', () => {
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        containerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
-        dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+        dynPropValueRepo = module.get(
+            getRepositoryToken(MenuItemDynamicPropertyValue),
+        );
 
         defaultTenantId = await testingUtil.getDefaultTenantId();
 
-        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
-            await testingUtil.seedContainerLines(P));
+        ({
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+        } = await testingUtil.seedContainerLines(P));
     });
 
     afterAll(async () => {
@@ -151,7 +169,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'type',
+            ]),
         );
     });
 
@@ -186,7 +206,11 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['containerMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['containerMenuItems'],
+            ),
         );
     });
 
@@ -214,7 +238,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'type',
+            ]),
         );
     });
 
@@ -244,7 +270,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'containedItemSize',
+            ]),
         );
     });
 
@@ -272,7 +300,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
@@ -280,7 +310,13 @@ describe('menu item validator', () => {
         // varContainerItems[1] = container_d which has containerLines with singleItems[2] and singleItems[3]
         const itemToUpdate = await itemRepo.findOneOrFail({
             where: { id: varContainerItems[1].id },
-            relations: ['sizes', 'containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize', 'category'],
+            relations: [
+                'sizes',
+                'containerMenuItems',
+                'containerMenuItems.containedMenuItem',
+                'containerMenuItems.containedItemSize',
+                'category',
+            ],
         });
         if (!itemToUpdate.containerMenuItems?.length) {
             throw new Error('item container menu items not found');
@@ -297,8 +333,10 @@ describe('menu item validator', () => {
                 plainToInstance(NestedUpdateMenuItemContainerItemDto, {
                     id: itemToUpdate.containerMenuItems[0].id,
                     quantity: 6,
-                    containedMenuItemId: itemToUpdate.containerMenuItems[0].containedMenuItem.id,
-                    containedItemSizeId: itemToUpdate.containerMenuItems[0].containedItemSize.id,
+                    containedMenuItemId:
+                        itemToUpdate.containerMenuItems[0].containedMenuItem.id,
+                    containedItemSizeId:
+                        itemToUpdate.containerMenuItems[0].containedItemSize.id,
                 }),
                 plainToInstance(NestedCreateMenuItemContainerItemDto, {
                     createId: 'c1',
@@ -317,9 +355,17 @@ describe('menu item validator', () => {
     it('fail validate update: name already exists', async () => {
         const itemToUpdate = await itemRepo.findOneOrFail({
             where: { id: singleItems[0].id },
-            relations: ['category', 'sizes', 'containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'],
+            relations: [
+                'category',
+                'sizes',
+                'containerMenuItems',
+                'containerMenuItems.containedMenuItem',
+                'containerMenuItems.containedItemSize',
+            ],
         });
-        const dto = menuItemToUpdateDto(itemToUpdate, { name: singleItems[1].name });
+        const dto = menuItemToUpdateDto(itemToUpdate, {
+            name: singleItems[1].name,
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -354,7 +400,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'type',
+            ]),
         );
     });
 
@@ -393,7 +441,11 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['containerMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['containerMenuItems'],
+            ),
         );
     });
 
@@ -425,7 +477,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'type',
+            ]),
         );
     });
 
@@ -459,7 +513,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'containedItemSize',
+            ]),
         );
     });
 
@@ -491,7 +547,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
@@ -500,7 +558,8 @@ describe('menu item validator', () => {
             where: { id: varContainerItems[0].id },
             relations: ['category', 'sizes'],
         });
-        if (!varContainer.variableMaxAmount) throw new Error('variable max amount not found');
+        if (!varContainer.variableMaxAmount)
+            throw new Error('variable max amount not found');
 
         const containedItem = singleItems[0];
 
@@ -526,7 +585,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
@@ -540,14 +601,18 @@ describe('menu item validator', () => {
             valueEntityCategory: null,
             tenantId: defaultTenantId,
         });
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const dto = plainToInstance(CreateMenuItemDto, {
             name: `${P}-new-item-with-dp`,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: null,
             sizeIds: [sizes[0].id],
-            dynamicProperties: [{ configId: config.id, value: '/path/to/file' }],
+            dynamicProperties: [
+                { configId: config.id, value: '/path/to/file' },
+            ],
         });
 
         const errors = await validator.validateDto(dto, 'root');
@@ -568,7 +633,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'dynamicProperties', id: 999999 }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['configId']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                'configId',
+            ]),
         );
     });
 
@@ -585,7 +652,9 @@ describe('menu item validator', () => {
             valueEntityCategory: null,
             tenantId: defaultTenantId,
         });
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const dto = plainToInstance(CreateMenuItemDto, {
             name: `${P}-category-mismatch-item`,
@@ -600,7 +669,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'dynamicProperties', id: config.id }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['configId']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'configId',
+            ]),
         );
     });
 
@@ -608,7 +679,9 @@ describe('menu item validator', () => {
         const catA = categories[0];
         const catB = categories[1];
 
-        const valueItem = await itemRepo.findOneOrFail({ where: { category: { id: catB.id } } });
+        const valueItem = await itemRepo.findOneOrFail({
+            where: { category: { id: catB.id } },
+        });
 
         const config = await configRepo.save({
             holderEntityType: HolderEntityType.MenuItem,
@@ -619,14 +692,18 @@ describe('menu item validator', () => {
             valueEntityCategory: catA,
             tenantId: defaultTenantId,
         });
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const dto = plainToInstance(CreateMenuItemDto, {
             name: `${P}-value-cat-mismatch`,
             type: MENU_ITEM_TYPES.SINGLE,
             categoryId: null,
             sizeIds: [sizes[0].id],
-            dynamicProperties: [{ configId: config.id, value: String(valueItem.id) }],
+            dynamicProperties: [
+                { configId: config.id, value: String(valueItem.id) },
+            ],
         });
 
         const errors = await validator.validateDto(dto, 'root');
@@ -634,7 +711,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'dynamicProperties', id: config.id }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['value']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'value',
+            ]),
         );
     });
 
@@ -655,7 +734,9 @@ describe('menu item validator', () => {
             valueEntityCategory: null,
             tenantId: defaultTenantId,
         });
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const dpValue = await dynPropValueRepo.save({
             menuItem: { id: menuItem.id },
@@ -663,7 +744,9 @@ describe('menu item validator', () => {
             valueText: '/some/file',
             valueEntity: null,
         });
-        testCtx.addCleanupFunction(async () => { await dynPropValueRepo.delete(dpValue.id); });
+        testCtx.addCleanupFunction(async () => {
+            await dynPropValueRepo.delete(dpValue.id);
+        });
 
         const dto = plainToInstance(UpdateMenuItemDto, {
             name: menuItem.name,
@@ -677,7 +760,9 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['categoryId']),
+            createValidationErrorPayload('CONFLICTING_VALUES', undefined, [
+                'categoryId',
+            ]),
         );
     });
 });

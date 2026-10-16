@@ -22,12 +22,7 @@ export class OrderMenuItemService extends LocationScopedServiceBase<OrderMenuIte
 
         private readonly menuItemComposer: OrderMenuItemComposer,
     ) {
-        super(
-            repo,
-            'OrderMenuItemService',
-            requestContextService,
-            validator,
-        );
+        super(repo, 'OrderMenuItemService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -44,7 +39,7 @@ export class OrderMenuItemService extends LocationScopedServiceBase<OrderMenuIte
         manager: EntityManager,
         entity: OrderMenuItem,
     ): Promise<void> {
-        await this.menuItemComposer.composeUpdate(dto, manager, entity)
+        await this.menuItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 

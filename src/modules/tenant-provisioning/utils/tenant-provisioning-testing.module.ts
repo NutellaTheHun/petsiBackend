@@ -25,56 +25,59 @@ import { TenantProvisioningModule } from '../tenant-provisioning.module';
 import { TenantProvisioningService } from '../tenant-provisioning.service';
 
 export async function getTenantProvisioningTestingModule(): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
 
-      TypeORMPostgresTestingModule([
-        User,
-        Role,
-        UserLocation,
-        Location,
-        Tenant,
-        TenantFeature,
-        RoleFeature,
-      ]),
-      TypeOrmModule.forFeature([
-        User,
-        Role,
-        UserLocation,
-        Location,
-        Tenant,
-        TenantFeature,
-        RoleFeature,
-      ]),
+            TypeORMPostgresTestingModule([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+                TenantFeature,
+                RoleFeature,
+            ]),
+            TypeOrmModule.forFeature([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+                TenantFeature,
+                RoleFeature,
+            ]),
 
-      JwtModule.registerAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-          global: true,
-          secret: configService.get<string>('JWT_SECRET'),
-          signOptions: { expiresIn: '60s' },
-        }),
-      }),
+            JwtModule.registerAsync({
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    global: true,
+                    secret: configService.get<string>('JWT_SECRET'),
+                    signOptions: { expiresIn: '60s' },
+                }),
+            }),
 
-      LoggerModule.forRoot({
-        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
-      }),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
 
-      TenantProvisioningModule,
-      AuthModule,
-      RequestContextModule,
-      UserModule,
-      RoleModule,
-      LocationsModule,
-      TenantsModule,
-      FeatureFlagsModule,
-    ],
+            TenantProvisioningModule,
+            AuthModule,
+            RequestContextModule,
+            UserModule,
+            RoleModule,
+            LocationsModule,
+            TenantsModule,
+            FeatureFlagsModule,
+        ],
 
-    providers: [TenantProvisioningService, AuthService],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .compile();
+        providers: [TenantProvisioningService, AuthService],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile();
 }

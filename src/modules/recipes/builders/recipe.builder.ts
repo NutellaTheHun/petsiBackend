@@ -18,222 +18,224 @@ import { RecipeIngredientBuilder } from './recipe-ingredient.builder';
 
 @Injectable()
 export class RecipeBuilder extends BuilderBase<Recipe> {
-  constructor(
-    @InjectRepository(RecipeIngredient)
-    private readonly ingredientRepo: Repository<RecipeIngredient>,
+    constructor(
+        @InjectRepository(RecipeIngredient)
+        private readonly ingredientRepo: Repository<RecipeIngredient>,
 
-    @InjectRepository(RecipeCategory)
-    private readonly categoryRepo: Repository<RecipeCategory>,
+        @InjectRepository(RecipeCategory)
+        private readonly categoryRepo: Repository<RecipeCategory>,
 
-    @InjectRepository(RecipeSubCategory)
-    private readonly subCategoryRepo: Repository<RecipeSubCategory>,
+        @InjectRepository(RecipeSubCategory)
+        private readonly subCategoryRepo: Repository<RecipeSubCategory>,
 
-    @InjectRepository(MenuItem)
-    private readonly menuItemRepo: Repository<MenuItem>,
+        @InjectRepository(MenuItem)
+        private readonly menuItemRepo: Repository<MenuItem>,
 
-    @Inject(forwardRef(() => RecipeIngredientBuilder))
-    private readonly ingredientBuilder: RecipeIngredientBuilder,
+        @Inject(forwardRef(() => RecipeIngredientBuilder))
+        private readonly ingredientBuilder: RecipeIngredientBuilder,
 
-    requestContextService: RequestContextService,
-  ) {
-    super(Recipe, 'RecipeBuilder', requestContextService);
-  }
+        requestContextService: RequestContextService,
+    ) {
+        super(Recipe, 'RecipeBuilder', requestContextService);
+    }
 
-  protected createEntity(dto: CreateRecipeDto): void {
-    if (dto.batchResultQuantity !== undefined) {
-      this.batchResultQuantity(dto.batchResultQuantity);
+    protected createEntity(dto: CreateRecipeDto): void {
+        if (dto.batchResultQuantity !== undefined) {
+            this.batchResultQuantity(dto.batchResultQuantity);
+        }
+        if (dto.batchResultUnit !== undefined) {
+            this.batchResultUnit(dto.batchResultUnit ?? null);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
+        if (dto.isIngredient !== undefined) {
+            this.isIngredient(dto.isIngredient);
+        }
+        if (dto.producedMenuItemId !== undefined) {
+            this.producedMenuItemById(dto.producedMenuItemId);
+        }
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.salesPrice !== undefined) {
+            this.salesPrice(dto.salesPrice);
+        }
+        if (dto.servingSizeQuantity !== undefined) {
+            this.servingSizeQuantity(dto.servingSizeQuantity);
+        }
+        if (dto.servingSizeUnit !== undefined) {
+            this.servingSizeUnit(dto.servingSizeUnit ?? null);
+        }
+        if (dto.subCategoryId !== undefined) {
+            this.subCategoryById(dto.subCategoryId);
+        }
+        if (dto.ingredients !== undefined) {
+            this.ingredientsByBuilder(dto.ingredients);
+        }
     }
-    if (dto.batchResultUnit !== undefined) {
-      this.batchResultUnit(dto.batchResultUnit ?? null);
-    }
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
-    }
-    if (dto.isIngredient !== undefined) {
-      this.isIngredient(dto.isIngredient);
-    }
-    if (dto.producedMenuItemId !== undefined) {
-      this.producedMenuItemById(dto.producedMenuItemId);
-    }
-    if (dto.name !== undefined) {
-      this.name(dto.name);
-    }
-    if (dto.salesPrice !== undefined) {
-      this.salesPrice(dto.salesPrice);
-    }
-    if (dto.servingSizeQuantity !== undefined) {
-      this.servingSizeQuantity(dto.servingSizeQuantity);
-    }
-    if (dto.servingSizeUnit !== undefined) {
-      this.servingSizeUnit(dto.servingSizeUnit ?? null);
-    }
-    if (dto.subCategoryId !== undefined) {
-      this.subCategoryById(dto.subCategoryId);
-    }
-    if (dto.ingredients !== undefined) {
-      this.ingredientsByBuilder(dto.ingredients);
-    }
-  }
 
-  protected updateEntity(dto: UpdateRecipeDto): void {
-    if (dto.batchResultQuantity !== undefined) {
-      this.batchResultQuantity(dto.batchResultQuantity);
-    }
-    if (dto.batchResultUnit !== undefined) {
-      this.batchResultUnit(dto.batchResultUnit ?? null);
-    }
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
+    protected updateEntity(dto: UpdateRecipeDto): void {
+        if (dto.batchResultQuantity !== undefined) {
+            this.batchResultQuantity(dto.batchResultQuantity);
+        }
+        if (dto.batchResultUnit !== undefined) {
+            this.batchResultUnit(dto.batchResultUnit ?? null);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
 
-      if (dto.subCategoryId === undefined) {
-        this.subCategoryById(null);
-      }
+            if (dto.subCategoryId === undefined) {
+                this.subCategoryById(null);
+            }
+        }
+        if (dto.isIngredient !== undefined) {
+            this.isIngredient(dto.isIngredient);
+        }
+        if (dto.producedMenuItemId !== undefined) {
+            this.producedMenuItemById(dto.producedMenuItemId);
+        }
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.salesPrice !== undefined) {
+            this.salesPrice(dto.salesPrice);
+        }
+        if (dto.servingSizeQuantity !== undefined) {
+            this.servingSizeQuantity(dto.servingSizeQuantity);
+        }
+        if (dto.servingSizeUnit !== undefined) {
+            this.servingSizeUnit(dto.servingSizeUnit ?? null);
+        }
+        if (dto.subCategoryId !== undefined) {
+            this.subCategoryById(dto.subCategoryId);
+        }
+        if (dto.ingredients !== undefined) {
+            this.ingredientsByBuilder(dto.ingredients);
+        }
     }
-    if (dto.isIngredient !== undefined) {
-      this.isIngredient(dto.isIngredient);
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
-    if (dto.producedMenuItemId !== undefined) {
-      this.producedMenuItemById(dto.producedMenuItemId);
+
+    public producedMenuItemById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('producedMenuItem', null);
+        }
+        return this.setPropById(
+            async (id: number) =>
+                await this.menuItemRepo.findOne({ where: { id } }),
+            'producedMenuItem',
+            id,
+        );
     }
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+
+    public producedMenuItemByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.menuItemRepo.findOne({ where: { name } }),
+            'producedMenuItem',
+            name,
+        );
     }
-    if (dto.salesPrice !== undefined) {
-      this.salesPrice(dto.salesPrice);
+
+    public isIngredient(value: boolean): this {
+        return this.setPropByVal('isIngredient', value);
     }
-    if (dto.servingSizeQuantity !== undefined) {
-      this.servingSizeQuantity(dto.servingSizeQuantity);
+
+    public ingredientsById(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.ingredientRepo.find({ where: { id: In(ids) } }),
+            'ingredients',
+            ids,
+        );
     }
-    if (dto.servingSizeUnit !== undefined) {
-      this.servingSizeUnit(dto.servingSizeUnit ?? null);
+
+    public ingredientsByBuilder(
+        dtos: (
+            | CreateRecipeIngredientDto
+            | NestedCreateRecipeIngredientDto
+            | NestedUpdateRecipeIngredientDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.ingredientBuilder.buildMany.bind(this.ingredientBuilder),
+            'ingredients',
+            this.entity,
+            dtos,
+        );
     }
-    if (dto.subCategoryId !== undefined) {
-      this.subCategoryById(dto.subCategoryId);
+
+    public batchResultQuantity(amount: number | null): this {
+        if (amount === null) {
+            return this.setPropByVal('batchResultQuantity', null);
+        }
+        return this.setPropByVal('batchResultQuantity', amount);
     }
-    if (dto.ingredients !== undefined) {
-      this.ingredientsByBuilder(dto.ingredients);
+
+    public batchResultUnit(unit: AppUnit | null): this {
+        return this.setPropByVal('batchResultUnit', unit);
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
-
-  public producedMenuItemById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('producedMenuItem', null);
+    public servingSizeQuantity(amount: number | null): this {
+        if (amount === null) {
+            return this.setPropByVal('servingSizeQuantity', null);
+        }
+        return this.setPropByVal('servingSizeQuantity', amount);
     }
-    return this.setPropById(
-      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
-      'producedMenuItem',
-      id,
-    );
-  }
 
-  public producedMenuItemByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.menuItemRepo.findOne({ where: { name } }),
-      'producedMenuItem',
-      name,
-    );
-  }
-
-  public isIngredient(value: boolean): this {
-    return this.setPropByVal('isIngredient', value);
-  }
-
-  public ingredientsById(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.ingredientRepo.find({ where: { id: In(ids) } }),
-      'ingredients',
-      ids,
-    );
-  }
-
-  public ingredientsByBuilder(
-    dtos: (
-      | CreateRecipeIngredientDto
-      | NestedCreateRecipeIngredientDto
-      | NestedUpdateRecipeIngredientDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.ingredientBuilder.buildMany.bind(this.ingredientBuilder),
-      'ingredients',
-      this.entity,
-      dtos,
-    );
-  }
-
-  public batchResultQuantity(amount: number | null): this {
-    if (amount === null) {
-      return this.setPropByVal('batchResultQuantity', null);
+    public servingSizeUnit(unit: AppUnit | null): this {
+        return this.setPropByVal('servingSizeUnit', unit);
     }
-    return this.setPropByVal('batchResultQuantity', amount);
-  }
 
-  public batchResultUnit(unit: AppUnit | null): this {
-    return this.setPropByVal('batchResultUnit', unit);
-  }
-
-  public servingSizeQuantity(amount: number | null): this {
-    if (amount === null) {
-      return this.setPropByVal('servingSizeQuantity', null);
+    public salesPrice(amount: number | null): this {
+        if (amount === null) {
+            return this.setPropByVal('salesPrice', null);
+        }
+        return this.setPropByVal('salesPrice', String(amount));
     }
-    return this.setPropByVal('servingSizeQuantity', amount);
-  }
 
-  public servingSizeUnit(unit: AppUnit | null): this {
-    return this.setPropByVal('servingSizeUnit', unit);
-  }
-
-  public salesPrice(amount: number | null): this {
-    if (amount === null) {
-      return this.setPropByVal('salesPrice', null);
+    public categoryById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('category', null);
+        }
+        return this.setPropById(
+            async (id: number) =>
+                await this.categoryRepo.findOne({ where: { id } }),
+            'category',
+            id,
+        );
     }
-    return this.setPropByVal('salesPrice', String(amount));
-  }
 
-  public categoryById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('category', null);
+    public categoryByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.categoryRepo.findOne({ where: { name } }),
+            'category',
+            name,
+        );
     }
-    return this.setPropById(
-      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
-      'category',
-      id,
-    );
-  }
 
-  public categoryByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.categoryRepo.findOne({ where: { name } }),
-      'category',
-      name,
-    );
-  }
-
-  public subCategoryById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('subCategory', null);
+    public subCategoryById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('subCategory', null);
+        }
+        return this.setPropById(
+            async (id: number) =>
+                await this.subCategoryRepo.findOne({ where: { id } }),
+            'subCategory',
+            id,
+        );
     }
-    return this.setPropById(
-      async (id: number) =>
-        await this.subCategoryRepo.findOne({ where: { id } }),
-      'subCategory',
-      id,
-    );
-  }
 
-  public subCategoryByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.subCategoryRepo.findOne({ where: { name } }),
-      'subCategory',
-      name,
-    );
-  }
+    public subCategoryByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.subCategoryRepo.findOne({ where: { name } }),
+            'subCategory',
+            name,
+        );
+    }
 }

@@ -14,65 +14,61 @@ import { RecipeSubCategoryBuilder } from './recipe-sub-category.builder';
 
 @Injectable()
 export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
-  constructor(
-    @InjectRepository(Recipe)
-    private readonly recipeRepo: Repository<Recipe>,
+    constructor(
+        @InjectRepository(Recipe)
+        private readonly recipeRepo: Repository<Recipe>,
 
-    @Inject(forwardRef(() => RecipeSubCategoryBuilder))
-    private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
+        @Inject(forwardRef(() => RecipeSubCategoryBuilder))
+        private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
 
-    requestContextService: RequestContextService,
-  ) {
-    super(
-      RecipeCategory,
-      'RecipeCategoryBuilder',
-      requestContextService,
-    );
-  }
-
-  protected createEntity(dto: CreateRecipeCategoryDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+        requestContextService: RequestContextService,
+    ) {
+        super(RecipeCategory, 'RecipeCategoryBuilder', requestContextService);
     }
-    if (dto.subCategories !== undefined) {
-      this.subCategoriesByBuilder(dto.subCategories);
+
+    protected createEntity(dto: CreateRecipeCategoryDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.subCategories !== undefined) {
+            this.subCategoriesByBuilder(dto.subCategories);
+        }
     }
-  }
 
-  protected updateEntity(dto: UpdateRecipeCategoryDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected updateEntity(dto: UpdateRecipeCategoryDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.subCategories !== undefined) {
+            this.subCategoriesByBuilder(dto.subCategories);
+        }
     }
-    if (dto.subCategories !== undefined) {
-      this.subCategoriesByBuilder(dto.subCategories);
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
+    public subCategoriesByBuilder(
+        dtos: (
+            | CreateRecipeSubCategoryDto
+            | NestedCreateRecipeSubCategoryDto
+            | NestedUpdateRecipeSubCategoryDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.subCategoryBuilder.buildMany.bind(this.subCategoryBuilder),
+            'subCategories',
+            this.entity,
+            dtos,
+        );
+    }
 
-  public subCategoriesByBuilder(
-    dtos: (
-      | CreateRecipeSubCategoryDto
-      | NestedCreateRecipeSubCategoryDto
-      | NestedUpdateRecipeSubCategoryDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.subCategoryBuilder.buildMany.bind(this.subCategoryBuilder),
-      'subCategories',
-      this.entity,
-      dtos,
-    );
-  }
-
-  public recipesById(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.recipeRepo.find({ where: { id: In(ids) } }),
-      'recipes',
-      ids,
-    );
-  }
+    public recipesById(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.recipeRepo.find({ where: { id: In(ids) } }),
+            'recipes',
+            ids,
+        );
+    }
 }

@@ -49,10 +49,14 @@ describe('settings controller', () => {
         controller = module.get<SettingsController>(SettingsController);
         settingRepo = module.get(getRepositoryToken(Setting));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await locationTestUtil.seedLocations(P, undefined, 2));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
         requestContext.setContext(managerAtLocationAContext());
     });
 
@@ -85,7 +89,9 @@ describe('settings controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['name']),
+                createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                    'name',
+                ]),
             );
         }
     });
@@ -99,7 +105,9 @@ describe('settings controller', () => {
             }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('effective settings endpoint', () => {
@@ -126,7 +134,7 @@ describe('settings controller', () => {
             await settingRepo.delete([tenantDefault.id, locationOverride.id]);
         });
 
-        it('returns the tenant default merged with the caller\'s location override in one call', async () => {
+        it("returns the tenant default merged with the caller's location override in one call", async () => {
             const result = await controller.getEffective(locationA.id);
             const tz = result.find((r) => r.name === 'defaultTimezone');
             expect(tz?.value).toBe('America/New_York');

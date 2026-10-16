@@ -2,7 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateLocationDto {
-    @ApiProperty({ description: 'Name of the Location entity.', example: 'Downtown' })
+    @ApiProperty({
+        description: 'Name of the Location entity.',
+        example: 'Downtown',
+    })
     @IsString()
     @IsNotEmpty()
     readonly name: string;

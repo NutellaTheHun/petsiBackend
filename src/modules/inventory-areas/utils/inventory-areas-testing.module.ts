@@ -23,70 +23,84 @@ import { InventoryAreaItemChangeDetector } from './change-detectors/inventory-ar
 import { InventoryAreaChangeDetector } from './change-detectors/inventory-area.change-detector';
 
 export async function getInventoryAreasTestingModule(opts?: {
-  countServiceClass?: new (...args: any[]) => InventoryAreaCountService;
-  areaItemServiceClass?: new (...args: any[]) => InventoryAreaItemService;
-  areaServiceClass?: new (...args: any[]) => InventoryAreaService;
-  countChangeDetectorClass?: new (...args: any[]) => InventoryAreaCountChangeDetector;
-  areaItemChangeDetectorClass?: new (...args: any[]) => InventoryAreaItemChangeDetector;
-  areaChangeDetectorClass?: new (...args: any[]) => InventoryAreaChangeDetector;
+    countServiceClass?: new (...args: any[]) => InventoryAreaCountService;
+    areaItemServiceClass?: new (...args: any[]) => InventoryAreaItemService;
+    areaServiceClass?: new (...args: any[]) => InventoryAreaService;
+    countChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryAreaCountChangeDetector;
+    areaItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryAreaItemChangeDetector;
+    areaChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryAreaChangeDetector;
 }): Promise<TestingModule> {
-  const builder = Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([
-        InventoryArea,
-        InventoryAreaCount,
-        InventoryAreaItem,
-      ]),
-      TypeOrmModule.forFeature([
-        InventoryArea,
-        InventoryAreaCount,
-        InventoryAreaItem,
-      ]),
-      InventoryItemsModule,
-      InventoryAreasModule,
-      RequestContextModule,
-      CacheModule.register(),
+    const builder = Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                InventoryArea,
+                InventoryAreaCount,
+                InventoryAreaItem,
+            ]),
+            TypeOrmModule.forFeature([
+                InventoryArea,
+                InventoryAreaCount,
+                InventoryAreaItem,
+            ]),
+            InventoryItemsModule,
+            InventoryAreasModule,
+            RequestContextModule,
+            CacheModule.register(),
 
-      LoggerModule.forRoot({
-        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
-      }),
-    ],
-    controllers: [
-      InventoryAreaController,
-      InventoryAreaCountController,
-      InventoryAreaItemController,
-    ],
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService);
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+        ],
+        controllers: [
+            InventoryAreaController,
+            InventoryAreaCountController,
+            InventoryAreaItemController,
+        ],
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService);
 
-  if (opts?.countServiceClass) {
+    if (opts?.countServiceClass) {
+        builder
+            .overrideProvider(InventoryAreaCountService)
+            .useClass(opts.countServiceClass);
+    }
+
+    if (opts?.areaItemServiceClass) {
+        builder
+            .overrideProvider(InventoryAreaItemService)
+            .useClass(opts.areaItemServiceClass);
+    }
+
+    if (opts?.areaServiceClass) {
+        builder
+            .overrideProvider(InventoryAreaService)
+            .useClass(opts.areaServiceClass);
+    }
+
     builder
-      .overrideProvider(InventoryAreaCountService)
-      .useClass(opts.countServiceClass);
-  }
+        .overrideProvider(InventoryAreaCountChangeDetector)
+        .useClass(
+            opts?.countChangeDetectorClass || InventoryAreaCountChangeDetector,
+        )
+        .overrideProvider(InventoryAreaItemChangeDetector)
+        .useClass(
+            opts?.areaItemChangeDetectorClass ||
+                InventoryAreaItemChangeDetector,
+        )
+        .overrideProvider(InventoryAreaChangeDetector)
+        .useClass(opts?.areaChangeDetectorClass || InventoryAreaChangeDetector);
 
-  if (opts?.areaItemServiceClass) {
-    builder
-      .overrideProvider(InventoryAreaItemService)
-      .useClass(opts.areaItemServiceClass);
-  }
-
-  if (opts?.areaServiceClass) {
-    builder
-      .overrideProvider(InventoryAreaService)
-      .useClass(opts.areaServiceClass);
-  }
-
-  builder
-    .overrideProvider(InventoryAreaCountChangeDetector)
-    .useClass(opts?.countChangeDetectorClass || InventoryAreaCountChangeDetector)
-    .overrideProvider(InventoryAreaItemChangeDetector)
-    .useClass(opts?.areaItemChangeDetectorClass || InventoryAreaItemChangeDetector)
-    .overrideProvider(InventoryAreaChangeDetector)
-    .useClass(opts?.areaChangeDetectorClass || InventoryAreaChangeDetector);
-
-  return builder.compile();
+    return builder.compile();
 }

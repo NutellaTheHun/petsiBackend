@@ -6,7 +6,10 @@ import { Repository } from 'typeorm';
 import { createHttpTestApp } from '../../../test/http-test-app';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { TestUser, useTestUserAndRoleGuards } from '../../../test/test-user-guard';
+import {
+    TestUser,
+    useTestUserAndRoleGuards,
+} from '../../../test/test-user-guard';
 import { Location } from '../../locations/entities/location.entity';
 import { LocationTestUtil } from '../../locations/utils/location-test.util';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -43,13 +46,20 @@ describe('settings controller (role guard enforcement)', () => {
         const module: TestingModule = await getSettingsTestingModule();
         settingRepo = module.get(getRepositoryToken(Setting));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        const requestContext = module.get(RequestContextService) as TestRequestContextService;
+        const requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
 
         ({ app } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(() => currentUser, requestContext),
+            beforeInit: useTestUserAndRoleGuards(
+                () => currentUser,
+                requestContext,
+            ),
         }));
     });
 
@@ -68,25 +78,37 @@ describe('settings controller (role guard enforcement)', () => {
     });
 
     async function postSetting(body: Record<string, unknown>) {
-        const res = await request(app.getHttpServer()).post('/settings').send(body);
+        const res = await request(app.getHttpServer())
+            .post('/settings')
+            .send(body);
         if (res.status === 201) {
-            testCtx.addCleanupFunction(async () => { await settingRepo.delete(res.body.id); });
+            testCtx.addCleanupFunction(async () => {
+                await settingRepo.delete((res.body as Setting).id);
+            });
         }
         return res;
     }
 
     describe('POST /settings', () => {
         it('rejects a non-admin manager writing a tenant default (no locationId) with 403', async () => {
-            const res = await postSetting({ name: 'orderNumberPrefix', value: 'ORD-' });
+            const res = await postSetting({
+                name: 'orderNumberPrefix',
+                value: 'ORD-',
+            });
             expect(res.status).toBe(403);
-            expect(await settingRepo.count({ where: { tenantId: tenant.id } })).toBe(0);
+            expect(
+                await settingRepo.count({ where: { tenantId: tenant.id } }),
+            ).toBe(0);
         });
 
         it('lets a tenant admin write a tenant default', async () => {
             currentUser = tenantAdmin();
-            const res = await postSetting({ name: 'orderNumberPrefix', value: 'ORD-' });
+            const res = await postSetting({
+                name: 'orderNumberPrefix',
+                value: 'ORD-',
+            });
             expect(res.status).toBe(201);
-            expect(res.body.locationId).toBeNull();
+            expect((res.body as Setting).locationId).toBeNull();
         });
 
         it('lets a manager write an override at their own location', async () => {
@@ -96,7 +118,7 @@ describe('settings controller (role guard enforcement)', () => {
                 value: 'A-',
             });
             expect(res.status).toBe(201);
-            expect(res.body.locationId).toBe(locationA.id);
+            expect((res.body as Setting).locationId).toBe(locationA.id);
         });
 
         it('rejects a manager writing an override at a location they are not assigned to with 403', async () => {

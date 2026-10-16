@@ -1,7 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { OrderCategory } from "../../entities/order-category.entity";
-import { OrderMenuItem } from "../../entities/order-menu-item.entity";
-import { RecurringOrderScheduleResponseDto } from "../recurring-order-schedule/recurring-order-schedule-response.dto";
+import { ApiProperty } from '@nestjs/swagger';
+import { OrderCategory } from '../../entities/order-category.entity';
+import { OrderMenuItem } from '../../entities/order-menu-item.entity';
+import { RecurringOrderScheduleResponseDto } from '../recurring-order-schedule/recurring-order-schedule-response.dto';
 
 export class OrderResponseDto {
     @ApiProperty({
@@ -33,7 +33,8 @@ export class OrderResponseDto {
     readonly fulfillmentType: string;
 
     @ApiProperty({
-        description: 'Name of who is picking up the order or reciving the delivery',
+        description:
+            'Name of who is picking up the order or reciving the delivery',
         example: 'Jane Doe',
         type: 'string',
         nullable: true,

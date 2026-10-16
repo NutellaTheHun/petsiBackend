@@ -1,4 +1,7 @@
-import { VALIDATION_ERROR_CODE_LOGGED, ValidationErrorCode } from "./validation-error-codes";
+import {
+    VALIDATION_ERROR_CODE_LOGGED,
+    ValidationErrorCode,
+} from './validation-error-codes';
 
 /**
  * Response object to be returned to the client. A translated version of ValidationErrorMap.
@@ -12,11 +15,19 @@ export type ValidationErrorResponse = {
 /**
  * Actual error information to be returned to the client. Must contain an error code and fields must be atleast a size of 1.
  */
-export type ValidationErrorPayload = { errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[] };
+export type ValidationErrorPayload = {
+    errorCode: ValidationErrorCode;
+    ids?: (string | number)[];
+    fields?: string[];
+};
 
-export function createValidationErrorPayload(errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[]): ValidationErrorPayload {
+export function createValidationErrorPayload(
+    errorCode: ValidationErrorCode,
+    ids?: (string | number)[],
+    fields?: string[],
+): ValidationErrorPayload {
     if (fields && fields.length === 0) {
-        throw new Error("Fields cannot be empty");
+        throw new Error('Fields cannot be empty');
     }
     return { errorCode, ids, fields };
 }
@@ -28,7 +39,9 @@ export function createValidationErrorPayload(errorCode: ValidationErrorCode, ids
 export type ValidationLogContext = { value: string | number };
 
 /** An error as stored in the map: the client payload plus optional log-only context. */
-export type StoredValidationError = ValidationErrorPayload & { logContext?: ValidationLogContext };
+export type StoredValidationError = ValidationErrorPayload & {
+    logContext?: ValidationLogContext;
+};
 
 /** One logged (anomalous) error, flattened with its path in the tree. */
 export type LoggedValidationError = {
@@ -83,7 +96,11 @@ export class ValidationErrorMap {
         fields?: string[],
         logContext?: ValidationLogContext,
     ) {
-        const newError: StoredValidationError = createValidationErrorPayload(errorCode, ids, fields);
+        const newError: StoredValidationError = createValidationErrorPayload(
+            errorCode,
+            ids,
+            fields,
+        );
         if (logContext) {
             newError.logContext = logContext;
         }
@@ -101,7 +118,7 @@ export class ValidationErrorMap {
     }
 
     /**
-     * 
+     *
      * @returns ValidationErrorResponse object containing id, errs, and errors. A object more suitable for returning to the client.
      */
     public buildResponse(): ValidationErrorResponse {
@@ -113,7 +130,9 @@ export class ValidationErrorMap {
 
         if (this.errors) {
             // log-only context never reaches the client
-            result.errorPayload = this.errors.map(({ errorCode, ids, fields }) => ({ errorCode, ids, fields }));
+            result.errorPayload = this.errors.map(
+                ({ errorCode, ids, fields }) => ({ errorCode, ids, fields }),
+            );
         }
 
         if (this.children && this.children.size > 0) {
@@ -151,14 +170,17 @@ export class ValidationErrorMap {
         for (const [field, children] of this.children?.entries() ?? []) {
             for (const child of children) {
                 const segment = `${field}[${child.id}]`;
-                result.push(...child.collectLoggedErrors(path ? `${path}.${segment}` : segment));
+                result.push(
+                    ...child.collectLoggedErrors(
+                        path ? `${path}.${segment}` : segment,
+                    ),
+                );
             }
         }
 
         return result;
     }
 }
-
 
 // Helper functions to make testing easier
 
@@ -215,7 +237,7 @@ export function expectValidationErrorCode(
 ) {
     const errors = findValidationErrors(root, path);
     expect(errors).toBeTruthy();
-    expect(errors!.some(e => e.errorCode === errorCode)).toBe(true);
+    expect(errors!.some((e) => e.errorCode === errorCode)).toBe(true);
 }
 
 export function expectValidationErrorSize(
@@ -224,10 +246,11 @@ export function expectValidationErrorSize(
 ) {
     const result = getValidationErrorSize(root);
     if (result !== size) {
-        console.log(`Validation error size mismatch: Error Tree: ${JSON.stringify(root)}`);
+        console.log(
+            `Validation error size mismatch: Error Tree: ${JSON.stringify(root)}`,
+        );
     }
     expect(result).toBe(size);
-
 }
 
 function getValidationErrorSize(root: ValidationErrorResponse | null): number {

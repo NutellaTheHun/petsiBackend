@@ -37,7 +37,10 @@ import { MenuItemContainerItemService } from '../services/menu-item-container-it
 
 @ApiTags('Menu Item Container Item')
 @ApiBearerAuth('access-token')
-@RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT, FEATURE_REGISTRY.RECIPE_MANAGEMENT)
+@RequiresFeature(
+    FEATURE_REGISTRY.ORDER_MANAGEMENT,
+    FEATURE_REGISTRY.RECIPE_MANAGEMENT,
+)
 @Controller('menu-item-container-items')
 @ApiExtraModels(MenuItemContainerItem)
 export class MenuItemContainerItemController extends ControllerBase<MenuItemContainerItemEntity> {
@@ -135,7 +138,12 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

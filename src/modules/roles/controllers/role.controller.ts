@@ -63,7 +63,10 @@ export class RoleController extends ControllerBase<RoleEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Role' })
-    @ApiCreatedResponse({ description: 'Role successfully created', type: Role })
+    @ApiCreatedResponse({
+        description: 'Role successfully created',
+        type: Role,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRoleDto })
     async create(@Body() dto: CreateRoleDto): Promise<Role> {
@@ -110,7 +113,12 @@ export class RoleController extends ControllerBase<RoleEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

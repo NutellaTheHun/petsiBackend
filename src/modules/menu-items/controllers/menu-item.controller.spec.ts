@@ -49,13 +49,23 @@ describe('menu item controller', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
-            await testingUtil.seedItems(P, tenant.id));
+        ({
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+        } = await testingUtil.seedItems(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -94,7 +104,9 @@ describe('menu item controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });
@@ -108,8 +120,12 @@ describe('menu item controller', () => {
                 sizeIds: [sizes[0].id],
             }),
         );
-        testCtx.addCleanupFunction(async () => { await itemRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

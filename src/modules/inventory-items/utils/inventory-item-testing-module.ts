@@ -31,82 +31,120 @@ import { InventoryItemVendorChangeDetector } from './change-detectors/inventory-
 import { InventoryItemChangeDetector } from './change-detectors/inventory-item.change-detector';
 
 export async function getInventoryItemTestingModule(opts?: {
-  inventoryItemCategoryServiceClass?: new (
-    ...args: any[]
-  ) => InventoryItemCategoryService;
-  inventoryItemPackageServiceClass?: new (
-    ...args: any[]
-  ) => InventoryItemPackageService;
-  inventoryItemSizeServiceClass?: new (
-    ...args: any[]
-  ) => InventoryItemSizeService;
-  inventoryItemVendorServiceClass?: new (
-    ...args: any[]
-  ) => InventoryItemVendorService;
-  inventoryItemServiceClass?: new (...args: any[]) => InventoryItemService;
-  inventoryItemChangeDetectorClass?: new (...args: any[]) => InventoryItemChangeDetector;
-  inventoryItemCategoryChangeDetectorClass?: new (...args: any[]) => InventoryItemCategoryChangeDetector;
-  inventoryItemPackageChangeDetectorClass?: new (...args: any[]) => InventoryItemPackageChangeDetector;
-  inventoryItemSizeChangeDetectorClass?: new (...args: any[]) => InventoryItemSizeChangeDetector;
-  inventoryItemVendorChangeDetectorClass?: new (...args: any[]) => InventoryItemVendorChangeDetector;
+    inventoryItemCategoryServiceClass?: new (
+        ...args: any[]
+    ) => InventoryItemCategoryService;
+    inventoryItemPackageServiceClass?: new (
+        ...args: any[]
+    ) => InventoryItemPackageService;
+    inventoryItemSizeServiceClass?: new (
+        ...args: any[]
+    ) => InventoryItemSizeService;
+    inventoryItemVendorServiceClass?: new (
+        ...args: any[]
+    ) => InventoryItemVendorService;
+    inventoryItemServiceClass?: new (...args: any[]) => InventoryItemService;
+    inventoryItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryItemChangeDetector;
+    inventoryItemCategoryChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryItemCategoryChangeDetector;
+    inventoryItemPackageChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryItemPackageChangeDetector;
+    inventoryItemSizeChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryItemSizeChangeDetector;
+    inventoryItemVendorChangeDetectorClass?: new (
+        ...args: any[]
+    ) => InventoryItemVendorChangeDetector;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([
-        InventoryItem,
-        InventoryItemCategory,
-        InventoryItemPackage,
-        InventoryItemSize,
-        InventoryItemVendor,
-      ]),
-      TypeOrmModule.forFeature([
-        InventoryItem,
-        InventoryItemCategory,
-        InventoryItemPackage,
-        InventoryItemSize,
-        InventoryItemVendor,
-      ]),
-      InventoryItemsModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
-      }),
-      RequestContextModule,
-      TenantsModule,
-    ],
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                InventoryItem,
+                InventoryItemCategory,
+                InventoryItemPackage,
+                InventoryItemSize,
+                InventoryItemVendor,
+            ]),
+            TypeOrmModule.forFeature([
+                InventoryItem,
+                InventoryItemCategory,
+                InventoryItemPackage,
+                InventoryItemSize,
+                InventoryItemVendor,
+            ]),
+            InventoryItemsModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+            RequestContextModule,
+            TenantsModule,
+        ],
 
-    controllers: [
-      InventoryItemController,
-      InventoryItemCategoryController,
-      InventoryItemSizeController,
-      InventoryItemPackageController,
-      InventoryItemVendorController,
-    ],
+        controllers: [
+            InventoryItemController,
+            InventoryItemCategoryController,
+            InventoryItemSizeController,
+            InventoryItemPackageController,
+            InventoryItemVendorController,
+        ],
 
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(InventoryItemCategoryService)
-    .useClass(opts?.inventoryItemCategoryServiceClass ?? InventoryItemCategoryService)
-    .overrideProvider(InventoryItemPackageService)
-    .useClass(opts?.inventoryItemPackageServiceClass ?? InventoryItemPackageService)
-    .overrideProvider(InventoryItemSizeService)
-    .useClass(opts?.inventoryItemSizeServiceClass ?? InventoryItemSizeService)
-    .overrideProvider(InventoryItemVendorService)
-    .useClass(opts?.inventoryItemVendorServiceClass ?? InventoryItemVendorService)
-    .overrideProvider(InventoryItemService)
-    .useClass(opts?.inventoryItemServiceClass ?? InventoryItemService)
-    .overrideProvider(InventoryItemChangeDetector)
-    .useClass(opts?.inventoryItemChangeDetectorClass ?? InventoryItemChangeDetector)
-    .overrideProvider(InventoryItemCategoryChangeDetector)
-    .useClass(opts?.inventoryItemCategoryChangeDetectorClass ?? InventoryItemCategoryChangeDetector)
-    .overrideProvider(InventoryItemPackageChangeDetector)
-    .useClass(opts?.inventoryItemPackageChangeDetectorClass ?? InventoryItemPackageChangeDetector)
-    .overrideProvider(InventoryItemSizeChangeDetector)
-    .useClass(opts?.inventoryItemSizeChangeDetectorClass ?? InventoryItemSizeChangeDetector)
-    .overrideProvider(InventoryItemVendorChangeDetector)
-    .useClass(opts?.inventoryItemVendorChangeDetectorClass ?? InventoryItemVendorChangeDetector)
-    .compile();
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(InventoryItemCategoryService)
+        .useClass(
+            opts?.inventoryItemCategoryServiceClass ??
+                InventoryItemCategoryService,
+        )
+        .overrideProvider(InventoryItemPackageService)
+        .useClass(
+            opts?.inventoryItemPackageServiceClass ??
+                InventoryItemPackageService,
+        )
+        .overrideProvider(InventoryItemSizeService)
+        .useClass(
+            opts?.inventoryItemSizeServiceClass ?? InventoryItemSizeService,
+        )
+        .overrideProvider(InventoryItemVendorService)
+        .useClass(
+            opts?.inventoryItemVendorServiceClass ?? InventoryItemVendorService,
+        )
+        .overrideProvider(InventoryItemService)
+        .useClass(opts?.inventoryItemServiceClass ?? InventoryItemService)
+        .overrideProvider(InventoryItemChangeDetector)
+        .useClass(
+            opts?.inventoryItemChangeDetectorClass ??
+                InventoryItemChangeDetector,
+        )
+        .overrideProvider(InventoryItemCategoryChangeDetector)
+        .useClass(
+            opts?.inventoryItemCategoryChangeDetectorClass ??
+                InventoryItemCategoryChangeDetector,
+        )
+        .overrideProvider(InventoryItemPackageChangeDetector)
+        .useClass(
+            opts?.inventoryItemPackageChangeDetectorClass ??
+                InventoryItemPackageChangeDetector,
+        )
+        .overrideProvider(InventoryItemSizeChangeDetector)
+        .useClass(
+            opts?.inventoryItemSizeChangeDetectorClass ??
+                InventoryItemSizeChangeDetector,
+        )
+        .overrideProvider(InventoryItemVendorChangeDetector)
+        .useClass(
+            opts?.inventoryItemVendorChangeDetectorClass ??
+                InventoryItemVendorChangeDetector,
+        )
+        .compile();
 }

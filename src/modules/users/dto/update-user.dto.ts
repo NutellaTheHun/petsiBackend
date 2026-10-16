@@ -1,10 +1,5 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
-import {
-    IsBoolean,
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto {
     @ApiProperty({ description: '', example: 'jsmith123' })
@@ -28,7 +23,8 @@ export class UpdateUserDto {
     readonly email: string | null;
 
     @ApiPropertyOptional({
-        description: 'Grants access to every location under the tenant without a per-location UserLocation assignment.',
+        description:
+            'Grants access to every location under the tenant without a per-location UserLocation assignment.',
         example: false,
     })
     @IsBoolean()

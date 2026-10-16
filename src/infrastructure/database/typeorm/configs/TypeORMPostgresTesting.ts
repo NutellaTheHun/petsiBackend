@@ -15,6 +15,5 @@ export const TypeORMPostgresTestingModule = (_entities: any[]) =>
             autoLoadEntities: true,
             synchronize: true,
             //logging: ['query', 'error'],
-
         }),
     });

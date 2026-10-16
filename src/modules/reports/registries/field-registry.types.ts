@@ -1,6 +1,12 @@
 import { AggregateFunction } from '../entities/report-definition.entity';
 
-export type DataType = 'string' | 'number' | 'date' | 'time' | 'enum' | 'boolean';
+export type DataType =
+    | 'string'
+    | 'number'
+    | 'date'
+    | 'time'
+    | 'enum'
+    | 'boolean';
 
 export interface FieldJoin {
     relation: string;

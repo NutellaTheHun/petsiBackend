@@ -5,8 +5,8 @@ export abstract class EntityBase<
     TEntity,
     CDto,
     UDto,
-//nCDto extends NestedCreateDto = NestedCreateDto,
-//nUDto extends NestedUpdateDto = NestedUpdateDto,
+    //nCDto extends NestedCreateDto = NestedCreateDto,
+    //nUDto extends NestedUpdateDto = NestedUpdateDto,
 > {
     declare __Entity: TEntity;
     declare __CDto: CDto;
@@ -20,7 +20,8 @@ export abstract class NestedEntityBase<
     CDto,
     UDto,
     nCDto extends NestedCreateDto = NestedCreateDto,
-    nUDto extends NestedUpdateDto = NestedUpdateDto> extends EntityBase<TEntity, CDto, UDto> {
+    nUDto extends NestedUpdateDto = NestedUpdateDto,
+> extends EntityBase<TEntity, CDto, UDto> {
     declare __NcDto: nCDto;
     declare __NuDto: nUDto;
 }

@@ -4,7 +4,8 @@ import { InventoryAreaChangeDetector } from './inventory-area.change-detector';
 describe('InventoryAreaChangeDetector', () => {
     const detector = new InventoryAreaChangeDetector();
 
-    const baseEntity = (): InventoryArea => ({ id: 1, name: 'Pantry', locationId: 1 } as InventoryArea);
+    const baseEntity = (): InventoryArea =>
+        ({ id: 1, name: 'Pantry', locationId: 1 }) as InventoryArea;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

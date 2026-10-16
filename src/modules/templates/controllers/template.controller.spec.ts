@@ -38,9 +38,14 @@ describe('template controller', () => {
         controller = module.get<TemplateController>(TemplateController);
         templateRepo = module.get(getRepositoryToken(Template));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         ({ templates } = await testingUtil.seedTemplates(P, tenant.id));
@@ -60,7 +65,9 @@ describe('template controller', () => {
     });
 
     it('create throws ValidationException when name already exists', async () => {
-        const dto = plainToInstance(CreateTemplateDto, { name: templates[0].name });
+        const dto = plainToInstance(CreateTemplateDto, {
+            name: templates[0].name,
+        });
         try {
             await controller.create(dto);
             throw new Error('expected ValidationException');

@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -47,8 +51,15 @@ describe('label validator', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
 
-        ({ labelTypes, categories, sizes, singleItems, fixedContainerItems, varContainerItems, labels } =
-            await testingUtil.seedLabels(P));
+        ({
+            labelTypes,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            labels,
+        } = await testingUtil.seedLabels(P));
     });
 
     afterAll(async () => {
@@ -96,7 +107,9 @@ describe('label validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['labelType']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                'labelType',
+            ]),
         );
     });
 
@@ -114,7 +127,9 @@ describe('label validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['labelType']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                'labelType',
+            ]),
         );
     });
 
@@ -148,7 +163,9 @@ describe('label validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['labelType']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                'labelType',
+            ]),
         );
     });
 });

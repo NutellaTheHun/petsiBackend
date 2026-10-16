@@ -55,18 +55,28 @@ describe('DynamicPropertyConfigService', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getDynamicPropertiesTestingModule({
-            dynamicPropertyConfigServiceClass: TestableDynamicPropertyConfigService,
+            dynamicPropertyConfigServiceClass:
+                TestableDynamicPropertyConfigService,
         });
 
-        service = module.get(DynamicPropertyConfigService) as TestableDynamicPropertyConfigService;
+        service = module.get<TestableDynamicPropertyConfigService>(
+            DynamicPropertyConfigService,
+        );
         configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+        dynPropValueRepo = module.get(
+            getRepositoryToken(MenuItemDynamicPropertyValue),
+        );
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
         dataSource = module.get(DataSource);
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -104,7 +114,9 @@ describe('DynamicPropertyConfigService', () => {
 
         await dataSource.transaction(async (manager) => {
             const result = await service.createEntityForTest(dto, manager);
-            testCtx.addCleanupFunction(async () => { await configRepo.delete(result.id); });
+            testCtx.addCleanupFunction(async () => {
+                await configRepo.delete(result.id);
+            });
 
             expect(result).toBeDefined();
             expect(result.id).toBeDefined();
@@ -128,7 +140,9 @@ describe('DynamicPropertyConfigService', () => {
 
         await dataSource.transaction(async (manager) => {
             const result = await service.createEntityForTest(dto, manager);
-            testCtx.addCleanupFunction(async () => { await configRepo.delete(result.id); });
+            testCtx.addCleanupFunction(async () => {
+                await configRepo.delete(result.id);
+            });
             expect(result.fieldRenderType).toEqual('file-upload');
         });
     });
@@ -143,7 +157,9 @@ describe('DynamicPropertyConfigService', () => {
         });
 
         const created = await service.create(dto);
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(created.id);
+        });
 
         const duplicate = plainToInstance(CreateDynamicPropertyConfigDto, {
             holderEntityType: HolderEntityType.MenuItem,
@@ -152,7 +168,9 @@ describe('DynamicPropertyConfigService', () => {
             valueEntityType: null,
         });
 
-        await expect(service.create(duplicate)).rejects.toThrow(ValidationException);
+        await expect(service.create(duplicate)).rejects.toThrow(
+            ValidationException,
+        );
     });
 
     it('deletes a config and removes it from the database', async () => {
@@ -181,7 +199,9 @@ describe('DynamicPropertyConfigService', () => {
         });
 
         const created = await service.create(dto);
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(created.id);
+        });
 
         const found = await service.findOne(created.id);
 
@@ -197,7 +217,9 @@ describe('DynamicPropertyConfigService', () => {
         });
 
         const created = await service.create(dto);
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(created.id);
+        });
 
         const updateDto = plainToInstance(UpdateDynamicPropertyConfigDto, {
             propertyName: `${P}-after-update`,
@@ -216,20 +238,28 @@ describe('DynamicPropertyConfigService', () => {
                 valueEntityType: null,
             }),
         );
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const value = await dynPropValueRepo.save({
             menuItem: { id: lockTestMenuItem.id },
             config: { id: config.id },
             valueText: '/file',
         });
-        testCtx.addCleanupFunction(async () => { await dynPropValueRepo.delete(value.id); });
+        testCtx.addCleanupFunction(async () => {
+            await dynPropValueRepo.delete(value.id);
+        });
 
         const updated = await service.update(
             config.id,
-            plainToInstance(UpdateDynamicPropertyConfigDto, { propertyName: `${P}-lock-test-rename-prop-updated` }),
+            plainToInstance(UpdateDynamicPropertyConfigDto, {
+                propertyName: `${P}-lock-test-rename-prop-updated`,
+            }),
         );
-        expect(updated.propertyName).toEqual(`${P}-lock-test-rename-prop-updated`);
+        expect(updated.propertyName).toEqual(
+            `${P}-lock-test-rename-prop-updated`,
+        );
     });
 
     it('returns IMMUTABLE_FIELD validation error when changing a locked field with existing value rows', async () => {
@@ -241,14 +271,18 @@ describe('DynamicPropertyConfigService', () => {
                 valueEntityType: null,
             }),
         );
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const value = await dynPropValueRepo.save({
             menuItem: { id: lockTestMenuItem.id },
             config: { id: config.id },
             valueText: '/file2',
         });
-        testCtx.addCleanupFunction(async () => { await dynPropValueRepo.delete(value.id); });
+        testCtx.addCleanupFunction(async () => {
+            await dynPropValueRepo.delete(value.id);
+        });
 
         const updateDto = plainToInstance(UpdateDynamicPropertyConfigDto, {
             valueType: ValueType.EntityReference,
@@ -265,7 +299,10 @@ describe('DynamicPropertyConfigService', () => {
         expect(caught).toBeInstanceOf(ValidationException);
         expect(caught!.errors.errorPayload).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ errorCode: 'IMMUTABLE_FIELD', fields: ['valueType'] }),
+                expect.objectContaining({
+                    errorCode: 'IMMUTABLE_FIELD',
+                    fields: ['valueType'],
+                }),
             ]),
         );
     });
@@ -279,7 +316,9 @@ describe('DynamicPropertyConfigService', () => {
                 valueEntityType: null,
             }),
         );
-        testCtx.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+        testCtx.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
 
         const updated = await service.update(
             config.id,
@@ -301,8 +340,10 @@ describe('DynamicPropertyConfigService', () => {
                     valueEntityType: null,
                 }),
             );
-            testCtx.addCleanupFunction(async () => { await configRepo.delete(created.id); });
-            expect((created as DynamicPropertyConfig).tenantId).toBe(tenant.id);
+            testCtx.addCleanupFunction(async () => {
+                await configRepo.delete(created.id);
+            });
+            expect(created.tenantId).toBe(tenant.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
@@ -313,7 +354,9 @@ describe('DynamicPropertyConfigService', () => {
                 valueEntityType: null,
                 tenantId: otherTenant.id,
             } as DynamicPropertyConfig);
-            testCtx.addCleanupFunction(async () => { await configRepo.delete(otherTenantConfig.id); });
+            testCtx.addCleanupFunction(async () => {
+                await configRepo.delete(otherTenantConfig.id);
+            });
 
             await expect(service.findOne(otherTenantConfig.id)).rejects.toThrow(
                 NotFoundException,

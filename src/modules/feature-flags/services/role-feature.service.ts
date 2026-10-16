@@ -5,7 +5,10 @@ import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-serv
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleFeatureDto } from '../dto/create-role-feature.dto';
 import { UpdateRoleFeatureDto } from '../dto/update-role-feature.dto';
-import { RoleFeature, RoleFeatureEntity } from '../entities/role-feature.entity';
+import {
+    RoleFeature,
+    RoleFeatureEntity,
+} from '../entities/role-feature.entity';
 
 @Injectable()
 export class RoleFeatureService extends TenantScopedServiceBase<RoleFeatureEntity> {

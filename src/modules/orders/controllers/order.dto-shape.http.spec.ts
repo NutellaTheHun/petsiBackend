@@ -86,7 +86,7 @@ describe('order DTO shape failures (HTTP)', () => {
     const expectInvalidRequest = (res: request.Response) => {
         expect(res.status).toBe(400);
         expect(res.body).toEqual(
-            expect.objectContaining({
+            expect.objectContaining<Record<string, unknown>>({
                 statusCode: 400,
                 code: 'INVALID_REQUEST',
                 message: "This request couldn't be processed",
@@ -111,7 +111,7 @@ describe('order DTO shape failures (HTTP)', () => {
         const [entry] = logger.logs;
         expect(entry.level).toBe('warn');
         expect(entry.payload).toEqual(
-            expect.objectContaining({
+            expect.objectContaining<Record<string, unknown>>({
                 source: 'dto',
                 dto,
                 route: expect.stringContaining('/orders'),
@@ -120,7 +120,7 @@ describe('order DTO shape failures (HTTP)', () => {
         );
         const { constraints } = entry.payload as DtoWarnPayload;
         for (const path of paths) {
-            expect(constraints).toContainEqual({
+            expect(constraints).toContainEqual<Record<string, unknown>>({
                 path,
                 constraint: expect.any(String),
             });

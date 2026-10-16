@@ -29,13 +29,17 @@ export class InventoryItemTestingUtil {
         CONSTANT.FOOD_CAT,
     ];
 
-    private readonly packageNames: string[] = CONSTANT.getInventoryPackageNames();
+    private readonly packageNames: string[] =
+        CONSTANT.getInventoryPackageNames();
 
     private readonly itemNames: string[] = CONSTANT.getInventoryItemNames();
 
-    private readonly foodItemNames: string[] = CONSTANT.getInventoryFoodItemNames();
-    private readonly dryItemNames: string[] = CONSTANT.getInventoryDryItemNames();
-    private readonly otherItemNames: string[] = CONSTANT.getInventoryOtherItemNames();
+    private readonly foodItemNames: string[] =
+        CONSTANT.getInventoryFoodItemNames();
+    private readonly dryItemNames: string[] =
+        CONSTANT.getInventoryDryItemNames();
+    private readonly otherItemNames: string[] =
+        CONSTANT.getInventoryOtherItemNames();
 
     private readonly unitValues: AppUnit[] = Object.values(UNITS);
 
@@ -68,7 +72,7 @@ export class InventoryItemTestingUtil {
 
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
-    ) { }
+    ) {}
 
     /**
      * `tenantId` is now a required NOT NULL column on every entity owned by
@@ -86,13 +90,17 @@ export class InventoryItemTestingUtil {
     public async getDefaultTenantId(): Promise<number> {
         if (this.defaultTenantId === undefined) {
             const existing = await this.tenantRepo.findOne({
-                where: { subdomain: InventoryItemTestingUtil.DEFAULT_TENANT_SUBDOMAIN },
+                where: {
+                    subdomain:
+                        InventoryItemTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                },
             });
             const tenant =
                 existing ??
                 (await this.tenantRepo.save({
                     name: 'Inventory Item Testing Util Fixture Tenant',
-                    subdomain: InventoryItemTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                    subdomain:
+                        InventoryItemTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
                 }));
             this.defaultTenantId = tenant.id;
         }
@@ -146,7 +154,10 @@ export class InventoryItemTestingUtil {
         const resolvedTenantId = tenantId ?? (await this.getDefaultTenantId());
         const results: InventoryItemCategory[] = [];
         for (const name of this.categoryNames) {
-            const entity = await this.categoryBuilder.reset().categoryName(name).build();
+            const entity = await this.categoryBuilder
+                .reset()
+                .categoryName(name)
+                .build();
             entity.tenantId = resolvedTenantId;
             results.push(entity);
         }
@@ -162,8 +173,14 @@ export class InventoryItemTestingUtil {
         tenantId?: number,
     ): Promise<InventoryItem[]> {
         const resolvedTenantId = tenantId ?? (await this.getDefaultTenantId());
-        await this.initInventoryItemVendorTestDatabase(testContext, resolvedTenantId);
-        await this.initInventoryItemCategoryTestDatabase(testContext, resolvedTenantId);
+        await this.initInventoryItemVendorTestDatabase(
+            testContext,
+            resolvedTenantId,
+        );
+        await this.initInventoryItemCategoryTestDatabase(
+            testContext,
+            resolvedTenantId,
+        );
 
         const results: InventoryItem[] = [];
         for (let i = 0; i < this.foodItemNames.length; i++) {
@@ -209,7 +226,10 @@ export class InventoryItemTestingUtil {
     ): Promise<InventoryItemSize[]> {
         const resolvedTenantId = tenantId ?? (await this.getDefaultTenantId());
         await this.initInventoryItemTestDatabase(testContext, resolvedTenantId);
-        await this.initInventoryItemPackageTestDatabase(testContext, resolvedTenantId);
+        await this.initInventoryItemPackageTestDatabase(
+            testContext,
+            resolvedTenantId,
+        );
 
         const results: InventoryItemSize[] = [];
         let unitIdx = 0;
@@ -220,7 +240,9 @@ export class InventoryItemTestingUtil {
                 .reset()
                 .inventoryItemByName(this.itemNames[i])
                 .unit(this.unitValues[unitIdx++ % this.unitValues.length])
-                .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
+                .packageByName(
+                    this.packageNames[pkgIdx++ % this.packageNames.length],
+                )
                 .costByValue(costVal++)
                 .measureAmount(1)
                 .build();
@@ -231,7 +253,9 @@ export class InventoryItemTestingUtil {
                 .reset()
                 .inventoryItemByName(this.itemNames[i])
                 .unit(this.unitValues[unitIdx++ % this.unitValues.length])
-                .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
+                .packageByName(
+                    this.packageNames[pkgIdx++ % this.packageNames.length],
+                )
                 .costByValue(costVal++)
                 .measureAmount(1)
                 .build();
@@ -254,9 +278,14 @@ export class InventoryItemTestingUtil {
             this.cleanupInventoryItemVendorTestDatabase(),
         );
 
-        const vendors = await this.getTestInventoryItemVendorEntities(testContext, tenantId);
+        const vendors = await this.getTestInventoryItemVendorEntities(
+            testContext,
+            tenantId,
+        );
         for (const vendor of vendors) {
-            if (await this.vendorRepo.findOne({ where: { name: vendor.name } })) {
+            if (
+                await this.vendorRepo.findOne({ where: { name: vendor.name } })
+            ) {
                 continue;
             }
             await this.vendorRepo.save(vendor);
@@ -276,7 +305,10 @@ export class InventoryItemTestingUtil {
             this.cleanupInventoryItemPackageTestDatabase(),
         );
 
-        const packages = await this.getTestInventoryItemPackageEntities(testContext, tenantId);
+        const packages = await this.getTestInventoryItemPackageEntities(
+            testContext,
+            tenantId,
+        );
         for (const pkg of packages) {
             if (await this.packageRepo.findOne({ where: { name: pkg.name } })) {
                 continue;
@@ -298,9 +330,16 @@ export class InventoryItemTestingUtil {
             this.cleanupInventoryItemCategoryTestDatabase(),
         );
 
-        const categories = await this.getTestInventoryItemCategoryEntities(testContext, tenantId);
+        const categories = await this.getTestInventoryItemCategoryEntities(
+            testContext,
+            tenantId,
+        );
         for (const category of categories) {
-            if (await this.categoryRepo.findOne({ where: { name: category.name } })) {
+            if (
+                await this.categoryRepo.findOne({
+                    where: { name: category.name },
+                })
+            ) {
                 continue;
             }
             await this.categoryRepo.save(category);
@@ -320,7 +359,10 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupInventoryItemTestDatabase(),
         );
-        const items = await this.getTestInventoryItemEntities(testContext, tenantId);
+        const items = await this.getTestInventoryItemEntities(
+            testContext,
+            tenantId,
+        );
         for (const item of items) {
             if (await this.itemRepo.findOne({ where: { name: item.name } })) {
                 continue;
@@ -383,7 +425,10 @@ export class InventoryItemTestingUtil {
         const vendors: InventoryItemVendor[] = [];
         for (const name of this.vendorNames) {
             const entityName = P ? `${P}-${name}` : name;
-            const entity = await this.vendorBuilder.reset().name(entityName).build();
+            const entity = await this.vendorBuilder
+                .reset()
+                .name(entityName)
+                .build();
             entity.tenantId = resolvedTenantId;
             vendors.push(await this.vendorRepo.save(entity));
         }
@@ -398,7 +443,10 @@ export class InventoryItemTestingUtil {
         const packages: InventoryItemPackage[] = [];
         for (const name of this.packageNames) {
             const entityName = P ? `${P}-${name}` : name;
-            const entity = await this.packageBuilder.reset().name(entityName).build();
+            const entity = await this.packageBuilder
+                .reset()
+                .name(entityName)
+                .build();
             entity.tenantId = resolvedTenantId;
             packages.push(await this.packageRepo.save(entity));
         }
@@ -413,7 +461,10 @@ export class InventoryItemTestingUtil {
         const categories: InventoryItemCategory[] = [];
         for (const name of this.categoryNames) {
             const entityName = P ? `${P}-${name}` : name;
-            const entity = await this.categoryBuilder.reset().categoryName(entityName).build();
+            const entity = await this.categoryBuilder
+                .reset()
+                .categoryName(entityName)
+                .build();
             entity.tenantId = resolvedTenantId;
             categories.push(await this.categoryRepo.save(entity));
         }
@@ -424,7 +475,10 @@ export class InventoryItemTestingUtil {
      * categoryNames order: [OTHER_CAT, DRYGOOD_CAT, DAIRY_CAT, FOOD_CAT]
      * items order: [foodA, foodB, foodC, dryA, dryB, dryC, otherA, otherB, otherC]
      */
-    public async seedItems(P: string = '', tenantId?: number): Promise<{
+    public async seedItems(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{
         categories: InventoryItemCategory[];
         vendors: InventoryItemVendor[];
         items: InventoryItem[];
@@ -439,7 +493,9 @@ export class InventoryItemTestingUtil {
 
         const items: InventoryItem[] = [];
         for (let i = 0; i < this.foodItemNames.length; i++) {
-            const name = P ? `${P}-${this.foodItemNames[i]}` : this.foodItemNames[i];
+            const name = P
+                ? `${P}-${this.foodItemNames[i]}`
+                : this.foodItemNames[i];
             const entity = await this.itemBuilder
                 .reset()
                 .name(name)
@@ -450,7 +506,9 @@ export class InventoryItemTestingUtil {
             items.push(await this.itemRepo.save(entity));
         }
         for (let i = 0; i < this.dryItemNames.length; i++) {
-            const name = P ? `${P}-${this.dryItemNames[i]}` : this.dryItemNames[i];
+            const name = P
+                ? `${P}-${this.dryItemNames[i]}`
+                : this.dryItemNames[i];
             const entity = await this.itemBuilder
                 .reset()
                 .name(name)
@@ -461,7 +519,9 @@ export class InventoryItemTestingUtil {
             items.push(await this.itemRepo.save(entity));
         }
         for (let i = 0; i < this.otherItemNames.length; i++) {
-            const name = P ? `${P}-${this.otherItemNames[i]}` : this.otherItemNames[i];
+            const name = P
+                ? `${P}-${this.otherItemNames[i]}`
+                : this.otherItemNames[i];
             const entity = await this.itemBuilder
                 .reset()
                 .name(name)
@@ -479,7 +539,10 @@ export class InventoryItemTestingUtil {
      * 2 sizes per item (18 total for 9 items).
      * sizes[0] and sizes[1] share the same inventoryItem (items[0]).
      */
-    public async seedSizes(P: string = '', tenantId?: number): Promise<{
+    public async seedSizes(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{
         categories: InventoryItemCategory[];
         vendors: InventoryItemVendor[];
         packages: InventoryItemPackage[];
@@ -487,7 +550,10 @@ export class InventoryItemTestingUtil {
         sizes: InventoryItemSize[];
     }> {
         const resolvedTenantId = tenantId ?? (await this.getDefaultTenantId());
-        const { categories, vendors, items } = await this.seedItems(P, resolvedTenantId);
+        const { categories, vendors, items } = await this.seedItems(
+            P,
+            resolvedTenantId,
+        );
         const { packages } = await this.seedPackages(P, resolvedTenantId);
 
         const sizes: InventoryItemSize[] = [];

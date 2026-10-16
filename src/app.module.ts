@@ -4,9 +4,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import {
-  ThrottlerGuard,
-  ThrottlerModule,
-  ThrottlerModuleOptions,
+    ThrottlerGuard,
+    ThrottlerModule,
+    ThrottlerModuleOptions,
 } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { DataSource } from 'typeorm';
@@ -41,96 +41,101 @@ import { TenantsModule } from './modules/tenants/tenants.module';
 import { UserModule } from './modules/users/user.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
 
-    ScheduleModule.forRoot(),
+        ScheduleModule.forRoot(),
 
-    selectTypeOrmModule([]),
+        selectTypeOrmModule([]),
 
-    // Lives inside container, wiped on container restart, each container has its own cache
-    CacheModule.register(),
+        // Lives inside container, wiped on container restart, each container has its own cache
+        CacheModule.register(),
 
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
-        throttlers: [
-          {
-            ttl: config.get('THROTTLE_TTL') || 60000,
-            //limit: config.get('THROTTLE_LIMIT') || 500,
-            limit: config.get('NODE_ENV') === 'development' ? 999999 : 500,
-          },
-        ],
-      }),
-      inject: [ConfigService],
-    }),
+        ThrottlerModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
+                throttlers: [
+                    {
+                        ttl: config.get('THROTTLE_TTL') || 60000,
+                        //limit: config.get('THROTTLE_LIMIT') || 500,
+                        limit:
+                            config.get('NODE_ENV') === 'development'
+                                ? 999999
+                                : 500,
+                    },
+                ],
+            }),
+            inject: [ConfigService],
+        }),
 
-    LoggerModule.forRoot({
-      pinoHttp: {
-        ...pinoHttpRequestIdOptions,
-        // Production writes plain JSON lines; pretty-printing is dev-only.
-        transport:
-          process.env.NODE_ENV === 'production'
-            ? undefined
-            : {
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-                translateTime: 'SYS:standard',
-                ignore: 'pid,hostname',
-              },
+        LoggerModule.forRoot({
+            pinoHttp: {
+                ...pinoHttpRequestIdOptions,
+                // Production writes plain JSON lines; pretty-printing is dev-only.
+                transport:
+                    process.env.NODE_ENV === 'production'
+                        ? undefined
+                        : {
+                              target: 'pino-pretty',
+                              options: {
+                                  colorize: true,
+                                  translateTime: 'SYS:standard',
+                                  ignore: 'pid,hostname',
+                              },
+                          },
             },
-      },
-    }),
+        }),
 
-    ExceptionsModule,
-    AuthModule,
-    RequestContextModule,
-    SeedModule,
+        ExceptionsModule,
+        AuthModule,
+        RequestContextModule,
+        SeedModule,
 
-    OrdersModule,
-    MenuItemsModule,
-    TemplatesModule,
-    LabelsModule,
-    InventoryAreasModule,
-    InventoryItemsModule,
-    RecipesModule,
-    UserModule,
-    RoleModule,
-    DynamicPropertiesModule,
-    ReportsModule,
-    TenantsModule,
-    LocationsModule,
-    TenantProvisioningModule,
-    SettingsModule,
-    FeatureFlagsModule,
-  ],
+        OrdersModule,
+        MenuItemsModule,
+        TemplatesModule,
+        LabelsModule,
+        InventoryAreasModule,
+        InventoryItemsModule,
+        RecipesModule,
+        UserModule,
+        RoleModule,
+        DynamicPropertiesModule,
+        ReportsModule,
+        TenantsModule,
+        LocationsModule,
+        TenantProvisioningModule,
+        SettingsModule,
+        FeatureFlagsModule,
+    ],
 
-  controllers: [AppController],
+    controllers: [AppController],
 
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RoleGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: FeatureGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+    providers: [
+        AppService,
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RoleGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: FeatureGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware, TenantResolutionMiddleware).forRoutes('*');
-  }
-  constructor(private dataSource: DataSource) {}
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(RequestIdMiddleware, TenantResolutionMiddleware)
+            .forRoutes('*');
+    }
+    constructor(private dataSource: DataSource) {}
 }

@@ -7,63 +7,58 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import {
-  MenuItemSize,
-  MenuItemSizeEntity,
+    MenuItemSize,
+    MenuItemSizeEntity,
 } from '../entities/menu-item-size.entity';
 import { MenuItemSizeChangeDetector } from '../utils/change-detectors/menu-item-size.change-detector';
 import { MenuItemSizeValidator } from '../validators/menu-item-size.validator';
 
 @Injectable()
 export class MenuItemSizeService extends TenantScopedServiceBase<MenuItemSizeEntity> {
-  constructor(
-    @InjectRepository(MenuItemSize)
-    repo: Repository<MenuItemSize>,
-    requestContextService: RequestContextService,
-    validator: MenuItemSizeValidator,
-    private readonly menuItemSizeChangeDetector: MenuItemSizeChangeDetector,
-  ) {
-    super(
-      repo,
-      'MenuItemSizeService',
-      requestContextService,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateMenuItemSizeDto,
-    manager: EntityManager,
-  ): Promise<MenuItemSize> {
-    const result = manager.create(MenuItemSize, {
-      name: dto.name,
-      tenantId: this.getTenantId(),
-    });
-    return await manager.save(result);
-  }
-  protected async updateEntity(
-    dto: UpdateMenuItemSizeDto,
-    manager: EntityManager,
-    entity: MenuItemSize,
-  ): Promise<void> {
-    if (dto.name !== undefined) {
-      entity.name = dto.name;
+    constructor(
+        @InjectRepository(MenuItemSize)
+        repo: Repository<MenuItemSize>,
+        requestContextService: RequestContextService,
+        validator: MenuItemSizeValidator,
+        private readonly menuItemSizeChangeDetector: MenuItemSizeChangeDetector,
+    ) {
+        super(repo, 'MenuItemSizeService', requestContextService, validator);
     }
-    await manager.save(entity);
-  }
 
-  protected applySortBy(
-    query: SelectQueryBuilder<MenuItemSize>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'name') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
+    protected async createEntity(
+        dto: CreateMenuItemSizeDto,
+        manager: EntityManager,
+    ): Promise<MenuItemSize> {
+        const result = manager.create(MenuItemSize, {
+            name: dto.name,
+            tenantId: this.getTenantId(),
+        });
+        return await manager.save(result);
     }
-  }
+    protected async updateEntity(
+        dto: UpdateMenuItemSizeDto,
+        manager: EntityManager,
+        entity: MenuItemSize,
+    ): Promise<void> {
+        if (dto.name !== undefined) {
+            entity.name = dto.name;
+        }
+        await manager.save(entity);
+    }
 
-  protected getChangeDetector():
-    | ChangeDetectorBase<MenuItemSize, UpdateMenuItemSizeDto>
-    | undefined {
-    return this.menuItemSizeChangeDetector;
-  }
+    protected applySortBy(
+        query: SelectQueryBuilder<MenuItemSize>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<MenuItemSize, UpdateMenuItemSizeDto>
+        | undefined {
+        return this.menuItemSizeChangeDetector;
+    }
 }

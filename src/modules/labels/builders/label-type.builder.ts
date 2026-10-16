@@ -7,43 +7,43 @@ import { LabelType } from '../entities/label-type.entity';
 
 @Injectable()
 export class LabelTypeBuilder extends BuilderBase<LabelType> {
-  constructor(requestContextService: RequestContextService) {
-    super(LabelType, 'LabelTypeBuilder', requestContextService);
-  }
+    constructor(requestContextService: RequestContextService) {
+        super(LabelType, 'LabelTypeBuilder', requestContextService);
+    }
 
-  protected createEntity(dto: CreateLabelTypeDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected createEntity(dto: CreateLabelTypeDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.length !== undefined) {
+            this.labelLength(dto.length);
+        }
+        if (dto.width !== undefined) {
+            this.labelWidth(dto.width);
+        }
     }
-    if (dto.length !== undefined) {
-      this.labelLength(dto.length);
-    }
-    if (dto.width !== undefined) {
-      this.labelWidth(dto.width);
-    }
-  }
 
-  protected updateEntity(dto: UpdateLabelTypeDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected updateEntity(dto: UpdateLabelTypeDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.length !== undefined) {
+            this.labelLength(dto.length);
+        }
+        if (dto.width !== undefined) {
+            this.labelWidth(dto.width);
+        }
     }
-    if (dto.length !== undefined) {
-      this.labelLength(dto.length);
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
-    if (dto.width !== undefined) {
-      this.labelWidth(dto.width);
+
+    public labelWidth(val: number): this {
+        return this.setPropByVal('width', val);
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
-
-  public labelWidth(val: number): this {
-    return this.setPropByVal('width', val);
-  }
-
-  public labelLength(val: number): this {
-    return this.setPropByVal('length', val);
-  }
+    public labelLength(val: number): this {
+        return this.setPropByVal('length', val);
+    }
 }

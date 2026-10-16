@@ -13,7 +13,7 @@ describe('LocationChangeDetector', () => {
             address: '1 Main St',
             phoneNumber: '555-000-0000',
             email: 'downtown@example.com',
-        } as Location);
+        }) as Location;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

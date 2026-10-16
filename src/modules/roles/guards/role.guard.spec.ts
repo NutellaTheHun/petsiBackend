@@ -2,7 +2,10 @@ import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RoleGuard } from './role.guard';
 
-function buildContext(user: any, request: Record<string, any> = {}): ExecutionContext {
+function buildContext(
+    user: unknown,
+    request: Record<string, unknown> = {},
+): ExecutionContext {
     const req = { user, params: {}, query: {}, body: {}, ...request };
     return {
         getHandler: () => ({}),
@@ -26,11 +29,13 @@ describe('RoleGuard', () => {
         roles: string[] | undefined,
         locationScope?: { source: string; key: string },
     ) {
-        jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: unknown) => {
-            if (key === 'roles') return roles;
-            if (key === 'locationScope') return locationScope;
-            return undefined;
-        });
+        jest.spyOn(reflector, 'getAllAndOverride').mockImplementation(
+            (key: unknown) => {
+                if (key === 'roles') return roles;
+                if (key === 'locationScope') return locationScope;
+                return undefined;
+            },
+        );
     }
 
     it('allows the request through when no roles are required', () => {
@@ -130,7 +135,10 @@ describe('RoleGuard', () => {
         it('passes when the caller is assigned to the target location, with any role', () => {
             mockMetadata(undefined, { source: 'body', key: 'locationId' });
             const context = buildContext(
-                { isTenantAdmin: false, locations: [{ locationId: 5, roles: ['staff'] }] },
+                {
+                    isTenantAdmin: false,
+                    locations: [{ locationId: 5, roles: ['staff'] }],
+                },
                 { body: { locationId: 5 } },
             );
             expect(guard.canActivate(context)).toBe(true);
@@ -139,7 +147,10 @@ describe('RoleGuard', () => {
         it('fails when the caller is not assigned to the target location', () => {
             mockMetadata(undefined, { source: 'body', key: 'locationId' });
             const context = buildContext(
-                { isTenantAdmin: false, locations: [{ locationId: 5, roles: ['manager'] }] },
+                {
+                    isTenantAdmin: false,
+                    locations: [{ locationId: 5, roles: ['manager'] }],
+                },
                 { body: { locationId: 6 } },
             );
             expect(guard.canActivate(context)).toBe(false);
@@ -148,7 +159,10 @@ describe('RoleGuard', () => {
         it('fails when the target locationId cannot be resolved', () => {
             mockMetadata(undefined, { source: 'body', key: 'locationId' });
             const context = buildContext(
-                { isTenantAdmin: false, locations: [{ locationId: 5, roles: ['manager'] }] },
+                {
+                    isTenantAdmin: false,
+                    locations: [{ locationId: 5, roles: ['manager'] }],
+                },
                 { body: {} },
             );
             expect(guard.canActivate(context)).toBe(false);
@@ -165,7 +179,9 @@ describe('RoleGuard', () => {
 
         it('denies an unauthenticated request', () => {
             mockMetadata(undefined, { source: 'body', key: 'locationId' });
-            const context = buildContext(undefined, { body: { locationId: 5 } });
+            const context = buildContext(undefined, {
+                body: { locationId: 5 },
+            });
             expect(guard.canActivate(context)).toBe(false);
         });
     });

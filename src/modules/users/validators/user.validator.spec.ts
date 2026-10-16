@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -31,7 +35,9 @@ describe('user validator', () => {
         testingUtil = module.get<UserTestUtil>(UserTestUtil);
         validator = module.get<UserValidator>(UserValidator);
         userRepo = module.get(getRepositoryToken(User));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         ({ tenantId, users } = await testingUtil.seedUsers(P));
         requestContext.setContext({ tenantId });
@@ -79,7 +85,9 @@ describe('user validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const userToUpdate = await userRepo.findOneOrFail({ where: { id: users[0].id } });
+        const userToUpdate = await userRepo.findOneOrFail({
+            where: { id: users[0].id },
+        });
 
         const dto: UpdateUserDto = plainToInstance(UpdateUserDto, {
             name: `${P}-updated-user-name`,

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
+import {
+    IsIn,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    Min,
+} from 'class-validator';
 import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';

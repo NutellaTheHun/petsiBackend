@@ -18,20 +18,20 @@ import { User } from '../users/entities/user.entities';
 import { SeedService } from './seed.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Role, Tenant, Location, UserLocation]),
-    RoleModule,
-    TenantsModule,
-    LocationsModule,
-    InventoryAreasModule,
-    InventoryItemsModule,
-    LabelsModule,
-    MenuItemsModule,
-    OrdersModule,
-    RecipesModule,
-    TemplatesModule,
-  ],
-  providers: [SeedService],
-  exports: [SeedService],
+    imports: [
+        TypeOrmModule.forFeature([User, Role, Tenant, Location, UserLocation]),
+        RoleModule,
+        TenantsModule,
+        LocationsModule,
+        InventoryAreasModule,
+        InventoryItemsModule,
+        LabelsModule,
+        MenuItemsModule,
+        OrdersModule,
+        RecipesModule,
+        TemplatesModule,
+    ],
+    providers: [SeedService],
+    exports: [SeedService],
 })
 export class SeedModule {}

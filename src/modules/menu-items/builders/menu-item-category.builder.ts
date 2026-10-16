@@ -10,41 +10,41 @@ import { MenuItem } from '../entities/menu-item.entity';
 
 @Injectable()
 export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
-  constructor(
-    @InjectRepository(MenuItem)
-    private readonly itemRepo: Repository<MenuItem>,
+    constructor(
+        @InjectRepository(MenuItem)
+        private readonly itemRepo: Repository<MenuItem>,
 
-    requestContextService: RequestContextService,
-  ) {
-    super(
-      MenuItemCategory,
-      'MenuItemCategoryBuilder',
-      requestContextService,
-    );
-  }
-
-  protected createEntity(dto: CreateMenuItemCategoryDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+        requestContextService: RequestContextService,
+    ) {
+        super(
+            MenuItemCategory,
+            'MenuItemCategoryBuilder',
+            requestContextService,
+        );
     }
-  }
 
-  protected updateEntity(dto: UpdateMenuItemCategoryDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected createEntity(dto: CreateMenuItemCategoryDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
+    protected updateEntity(dto: UpdateMenuItemCategoryDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+    }
 
-  public menuItemsById(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.itemRepo.find({ where: { id: In(ids) } }),
-      'menuItems',
-      ids,
-    );
-  }
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
+    }
+
+    public menuItemsById(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.itemRepo.find({ where: { id: In(ids) } }),
+            'menuItems',
+            ids,
+        );
+    }
 }

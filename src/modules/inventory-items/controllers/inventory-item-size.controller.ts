@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -115,7 +115,10 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
         const result = await super.remove(id);
 
         await invalidateFindAllCache('InventoryItemService', this.cacheManager);
-        await invalidateFindAllCache('InventoryAreaItemService', this.cacheManager);
+        await invalidateFindAllCache(
+            'InventoryAreaItemService',
+            this.cacheManager,
+        );
 
         return result;
     }
@@ -138,7 +141,12 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -46,10 +46,18 @@ export async function getMenuItemTestingModule(opts?: {
     menuItemContainerItemServiceClass?: new (
         ...args: any[]
     ) => MenuItemContainerItemService;
-    menuItemChangeDetectorClass?: new (...args: any[]) => MenuItemChangeDetector;
-    menuItemCategoryChangeDetectorClass?: new (...args: any[]) => MenuItemCategoryChangeDetector;
-    menuItemSizeChangeDetectorClass?: new (...args: any[]) => MenuItemSizeChangeDetector;
-    menuItemContainerItemChangeDetectorClass?: new (...args: any[]) => MenuItemContainerItemChangeDetector;
+    menuItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemChangeDetector;
+    menuItemCategoryChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemCategoryChangeDetector;
+    menuItemSizeChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemSizeChangeDetector;
+    menuItemContainerItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemContainerItemChangeDetector;
     mockRevisionHistory?: boolean;
 }): Promise<TestingModule> {
     const mockRevisionHistory = opts?.mockRevisionHistory ?? true;
@@ -90,7 +98,10 @@ export async function getMenuItemTestingModule(opts?: {
             ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
             RequestContextModule,
             TenantsModule,

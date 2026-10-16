@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -20,7 +20,10 @@ import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
 import { NestedCreateRecipeIngredientDto } from '../recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../recipe-ingredient/nested-update-recipe-ingedient.dto';
 
-@ApiExtraModels(NestedCreateRecipeIngredientDto, NestedUpdateRecipeIngredientDto)
+@ApiExtraModels(
+    NestedCreateRecipeIngredientDto,
+    NestedUpdateRecipeIngredientDto,
+)
 export class UpdateRecipeDto {
     @ApiProperty({
         description: 'Name of the Recipe entity.',
@@ -53,7 +56,8 @@ export class UpdateRecipeDto {
     readonly batchResultQuantity?: number | null;
 
     @ApiProperty({
-        description: 'Unit symbol expressing the unit size of what the recipe produces.',
+        description:
+            'Unit symbol expressing the unit size of what the recipe produces.',
         example: 'oz',
         type: 'string',
         nullable: true,
@@ -63,7 +67,8 @@ export class UpdateRecipeDto {
     readonly batchResultUnit?: AppUnit | null;
 
     @ApiProperty({
-        description: 'The unit amount of the servingSizeUnit describing the amount that is sold.',
+        description:
+            'The unit amount of the servingSizeUnit describing the amount that is sold.',
         example: 3,
         type: 'number',
         nullable: true,
@@ -95,7 +100,8 @@ export class UpdateRecipeDto {
     readonly salesPrice?: number | null;
 
     @ApiProperty({
-        description: 'If the recipe is used as an ingredient.(Not sold directly)',
+        description:
+            'If the recipe is used as an ingredient.(Not sold directly)',
         example: false,
     })
     @IsBoolean()
@@ -150,12 +156,12 @@ export class UpdateRecipeDto {
     @IsArray()
     @IsOptional()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateRecipeIngredientDto, item)
-                : plainToInstance(NestedUpdateRecipeIngredientDto, item)
+                : plainToInstance(NestedUpdateRecipeIngredientDto, item),
         );
     })
     readonly ingredients?: (

@@ -13,7 +13,10 @@ import {
 import { OrderCategoryValidatorIdentity } from './identities/order-category.validator.identity.interface';
 
 @Injectable()
-export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, OrderCategoryValidatorIdentity> {
+export class OrderCategoryValidator extends ValidatorBase<
+    OrderCategoryEntity,
+    OrderCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(OrderCategory)
         private readonly repo: Repository<OrderCategory>,
@@ -22,7 +25,10 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
         super(repo, 'OrderCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: OrderCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: OrderCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -32,16 +38,22 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateOrderCategoryDto | UpdateOrderCategoryDto, _id: number | string): Promise<OrderCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateOrderCategoryDto | UpdateOrderCategoryDto,
+        _id: number | string,
+    ): Promise<OrderCategoryValidatorIdentity> {
         return {
             name: dto.name,
-        } as OrderCategoryValidatorIdentity;
+        };
     }
 }

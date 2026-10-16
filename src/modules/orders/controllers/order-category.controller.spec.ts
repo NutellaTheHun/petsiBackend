@@ -38,13 +38,20 @@ describe('order category controller', () => {
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        controller = module.get<OrderCategoryController>(OrderCategoryController);
+        controller = module.get<OrderCategoryController>(
+            OrderCategoryController,
+        );
         service = module.get<OrderCategoryService>(OrderCategoryService);
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -82,7 +89,9 @@ describe('order category controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });
@@ -125,7 +134,7 @@ describe('order category controller', () => {
             ).toBeUndefined();
         });
 
-        it('create invalidates only the writing tenant\'s findAll cache', async () => {
+        it("create invalidates only the writing tenant's findAll cache", async () => {
             requestContext.setContext({ tenantId: otherTenant.id });
             await controller.findAll(undefined, 100); // primes otherTenant's findAll cache
 

@@ -47,7 +47,7 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
         manager: EntityManager,
         entity: RecipeIngredient,
     ): Promise<void> {
-        await this.ingredientComposer.composeUpdate(dto, manager, entity)
+        await this.ingredientComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -58,10 +58,16 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
     ): void {
         if (sortBy === 'ingredient') {
             query
-                .leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
+                .leftJoinAndSelect(
+                    'entity.ingredientInventoryItem',
+                    'inventoryItem',
+                )
                 .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
 
-            query.orderBy(`COALESCE(inventoryItem.name, recipe.name)`, sortOrder);
+            query.orderBy(
+                `COALESCE(inventoryItem.name, recipe.name)`,
+                sortOrder,
+            );
         }
     }
 
@@ -80,10 +86,7 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
     protected getChangeDetector():
         | ChangeDetectorBase<RecipeIngredient, UpdateRecipeIngredientDto>
         | undefined {
-        return this.ingredientChangeDetector as unknown as ChangeDetectorBase<
-            RecipeIngredient,
-            UpdateRecipeIngredientDto
-        >;
+        return this.ingredientChangeDetector;
     }
 
     protected getUpdateDiffRelations(): string[] {

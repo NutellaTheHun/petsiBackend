@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    ValidateNested,
+} from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { NestedCreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
@@ -54,5 +60,5 @@ export class NestedUpdateInventoryAreaItemDto extends NestedUpdateDto {
     @IsOptional()
     @ValidateNested()
     @Type(() => NestedCreateInventoryItemSizeDto)
-    readonly countedItemSize?: NestedCreateInventoryItemSizeDto
+    readonly countedItemSize?: NestedCreateInventoryItemSizeDto;
 }

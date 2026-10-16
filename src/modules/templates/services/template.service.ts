@@ -63,8 +63,8 @@ export class TemplateService extends TenantScopedServiceBase<TemplateEntity> {
         if (dto.templateMenuItems !== undefined) {
             const existingItems = entity.templateMenuItems ?? [];
             const incomingIds = dto.templateMenuItems
-                .map((i: any) => ('id' in i ? i.id : undefined))
-                .filter((id: any): id is number => typeof id === 'number');
+                .map((i) => ('id' in i ? i.id : undefined))
+                .filter((id): id is number => typeof id === 'number');
 
             const idsToRemove = existingItems
                 .map((i) => i.id)
@@ -108,7 +108,9 @@ export class TemplateService extends TenantScopedServiceBase<TemplateEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Template, UpdateTemplateDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Template, UpdateTemplateDto>
+        | undefined {
         return this.templateChangeDetector;
     }
 

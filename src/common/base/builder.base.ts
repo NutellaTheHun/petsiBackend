@@ -5,157 +5,159 @@ import { AppHttpException } from '../exceptions/app-http-exception';
 import { REFERENCE_NOT_FOUND } from '../exceptions/error_constants';
 
 export abstract class BuilderBase<T extends ObjectLiteral> {
-  protected entity: T;
-  protected buildQueue: (() => Promise<void>)[];
+    protected entity: T;
+    protected buildQueue: (() => Promise<void>)[];
 
-  constructor(
-    private entityConstructor: new () => T,
-    public builderPrefix: string,
-    private readonly requestContextService: RequestContextService,
-  ) {
-    this.reset();
-  }
-
-  protected abstract createEntity(dto: any, parent?: any): void;
-  protected abstract updateEntity(dto: any): void;
-
-  public async buildCreateDto(
-    dto: any,
-    parent?: any,
-    _createId?: string,
-  ): Promise<T> {
-    this.reset();
-    this.createEntity(dto, parent);
-
-    return await this.build();
-  }
-
-  public async buildUpdateDto(toUpdate: T, dto: any): Promise<T> {
-    this.reset();
-    this.setEntity(toUpdate);
-
-    this.updateEntity(dto);
-
-    return await this.build();
-  }
-
-  public reset(): this {
-    this.entity = new this.entityConstructor();
-    this.buildQueue = [];
-    return this;
-  }
-
-  public setEntity(toUpdate: T): this {
-    this.entity = toUpdate;
-    return this;
-  }
-
-  public async build(): Promise<T> {
-    for (const task of this.buildQueue) {
-      await task();
+    constructor(
+        private entityConstructor: new () => T,
+        public builderPrefix: string,
+        private readonly requestContextService: RequestContextService,
+    ) {
+        this.reset();
     }
-    const result = this.entity;
-    this.reset();
-    return result;
-  }
 
-  protected setPropById<K extends keyof T>(
-    findById: (id: number) => Promise<any>,
-    prop: K,
-    id: number,
-  ): this {
-    this.buildQueue.push(async () => {
-      const result = await findById(id);
-      if (!result) {
-        throw new AppHttpException(
-          `${this.builderPrefix}: ${prop.toString()} with id ${id} not found`,
-          HttpStatus.BAD_REQUEST,
-          REFERENCE_NOT_FOUND,
-          { id },
-        );
-      }
-      this.entity[prop] = result;
-    });
-    return this;
-  }
+    protected abstract createEntity(dto: any, parent?: any): void;
+    protected abstract updateEntity(dto: any): void;
 
-  protected setPropsByIds<K extends keyof T>(
-    findByIds: (ids: number[]) => Promise<T[K]>,
-    prop: K,
-    ids: number[],
-  ): this {
-    this.buildQueue.push(async () => {
-      const results = await findByIds(ids);
-      if (!results) {
-        throw new AppHttpException(
-          `${this.builderPrefix}: ${prop.toString()} with multiple ids not found`,
-          HttpStatus.BAD_REQUEST,
-          REFERENCE_NOT_FOUND,
-          { ids },
-        );
-      }
-      this.entity[prop] = results;
-    });
-    return this;
-  }
+    public async buildCreateDto(
+        dto: any,
+        parent?: any,
+        _createId?: string,
+    ): Promise<T> {
+        this.reset();
+        this.createEntity(dto, parent);
 
-  protected setPropByName<K extends keyof T>(
-    findByName: (name: string) => Promise<any>,
-    prop: K,
-    name: string,
-  ): this {
-    this.buildQueue.push(async () => {
-      const result = await findByName(name);
-      if (!result) {
-        throw new AppHttpException(
-          `${this.builderPrefix}: ${prop.toString()} with name ${name} not found`,
-          HttpStatus.BAD_REQUEST,
-          REFERENCE_NOT_FOUND,
-          { name },
-        );
-      }
-      (this.entity as any)[prop] = result;
-    });
-    return this;
-  }
+        return await this.build();
+    }
 
-  protected setPropByVal<K extends keyof T>(prop: K, value: T[K]): this {
-    this.entity[prop] = value;
-    return this;
-  }
+    public async buildUpdateDto(toUpdate: T, dto: any): Promise<T> {
+        this.reset();
+        this.setEntity(toUpdate);
 
-  /**
-   * Takes a function with 1 argument.
-   * @param func
-   * @param prop
-   * @param arg
-   * @returns
-   */
-  protected setPropByFn<K extends keyof T>(
-    func: (arg: any) => Promise<any>,
-    prop: K,
-    arg: any,
-  ): this {
-    this.buildQueue.push(async () => {
-      const result = await func(arg);
-      if (!result) {
-        throw new Error('returned function value is null');
-      }
-      (this.entity as any)[prop] = result;
-    });
-    return this;
-  }
+        this.updateEntity(dto);
 
-  protected setPropByBuilder<K extends keyof T>(
-    builderFunc: (entity: T, args: any) => Promise<any>,
-    prop: K,
-    entity: T,
-    args: any,
-  ): this {
-    this.buildQueue.push(async () => {
-      const result = await builderFunc(entity, args);
-      (this.entity as any)[prop] = Array.isArray(result) ? [...result] : result;
-    });
-    return this;
-  }
+        return await this.build();
+    }
+
+    public reset(): this {
+        this.entity = new this.entityConstructor();
+        this.buildQueue = [];
+        return this;
+    }
+
+    public setEntity(toUpdate: T): this {
+        this.entity = toUpdate;
+        return this;
+    }
+
+    public async build(): Promise<T> {
+        for (const task of this.buildQueue) {
+            await task();
+        }
+        const result = this.entity;
+        this.reset();
+        return result;
+    }
+
+    protected setPropById<K extends keyof T>(
+        findById: (id: number) => Promise<T[K] | null | undefined>,
+        prop: K,
+        id: number,
+    ): this {
+        this.buildQueue.push(async () => {
+            const result = await findById(id);
+            if (!result) {
+                throw new AppHttpException(
+                    `${this.builderPrefix}: ${prop.toString()} with id ${id} not found`,
+                    HttpStatus.BAD_REQUEST,
+                    REFERENCE_NOT_FOUND,
+                    { id },
+                );
+            }
+            this.entity[prop] = result;
+        });
+        return this;
+    }
+
+    protected setPropsByIds<K extends keyof T>(
+        findByIds: (ids: number[]) => Promise<T[K]>,
+        prop: K,
+        ids: number[],
+    ): this {
+        this.buildQueue.push(async () => {
+            const results = await findByIds(ids);
+            if (!results) {
+                throw new AppHttpException(
+                    `${this.builderPrefix}: ${prop.toString()} with multiple ids not found`,
+                    HttpStatus.BAD_REQUEST,
+                    REFERENCE_NOT_FOUND,
+                    { ids },
+                );
+            }
+            this.entity[prop] = results;
+        });
+        return this;
+    }
+
+    protected setPropByName<K extends keyof T>(
+        findByName: (name: string) => Promise<T[K] | null | undefined>,
+        prop: K,
+        name: string,
+    ): this {
+        this.buildQueue.push(async () => {
+            const result = await findByName(name);
+            if (!result) {
+                throw new AppHttpException(
+                    `${this.builderPrefix}: ${prop.toString()} with name ${name} not found`,
+                    HttpStatus.BAD_REQUEST,
+                    REFERENCE_NOT_FOUND,
+                    { name },
+                );
+            }
+            this.entity[prop] = result;
+        });
+        return this;
+    }
+
+    protected setPropByVal<K extends keyof T>(prop: K, value: T[K]): this {
+        this.entity[prop] = value;
+        return this;
+    }
+
+    /**
+     * Takes a function with 1 argument.
+     * @param func
+     * @param prop
+     * @param arg
+     * @returns
+     */
+    protected setPropByFn<K extends keyof T, A>(
+        func: (arg: A) => Promise<T[K] | null | undefined>,
+        prop: K,
+        arg: A,
+    ): this {
+        this.buildQueue.push(async () => {
+            const result = await func(arg);
+            if (!result) {
+                throw new Error('returned function value is null');
+            }
+            this.entity[prop] = result;
+        });
+        return this;
+    }
+
+    protected setPropByBuilder<K extends keyof T, A>(
+        builderFunc: (entity: T, args: A) => Promise<T[K]>,
+        prop: K,
+        entity: T,
+        args: A,
+    ): this {
+        this.buildQueue.push(async () => {
+            const result = await builderFunc(entity, args);
+            this.entity[prop] = (
+                Array.isArray(result) ? [...(result as unknown[])] : result
+            ) as T[K];
+        });
+        return this;
+    }
 }

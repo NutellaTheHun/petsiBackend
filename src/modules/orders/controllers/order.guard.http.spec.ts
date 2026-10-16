@@ -3,7 +3,10 @@ import { TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { createHttpTestApp } from '../../../test/http-test-app';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { TestUser, useTestUserAndRoleGuards } from '../../../test/test-user-guard';
+import {
+    TestUser,
+    useTestUserAndRoleGuards,
+} from '../../../test/test-user-guard';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
@@ -20,7 +23,9 @@ describe('order controller (location scope enforcement)', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        const requestContext = module.get(RequestContextService) as TestRequestContextService;
+        const requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
         const testingUtil = module.get(OrderTestingUtil);
         const tenantId = await testingUtil.getDefaultTenantId();
         locationId = await testingUtil.getDefaultLocationId();
@@ -31,7 +36,10 @@ describe('order controller (location scope enforcement)', () => {
         };
 
         ({ app } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(() => currentUser, requestContext),
+            beforeInit: useTestUserAndRoleGuards(
+                () => currentUser,
+                requestContext,
+            ),
         }));
     });
 
@@ -52,7 +60,9 @@ describe('order controller (location scope enforcement)', () => {
     });
 
     it('lets a caller assigned to the location through to validation', async () => {
-        const res = await request(app.getHttpServer()).post('/orders').send({ locationId });
+        const res = await request(app.getHttpServer())
+            .post('/orders')
+            .send({ locationId });
         expect(res.status).toBe(400);
     });
 });

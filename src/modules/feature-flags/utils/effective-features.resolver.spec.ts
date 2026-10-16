@@ -1,4 +1,7 @@
-import { computeEffectiveFeatures, UserRoleIdsByLocation } from './effective-features.resolver';
+import {
+    computeEffectiveFeatures,
+    UserRoleIdsByLocation,
+} from './effective-features.resolver';
 import { Feature } from './feature.registry';
 
 describe('computeEffectiveFeatures', () => {
@@ -25,7 +28,9 @@ describe('computeEffectiveFeatures', () => {
     it('excludes a role-granted feature the tenant does not have (intersection, not role-side union)', () => {
         const result = computeEffectiveFeatures({
             tenantEnabledFeatures: ['ORDER_MANAGEMENT'],
-            roleGrantsByRoleId: new Map([[1, ['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT']]]),
+            roleGrantsByRoleId: new Map([
+                [1, ['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT']],
+            ]),
             userRoleIdsByLocation: [{ locationId: 1, roleIds: [1] }],
             isTenantAdmin: false,
         });
@@ -43,13 +48,20 @@ describe('computeEffectiveFeatures', () => {
         ];
 
         const result = computeEffectiveFeatures({
-            tenantEnabledFeatures: ['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT', 'LABEL_PRINTING'],
+            tenantEnabledFeatures: [
+                'ORDER_MANAGEMENT',
+                'RECIPE_MANAGEMENT',
+                'LABEL_PRINTING',
+            ],
             roleGrantsByRoleId,
             userRoleIdsByLocation,
             isTenantAdmin: false,
         });
 
-        expect(result.sort()).toEqual(['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT']);
+        expect(result.sort()).toEqual([
+            'ORDER_MANAGEMENT',
+            'RECIPE_MANAGEMENT',
+        ]);
     });
 
     it('bypasses role filtering entirely for a tenant admin', () => {

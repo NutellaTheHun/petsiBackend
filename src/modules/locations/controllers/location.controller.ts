@@ -63,7 +63,10 @@ export class LocationController extends ControllerBase<LocationEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Location' })
-    @ApiCreatedResponse({ description: 'Location successfully created', type: Location })
+    @ApiCreatedResponse({
+        description: 'Location successfully created',
+        type: Location,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateLocationDto })
     async create(@Body() dto: CreateLocationDto): Promise<Location> {
@@ -72,7 +75,10 @@ export class LocationController extends ControllerBase<LocationEntity> {
 
     @Put(':id')
     @ApiOperation({ summary: 'Updates a Location' })
-    @ApiOkResponse({ description: 'Location successfully updated', type: Location })
+    @ApiOkResponse({
+        description: 'Location successfully updated',
+        type: Location,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'Location to update not found.' })
     @ApiBody({ type: UpdateLocationDto })
@@ -110,7 +116,12 @@ export class LocationController extends ControllerBase<LocationEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

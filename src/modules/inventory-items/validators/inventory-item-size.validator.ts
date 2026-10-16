@@ -17,8 +17,10 @@ import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemSizeValidatorIdentity } from './identities/inventory-item-size.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryItemSizeEntity, InventoryItemSizeValidatorIdentity> {
-
+export class InventoryItemSizeValidator extends NestedValidatorBase<
+    InventoryItemSizeEntity,
+    InventoryItemSizeValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryItemSize)
         private readonly repo: Repository<InventoryItemSize>,
@@ -33,7 +35,10 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         super(repo, 'InventoryItemSize', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryItemSizeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryItemSizeValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.inventoryItemId !== undefined) {
@@ -55,11 +60,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         }
 
         if (identity.cost !== undefined && identity.cost !== null) {
-            this.helper.enforcePositive(
-                identity.cost,
-                'cost',
-                errorMap,
-            );
+            this.helper.enforcePositive(identity.cost, 'cost', errorMap);
         }
 
         if (identity.measureAmount !== undefined) {
@@ -70,7 +71,12 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.measureAmount !== undefined && identity.packageId && identity.unit && identity.inventoryItemId) {
+        if (
+            identity.measureAmount !== undefined &&
+            identity.packageId &&
+            identity.unit &&
+            identity.inventoryItemId
+        ) {
             const exists = await this.repo.findOne({
                 where: {
                     unit: identity.unit,
@@ -82,18 +88,37 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
                 },
             });
             if (exists && exists.id !== id) {
-                errorMap.addError('ALREADY_EXISTS', undefined, ['unit', 'package', 'measureAmount']);
+                errorMap.addError('ALREADY_EXISTS', undefined, [
+                    'unit',
+                    'package',
+                    'measureAmount',
+                ]);
             }
-
         }
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto | NestedCreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto, id: number | string): Promise<InventoryItemSizeValidatorIdentity> {
-        if (dto instanceof CreateInventoryItemSizeDto || dto instanceof NestedCreateInventoryItemSizeDto) {
+    public async resolveIdentity(
+        dto:
+            | CreateInventoryItemSizeDto
+            | UpdateInventoryItemSizeDto
+            | NestedCreateInventoryItemSizeDto
+            | NestedUpdateInventoryItemSizeDto,
+        id: number | string,
+    ): Promise<InventoryItemSizeValidatorIdentity> {
+        if (
+            dto instanceof CreateInventoryItemSizeDto ||
+            dto instanceof NestedCreateInventoryItemSizeDto
+        ) {
             return {
-                createId: dto instanceof NestedCreateInventoryItemSizeDto ? dto.createId : undefined,
-                inventoryItemId: dto instanceof CreateInventoryItemSizeDto ? dto.inventoryItemId : undefined,
+                createId:
+                    dto instanceof NestedCreateInventoryItemSizeDto
+                        ? dto.createId
+                        : undefined,
+                inventoryItemId:
+                    dto instanceof CreateInventoryItemSizeDto
+                        ? dto.inventoryItemId
+                        : undefined,
                 cost: dto.cost,
                 measureAmount: dto.measureAmount,
                 packageId: dto.packageId,
@@ -112,7 +137,10 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         }
 
         return {
-            id: dto instanceof NestedUpdateInventoryItemSizeDto ? dto.id : undefined,
+            id:
+                dto instanceof NestedUpdateInventoryItemSizeDto
+                    ? dto.id
+                    : undefined,
             cost: dto.cost,
             measureAmount: dto.measureAmount,
             packageId: dto.packageId,

@@ -11,7 +11,7 @@ export class TenantResolutionMiddleware implements NestMiddleware {
     constructor(
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
-    ) { }
+    ) {}
 
     async use(req: Request, res: Response, next: NextFunction): Promise<void> {
         const subdomain = this.extractSubdomain(req.headers['host']);
@@ -40,7 +40,9 @@ export class TenantResolutionMiddleware implements NestMiddleware {
         return parts[0];
     }
 
-    private unrecognizedSubdomain(hostOrSubdomain: string | undefined): AppHttpException {
+    private unrecognizedSubdomain(
+        hostOrSubdomain: string | undefined,
+    ): AppHttpException {
         return new AppHttpException(
             'No tenant found for this subdomain',
             HttpStatus.NOT_FOUND,

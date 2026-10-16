@@ -63,7 +63,10 @@ export class UserController extends ControllerBase<UserEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a User' })
-    @ApiCreatedResponse({ description: 'User successfully created', type: User })
+    @ApiCreatedResponse({
+        description: 'User successfully created',
+        type: User,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateUserDto })
     async create(@Body() dto: CreateUserDto): Promise<User> {
@@ -110,7 +113,12 @@ export class UserController extends ControllerBase<UserEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

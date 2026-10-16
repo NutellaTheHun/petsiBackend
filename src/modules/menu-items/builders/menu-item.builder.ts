@@ -114,7 +114,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(
-            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            async (id: number) =>
+                await this.categoryRepo.findOne({ where: { id } }),
             'category',
             id,
         );

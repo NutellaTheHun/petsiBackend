@@ -66,7 +66,9 @@ export class LocationService extends TenantScopedServiceBase<LocationEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Location, UpdateLocationDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Location, UpdateLocationDto>
+        | undefined {
         return this.locationChangeDetector;
     }
 }

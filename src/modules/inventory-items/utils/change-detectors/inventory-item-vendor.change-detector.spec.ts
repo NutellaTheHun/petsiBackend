@@ -4,7 +4,8 @@ import { InventoryItemVendorChangeDetector } from './inventory-item-vendor.chang
 describe('InventoryItemVendorChangeDetector', () => {
     const detector = new InventoryItemVendorChangeDetector();
 
-    const baseEntity = (): InventoryItemVendor => ({ id: 1, name: 'Acme' } as InventoryItemVendor);
+    const baseEntity = (): InventoryItemVendor =>
+        ({ id: 1, name: 'Acme' }) as InventoryItemVendor;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

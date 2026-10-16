@@ -11,7 +11,9 @@ describe('ReportSchemaService', () => {
     it('returns all registered entity keys', () => {
         const schema = service.getSchema();
         const expectedKeys = Object.keys(FIELD_REGISTRY);
-        expect(Object.keys(schema.entities)).toEqual(expect.arrayContaining(expectedKeys));
+        expect(Object.keys(schema.entities)).toEqual(
+            expect.arrayContaining(expectedKeys),
+        );
         expect(Object.keys(schema.entities).length).toBe(expectedKeys.length);
     });
 
@@ -41,7 +43,9 @@ describe('ReportSchemaService', () => {
             for (const field of Object.values(entity.fields)) {
                 if (field.dataType === 'enum') {
                     expect(Array.isArray(field.options)).toBe(true);
-                    expect((field.options as string[]).length).toBeGreaterThan(0);
+                    expect((field.options as string[]).length).toBeGreaterThan(
+                        0,
+                    );
                 }
             }
         }
@@ -51,10 +55,18 @@ describe('ReportSchemaService', () => {
         const schema = service.getSchema();
         for (const entity of Object.values(schema.entities)) {
             for (const field of Object.values(entity.fields)) {
-                expect((field as any).select).toBeUndefined();
-                expect((field as any).alias).toBeUndefined();
-                expect((field as any).join).toBeUndefined();
-                expect((field as any).joins).toBeUndefined();
+                expect(
+                    (field as unknown as Record<string, unknown>).select,
+                ).toBeUndefined();
+                expect(
+                    (field as unknown as Record<string, unknown>).alias,
+                ).toBeUndefined();
+                expect(
+                    (field as unknown as Record<string, unknown>).join,
+                ).toBeUndefined();
+                expect(
+                    (field as unknown as Record<string, unknown>).joins,
+                ).toBeUndefined();
             }
         }
     });
@@ -65,7 +77,9 @@ describe('ReportSchemaService', () => {
             for (const field of Object.values(entity.fields)) {
                 if (field.aggregatable) {
                     expect(Array.isArray(field.aggregateFns)).toBe(true);
-                    expect((field.aggregateFns as string[]).length).toBeGreaterThan(0);
+                    expect(
+                        (field.aggregateFns as string[]).length,
+                    ).toBeGreaterThan(0);
                 }
             }
         }
@@ -78,7 +92,9 @@ describe('ReportSchemaService', () => {
         const fulfillmentType = ordersEntity.fields['fulfillmentType'];
         expect(fulfillmentType).toBeDefined();
         expect(fulfillmentType.dataType).toBe('enum');
-        expect(fulfillmentType.options).toEqual(expect.arrayContaining(['pickup', 'delivery']));
+        expect(fulfillmentType.options).toEqual(
+            expect.arrayContaining(['pickup', 'delivery']),
+        );
     });
 
     it('orderMenuItems entity contains quantity as aggregatable number', () => {

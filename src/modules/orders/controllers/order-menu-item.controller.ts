@@ -129,7 +129,12 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -183,9 +188,14 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrieves one Order Menu Item' })
-    @ApiOkResponse({ description: 'Order Menu Item found', type: OrderMenuItem })
+    @ApiOkResponse({
+        description: 'Order Menu Item found',
+        type: OrderMenuItem,
+    })
     @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderMenuItem> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<OrderMenuItem> {
         return super.findOne(id);
     }
 }

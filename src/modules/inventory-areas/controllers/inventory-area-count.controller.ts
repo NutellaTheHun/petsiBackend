@@ -11,7 +11,7 @@ import {
     ParseIntPipe,
     Post,
     Put,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
@@ -164,7 +164,12 @@ export class InventoryAreaCountController extends ControllerBase<InventoryAreaCo
         type: String,
         description: 'End date (inclusive) in ISO format (e.g., 2025-05-31)',
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

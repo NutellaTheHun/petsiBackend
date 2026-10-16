@@ -13,7 +13,10 @@ import {
 import { InventoryItemCategoryValidatorIdentity } from './identities/inventory-item-category.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemCategoryEntity, InventoryItemCategoryValidatorIdentity> {
+export class InventoryItemCategoryValidator extends ValidatorBase<
+    InventoryItemCategoryEntity,
+    InventoryItemCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryItemCategory)
         private readonly repo: Repository<InventoryItemCategory>,
@@ -22,7 +25,10 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         super(repo, 'InventoryItemCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryItemCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryItemCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -32,15 +38,21 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto, _id: number | string): Promise<InventoryItemCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto,
+        _id: number | string,
+    ): Promise<InventoryItemCategoryValidatorIdentity> {
         return {
             name: dto.name,
-        } as InventoryItemCategoryValidatorIdentity;
+        };
     }
 }

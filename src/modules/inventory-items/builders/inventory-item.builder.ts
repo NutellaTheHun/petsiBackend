@@ -16,119 +16,121 @@ import { InventoryItemSizeBuilder } from './inventory-item-size.builder';
 
 @Injectable()
 export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
-  constructor(
-    @InjectRepository(InventoryItemCategory)
-    private readonly categoryRepo: Repository<InventoryItemCategory>,
+    constructor(
+        @InjectRepository(InventoryItemCategory)
+        private readonly categoryRepo: Repository<InventoryItemCategory>,
 
-    @InjectRepository(InventoryItemSize)
-    private readonly sizeRepo: Repository<InventoryItemSize>,
+        @InjectRepository(InventoryItemSize)
+        private readonly sizeRepo: Repository<InventoryItemSize>,
 
-    @InjectRepository(InventoryItemVendor)
-    private readonly vendorRepo: Repository<InventoryItemVendor>,
+        @InjectRepository(InventoryItemVendor)
+        private readonly vendorRepo: Repository<InventoryItemVendor>,
 
-    @Inject(forwardRef(() => InventoryItemSizeBuilder))
-    private readonly itemSizeBuilder: InventoryItemSizeBuilder,
+        @Inject(forwardRef(() => InventoryItemSizeBuilder))
+        private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
-    requestContextService: RequestContextService,
-  ) {
-    super(InventoryItem, 'InventoryItemBuilder', requestContextService);
-  }
-
-  protected createEntity(dto: CreateInventoryItemDto): void {
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
+        requestContextService: RequestContextService,
+    ) {
+        super(InventoryItem, 'InventoryItemBuilder', requestContextService);
     }
-    if (dto.name !== undefined) {
-      this.name(dto.name);
-    }
-    if (dto.sizes !== undefined) {
-      this.sizesByBuilder(dto.sizes);
-    }
-    if (dto.vendorId !== undefined) {
-      this.vendorById(dto.vendorId);
-    }
-  }
 
-  protected updateEntity(dto: UpdateInventoryItemDto): void {
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
+    protected createEntity(dto: CreateInventoryItemDto): void {
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.sizes !== undefined) {
+            this.sizesByBuilder(dto.sizes);
+        }
+        if (dto.vendorId !== undefined) {
+            this.vendorById(dto.vendorId);
+        }
     }
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+
+    protected updateEntity(dto: UpdateInventoryItemDto): void {
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.sizes !== undefined) {
+            this.sizesByBuilder(dto.sizes);
+        }
+        if (dto.vendorId !== undefined) {
+            this.vendorById(dto.vendorId);
+        }
     }
-    if (dto.sizes !== undefined) {
-      this.sizesByBuilder(dto.sizes);
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
-    if (dto.vendorId !== undefined) {
-      this.vendorById(dto.vendorId);
+
+    public sizesByIds(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.sizeRepo.find({ where: { id: In(ids) } }),
+            'sizes',
+            ids,
+        );
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
-
-  public sizesByIds(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.sizeRepo.find({ where: { id: In(ids) } }),
-      'sizes',
-      ids,
-    );
-  }
-
-  public sizesByBuilder(
-    dtos: (
-      | CreateInventoryItemSizeDto
-      | NestedCreateInventoryItemSizeDto
-      | NestedUpdateInventoryItemSizeDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.itemSizeBuilder.buildMany.bind(this.itemSizeBuilder),
-      'sizes',
-      this.entity,
-      dtos,
-    );
-  }
-
-  public categoryById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('category', null);
+    public sizesByBuilder(
+        dtos: (
+            | CreateInventoryItemSizeDto
+            | NestedCreateInventoryItemSizeDto
+            | NestedUpdateInventoryItemSizeDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.itemSizeBuilder.buildMany.bind(this.itemSizeBuilder),
+            'sizes',
+            this.entity,
+            dtos,
+        );
     }
-    return this.setPropById(
-      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
-      'category',
-      id,
-    );
-  }
 
-  public categoryByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.categoryRepo.findOne({ where: { name } }),
-      'category',
-      name,
-    );
-  }
-
-  public vendorById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('vendor', null);
+    public categoryById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('category', null);
+        }
+        return this.setPropById(
+            async (id: number) =>
+                await this.categoryRepo.findOne({ where: { id } }),
+            'category',
+            id,
+        );
     }
-    return this.setPropById(
-      async (id: number) => await this.vendorRepo.findOne({ where: { id } }),
-      'vendor',
-      id,
-    );
-  }
 
-  public vendorByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.vendorRepo.findOne({ where: { name } }),
-      'vendor',
-      name,
-    );
-  }
+    public categoryByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.categoryRepo.findOne({ where: { name } }),
+            'category',
+            name,
+        );
+    }
+
+    public vendorById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('vendor', null);
+        }
+        return this.setPropById(
+            async (id: number) =>
+                await this.vendorRepo.findOne({ where: { id } }),
+            'vendor',
+            id,
+        );
+    }
+
+    public vendorByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.vendorRepo.findOne({ where: { name } }),
+            'vendor',
+            name,
+        );
+    }
 }

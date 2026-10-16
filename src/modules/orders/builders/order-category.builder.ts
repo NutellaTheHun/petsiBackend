@@ -7,23 +7,23 @@ import { OrderCategory } from '../entities/order-category.entity';
 
 @Injectable()
 export class OrderCategoryBuilder extends BuilderBase<OrderCategory> {
-  constructor(requestContextService: RequestContextService) {
-    super(OrderCategory, 'OrderCategoryBuilder', requestContextService);
-  }
-
-  protected createEntity(dto: CreateOrderCategoryDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    constructor(requestContextService: RequestContextService) {
+        super(OrderCategory, 'OrderCategoryBuilder', requestContextService);
     }
-  }
 
-  protected updateEntity(dto: UpdateOrderCategoryDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected createEntity(dto: CreateOrderCategoryDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
+    protected updateEntity(dto: UpdateOrderCategoryDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+    }
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
+    }
 }

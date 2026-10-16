@@ -5,20 +5,20 @@ import { orderContainerItemExample } from './order-container-item.example';
 import { orderExample } from './order.example';
 
 export function orderMenuItemExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(orderMenuItemExample.name);
-  return {
-    id: 1,
+    fnSet.add(orderMenuItemExample.name);
+    return {
+        id: 1,
 
-    parentOrder: handleSetHas(shallow, fnSet, orderExample, true),
+        parentOrder: handleSetHas(shallow, fnSet, orderExample, true),
 
-    menuItem: handleShallow(shallow, fnSet, menuItemExample, false),
+        menuItem: handleShallow(shallow, fnSet, menuItemExample, false),
 
-    quantity: 2,
+        quantity: 2,
 
-    size: handleShallow(shallow, fnSet, menuItemSizeExample, false),
+        size: handleShallow(shallow, fnSet, menuItemSizeExample, false),
 
-    containerOrderMenuItems: [
-      handleSetHas(shallow, fnSet, orderContainerItemExample, false),
-    ],
-  };
+        containerOrderMenuItems: [
+            handleSetHas(shallow, fnSet, orderContainerItemExample, false),
+        ],
+    };
 }

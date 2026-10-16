@@ -47,7 +47,7 @@ export class TemplateMenuItemService extends TenantScopedServiceBase<TemplateMen
         manager: EntityManager,
         entity: TemplateMenuItem,
     ): Promise<void> {
-        await this.templateItemComposer.composeUpdate(dto, manager, entity)
+        await this.templateItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -76,9 +76,6 @@ export class TemplateMenuItemService extends TenantScopedServiceBase<TemplateMen
     protected getChangeDetector():
         | ChangeDetectorBase<TemplateMenuItem, UpdateTemplateMenuItemDto>
         | undefined {
-        return this.templateMenuItemChangeDetector as unknown as ChangeDetectorBase<
-            TemplateMenuItem,
-            UpdateTemplateMenuItemDto
-        >;
+        return this.templateMenuItemChangeDetector;
     }
 }

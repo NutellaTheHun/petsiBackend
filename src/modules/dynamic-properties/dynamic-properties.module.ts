@@ -12,7 +12,11 @@ import { DynamicPropertyConfigValidator } from './validators/dynamic-property-co
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([DynamicPropertyConfig, MenuItemCategory, MenuItemDynamicPropertyValue]),
+        TypeOrmModule.forFeature([
+            DynamicPropertyConfig,
+            MenuItemCategory,
+            MenuItemDynamicPropertyValue,
+        ]),
         CacheModule.register(),
         RequestContextModule,
     ],

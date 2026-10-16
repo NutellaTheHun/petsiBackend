@@ -6,18 +6,22 @@ import { SettingValueType } from '../entities/setting.entity';
  * `SettingValueType`, is rejected at the validator layer (see
  * `SettingValidator`) rather than failing silently at read time.
  */
-export const SETTING_KEY_REGISTRY: Record<string, SettingValueType> = {
+export const SETTING_KEY_REGISTRY = {
     defaultTimezone: SettingValueType.String,
     taxRate: SettingValueType.Number,
     orderNumberPrefix: SettingValueType.String,
-};
+} satisfies Record<string, SettingValueType>;
 
 export type SettingKey = keyof typeof SETTING_KEY_REGISTRY;
 
 export function isRegisteredSettingKey(name: string): name is SettingKey {
-    return Object.prototype.hasOwnProperty.call(SETTING_KEY_REGISTRY, name);
+    return Object.keys(SETTING_KEY_REGISTRY).includes(name);
 }
 
-export function getRegisteredValueType(name: string): SettingValueType | undefined {
-    return SETTING_KEY_REGISTRY[name];
+export function getRegisteredValueType(
+    name: string,
+): SettingValueType | undefined {
+    return isRegisteredSettingKey(name)
+        ? SETTING_KEY_REGISTRY[name]
+        : undefined;
 }

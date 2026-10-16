@@ -80,15 +80,23 @@ describe('order container item service', () => {
         });
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         dataSource = module.get(DataSource);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        service = module.get(OrderContainerItemService) as TestableOrderContainerItemService;
-        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
+        service = module.get<TestableOrderContainerItemService>(
+            OrderContainerItemService,
+        );
+        orderContainerItemRepo = module.get(
+            getRepositoryToken(OrderContainerItem),
+        );
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
 
@@ -96,8 +104,18 @@ describe('order container item service', () => {
         fixtureLocationId = await testingUtil.getDefaultLocationId();
         setAdminContext();
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, containerOrderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            containerOrderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -105,7 +123,11 @@ describe('order container item service', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
@@ -183,7 +205,9 @@ describe('order container item service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     // test findAll() with filter by parentOrderMenuItem
@@ -195,7 +219,9 @@ describe('order container item service', () => {
             limit: 100,
         });
         expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.items.length).toEqual(parent.containerOrderMenuItems!.length);
+        expect(serviceResult?.items.length).toEqual(
+            parent.containerOrderMenuItems!.length,
+        );
     });
 
     describe('container item lifecycle', () => {
@@ -221,7 +247,9 @@ describe('order container item service', () => {
         it('should remove', async () => {
             const deleteResult = await service.remove(item.id);
             expect(deleteResult).toBe(true);
-            await expect(service.findOne(item.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(item.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -245,15 +273,18 @@ describe('order container item service', () => {
             await orderContainerItemRepo.delete(otherItem.id);
         });
 
-        it('findOne rejects a non-admin caller not assigned to the item\'s location, isTenantAdmin bypasses that check', async () => {
-            const target = containerOrderMenuItems[0].containerOrderMenuItems![0];
+        it("findOne rejects a non-admin caller not assigned to the item's location, isTenantAdmin bypasses that check", async () => {
+            const target =
+                containerOrderMenuItems[0].containerOrderMenuItems![0];
 
             requestContext.setContext({
                 tenantId: fixtureTenantId,
                 isTenantAdmin: false,
                 locations: [],
             });
-            await expect(service.findOne(target.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(target.id)).rejects.toThrow(
+                NotFoundException,
+            );
 
             setAdminContext();
             const result = await service.findOne(target.id);

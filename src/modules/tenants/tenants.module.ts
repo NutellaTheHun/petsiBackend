@@ -19,7 +19,13 @@ import { TenantValidator } from './validators/tenant.validator';
     // TODO(host-role): TenantController is reachable by tenant admins; it must
     // be guarded by a new host-level role. See the note on TenantController.
     controllers: [TenantController],
-    providers: [TenantService, TenantBuilder, TenantValidator, TenantTestUtil, TenantChangeDetector],
+    providers: [
+        TenantService,
+        TenantBuilder,
+        TenantValidator,
+        TenantTestUtil,
+        TenantChangeDetector,
+    ],
     exports: [TenantService, TenantTestUtil, TypeOrmModule],
 })
-export class TenantsModule { }
+export class TenantsModule {}

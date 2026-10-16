@@ -1,9 +1,12 @@
-import { plainToInstance } from "class-transformer";
-import { NestedUpdateTemplateMenuItemDto } from "../../dto/template-menu-item/nested-update-template-menu-item.dto";
-import { UpdateTemplateMenuItemDto } from "../../dto/template-menu-item/update-template-menu-item.dto";
-import { TemplateMenuItem } from "../../entities/template-menu-item.entity";
+import { plainToInstance } from 'class-transformer';
+import { NestedUpdateTemplateMenuItemDto } from '../../dto/template-menu-item/nested-update-template-menu-item.dto';
+import { UpdateTemplateMenuItemDto } from '../../dto/template-menu-item/update-template-menu-item.dto';
+import { TemplateMenuItem } from '../../entities/template-menu-item.entity';
 
-export function templateMenuItemToUpdateDto(templateMenuItem: TemplateMenuItem, merge: Partial<UpdateTemplateMenuItemDto> = {}): UpdateTemplateMenuItemDto {
+export function templateMenuItemToUpdateDto(
+    templateMenuItem: TemplateMenuItem,
+    merge: Partial<UpdateTemplateMenuItemDto> = {},
+): UpdateTemplateMenuItemDto {
     return plainToInstance(UpdateTemplateMenuItemDto, {
         displayName: templateMenuItem.displayName,
         menuItemId: templateMenuItem.menuItem.id,
@@ -12,7 +15,10 @@ export function templateMenuItemToUpdateDto(templateMenuItem: TemplateMenuItem, 
     });
 }
 
-export function templateMenuItemToNestedUpdateDto(templateMenuItem: TemplateMenuItem, merge: Partial<NestedUpdateTemplateMenuItemDto> = {}): NestedUpdateTemplateMenuItemDto {
+export function templateMenuItemToNestedUpdateDto(
+    templateMenuItem: TemplateMenuItem,
+    merge: Partial<NestedUpdateTemplateMenuItemDto> = {},
+): NestedUpdateTemplateMenuItemDto {
     return plainToInstance(NestedUpdateTemplateMenuItemDto, {
         id: templateMenuItem.id,
         displayName: templateMenuItem.displayName,

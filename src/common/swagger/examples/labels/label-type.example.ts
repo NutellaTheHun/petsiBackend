@@ -1,9 +1,9 @@
 export function labelTypeExample(fnSet: Set<string>, _shallow: boolean) {
-  fnSet.add(labelTypeExample.name);
-  return {
-    id: 1,
-    name: '4x2',
-    length: 400,
-    width: 200,
-  };
+    fnSet.add(labelTypeExample.name);
+    return {
+        id: 1,
+        name: '4x2',
+        length: 400,
+        width: 200,
+    };
 }

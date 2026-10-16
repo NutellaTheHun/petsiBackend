@@ -8,7 +8,10 @@ import { Role } from '../../roles/entities/role.entity';
 import { User } from '../../users/entities/user.entities';
 import { CreateUserLocationDto } from '../dto/create-user-location.dto';
 import { UpdateUserLocationDto } from '../dto/update-user-location.dto';
-import { UserLocation, UserLocationEntity } from '../entities/user-location.entity';
+import {
+    UserLocation,
+    UserLocationEntity,
+} from '../entities/user-location.entity';
 import { UserLocationChangeDetector } from '../utils/change-detectors/user-location.change-detector';
 import { UserLocationValidator } from '../validators/user-location.validator';
 
@@ -53,11 +56,15 @@ export class UserLocationService extends LocationScopedServiceBase<UserLocationE
         filters: Record<string, string[]>,
     ): void {
         if (filters.user && filters.user.length > 0) {
-            query.andWhere('entity.user IN (:...users)', { users: filters.user });
+            query.andWhere('entity.user IN (:...users)', {
+                users: filters.user,
+            });
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<UserLocation, UpdateUserLocationDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<UserLocation, UpdateUserLocationDto>
+        | undefined {
         return this.userLocationChangeDetector;
     }
 

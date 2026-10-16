@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -43,9 +47,14 @@ describe('user location validator', () => {
         userTestUtil = module.get<UserTestUtil>(UserTestUtil);
         roleTestUtil = module.get<RoleTestUtil>(RoleTestUtil);
         validator = module.get<UserLocationValidator>(UserLocationValidator);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [location, otherLocation] } = await locationTestUtil.seedLocations(P, undefined, 2));
+        ({
+            tenant,
+            locations: [location, otherLocation],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
         userLocationRepo = module.get(getRepositoryToken(UserLocation));
         ({ users } = await userTestUtil.seedUsers(P, tenant.id));
         ({ roles } = await roleTestUtil.seedRoles(P, tenant.id));
@@ -88,7 +97,9 @@ describe('user location validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['user']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                'user',
+            ]),
         );
     });
 
@@ -104,7 +115,9 @@ describe('user location validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['roles']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                'roles',
+            ]),
         );
     });
 
@@ -120,7 +133,9 @@ describe('user location validator', () => {
                     roles: [],
                 }),
             );
-            testCtx.addCleanupFunction(async () => { await userLocationRepo.delete(assignment.id); });
+            testCtx.addCleanupFunction(async () => {
+                await userLocationRepo.delete(assignment.id);
+            });
         });
 
         it('successfully validates update: no validation errors', async () => {
@@ -144,7 +159,9 @@ describe('user location validator', () => {
             expectValidationErrorPayload(
                 errors,
                 [],
-                createValidationErrorPayload('IMMUTABLE_FIELD', undefined, ['locationId']),
+                createValidationErrorPayload('IMMUTABLE_FIELD', undefined, [
+                    'locationId',
+                ]),
             );
         });
     });

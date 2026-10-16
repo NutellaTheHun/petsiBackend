@@ -17,7 +17,8 @@ export class NestedCreateMenuItemContainerItemDto extends NestedCreateDto {
     readonly containedMenuItemId: EntityId<MenuItem>;
 
     @ApiProperty({
-        description: 'Id of a MenuItemSize entity. The size of the contained item',
+        description:
+            'Id of a MenuItemSize entity. The size of the contained item',
         example: 4,
     })
     @IsNumber()

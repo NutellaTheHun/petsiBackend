@@ -49,18 +49,26 @@ describe('Inventory Item Package Service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
-            inventoryItemPackageServiceClass: TestableInventoryItemPackageService,
+            inventoryItemPackageServiceClass:
+                TestableInventoryItemPackageService,
         });
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        packageService = module.get(
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        packageService = module.get<TestableInventoryItemPackageService>(
             InventoryItemPackageService,
-        ) as TestableInventoryItemPackageService;
+        );
         dataSource = module.get(DataSource);
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -75,7 +83,10 @@ describe('Inventory Item Package Service', () => {
     });
 
     afterAll(async () => {
-        await packageRepo.delete([...packages.map((p) => p.id), otherTenantPackage.id]);
+        await packageRepo.delete([
+            ...packages.map((p) => p.id),
+            otherTenantPackage.id,
+        ]);
         await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
@@ -91,26 +102,37 @@ describe('Inventory Item Package Service', () => {
         let created: InventoryItemPackage;
 
         it('should create package', async () => {
-            const dto = plainToInstance(CreateInventoryItemPackageDto, { name: `${P}-pkg-create` });
+            const dto = plainToInstance(CreateInventoryItemPackageDto, {
+                name: `${P}-pkg-create`,
+            });
             await dataSource.transaction(async (manager) => {
-                created = await packageService.createEntityForTest(dto, manager);
+                created = await packageService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(created.id).toBeDefined();
             expect(created.name).toBe(dto.name);
         });
 
         it('should update package', async () => {
-            const dto = plainToInstance(UpdateInventoryItemPackageDto, { name: `${P}-pkg-updated` });
+            const dto = plainToInstance(UpdateInventoryItemPackageDto, {
+                name: `${P}-pkg-updated`,
+            });
             await dataSource.transaction(async (manager) => {
                 await packageService.updateEntityForTest(dto, created, manager);
             });
-            const reloaded = await packageRepo.findOneOrFail({ where: { id: created.id } });
+            const reloaded = await packageRepo.findOneOrFail({
+                where: { id: created.id },
+            });
             expect(reloaded.name).toBe(`${P}-pkg-updated`);
         });
 
         it('should remove package', async () => {
             await packageService.remove(created.id);
-            await expect(packageService.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(packageService.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -121,14 +143,19 @@ describe('Inventory Item Package Service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(packageService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(packageService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(InventoryItemPackageService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                InventoryItemPackageService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -144,10 +171,14 @@ describe('Inventory Item Package Service', () => {
 
         it('calls updateEntity when name changes', async () => {
             const pkg = packages[1];
-            const dto = inventoryItemPackageToUpdateDto(pkg, { name: `${P}-pkg-renamed` });
+            const dto = inventoryItemPackageToUpdateDto(pkg, {
+                name: `${P}-pkg-renamed`,
+            });
             await packageService.update(pkg.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await packageRepo.findOneOrFail({ where: { id: pkg.id } });
+            const row = await packageRepo.findOneOrFail({
+                where: { id: pkg.id },
+            });
             expect(row.name).toBe(`${P}-pkg-renamed`);
         });
     });
@@ -159,14 +190,14 @@ describe('Inventory Item Package Service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as InventoryItemPackage).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await packageRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(packageService.findOne(otherTenantPackage.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                packageService.findOne(otherTenantPackage.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

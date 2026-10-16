@@ -5,23 +5,23 @@ import { Cache } from 'cache-manager';
  * for findAll requests.
  */
 export async function invalidateFindAllCache(
-  servicePrefix: string,
-  cacheManager: Cache,
-  scope = '',
+    servicePrefix: string,
+    cacheManager: Cache,
+    scope = '',
 ): Promise<void> {
-  const trackerKey = `${servicePrefix}-findAll-tracker-${scope}`;
-  const keys: string[] = (await cacheManager.get<string[]>(trackerKey)) ?? [];
+    const trackerKey = `${servicePrefix}-findAll-tracker-${scope}`;
+    const keys: string[] = (await cacheManager.get<string[]>(trackerKey)) ?? [];
 
-  for (const key of keys) {
-    await cacheManager.del(key);
-  }
+    for (const key of keys) {
+        await cacheManager.del(key);
+    }
 
-  await cacheManager.del(trackerKey);
+    await cacheManager.del(trackerKey);
 
-  // DEV-ONLY DELAY TO AVOID RACE CONDITIONS
-  if (process.env.NODE_ENV === 'development') {
-    await new Promise((resolve) => setTimeout(resolve, 50)); // or 100ms
-  }
+    // DEV-ONLY DELAY TO AVOID RACE CONDITIONS
+    if (process.env.NODE_ENV === 'development') {
+        await new Promise((resolve) => setTimeout(resolve, 50)); // or 100ms
+    }
 }
 
 /**
@@ -30,20 +30,21 @@ export async function invalidateFindAllCache(
  * tenant) — see `invalidateFindAllCache`.
  */
 export async function trackFindAllKey(
-  servicePrefix: string,
-  cacheKey: string,
-  cacheManager: Cache,
-  ttl: number,
-  scope = '',
+    servicePrefix: string,
+    cacheKey: string,
+    cacheManager: Cache,
+    ttl: number,
+    scope = '',
 ): Promise<void> {
-  const trackerKey = `${servicePrefix}-findAll-tracker-${scope}`;
+    const trackerKey = `${servicePrefix}-findAll-tracker-${scope}`;
 
-  /*const existingKeys =
+    /*const existingKeys =
     (await cacheManager.get<Set<string>>(trackerKey)) ?? new Set<string>();*/
-  const existingKeysArr = (await cacheManager.get<string[]>(trackerKey)) ?? [];
-  const existingKeys = new Set(existingKeysArr);
+    const existingKeysArr =
+        (await cacheManager.get<string[]>(trackerKey)) ?? [];
+    const existingKeys = new Set(existingKeysArr);
 
-  existingKeys.add(cacheKey);
+    existingKeys.add(cacheKey);
 
-  await cacheManager.set(trackerKey, Array.from(existingKeys), ttl);
+    await cacheManager.set(trackerKey, Array.from(existingKeys), ttl);
 }

@@ -54,7 +54,13 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
         logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
-        super(service, cacheManager, 'DynamicPropertyConfigController', requestContextService, logger);
+        super(
+            service,
+            cacheManager,
+            'DynamicPropertyConfigController',
+            requestContextService,
+            logger,
+        );
     }
 
     @Post()
@@ -63,7 +69,9 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
     @ApiCreatedResponse({ type: DynamicPropertyConfig })
     @ApiBadRequestResponse({ description: 'Validation error' })
     @ApiBody({ type: CreateDynamicPropertyConfigDto })
-    async create(@Body() dto: CreateDynamicPropertyConfigDto): Promise<DynamicPropertyConfig> {
+    async create(
+        @Body() dto: CreateDynamicPropertyConfigDto,
+    ): Promise<DynamicPropertyConfig> {
         return super.create(dto);
     }
 
@@ -96,7 +104,10 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
         schema: {
             type: 'object',
             properties: {
-                items: { type: 'array', items: { $ref: getSchemaPath(DynamicPropertyConfig) } },
+                items: {
+                    type: 'array',
+                    items: { $ref: getSchemaPath(DynamicPropertyConfig) },
+                },
                 nextCursor: { type: 'string' },
             },
         },
@@ -120,7 +131,9 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
     @ApiOperation({ summary: 'Retrieves one DynamicPropertyConfig' })
     @ApiOkResponse({ type: DynamicPropertyConfig })
     @ApiNotFoundResponse({ description: 'DynamicPropertyConfig not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<DynamicPropertyConfig> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<DynamicPropertyConfig> {
         return super.findOne(id);
     }
 }

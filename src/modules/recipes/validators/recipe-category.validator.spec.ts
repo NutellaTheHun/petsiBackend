@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
@@ -29,11 +33,14 @@ describe('recipe category validator', () => {
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        validator = module.get<RecipeCategoryValidator>(RecipeCategoryValidator);
+        validator = module.get<RecipeCategoryValidator>(
+            RecipeCategoryValidator,
+        );
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
 
-        ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
+        ({ categories, subCategories } =
+            await testingUtil.seedSubCategories(P));
     });
 
     afterAll(async () => {
@@ -51,28 +58,34 @@ describe('recipe category validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
-            name: `${P}-new-category`,
-            subCategories: [
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c1',
-                    name: `${P}-new-sub-1`,
-                }),
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c2',
-                    name: `${P}-new-sub-2`,
-                }),
-            ],
-        });
+        const dto: CreateRecipeCategoryDto = plainToInstance(
+            CreateRecipeCategoryDto,
+            {
+                name: `${P}-new-category`,
+                subCategories: [
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c1',
+                        name: `${P}-new-sub-1`,
+                    }),
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c2',
+                        name: `${P}-new-sub-2`,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
-            name: categories[0].name,
-        });
+        const dto: CreateRecipeCategoryDto = plainToInstance(
+            CreateRecipeCategoryDto,
+            {
+                name: categories[0].name,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
@@ -84,26 +97,33 @@ describe('recipe category validator', () => {
     });
 
     it('fail validate create: duplicate sub categories', async () => {
-        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
-            name: `${P}-new-category-2`,
-            subCategories: [
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c1',
-                    name: 'Duplicate Name',
-                }),
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c2',
-                    name: 'Duplicate Name',
-                }),
-            ],
-        });
+        const dto: CreateRecipeCategoryDto = plainToInstance(
+            CreateRecipeCategoryDto,
+            {
+                name: `${P}-new-category-2`,
+                subCategories: [
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c1',
+                        name: 'Duplicate Name',
+                    }),
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c2',
+                        name: 'Duplicate Name',
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['subCategories']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['subCategories'],
+            ),
         );
     });
 
@@ -113,15 +133,18 @@ describe('recipe category validator', () => {
             relations: ['subCategories'],
         });
 
-        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
-            name: `${P}-new-category-3`,
-            subCategories: [
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c1',
-                    name: existingCategory.subCategories[0].name,
-                }),
-            ],
-        });
+        const dto: CreateRecipeCategoryDto = plainToInstance(
+            CreateRecipeCategoryDto,
+            {
+                name: `${P}-new-category-3`,
+                subCategories: [
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c1',
+                        name: existingCategory.subCategories[0].name,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -134,15 +157,18 @@ describe('recipe category validator', () => {
             relations: ['subCategories'],
         });
 
-        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
-            name: `${P}-updated-category`,
-            subCategories: [
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c1',
-                    name: `${P}-updated-new-sub`,
-                }),
-            ],
-        });
+        const dto: UpdateRecipeCategoryDto = plainToInstance(
+            UpdateRecipeCategoryDto,
+            {
+                name: `${P}-updated-category`,
+                subCategories: [
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c1',
+                        name: `${P}-updated-new-sub`,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expect(errors).toBeNull();
@@ -152,10 +178,13 @@ describe('recipe category validator', () => {
         const categoryToUpdate = categories[0];
         const existingCategory = categories[1];
 
-        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
-            name: existingCategory.name,
-            subCategories: [],
-        });
+        const dto: UpdateRecipeCategoryDto = plainToInstance(
+            UpdateRecipeCategoryDto,
+            {
+                name: existingCategory.name,
+                subCategories: [],
+            },
+        );
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -169,26 +198,33 @@ describe('recipe category validator', () => {
     it('fail validate update: duplicate sub categories', async () => {
         const categoryToUpdate = categories[0];
 
-        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
-            name: categoryToUpdate.name,
-            subCategories: [
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c1',
-                    name: 'Duplicate Update Name',
-                }),
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c2',
-                    name: 'Duplicate Update Name',
-                }),
-            ],
-        });
+        const dto: UpdateRecipeCategoryDto = plainToInstance(
+            UpdateRecipeCategoryDto,
+            {
+                name: categoryToUpdate.name,
+                subCategories: [
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c1',
+                        name: 'Duplicate Update Name',
+                    }),
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c2',
+                        name: 'Duplicate Update Name',
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['subCategories']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['subCategories'],
+            ),
         );
     });
 
@@ -199,15 +235,18 @@ describe('recipe category validator', () => {
         });
         const existingSubCategory = categoryToUpdate.subCategories[0];
 
-        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
-            name: categoryToUpdate.name,
-            subCategories: [
-                plainToInstance(NestedCreateRecipeSubCategoryDto, {
-                    createId: 'c1',
-                    name: existingSubCategory.name,
-                }),
-            ],
-        });
+        const dto: UpdateRecipeCategoryDto = plainToInstance(
+            UpdateRecipeCategoryDto,
+            {
+                name: categoryToUpdate.name,
+                subCategories: [
+                    plainToInstance(NestedCreateRecipeSubCategoryDto, {
+                        createId: 'c1',
+                        name: existingSubCategory.name,
+                    }),
+                ],
+            },
+        );
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expectValidationErrorSize(errors, 1);

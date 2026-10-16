@@ -212,8 +212,12 @@ export class Recipe {
         type: () => RecipeIngredient,
         isArray: true,
     })
-    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, {
-        cascade: true,
-    })
+    @OneToMany(
+        () => RecipeIngredient,
+        (ingredient) => ingredient.parentRecipe,
+        {
+            cascade: true,
+        },
+    )
     ingredients: RecipeIngredient[];
 }

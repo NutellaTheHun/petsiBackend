@@ -15,87 +15,89 @@ import { InventoryAreaItemBuilder } from './inventory-area-item.builder';
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
-  constructor(
-    @InjectRepository(InventoryArea)
-    private readonly areaRepo: Repository<InventoryArea>,
+    constructor(
+        @InjectRepository(InventoryArea)
+        private readonly areaRepo: Repository<InventoryArea>,
 
-    @InjectRepository(InventoryAreaItem)
-    private readonly areaItemRepo: Repository<InventoryAreaItem>,
+        @InjectRepository(InventoryAreaItem)
+        private readonly areaItemRepo: Repository<InventoryAreaItem>,
 
-    @Inject(forwardRef(() => InventoryAreaItemBuilder))
-    private readonly itemCountBuilder: InventoryAreaItemBuilder,
-    requestContextService: RequestContextService,
-  ) {
-    super(
-      InventoryAreaCount,
-      'InventoryAreaCountBuilder',
-      requestContextService,
-    );
-  }
-
-  protected createEntity(dto: CreateInventoryAreaCountDto): void {
-    if (dto.inventoryAreaId !== undefined) {
-      this.inventoryAreaById(dto.inventoryAreaId);
+        @Inject(forwardRef(() => InventoryAreaItemBuilder))
+        private readonly itemCountBuilder: InventoryAreaItemBuilder,
+        requestContextService: RequestContextService,
+    ) {
+        super(
+            InventoryAreaCount,
+            'InventoryAreaCountBuilder',
+            requestContextService,
+        );
     }
-    if (dto.countedInventoryItems !== undefined) {
-      this.countedItemsByBuilder(dto.countedInventoryItems);
+
+    protected createEntity(dto: CreateInventoryAreaCountDto): void {
+        if (dto.inventoryAreaId !== undefined) {
+            this.inventoryAreaById(dto.inventoryAreaId);
+        }
+        if (dto.countedInventoryItems !== undefined) {
+            this.countedItemsByBuilder(dto.countedInventoryItems);
+        }
     }
-  }
 
-  protected updateEntity(dto: UpdateInventoryAreaCountDto): void {
-    if (dto.inventoryAreaId !== undefined) {
-      this.inventoryAreaById(dto.inventoryAreaId);
+    protected updateEntity(dto: UpdateInventoryAreaCountDto): void {
+        if (dto.inventoryAreaId !== undefined) {
+            this.inventoryAreaById(dto.inventoryAreaId);
+        }
+        if (dto.countedInventoryItems !== undefined) {
+            this.countedItemsByBuilder(dto.countedInventoryItems);
+        }
     }
-    if (dto.countedInventoryItems !== undefined) {
-      this.countedItemsByBuilder(dto.countedInventoryItems);
+
+    public inventoryAreaById(id: number): this {
+        return this.setPropById(
+            async (id: number) =>
+                await this.areaRepo.findOne({ where: { id } }),
+            'inventoryArea',
+            id,
+        );
     }
-  }
 
-  public inventoryAreaById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.areaRepo.findOne({ where: { id } }),
-      'inventoryArea',
-      id,
-    );
-  }
+    public inventoryAreaByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.areaRepo.findOne({ where: { name } }),
+            'inventoryArea',
+            name,
+        );
+    }
 
-  public inventoryAreaByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) => await this.areaRepo.findOne({ where: { name } }),
-      'inventoryArea',
-      name,
-    );
-  }
+    public tenantId(tenantId: number): this {
+        return this.setPropByVal('tenantId', tenantId);
+    }
 
-  public tenantId(tenantId: number): this {
-    return this.setPropByVal('tenantId', tenantId);
-  }
+    public locationId(locationId: number): this {
+        return this.setPropByVal('locationId', locationId);
+    }
 
-  public locationId(locationId: number): this {
-    return this.setPropByVal('locationId', locationId);
-  }
+    public countedItemsById(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.areaItemRepo.find({ where: { id: In(ids) } }),
+            'countedInventoryItems',
+            ids,
+        );
+    }
 
-  public countedItemsById(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.areaItemRepo.find({ where: { id: In(ids) } }),
-      'countedInventoryItems',
-      ids,
-    );
-  }
-
-  public countedItemsByBuilder(
-    dtos: (
-      | CreateInventoryAreaItemDto
-      | NestedCreateInventoryAreaItemDto
-      | NestedUpdateInventoryAreaItemDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.itemCountBuilder.buildMany.bind(this.itemCountBuilder),
-      'countedInventoryItems',
-      this.entity,
-      dtos,
-    );
-  }
+    public countedItemsByBuilder(
+        dtos: (
+            | CreateInventoryAreaItemDto
+            | NestedCreateInventoryAreaItemDto
+            | NestedUpdateInventoryAreaItemDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.itemCountBuilder.buildMany.bind(this.itemCountBuilder),
+            'countedInventoryItems',
+            this.entity,
+            dtos,
+        );
+    }
 }

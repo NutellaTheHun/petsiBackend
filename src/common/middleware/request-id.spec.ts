@@ -1,4 +1,10 @@
-import { Controller, Get, INestApplication, MiddlewareConsumer, Module } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    INestApplication,
+    MiddlewareConsumer,
+    Module,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { LoggerModule } from 'nestjs-pino';
 import { Writable } from 'stream';
@@ -16,11 +22,16 @@ import { RequestIdMiddleware } from './RequestIdMiddleware';
  * the pino-http access line, the request context and the response header all
  * carry one id. Also exercises the production DI path for the exception filter.
  */
-const accessLines: any[] = [];
+interface AccessLine {
+    req?: { id: string };
+    requestId?: string;
+}
+
+const accessLines: AccessLine[] = [];
 const accessStream = new Writable({
-    write(chunk, _enc, cb) {
+    write(chunk: Buffer, _enc, cb) {
         for (const line of chunk.toString().split('\n').filter(Boolean)) {
-            accessLines.push(JSON.parse(line));
+            accessLines.push(JSON.parse(line) as AccessLine);
         }
         cb();
     },
@@ -32,7 +43,9 @@ class ProbeController {
 
     @Get()
     get() {
-        return { contextRequestId: this.requestContext.get('requestId') };
+        return {
+            contextRequestId: this.requestContext.get<string>('requestId'),
+        };
     }
 }
 
@@ -56,7 +69,9 @@ describe('request id alignment (pino-http / request context / header)', () => {
     let app: INestApplication;
 
     beforeAll(async () => {
-        const module = await Test.createTestingModule({ imports: [ProbeModule] }).compile();
+        const module = await Test.createTestingModule({
+            imports: [ProbeModule],
+        }).compile();
         app = module.createNestApplication();
         setupApp(app);
         await app.init();
@@ -73,15 +88,22 @@ describe('request id alignment (pino-http / request context / header)', () => {
     async function lastAccessLine() {
         // pino-http writes on response finish; give the stream a tick to flush
         await new Promise((resolve) => setImmediate(resolve));
-        return accessLines.filter((l) => l.req)[accessLines.filter((l) => l.req).length - 1];
+        const lines = accessLines.filter((l) => l.req);
+        const line = lines[lines.length - 1];
+        if (!line?.req) throw new Error('no access line was written');
+        return line as AccessLine & { req: { id: string } };
     }
 
     it('uses one generated id for the header, request context and access line', async () => {
-        const res = await request(app.getHttpServer()).get('/request-id-probe').expect(200);
+        const res = await request(app.getHttpServer())
+            .get('/request-id-probe')
+            .expect(200);
         const headerId = res.headers['x-request-id'];
 
         expect(headerId).toEqual(expect.any(String));
-        expect(res.body.contextRequestId).toBe(headerId);
+        expect(
+            (res.body as { contextRequestId: string }).contextRequestId,
+        ).toBe(headerId);
 
         const line = await lastAccessLine();
         expect(line.req.id).toBe(headerId);
@@ -95,7 +117,9 @@ describe('request id alignment (pino-http / request context / header)', () => {
             .expect(200);
 
         expect(res.headers['x-request-id']).toBe('client-supplied-id');
-        expect(res.body.contextRequestId).toBe('client-supplied-id');
+        expect(
+            (res.body as { contextRequestId: string }).contextRequestId,
+        ).toBe('client-supplied-id');
 
         const line = await lastAccessLine();
         expect(line.req.id).toBe('client-supplied-id');
@@ -108,7 +132,7 @@ describe('request id alignment (pino-http / request context / header)', () => {
             .expect(404);
 
         expect(res.headers['x-request-id']).toBe('error-id');
-        expect(res.body.requestId).toBe('error-id');
+        expect((res.body as { requestId: string }).requestId).toBe('error-id');
 
         const line = await lastAccessLine();
         expect(line.req.id).toBe('error-id');

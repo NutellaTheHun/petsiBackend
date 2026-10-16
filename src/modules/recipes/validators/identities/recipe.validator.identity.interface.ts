@@ -1,6 +1,6 @@
-import { AppUnit } from "../../../../common/units";
-import { ValidatorIdentityBaseInterface } from "../../../../common/base/validator-identity.base.interface";
-import { RecipeIngredientValidatorIdentity } from "./recipe-ingredient.validator.identity.interface";
+import { AppUnit } from '../../../../common/units';
+import { ValidatorIdentityBaseInterface } from '../../../../common/base/validator-identity.base.interface';
+import { RecipeIngredientValidatorIdentity } from './recipe-ingredient.validator.identity.interface';
 
 export interface RecipeValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly name?: string;

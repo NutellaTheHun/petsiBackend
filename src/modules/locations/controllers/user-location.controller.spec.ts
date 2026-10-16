@@ -42,9 +42,14 @@ describe('UserLocationController', () => {
         userTestUtil = module.get<UserTestUtil>(UserTestUtil);
         roleTestUtil = module.get<RoleTestUtil>(RoleTestUtil);
         controller = module.get(UserLocationController);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [location] } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({
+            tenant,
+            locations: [location],
+        } = await locationTestUtil.seedLocations(P, undefined, 1));
         ({ users } = await userTestUtil.seedUsers(P, tenant.id));
         ({ roles } = await roleTestUtil.seedRoles(P, tenant.id));
 
@@ -79,7 +84,9 @@ describe('UserLocationController', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['user']),
+                createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                    'user',
+                ]),
             );
         }
     });
@@ -93,6 +100,8 @@ describe('UserLocationController', () => {
             }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

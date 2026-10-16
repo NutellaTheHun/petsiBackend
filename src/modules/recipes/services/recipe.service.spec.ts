@@ -72,7 +72,7 @@ describe('recipe service', () => {
             recipeServiceClass: TestableRecipeService,
         });
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        recipeService = module.get(RecipeService) as TestableRecipeService;
+        recipeService = module.get<TestableRecipeService>(RecipeService);
         dataSource = module.get(DataSource);
 
         recipeRepo = module.get(getRepositoryToken(Recipe));
@@ -83,13 +83,22 @@ describe('recipe service', () => {
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         const tenantId = await testingUtil.getDefaultTenantId();
         requestContext.setContext({ tenantId });
 
-        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
-            await testingUtil.seedIngredients(P));
+        ({
+            categories,
+            subCategories,
+            recipes,
+            invCategories,
+            invVendors,
+            invItems,
+            ingredients,
+        } = await testingUtil.seedIngredients(P));
 
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
@@ -104,7 +113,10 @@ describe('recipe service', () => {
 
     afterAll(async () => {
         await ingredientRepo.delete(ingredients.map((i) => i.id));
-        await recipeRepo.delete([...recipes.map((r) => r.id), otherTenantRecipe.id]);
+        await recipeRepo.delete([
+            ...recipes.map((r) => r.id),
+            otherTenantRecipe.id,
+        ]);
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await invItemRepo.delete(invItems.map((i) => i.id));
@@ -166,13 +178,16 @@ describe('recipe service', () => {
             });
 
             const ingredList = [...(dto.ingredients ?? [])];
-            const ingredToUpdate = ingredList.pop() as NestedUpdateRecipeIngredientDto;
+            const ingredToUpdate =
+                ingredList.pop() as NestedUpdateRecipeIngredientDto;
             const newQuantity = 101;
             ingredList.push(
                 plainToInstance(NestedUpdateRecipeIngredientDto, {
                     id: ingredToUpdate.id,
-                    ingredientInventoryItemId: ingredToUpdate.ingredientInventoryItemId ?? undefined,
-                    ingredientRecipeId: ingredToUpdate.ingredientRecipeId ?? undefined,
+                    ingredientInventoryItemId:
+                        ingredToUpdate.ingredientInventoryItemId ?? undefined,
+                    ingredientRecipeId:
+                        ingredToUpdate.ingredientRecipeId ?? undefined,
                     quantity: newQuantity,
                     unit: ingredToUpdate.unit ?? 'oz',
                 }),
@@ -183,14 +198,20 @@ describe('recipe service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                await recipeService.updateEntityForTest(dtoWithIngredients, recipe, manager);
+                await recipeService.updateEntityForTest(
+                    dtoWithIngredients,
+                    recipe,
+                    manager,
+                );
             });
 
             const reloaded = await recipeRepo.findOneOrFail({
                 where: { id: recipe.id },
                 relations: ['ingredients'],
             });
-            const updated = reloaded.ingredients.find((i) => i.id === ingredToUpdate.id);
+            const updated = reloaded.ingredients.find(
+                (i) => i.id === ingredToUpdate.id,
+            );
             expect(Number(updated?.quantity)).toEqual(newQuantity);
         });
 
@@ -248,7 +269,11 @@ describe('recipe service', () => {
         const result = await recipeService.findAll({
             search: invItems[0].name,
             limit: 100,
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
         const found = result.items.find((r) => r.id === recipes[0].id);
         expect(found).toBeDefined();
@@ -285,9 +310,7 @@ describe('recipe service', () => {
         });
         const found = result.items.find((r) => r.id === recipes[0].id);
         expect(found).toBeDefined();
-        expect(
-            result.items.every((r) => r.id !== recipes[1].id),
-        ).toBe(true);
+        expect(result.items.every((r) => r.id !== recipes[1].id)).toBe(true);
     });
 
     it('should find one recipe with relations', async () => {
@@ -365,14 +388,16 @@ describe('recipe service', () => {
                 created = await recipeService.createEntityForTest(dto, manager);
             });
 
-            expect(created.tenantId).toBe(await testingUtil.getDefaultTenantId());
+            expect(created.tenantId).toBe(
+                await testingUtil.getDefaultTenantId(),
+            );
             await recipeRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(recipeService.findOne(otherTenantRecipe.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                recipeService.findOne(otherTenantRecipe.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

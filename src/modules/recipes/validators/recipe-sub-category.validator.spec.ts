@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
@@ -28,11 +32,14 @@ describe('recipe sub category validator', () => {
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        validator = module.get<RecipeSubCategoryValidator>(RecipeSubCategoryValidator);
+        validator = module.get<RecipeSubCategoryValidator>(
+            RecipeSubCategoryValidator,
+        );
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
 
-        ({ categories, subCategories } = await testingUtil.seedSubCategories(P));
+        ({ categories, subCategories } =
+            await testingUtil.seedSubCategories(P));
     });
 
     afterAll(async () => {
@@ -50,10 +57,13 @@ describe('recipe sub category validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
-            name: `${P}-new-sub-category`,
-            parentCategoryId: categories[0].id,
-        });
+        const dto: CreateRecipeSubCategoryDto = plainToInstance(
+            CreateRecipeSubCategoryDto,
+            {
+                name: `${P}-new-sub-category`,
+                parentCategoryId: categories[0].id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -65,10 +75,13 @@ describe('recipe sub category validator', () => {
             relations: ['subCategories'],
         });
 
-        const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
-            name: parentCategory.subCategories[0].name,
-            parentCategoryId: parentCategory.id,
-        });
+        const dto: CreateRecipeSubCategoryDto = plainToInstance(
+            CreateRecipeSubCategoryDto,
+            {
+                name: parentCategory.subCategories[0].name,
+                parentCategoryId: parentCategory.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
@@ -82,17 +95,22 @@ describe('recipe sub category validator', () => {
     it('fail validate create: name cannot be the same as the parent category name', async () => {
         const parentCategory = categories[0];
 
-        const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
-            name: parentCategory.name,
-            parentCategoryId: parentCategory.id,
-        });
+        const dto: CreateRecipeSubCategoryDto = plainToInstance(
+            CreateRecipeSubCategoryDto,
+            {
+                name: parentCategory.name,
+                parentCategoryId: parentCategory.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['name']),
+            createValidationErrorPayload('CONFLICTING_VALUES', undefined, [
+                'name',
+            ]),
         );
     });
 
@@ -100,9 +118,12 @@ describe('recipe sub category validator', () => {
     it('successfully validate update: no validation errors', async () => {
         const subCategoryToUpdate = subCategories[0];
 
-        const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
-            name: `${P}-updated-sub-category-name`,
-        });
+        const dto: UpdateRecipeSubCategoryDto = plainToInstance(
+            UpdateRecipeSubCategoryDto,
+            {
+                name: `${P}-updated-sub-category-name`,
+            },
+        );
 
         const errors = await validator.validateDto(dto, subCategoryToUpdate.id);
         expect(errors).toBeNull();
@@ -112,9 +133,12 @@ describe('recipe sub category validator', () => {
         const subCategoryToUpdate = subCategories[0];
         const existingSubCategory = subCategories[1];
 
-        const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
-            name: existingSubCategory.name,
-        });
+        const dto: UpdateRecipeSubCategoryDto = plainToInstance(
+            UpdateRecipeSubCategoryDto,
+            {
+                name: existingSubCategory.name,
+            },
+        );
 
         const errors = await validator.validateDto(dto, subCategoryToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -129,16 +153,21 @@ describe('recipe sub category validator', () => {
         const subCategoryToUpdate = subCategories[0];
         const parentCategory = categories[0];
 
-        const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
-            name: parentCategory.name,
-        });
+        const dto: UpdateRecipeSubCategoryDto = plainToInstance(
+            UpdateRecipeSubCategoryDto,
+            {
+                name: parentCategory.name,
+            },
+        );
 
         const errors = await validator.validateDto(dto, subCategoryToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['name']),
+            createValidationErrorPayload('CONFLICTING_VALUES', undefined, [
+                'name',
+            ]),
         );
     });
 });

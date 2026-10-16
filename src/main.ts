@@ -1,12 +1,14 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import { AppModule } from './app.module';
 import { setupApp } from './app.setup';
+import { ERROR_RESPONSE_MODELS } from './common/exceptions/error-response.dto';
 
 async function bootstrap() {
-    const app = await NestFactory.create(
+    const app = await NestFactory.create<NestExpressApplication>(
         AppModule,
         /*{ logger: ['error', 'warn', 'log', 'debug'] }*/
         { bufferLogs: true }, // hold startup logs until setupApp installs the pino logger
@@ -27,9 +29,11 @@ async function bootstrap() {
 
     const configService = app.get(ConfigService);
 
-    const apiDocPath = configService.get('API_DOC_PATH') || 'api';
+    const apiDocPath = configService.get<string>('API_DOC_PATH') || 'api';
 
-    const document = SwaggerModule.createDocument(app, config);
+    const document = SwaggerModule.createDocument(app, config, {
+        extraModels: ERROR_RESPONSE_MODELS,
+    });
     SwaggerModule.setup(apiDocPath, app, document);
 
     //writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
@@ -44,7 +48,7 @@ async function bootstrap() {
         process.env.NODE_ENV === 'production' ? ['https://yourdomain.com'] : true,
     });*/
 
-    app.getHttpAdapter().getInstance().set('etag', false);
+    app.set('etag', false);
 
     //await app.listen(process.env.PORT ?? 3000);
     await app.listen(process.env.PORT ?? 3000, '0.0.0.0');

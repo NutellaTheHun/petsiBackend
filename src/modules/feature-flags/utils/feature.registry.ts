@@ -13,5 +13,5 @@ export const FEATURE_REGISTRY = {
 export type Feature = keyof typeof FEATURE_REGISTRY;
 
 export function isRegisteredFeature(value: string): value is Feature {
-    return Object.prototype.hasOwnProperty.call(FEATURE_REGISTRY, value);
+    return Object.keys(FEATURE_REGISTRY).includes(value);
 }

@@ -119,7 +119,12 @@ export class OrderCategoryController extends ControllerBase<OrderCategoryEntity>
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -166,7 +171,9 @@ export class OrderCategoryController extends ControllerBase<OrderCategoryEntity>
     @ApiOperation({ summary: 'Retrieves one Order Type' })
     @ApiOkResponse({ description: 'Order Type found', type: OrderCategory })
     @ApiNotFoundResponse({ description: 'Order Type not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderCategory> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<OrderCategory> {
         return super.findOne(id);
     }
 }

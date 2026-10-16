@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { RequestContextService, RequestContextValues } from '../../modules/request-context/RequestContextService';
+import {
+    RequestContextService,
+    RequestContextValues,
+} from '../../modules/request-context/RequestContextService';
 
 @Injectable()
 export class TestRequestContextService implements RequestContextService {
@@ -13,7 +16,7 @@ export class TestRequestContextService implements RequestContextService {
     }
 
     get<T = any>(key: string): T | undefined {
-        return this.context.get(key);
+        return this.context.get(key) as T | undefined;
     }
 
     getRequestId(): string {

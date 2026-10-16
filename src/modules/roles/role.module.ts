@@ -19,8 +19,14 @@ import { RoleValidator } from './validators/role.validator';
         CacheModule.register(),
         RequestContextModule,
     ],
-    controllers: [RoleController,],
-    providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil, RoleChangeDetector],
+    controllers: [RoleController],
+    providers: [
+        RoleService,
+        RoleBuilder,
+        RoleValidator,
+        RoleTestUtil,
+        RoleChangeDetector,
+    ],
     exports: [RoleService, RoleTestUtil, TypeOrmModule],
 })
-export class RoleModule { }
+export class RoleModule {}

@@ -52,12 +52,18 @@ describe('order category service', () => {
         });
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         dataSource = module.get(DataSource);
-        service = module.get(OrderCategoryService) as TestableOrderCategoryService;
+        service =
+            module.get<TestableOrderCategoryService>(OrderCategoryService);
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -72,7 +78,10 @@ describe('order category service', () => {
     });
 
     afterAll(async () => {
-        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await categoryRepo.delete([
+            ...categories.map((c) => c.id),
+            otherTenantCategory.id,
+        ]);
         await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
@@ -109,33 +118,43 @@ describe('order category service', () => {
                 await service.updateEntityForTest(dto, category, manager);
             });
 
-            const result = await categoryRepo.findOneOrFail({ where: { id: category.id } });
+            const result = await categoryRepo.findOneOrFail({
+                where: { id: category.id },
+            });
             expect(result.name).toEqual(dto.name);
         });
 
         it('should remove category', async () => {
             const deleteResult = await service.remove(category.id);
             expect(deleteResult).toBe(true);
-            await expect(service.findOne(category.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(category.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
     it('should find seeded category in findAll results', async () => {
         const serviceResult = await service.findAll({ limit: 100 });
         expect(serviceResult).not.toBeNull();
-        const found = serviceResult?.items.find((c) => c.id === categories[0].id);
+        const found = serviceResult?.items.find(
+            (c) => c.id === categories[0].id,
+        );
         expect(found).toBeDefined();
     });
 
     it('should find one category with relations', async () => {
-        const serviceResult = await service.findOne(categories[0].id, ['orders']);
+        const serviceResult = await service.findOne(categories[0].id, [
+            'orders',
+        ]);
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.id).toEqual(categories[0].id);
         expect(Array.isArray(serviceResult?.orders)).toBe(true);
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('tenant scoping', () => {
@@ -145,26 +164,28 @@ describe('order category service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as OrderCategory).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await categoryRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(service.findOne(otherTenantCategory.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.findOne(otherTenantCategory.id),
+            ).rejects.toThrow(NotFoundException);
         });
 
-        it('findAll excludes another tenant\'s categories', async () => {
+        it("findAll excludes another tenant's categories", async () => {
             const result = await service.findAll({ limit: 100 });
-            const found = result.items.find((c) => c.id === otherTenantCategory.id);
+            const found = result.items.find(
+                (c) => c.id === otherTenantCategory.id,
+            );
             expect(found).toBeUndefined();
         });
 
         it('remove throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(service.remove(otherTenantCategory.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.remove(otherTenantCategory.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

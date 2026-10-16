@@ -49,18 +49,26 @@ describe('Inventory Item Category Service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule({
-            inventoryItemCategoryServiceClass: TestableInventoryItemCategoryService,
+            inventoryItemCategoryServiceClass:
+                TestableInventoryItemCategoryService,
         });
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
         service = module.get<InventoryItemCategoryService>(
             InventoryItemCategoryService,
         ) as TestableInventoryItemCategoryService;
         dataSource = module.get(DataSource);
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -75,7 +83,10 @@ describe('Inventory Item Category Service', () => {
     });
 
     afterAll(async () => {
-        await categoryRepo.delete([...categories.map((c) => c.id), otherTenantCategory.id]);
+        await categoryRepo.delete([
+            ...categories.map((c) => c.id),
+            otherTenantCategory.id,
+        ]);
         await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
@@ -91,7 +102,9 @@ describe('Inventory Item Category Service', () => {
         let created: InventoryItemCategory;
 
         it('should create category', async () => {
-            const dto = plainToInstance(CreateInventoryItemCategoryDto, { name: `${P}-create-test` });
+            const dto = plainToInstance(CreateInventoryItemCategoryDto, {
+                name: `${P}-create-test`,
+            });
             await dataSource.transaction(async (manager) => {
                 created = await service.createEntityForTest(dto, manager);
             });
@@ -100,17 +113,23 @@ describe('Inventory Item Category Service', () => {
         });
 
         it('should update category', async () => {
-            const dto = plainToInstance(UpdateInventoryItemCategoryDto, { name: `${P}-updated` });
+            const dto = plainToInstance(UpdateInventoryItemCategoryDto, {
+                name: `${P}-updated`,
+            });
             await dataSource.transaction(async (manager) => {
                 await service.updateEntityForTest(dto, created, manager);
             });
-            const reloaded = await categoryRepo.findOneOrFail({ where: { id: created.id } });
+            const reloaded = await categoryRepo.findOneOrFail({
+                where: { id: created.id },
+            });
             expect(reloaded.name).toBe(`${P}-updated`);
         });
 
         it('should remove category', async () => {
             await service.remove(created.id);
-            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -121,20 +140,27 @@ describe('Inventory Item Category Service', () => {
     });
 
     it('should find one category with relations', async () => {
-        const result = await service.findOne(categories[0].id, ['inventoryItems']);
+        const result = await service.findOne(categories[0].id, [
+            'inventoryItems',
+        ]);
         expect(result.id).toBe(categories[0].id);
         expect(Array.isArray(result.inventoryItems)).toBe(true);
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(InventoryItemCategoryService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                InventoryItemCategoryService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -150,10 +176,14 @@ describe('Inventory Item Category Service', () => {
 
         it('calls updateEntity when name changes', async () => {
             const cat = categories[1];
-            const dto = inventoryItemCategoryToUpdateDto(cat, { name: `${P}-cat-renamed` });
+            const dto = inventoryItemCategoryToUpdateDto(cat, {
+                name: `${P}-cat-renamed`,
+            });
             await service.update(cat.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await categoryRepo.findOneOrFail({ where: { id: cat.id } });
+            const row = await categoryRepo.findOneOrFail({
+                where: { id: cat.id },
+            });
             expect(row.name).toBe(`${P}-cat-renamed`);
         });
     });
@@ -165,14 +195,14 @@ describe('Inventory Item Category Service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as InventoryItemCategory).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await categoryRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(service.findOne(otherTenantCategory.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.findOne(otherTenantCategory.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

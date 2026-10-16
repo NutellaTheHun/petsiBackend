@@ -95,7 +95,9 @@ export class InventoryItemController extends ControllerBase<InventoryItemEntity>
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Inventory Item' })
-    @ApiNoContentResponse({ description: 'Inventory Item successfully removed' })
+    @ApiNoContentResponse({
+        description: 'Inventory Item successfully removed',
+    })
     @ApiNotFoundResponse({ description: 'Inventory Item not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return super.remove(id);
@@ -143,7 +145,12 @@ export class InventoryItemController extends ControllerBase<InventoryItemEntity>
         enum: ['ASC', 'DESC'],
         description: 'Sort order: ASC or DESC',
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -183,7 +190,9 @@ export class InventoryItemController extends ControllerBase<InventoryItemEntity>
     @ApiOperation({ summary: 'Retrieves one Inventory Item' })
     @ApiOkResponse({ description: 'Inventory Item found', type: InventoryItem })
     @ApiNotFoundResponse({ description: 'Inventory Item not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<InventoryItem> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<InventoryItem> {
         return super.findOne(id);
     }
 }

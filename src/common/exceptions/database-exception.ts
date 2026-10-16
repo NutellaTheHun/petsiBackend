@@ -1,4 +1,4 @@
-import { DatabaseError } from "./database-error";
+import { DatabaseError } from './database-error';
 
 export class DatabaseException extends Error {
     public readonly error: DatabaseError;

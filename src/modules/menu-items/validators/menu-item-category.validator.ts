@@ -13,8 +13,10 @@ import {
 import { MenuItemCategoryValidatorIdentity } from './identities/menu-item-category.validator.identity.interface';
 
 @Injectable()
-export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEntity, MenuItemCategoryValidatorIdentity> {
-
+export class MenuItemCategoryValidator extends ValidatorBase<
+    MenuItemCategoryEntity,
+    MenuItemCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(MenuItemCategory)
         private readonly repo: Repository<MenuItemCategory>,
@@ -23,7 +25,10 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
         super(repo, 'MenuItemCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: MenuItemCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: MenuItemCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -33,16 +38,22 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto, _id: number | string): Promise<MenuItemCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto,
+        _id: number | string,
+    ): Promise<MenuItemCategoryValidatorIdentity> {
         return {
             name: dto.name,
-        } as MenuItemCategoryValidatorIdentity;
+        };
     }
 }

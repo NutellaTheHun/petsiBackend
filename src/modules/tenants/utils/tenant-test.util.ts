@@ -8,7 +8,7 @@ export class TenantTestUtil {
     constructor(
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
-    ) { }
+    ) {}
 
     // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
     // These do not register cleanup — callers are responsible for deleting by ID.
@@ -21,7 +21,10 @@ export class TenantTestUtil {
         return await this.tenantRepo.save(entity);
     }
 
-    public async seedTenants(P: string, count = 3): Promise<{ tenants: Tenant[] }> {
+    public async seedTenants(
+        P: string,
+        count = 3,
+    ): Promise<{ tenants: Tenant[] }> {
         const tenants: Tenant[] = [];
         for (let i = 0; i < count; i++) {
             const entity = this.tenantRepo.create({

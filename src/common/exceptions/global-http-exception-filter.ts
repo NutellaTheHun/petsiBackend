@@ -13,6 +13,7 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { resolveRequestId } from '../middleware/request-id';
 import { ValidationException } from '../validation/validation-exception';
 import { AppHttpException } from './app-http-exception';
+import { PgDriverError, pgDriverErrorOf } from './database-error';
 import { DatabaseException } from './database-exception';
 import { DtoValidationException } from './dto-validation-exception';
 import { REFERENCE_NOT_FOUND } from './error_constants';
@@ -21,7 +22,10 @@ import { REFERENCE_NOT_FOUND } from './error_constants';
  * The subset of nestjs-pino's `PinoLogger` the filter uses. Tests inject a
  * recording implementation (see `src/test/http-test-app.ts`).
  */
-export type ExceptionFilterLogger = Pick<PinoLogger, 'debug' | 'info' | 'warn' | 'error'>;
+export type ExceptionFilterLogger = Pick<
+    PinoLogger,
+    'debug' | 'info' | 'warn' | 'error'
+>;
 
 /** The subset of `RequestContextService` the filter reads user/tenant ids from. */
 export type ExceptionFilterRequestContext = Pick<RequestContextService, 'get'>;
@@ -32,9 +36,17 @@ const PG_FOREIGN_KEY_VIOLATION = '23503';
 const INVALID_REQUEST_MESSAGE = "This request couldn't be processed";
 const INTERNAL_ERROR_MESSAGE = 'Something went wrong';
 const ALREADY_EXISTS_MESSAGE = 'This already exists';
-const REFERENCE_CONFLICT_MESSAGE = 'A referenced item is in use or no longer exists';
+const REFERENCE_CONFLICT_MESSAGE =
+    'A referenced item is in use or no longer exists';
+
+const SERVER_ERROR_MIN_STATUS: number = HttpStatus.INTERNAL_SERVER_ERROR;
 
 type LogLevel = 'info' | 'warn' | 'error';
+
+/** The response body of a Nest `HttpException`; `AppHttpException` fills all three fields. */
+type HttpExceptionBody =
+    | string
+    | { message?: string; code?: string; details?: unknown };
 
 interface Classified {
     status: number;
@@ -63,7 +75,10 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 
         if (result.log) {
             this.logger[result.log.level](
-                { ...this.requestFields(request, requestId), ...result.log.fields },
+                {
+                    ...this.requestFields(request, requestId),
+                    ...result.log.fields,
+                },
                 result.log.msg,
             );
         }
@@ -130,19 +145,23 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 
         if (exception instanceof HttpException) {
             const status = exception.getStatus();
-            if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+            if (status >= SERVER_ERROR_MIN_STATUS) {
                 return this.serverError(exception);
             }
             // AppHttpException packs { message, code, details } into its response body too
-            const responseBody = exception.getResponse() as any;
+            const responseBody = exception.getResponse() as HttpExceptionBody;
+            const body =
+                typeof responseBody === 'string'
+                    ? { message: responseBody }
+                    : responseBody;
             return {
                 status,
-                message:
-                    typeof responseBody === 'string' ? responseBody : responseBody.message,
-                code: responseBody.code,
-                details: responseBody.details,
+                message: body.message ?? '',
+                code: body.code,
+                details: body.details,
                 log:
-                    exception instanceof AppHttpException && exception.code === REFERENCE_NOT_FOUND
+                    exception instanceof AppHttpException &&
+                    exception.code === REFERENCE_NOT_FOUND
                         ? {
                               level: 'warn',
                               // ids only; a by-name lookup's name is not logged
@@ -161,8 +180,10 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
         return this.serverError(exception);
     }
 
-    private classifyDatabaseException(exception: DatabaseException): Classified {
-        const pgError = (exception.error?.originalError as any)?.driverError;
+    private classifyDatabaseException(
+        exception: DatabaseException,
+    ): Classified {
+        const pgError = pgDriverErrorOf(exception.error?.originalError);
 
         if (pgError?.code === PG_UNIQUE_VIOLATION) {
             return {
@@ -171,7 +192,10 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
                 code: 'ALREADY_EXISTS',
                 log: {
                     level: 'info',
-                    fields: { source: 'server', constraint: pgError.constraint },
+                    fields: {
+                        source: 'server',
+                        constraint: pgError.constraint,
+                    },
                     msg: 'Unique constraint violation',
                 },
             };
@@ -197,13 +221,17 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
         return this.serverError(exception, pgError);
     }
 
-    private serverError(exception: any, pgError?: any): Classified {
+    private serverError(
+        exception: unknown,
+        pgError?: PgDriverError,
+    ): Classified {
         // Log the error closest to the cause; DatabaseException wraps the original TypeORM error
-        const cause =
+        const cause = (
             exception instanceof DatabaseException &&
             exception.error?.originalError instanceof Error
                 ? exception.error.originalError
-                : exception;
+                : exception
+        ) as Partial<Error> | null | undefined;
 
         return {
             status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -228,11 +256,16 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     }
 
     /** Fields every filter log entry carries. Never includes the request body. */
-    private requestFields(request: Request, requestId: string): Record<string, unknown> {
+    private requestFields(
+        request: Request,
+        requestId: string,
+    ): Record<string, unknown> {
         return {
             requestId,
             method: request.method,
-            route: request.route?.path ?? request.path,
+            route:
+                (request.route as { path?: string } | undefined)?.path ??
+                request.path,
             userId: this.requestContext.get<number>('userId'),
             tenantId: this.requestContext.get<number>('tenantId'),
         };

@@ -29,12 +29,7 @@ export class InventoryItemService extends TenantScopedServiceBase<InventoryItemE
         private readonly itemSizeComposer: InventoryItemSizeComposer,
         private readonly inventoryItemChangeDetector: InventoryItemChangeDetector,
     ) {
-        super(
-            repo,
-            'InventoryItemService',
-            requestContextService,
-            validator,
-        );
+        super(repo, 'InventoryItemService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -51,12 +46,13 @@ export class InventoryItemService extends TenantScopedServiceBase<InventoryItemE
         const savedResult = await manager.save(result);
 
         if (dto.sizes?.length) {
-            savedResult.sizes = await this.itemSizeComposer.composeManyNestedEntity(
-                dto.sizes,
-                manager,
-                [],
-                { inventoryItemId: savedResult.id },
-            );
+            savedResult.sizes =
+                await this.itemSizeComposer.composeManyNestedEntity(
+                    dto.sizes,
+                    manager,
+                    [],
+                    { inventoryItemId: savedResult.id },
+                );
             await manager.save(savedResult);
         }
 

@@ -6,7 +6,7 @@ import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
 import { RecipeIngredient } from '../../entities/recipe-ingredient.entity';
 import { Recipe } from '../../entities/recipe.entity';
 
-const stubRecipe = (): Recipe => ({ id: 0 } as Recipe);
+const stubRecipe = (): Recipe => ({ id: 0 }) as Recipe;
 import { UpdateRecipeDto } from '../../dto/recipe/update-recipe-dto';
 import { recipeIngredientToNestedUpdateDto } from '../entity-transformers/recipe-ingredient.dto.transformer';
 import { recipeToUpdateDto } from '../entity-transformers/recipe.dto.transformer';
@@ -14,7 +14,9 @@ import { RecipeIngredientChangeDetector } from './recipe-ingredient.change-detec
 import { RecipeChangeDetector } from './recipe.change-detector';
 
 describe('RecipeChangeDetector', () => {
-    const detector = new RecipeChangeDetector(new RecipeIngredientChangeDetector());
+    const detector = new RecipeChangeDetector(
+        new RecipeIngredientChangeDetector(),
+    );
 
     const ingredient = (id: number): RecipeIngredient =>
         ({
@@ -23,8 +25,8 @@ describe('RecipeChangeDetector', () => {
             ingredientInventoryItem: { id: 100 } as InventoryItem,
             ingredientRecipe: null,
             quantity: 1,
-            unit: 'oz' as AppUnit,
-        } as RecipeIngredient);
+            unit: 'oz',
+        }) as RecipeIngredient;
 
     const baseEntity = (): Recipe =>
         ({
@@ -32,15 +34,15 @@ describe('RecipeChangeDetector', () => {
             name: 'Apple pie',
             producedMenuItem: { id: 1 } as MenuItem,
             batchResultQuantity: 1,
-            batchResultUnit: 'oz' as AppUnit,
+            batchResultUnit: 'oz',
             servingSizeQuantity: 2,
-            servingSizeUnit: 'kg' as AppUnit,
+            servingSizeUnit: 'kg',
             salesPrice: '12.00',
             isIngredient: false,
             category: { id: 10 } as RecipeCategory,
             subCategory: { id: 20 } as RecipeSubCategory,
             ingredients: [ingredient(30)],
-        } as Recipe);
+        }) as Recipe;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -53,19 +55,28 @@ describe('RecipeChangeDetector', () => {
     it.each([
         ['null', null],
         ['zero', '0.00'],
-    ])('returns empty patch when salesPrice is %s and unchanged', (_label, salesPrice) => {
-        const entity = { ...baseEntity(), salesPrice } as unknown as Recipe;
-        const result = detector.detect(entity, recipeToUpdateDto(entity));
-        expect(result.hasChanges).toBe(false);
-        expect(result.patch).toEqual({});
-    });
+    ])(
+        'returns empty patch when salesPrice is %s and unchanged',
+        (_label, salesPrice) => {
+            const entity = { ...baseEntity(), salesPrice };
+            const result = detector.detect(entity, recipeToUpdateDto(entity));
+            expect(result.hasChanges).toBe(false);
+            expect(result.patch).toEqual({});
+        },
+    );
 
     it('detects root field changes without ingredient changes', () => {
         const entity = baseEntity();
-        const dto = recipeToUpdateDto(entity, { name: 'Cherry pie', salesPrice: 15 });
+        const dto = recipeToUpdateDto(entity, {
+            name: 'Cherry pie',
+            salesPrice: 15,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toMatchObject({ name: 'Cherry pie', salesPrice: 15 });
+        expect(result.patch).toMatchObject({
+            name: 'Cherry pie',
+            salesPrice: 15,
+        });
         expect(result.patch.ingredients).toBeUndefined();
     });
 
@@ -88,7 +99,9 @@ describe('RecipeChangeDetector', () => {
         const ing = ingredient(30);
         const dto: UpdateRecipeDto = {
             ...recipeToUpdateDto(entity),
-            ingredients: [recipeIngredientToNestedUpdateDto(ing, { quantity: 9 })],
+            ingredients: [
+                recipeIngredientToNestedUpdateDto(ing, { quantity: 9 }),
+            ],
         };
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);

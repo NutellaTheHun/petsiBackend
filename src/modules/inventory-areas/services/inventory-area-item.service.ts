@@ -47,10 +47,8 @@ export class InventoryAreaItemService extends LocationScopedServiceBase<Inventor
         manager: EntityManager,
         entity: InventoryAreaItem,
     ): Promise<void> {
-        await this.areaItemComposer.composeUpdate(dto, manager, entity)
-        await manager.save(
-            entity
-        );
+        await this.areaItemComposer.composeUpdate(dto, manager, entity);
+        await manager.save(entity);
     }
 
     protected applySortBy(
@@ -59,7 +57,10 @@ export class InventoryAreaItemService extends LocationScopedServiceBase<Inventor
         sortOrder: 'ASC' | 'DESC',
     ): void {
         if (sortBy === 'countedInventoryItem') {
-            query.leftJoinAndSelect('entity.countedInventoryItem', 'inventoryItem');
+            query.leftJoinAndSelect(
+                'entity.countedInventoryItem',
+                'inventoryItem',
+            );
             query.orderBy(`inventoryItem.name`, sortOrder);
         }
         if (sortBy === 'amount') {
@@ -82,7 +83,10 @@ export class InventoryAreaItemService extends LocationScopedServiceBase<Inventor
         query: SelectQueryBuilder<InventoryAreaItem>,
         filters: Record<string, string[]>,
     ): void {
-        if (filters.inventoryAreaCount && filters.inventoryAreaCount.length > 0) {
+        if (
+            filters.inventoryAreaCount &&
+            filters.inventoryAreaCount.length > 0
+        ) {
             query.andWhere(
                 'entity.parentInventoryCount IN (:...inventoryAreaCounts)',
                 {
@@ -95,9 +99,6 @@ export class InventoryAreaItemService extends LocationScopedServiceBase<Inventor
     protected getChangeDetector():
         | ChangeDetectorBase<InventoryAreaItem, UpdateInventoryAreaItemDto>
         | undefined {
-        return this.areaItemChangeDetector as unknown as ChangeDetectorBase<
-            InventoryAreaItem,
-            UpdateInventoryAreaItemDto
-        >;
+        return this.areaItemChangeDetector;
     }
 }

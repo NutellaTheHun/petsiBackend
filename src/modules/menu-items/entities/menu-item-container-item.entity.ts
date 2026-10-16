@@ -77,7 +77,8 @@ export class MenuItemContainerItem {
      */
     @ApiProperty({
         example: menuItemExample(new Set<string>(), true),
-        description: 'The menuItem that is being referenced as the contained item',
+        description:
+            'The menuItem that is being referenced as the contained item',
         type: () => MenuItem,
     })
     @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })

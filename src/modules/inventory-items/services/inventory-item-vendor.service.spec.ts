@@ -51,16 +51,23 @@ describe('Inventory Item Vendor Service', () => {
         const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemVendorServiceClass: TestableInventoryItemVendorService,
         });
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        vendorService = module.get(
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        vendorService = module.get<TestableInventoryItemVendorService>(
             InventoryItemVendorService,
-        ) as TestableInventoryItemVendorService;
+        );
         dataSource = module.get(DataSource);
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -75,7 +82,10 @@ describe('Inventory Item Vendor Service', () => {
     });
 
     afterAll(async () => {
-        await vendorRepo.delete([...vendors.map((v) => v.id), otherTenantVendor.id]);
+        await vendorRepo.delete([
+            ...vendors.map((v) => v.id),
+            otherTenantVendor.id,
+        ]);
         await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
@@ -91,7 +101,9 @@ describe('Inventory Item Vendor Service', () => {
         let created: InventoryItemVendor;
 
         it('should create vendor', async () => {
-            const dto = plainToInstance(CreateInventoryItemVendorDto, { name: `${P}-vendor-create` });
+            const dto = plainToInstance(CreateInventoryItemVendorDto, {
+                name: `${P}-vendor-create`,
+            });
             await dataSource.transaction(async (manager) => {
                 created = await vendorService.createEntityForTest(dto, manager);
             });
@@ -100,17 +112,23 @@ describe('Inventory Item Vendor Service', () => {
         });
 
         it('should update vendor', async () => {
-            const dto = plainToInstance(UpdateInventoryItemVendorDto, { name: `${P}-vendor-updated` });
+            const dto = plainToInstance(UpdateInventoryItemVendorDto, {
+                name: `${P}-vendor-updated`,
+            });
             await dataSource.transaction(async (manager) => {
                 await vendorService.updateEntityForTest(dto, created, manager);
             });
-            const reloaded = await vendorRepo.findOneOrFail({ where: { id: created.id } });
+            const reloaded = await vendorRepo.findOneOrFail({
+                where: { id: created.id },
+            });
             expect(reloaded.name).toBe(`${P}-vendor-updated`);
         });
 
         it('should remove vendor', async () => {
             await vendorService.remove(created.id);
-            await expect(vendorService.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(vendorService.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -121,20 +139,27 @@ describe('Inventory Item Vendor Service', () => {
     });
 
     it('should find one vendor with relations', async () => {
-        const result = await vendorService.findOne(vendors[0].id, ['inventoryItems']);
+        const result = await vendorService.findOne(vendors[0].id, [
+            'inventoryItems',
+        ]);
         expect(result.id).toBe(vendors[0].id);
         expect(Array.isArray(result.inventoryItems)).toBe(true);
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(vendorService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(vendorService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(InventoryItemVendorService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                InventoryItemVendorService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -150,7 +175,9 @@ describe('Inventory Item Vendor Service', () => {
 
         it('calls updateEntity when name changes', async () => {
             const v = vendors[1];
-            const dto = inventoryItemVendorToUpdateDto(v, { name: `${P}-vendor-renamed` });
+            const dto = inventoryItemVendorToUpdateDto(v, {
+                name: `${P}-vendor-renamed`,
+            });
             await vendorService.update(v.id, dto);
             expect(spy).toHaveBeenCalled();
             const row = await vendorRepo.findOneOrFail({ where: { id: v.id } });
@@ -165,14 +192,14 @@ describe('Inventory Item Vendor Service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as InventoryItemVendor).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await vendorRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(vendorService.findOne(otherTenantVendor.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                vendorService.findOne(otherTenantVendor.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

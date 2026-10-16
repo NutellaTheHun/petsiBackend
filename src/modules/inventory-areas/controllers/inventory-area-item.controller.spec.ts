@@ -54,9 +54,9 @@ describe('inventory area item controller', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
-        const requestContext = module.get(
+        const requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         const defaultLocation = await testingUtil.getDefaultLocation();
         requestContext.setContext({
@@ -65,8 +65,16 @@ describe('inventory area item controller', () => {
             locations: [],
         });
 
-        ({ areas, counts, categories, vendors, packages, items, sizes, areaItems } =
-            await testingUtil.seedItemCounts(P));
+        ({
+            areas,
+            counts,
+            categories,
+            vendors,
+            packages,
+            items,
+            sizes,
+            areaItems,
+        } = await testingUtil.seedItemCounts(P));
     });
 
     afterAll(async () => {

@@ -54,7 +54,9 @@ export class RoleService extends TenantScopedServiceBase<RoleEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Role, UpdateRoleDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Role, UpdateRoleDto>
+        | undefined {
         return this.roleChangeDetector;
     }
 }

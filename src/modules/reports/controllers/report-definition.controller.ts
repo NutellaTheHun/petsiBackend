@@ -12,7 +12,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../../common/decorators/PublicRole';
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
+import {
+    ROLE_ADMIN,
+    ROLE_MANAGER,
+    ROLE_STAFF,
+} from '../../roles/utils/constants';
 import { CreateReportDefinitionDto } from '../dto/create-report-definition.dto';
 import { ExecuteReportDto } from '../dto/execute-report.dto';
 import { ReportResultDto } from '../dto/report-result.dto';
@@ -33,7 +37,9 @@ export class ReportDefinitionController {
     @Post()
     @Roles(ROLE_MANAGER, ROLE_ADMIN)
     @HttpCode(HttpStatus.CREATED)
-    async create(@Body() dto: CreateReportDefinitionDto): Promise<ReportDefinition> {
+    async create(
+        @Body() dto: CreateReportDefinitionDto,
+    ): Promise<ReportDefinition> {
         return this.service.create(dto);
     }
 
@@ -45,7 +51,9 @@ export class ReportDefinitionController {
 
     @Get(':id')
     @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<ReportDefinition> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<ReportDefinition> {
         return this.service.findOne(id);
     }
 

@@ -18,8 +18,10 @@ import { InventoryAreaItemValidatorIdentity } from './identities/inventory-area-
 import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 
 @Injectable()
-export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCountEntity, InventoryAreaCountValidatorIdentity> {
-
+export class InventoryAreaCountValidator extends ValidatorBase<
+    InventoryAreaCountEntity,
+    InventoryAreaCountValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryAreaCount)
         private readonly repo: Repository<InventoryAreaCount>,
@@ -34,7 +36,10 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
         super(repo, 'InventoryAreaCount', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryAreaCountValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryAreaCountValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.inventoryAreaId !== undefined) {
@@ -47,27 +52,42 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
             );
         }
 
-        if (identity.countedInventoryItems && identity.countedInventoryItems.length > 0) {
+        if (
+            identity.countedInventoryItems &&
+            identity.countedInventoryItems.length > 0
+        ) {
             for (const item of identity.countedInventoryItems) {
-                await this.areaItemValidator.validateNestedIdentity('countedInventoryItems', item, errorMap);
+                await this.areaItemValidator.validateNestedIdentity(
+                    'countedInventoryItems',
+                    item,
+                    errorMap,
+                );
             }
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: UpdateInventoryAreaCountDto | CreateInventoryAreaCountDto, _id: number): Promise<ValidatorIdentityBaseInterface> {
+    public async resolveIdentity(
+        dto: UpdateInventoryAreaCountDto | CreateInventoryAreaCountDto,
+        _id: number,
+    ): Promise<ValidatorIdentityBaseInterface> {
         const countedItemIdentities: InventoryAreaItemValidatorIdentity[] = [];
         if (dto.countedInventoryItems && dto.countedInventoryItems.length > 0) {
             for (const item of dto.countedInventoryItems) {
-                const itemId = item instanceof NestedCreateInventoryAreaItemDto ? item.createId : item.id;
-                countedItemIdentities.push(await this.areaItemValidator.resolveIdentity(item, itemId));
+                const itemId =
+                    item instanceof NestedCreateInventoryAreaItemDto
+                        ? item.createId
+                        : item.id;
+                countedItemIdentities.push(
+                    await this.areaItemValidator.resolveIdentity(item, itemId),
+                );
             }
         }
 
         return {
             inventoryAreaId: dto.inventoryAreaId,
             countedInventoryItems: countedItemIdentities,
-        } as InventoryAreaCountValidatorIdentity
+        } as InventoryAreaCountValidatorIdentity;
     }
 }

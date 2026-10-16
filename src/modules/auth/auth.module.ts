@@ -12,25 +12,25 @@ import { AuthGuard } from './guards/auth.guard';
 import { AuthService } from './services/auth.service';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([User, UserLocation]),
+    imports: [
+        ConfigModule,
+        TypeOrmModule.forFeature([User, UserLocation]),
 
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        global: true,
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60s' },
-      }),
-    }),
-    RequestContextModule,
-    UserModule,
-    FeatureFlagsModule,
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, AuthGuard],
-  exports: [AuthService, AuthGuard, JwtModule],
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                global: true,
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: { expiresIn: '60s' },
+            }),
+        }),
+        RequestContextModule,
+        UserModule,
+        FeatureFlagsModule,
+    ],
+    controllers: [AuthController],
+    providers: [AuthService, AuthGuard],
+    exports: [AuthService, AuthGuard, JwtModule],
 })
 export class AuthModule {}

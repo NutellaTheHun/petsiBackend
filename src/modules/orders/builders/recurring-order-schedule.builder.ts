@@ -1,15 +1,14 @@
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { BuilderBase } from "../../../common/base/builder.base";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
-import { UpdateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
-import { Order } from "../entities/order.entity";
-import { RecurringOrderSchedule } from "../entities/recurring-order-schedule.entity";
-import { buildRruleString } from "../utils/rrule.util";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { BuilderBase } from '../../../common/base/builder.base';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { CreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/create-recurring-order-schedule.dto';
+import { UpdateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/update-recurring-order-schedule.dto';
+import { Order } from '../entities/order.entity';
+import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
+import { buildRruleString } from '../utils/rrule.util';
 
 export class RecurringOrderScheduleBuilder extends BuilderBase<RecurringOrderSchedule> {
-
     constructor(
         @InjectRepository(RecurringOrderSchedule)
         private readonly recurringOrderScheduleRepo: Repository<RecurringOrderSchedule>,
@@ -17,7 +16,11 @@ export class RecurringOrderScheduleBuilder extends BuilderBase<RecurringOrderSch
         private readonly orderRepo: Repository<Order>,
         requestContextService: RequestContextService,
     ) {
-        super(RecurringOrderSchedule, 'RecurringOrderScheduleBuilder', requestContextService);
+        super(
+            RecurringOrderSchedule,
+            'RecurringOrderScheduleBuilder',
+            requestContextService,
+        );
     }
 
     protected createEntity(dto: CreateRecurringOrderScheduleDto): void {
@@ -38,7 +41,6 @@ export class RecurringOrderScheduleBuilder extends BuilderBase<RecurringOrderSch
         if (dto.frequency !== undefined) {
             this.rruleString(dto);
         }
-
     }
     protected updateEntity(dto: UpdateRecurringOrderScheduleDto): void {
         if (dto.startDate !== undefined) {
@@ -55,11 +57,15 @@ export class RecurringOrderScheduleBuilder extends BuilderBase<RecurringOrderSch
         if (dto.frequency !== undefined) {
             this.rruleString(dto);
         }
-
     }
 
     public orderById(id: number): this {
-        return this.setPropById(async (id: number) => await this.orderRepo.findOne({ where: { id } }), 'order', id);
+        return this.setPropById(
+            async (id: number) =>
+                await this.orderRepo.findOne({ where: { id } }),
+            'order',
+            id,
+        );
     }
     public startDate(date: Date): this {
         return this.setPropByVal('startDate', date);

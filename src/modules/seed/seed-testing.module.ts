@@ -50,107 +50,110 @@ import { UserModule } from '../users/user.module';
 import { SeedModule } from './seed.module';
 
 export async function getSeedTestingModule(): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([
-        InventoryArea,
-        InventoryAreaCount,
-        InventoryAreaItem,
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                InventoryArea,
+                InventoryAreaCount,
+                InventoryAreaItem,
 
-        InventoryItem,
-        InventoryItemCategory,
-        InventoryItemPackage,
-        InventoryItemSize,
-        InventoryItemVendor,
+                InventoryItem,
+                InventoryItemCategory,
+                InventoryItemPackage,
+                InventoryItemSize,
+                InventoryItemVendor,
 
-        Label,
-        LabelType,
+                Label,
+                LabelType,
 
-        MenuItem,
-        MenuItemCategory,
-        MenuItemContainerItem,
-        MenuItemSize,
+                MenuItem,
+                MenuItemCategory,
+                MenuItemContainerItem,
+                MenuItemSize,
 
-        Order,
-        OrderCategory,
-        OrderContainerItem,
-        OrderMenuItem,
+                Order,
+                OrderCategory,
+                OrderContainerItem,
+                OrderMenuItem,
 
-        Recipe,
-        RecipeCategory,
-        RecipeIngredient,
-        RecipeSubCategory,
+                Recipe,
+                RecipeCategory,
+                RecipeIngredient,
+                RecipeSubCategory,
 
-        Template,
-        TemplateMenuItem,
+                Template,
+                TemplateMenuItem,
 
-        User,
-        Role,
-        Tenant,
-        Location,
-        UserLocation,
-      ]),
-      TypeOrmModule.forFeature([
-        InventoryArea,
-        InventoryAreaCount,
-        InventoryAreaItem,
+                User,
+                Role,
+                Tenant,
+                Location,
+                UserLocation,
+            ]),
+            TypeOrmModule.forFeature([
+                InventoryArea,
+                InventoryAreaCount,
+                InventoryAreaItem,
 
-        InventoryItem,
-        InventoryItemCategory,
-        InventoryItemPackage,
-        InventoryItemSize,
-        InventoryItemVendor,
+                InventoryItem,
+                InventoryItemCategory,
+                InventoryItemPackage,
+                InventoryItemSize,
+                InventoryItemVendor,
 
-        Label,
-        LabelType,
+                Label,
+                LabelType,
 
-        MenuItem,
-        MenuItemCategory,
-        MenuItemContainerItem,
-        MenuItemSize,
+                MenuItem,
+                MenuItemCategory,
+                MenuItemContainerItem,
+                MenuItemSize,
 
-        Order,
-        OrderCategory,
-        OrderContainerItem,
-        OrderMenuItem,
+                Order,
+                OrderCategory,
+                OrderContainerItem,
+                OrderMenuItem,
 
-        Recipe,
-        RecipeCategory,
-        RecipeIngredient,
-        RecipeSubCategory,
+                Recipe,
+                RecipeCategory,
+                RecipeIngredient,
+                RecipeSubCategory,
 
-        Template,
-        TemplateMenuItem,
+                Template,
+                TemplateMenuItem,
 
-        User,
-        Role,
-        Tenant,
-        Location,
-        UserLocation,
-      ]),
-      SeedModule,
-      UserModule,
-      RoleModule,
-      TenantsModule,
-      LocationsModule,
-      InventoryAreasModule,
-      InventoryItemsModule,
-      LabelsModule,
-      MenuItemsModule,
-      OrdersModule,
-      RecipesModule,
-      TemplatesModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
-      }),
-      RequestContextModule,
-    ],
+                User,
+                Role,
+                Tenant,
+                Location,
+                UserLocation,
+            ]),
+            SeedModule,
+            UserModule,
+            RoleModule,
+            TenantsModule,
+            LocationsModule,
+            InventoryAreasModule,
+            InventoryItemsModule,
+            LabelsModule,
+            MenuItemsModule,
+            OrdersModule,
+            RecipesModule,
+            TemplatesModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+            RequestContextModule,
+        ],
 
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .compile();
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile();
 }

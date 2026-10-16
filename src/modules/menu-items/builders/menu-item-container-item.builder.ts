@@ -13,144 +13,150 @@ import { MenuItem } from '../entities/menu-item.entity';
 
 @Injectable()
 export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerItem> {
-  constructor(
-    @InjectRepository(MenuItemContainerItem)
-    private readonly containerItemRepo: Repository<MenuItemContainerItem>,
+    constructor(
+        @InjectRepository(MenuItemContainerItem)
+        private readonly containerItemRepo: Repository<MenuItemContainerItem>,
 
-    @InjectRepository(MenuItem)
-    private readonly menuItemRepo: Repository<MenuItem>,
+        @InjectRepository(MenuItem)
+        private readonly menuItemRepo: Repository<MenuItem>,
 
-    @InjectRepository(MenuItemSize)
-    private readonly itemSizeRepo: Repository<MenuItemSize>,
+        @InjectRepository(MenuItemSize)
+        private readonly itemSizeRepo: Repository<MenuItemSize>,
 
-    requestContextService: RequestContextService,
-  ) {
-    super(
-      MenuItemContainerItem,
-      'MenuItemComponentBuilder',
-      requestContextService,
-    );
-  }
-
-  protected createEntity(
-    dto: CreateMenuItemContainerItemDto,
-    parent?: MenuItem,
-  ): void {
-    // If the parentMenuItemId is provided, use it to set the parentMenuItem. (Through menu-item-container-item endpoint)
-    // If the parentMenuItemId is not provided, but a parent is provided, use the parent to set the parentMenuItem. (Through create menu-item endpoint)
-    if (parent) {
-      this.setPropByVal('parentMenuItem', parent);
-    } else if (dto.parentMenuItemId !== undefined) {
-      this.parentContainerById(dto.parentMenuItemId);
+        requestContextService: RequestContextService,
+    ) {
+        super(
+            MenuItemContainerItem,
+            'MenuItemComponentBuilder',
+            requestContextService,
+        );
     }
 
-    if (dto.parentItemSizeId !== undefined) {
-      this.parentContainerSizeById(dto.parentItemSizeId);
-    }
-    if (dto.containedMenuItemId !== undefined) {
-      this.containedItemById(dto.containedMenuItemId);
-    }
-    if (dto.containedItemSizeId !== undefined) {
-      this.containedItemSizeById(dto.containedItemSizeId);
-    }
-    if (dto.quantity !== undefined) {
-      this.quantity(dto.quantity);
-    }
-  }
-
-  protected updateEntity(dto: UpdateMenuItemContainerItemDto): void {
-    if (dto.containedMenuItemId !== undefined) {
-      this.containedItemById(dto.containedMenuItemId);
-    }
-    if (dto.containedItemSizeId !== undefined) {
-      this.containedItemSizeById(dto.containedItemSizeId);
-    }
-    if (dto.quantity !== undefined) {
-      this.quantity(dto.quantity);
-    }
-  }
-
-  public async buildMany(
-    parent: MenuItem,
-    dtos: (
-      | CreateMenuItemContainerItemDto
-      | NestedCreateMenuItemContainerItemDto
-      | NestedUpdateMenuItemContainerItemDto
-    )[],
-  ): Promise<MenuItemContainerItem[]> {
-    const results: MenuItemContainerItem[] = [];
-    for (const dto of dtos) {
-      if (dto instanceof CreateMenuItemContainerItemDto) {
-        results.push(await this.buildCreateDto(dto));
-      } else {
-        if ('createId' in dto) {
-          results.push(await this.buildCreateDto(dto, parent, dto.createId));
+    protected createEntity(
+        dto: CreateMenuItemContainerItemDto,
+        parent?: MenuItem,
+    ): void {
+        // If the parentMenuItemId is provided, use it to set the parentMenuItem. (Through menu-item-container-item endpoint)
+        // If the parentMenuItemId is not provided, but a parent is provided, use the parent to set the parentMenuItem. (Through create menu-item endpoint)
+        if (parent) {
+            this.setPropByVal('parentMenuItem', parent);
+        } else if (dto.parentMenuItemId !== undefined) {
+            this.parentContainerById(dto.parentMenuItemId);
         }
-        if ('id' in dto) {
-          const comp = await this.containerItemRepo.findOne({
-            where: { id: dto.id },
-          });
-          if (!comp) {
-            throw new Error('menu item container item not found');
-          }
-          results.push(await this.buildUpdateDto(comp, dto));
+
+        if (dto.parentItemSizeId !== undefined) {
+            this.parentContainerSizeById(dto.parentItemSizeId);
         }
-      }
+        if (dto.containedMenuItemId !== undefined) {
+            this.containedItemById(dto.containedMenuItemId);
+        }
+        if (dto.containedItemSizeId !== undefined) {
+            this.containedItemSizeById(dto.containedItemSizeId);
+        }
+        if (dto.quantity !== undefined) {
+            this.quantity(dto.quantity);
+        }
     }
-    return results;
-  }
 
-  public parentContainerById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
-      'parentMenuItem',
-      id,
-    );
-  }
+    protected updateEntity(dto: UpdateMenuItemContainerItemDto): void {
+        if (dto.containedMenuItemId !== undefined) {
+            this.containedItemById(dto.containedMenuItemId);
+        }
+        if (dto.containedItemSizeId !== undefined) {
+            this.containedItemSizeById(dto.containedItemSizeId);
+        }
+        if (dto.quantity !== undefined) {
+            this.quantity(dto.quantity);
+        }
+    }
 
-  public parentContainerByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.menuItemRepo.findOne({ where: { name } }),
-      'parentMenuItem',
-      name,
-    );
-  }
+    public async buildMany(
+        parent: MenuItem,
+        dtos: (
+            | CreateMenuItemContainerItemDto
+            | NestedCreateMenuItemContainerItemDto
+            | NestedUpdateMenuItemContainerItemDto
+        )[],
+    ): Promise<MenuItemContainerItem[]> {
+        const results: MenuItemContainerItem[] = [];
+        for (const dto of dtos) {
+            if (dto instanceof CreateMenuItemContainerItemDto) {
+                results.push(await this.buildCreateDto(dto));
+            } else {
+                if ('createId' in dto) {
+                    results.push(
+                        await this.buildCreateDto(dto, parent, dto.createId),
+                    );
+                }
+                if ('id' in dto) {
+                    const comp = await this.containerItemRepo.findOne({
+                        where: { id: dto.id },
+                    });
+                    if (!comp) {
+                        throw new Error('menu item container item not found');
+                    }
+                    results.push(await this.buildUpdateDto(comp, dto));
+                }
+            }
+        }
+        return results;
+    }
 
-  public parentContainerSizeById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.itemSizeRepo.findOne({ where: { id } }),
-      'parentItemSize',
-      id,
-    );
-  }
+    public parentContainerById(id: number): this {
+        return this.setPropById(
+            async (id: number) =>
+                await this.menuItemRepo.findOne({ where: { id } }),
+            'parentMenuItem',
+            id,
+        );
+    }
 
-  public containedItemById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
-      'containedMenuItem',
-      id,
-    );
-  }
+    public parentContainerByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.menuItemRepo.findOne({ where: { name } }),
+            'parentMenuItem',
+            name,
+        );
+    }
 
-  public containedItemByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.menuItemRepo.findOne({ where: { name } }),
-      'containedMenuItem',
-      name,
-    );
-  }
+    public parentContainerSizeById(id: number): this {
+        return this.setPropById(
+            async (id: number) =>
+                await this.itemSizeRepo.findOne({ where: { id } }),
+            'parentItemSize',
+            id,
+        );
+    }
 
-  public containedItemSizeById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.itemSizeRepo.findOne({ where: { id } }),
-      'containedItemSize',
-      id,
-    );
-  }
+    public containedItemById(id: number): this {
+        return this.setPropById(
+            async (id: number) =>
+                await this.menuItemRepo.findOne({ where: { id } }),
+            'containedMenuItem',
+            id,
+        );
+    }
 
-  public quantity(amount: number): this {
-    return this.setPropByVal('quantity', amount);
-  }
+    public containedItemByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.menuItemRepo.findOne({ where: { name } }),
+            'containedMenuItem',
+            name,
+        );
+    }
+
+    public containedItemSizeById(id: number): this {
+        return this.setPropById(
+            async (id: number) =>
+                await this.itemSizeRepo.findOne({ where: { id } }),
+            'containedItemSize',
+            id,
+        );
+    }
+
+    public quantity(amount: number): this {
+        return this.setPropByVal('quantity', amount);
+    }
 }

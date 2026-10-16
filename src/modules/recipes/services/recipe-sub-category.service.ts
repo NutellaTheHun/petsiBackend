@@ -47,7 +47,7 @@ export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubC
         manager: EntityManager,
         entity: RecipeSubCategory,
     ): Promise<void> {
-        await this.subCategoryComposer.composeUpdate(dto, manager, entity)
+        await this.subCategoryComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -76,9 +76,6 @@ export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubC
     protected getChangeDetector():
         | ChangeDetectorBase<RecipeSubCategory, UpdateRecipeSubCategoryDto>
         | undefined {
-        return this.subCategoryChangeDetector as unknown as ChangeDetectorBase<
-            RecipeSubCategory,
-            UpdateRecipeSubCategoryDto
-        >;
+        return this.subCategoryChangeDetector;
     }
 }

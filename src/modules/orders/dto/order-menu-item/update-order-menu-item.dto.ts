@@ -1,13 +1,23 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
+import { plainToInstance, Transform } from 'class-transformer';
+import {
+    IsArray,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    ValidateNested,
+} from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from '../order-container-item/nested-update-order-container-item.dto';
 
-@ApiExtraModels(NestedCreateOrderContainerItemDto, NestedUpdateOrderContainerItemDto)
+@ApiExtraModels(
+    NestedCreateOrderContainerItemDto,
+    NestedUpdateOrderContainerItemDto,
+)
 export class UpdateOrderMenuItemDto {
     @ApiProperty({
         description: 'Id of MenuItem entity being ordered.',
@@ -65,12 +75,12 @@ export class UpdateOrderMenuItemDto {
     @IsArray()
     @IsOptional()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateOrderContainerItemDto, item)
-                : plainToInstance(NestedUpdateOrderContainerItemDto, item)
+                : plainToInstance(NestedUpdateOrderContainerItemDto, item),
         );
     })
     readonly containerOrderMenuItems?: (

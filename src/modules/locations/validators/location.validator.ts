@@ -10,8 +10,10 @@ import { Location, LocationEntity } from '../entities/location.entity';
 import { LocationValidatorIdentity } from './identities/location.validator.identity.interface';
 
 @Injectable()
-export class LocationValidator extends ValidatorBase<LocationEntity, LocationValidatorIdentity> {
-
+export class LocationValidator extends ValidatorBase<
+    LocationEntity,
+    LocationValidatorIdentity
+> {
     constructor(
         @InjectRepository(Location)
         private readonly repo: Repository<Location>,
@@ -21,17 +23,23 @@ export class LocationValidator extends ValidatorBase<LocationEntity, LocationVal
         super(repo, 'Location', requestContextService);
     }
 
-    protected async validateIdentity(identity: LocationValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: LocationValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         // No business rules yet; tenant comes from the request context.
         return new ValidationErrorMap(id);
     }
 
-    public async resolveIdentity(dto: CreateLocationDto | UpdateLocationDto, _id: number | string): Promise<LocationValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateLocationDto | UpdateLocationDto,
+        _id: number | string,
+    ): Promise<LocationValidatorIdentity> {
         return {
             name: dto.name,
             address: dto.address,
             phoneNumber: dto.phoneNumber,
             email: dto.email,
-        } as LocationValidatorIdentity;
+        };
     }
 }

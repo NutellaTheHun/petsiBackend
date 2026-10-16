@@ -6,7 +6,7 @@ describe('TenantChangeDetector', () => {
     const detector = new TenantChangeDetector();
 
     const baseEntity = (): Tenant =>
-        ({ id: 1, name: 'Petsi Pies', subdomain: 'petsi' } as Tenant);
+        ({ id: 1, name: 'Petsi Pies', subdomain: 'petsi' }) as Tenant;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -18,9 +18,15 @@ describe('TenantChangeDetector', () => {
 
     it('detects name and subdomain changes', () => {
         const entity = baseEntity();
-        const dto = tenantToUpdateDto(entity, { name: 'Petsi Pies Renamed', subdomain: 'petsi2' });
+        const dto = tenantToUpdateDto(entity, {
+            name: 'Petsi Pies Renamed',
+            subdomain: 'petsi2',
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ name: 'Petsi Pies Renamed', subdomain: 'petsi2' });
+        expect(result.patch).toEqual({
+            name: 'Petsi Pies Renamed',
+            subdomain: 'petsi2',
+        });
     });
 });

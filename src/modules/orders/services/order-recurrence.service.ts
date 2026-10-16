@@ -30,7 +30,7 @@ export class OrderRecurrenceService {
     constructor(
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
-    ) { }
+    ) {}
 
     /**
      * Generates occurences for all template orders that have a recurrenceSchedule entity.
@@ -42,7 +42,10 @@ export class OrderRecurrenceService {
             relations: ['recurrenceSchedule'],
         });
 
-        const horizon = addDays(startOfDayLocal(new Date()), RECURRENCE_HORIZON_DAYS);
+        const horizon = addDays(
+            startOfDayLocal(new Date()),
+            RECURRENCE_HORIZON_DAYS,
+        );
 
         for (const t of templates) {
             if (!t.recurrenceSchedule) continue;
@@ -68,7 +71,8 @@ export class OrderRecurrenceService {
 
         const repo = manager ? manager.getRepository(Order) : this.orderRepo;
 
-        const anchor = templateOrder.recurrenceDate ?? templateOrder.fulfillmentDate;
+        const anchor =
+            templateOrder.recurrenceDate ?? templateOrder.fulfillmentDate;
         const rrule = templateOrder.recurrenceSchedule.rrule;
 
         let next = this.nextOccurence(rrule, anchor);
@@ -85,7 +89,11 @@ export class OrderRecurrenceService {
                 },
             });
             if (!exists) {
-                const clone = this.cloneTemplateToOccurence(templateOrder, next, manager);
+                const clone = this.cloneTemplateToOccurence(
+                    templateOrder,
+                    next,
+                    manager,
+                );
                 await repo.save(clone);
             }
 
@@ -109,8 +117,12 @@ export class OrderRecurrenceService {
             .delete()
             .from(Order)
             .where('templateOrderId = :tid', { tid: templateOrder.id })
-            .andWhere('occurrenceType = :ot', { ot: OCCURRENCE_TYPES.OCCURRENCE })
-            .andWhere('occurrenceState = :os', { os: OCCURRENCE_STATES.GENERATED })
+            .andWhere('occurrenceType = :ot', {
+                ot: OCCURRENCE_TYPES.OCCURRENCE,
+            })
+            .andWhere('occurrenceState = :os', {
+                os: OCCURRENCE_STATES.GENERATED,
+            })
             .andWhere('recurrenceDate >= :sd', { sd: startDate })
             .execute();
     }
@@ -152,7 +164,9 @@ export class OrderRecurrenceService {
             email: templateOrder.email,
             note: templateOrder.note,
             isFrozen: templateOrder.isFrozen,
-            category: templateOrder.category ? { id: templateOrder.category.id } : null,
+            category: templateOrder.category
+                ? { id: templateOrder.category.id }
+                : null,
             occurrenceType: OCCURRENCE_TYPES.OCCURRENCE,
             occurrenceState: OCCURRENCE_STATES.GENERATED,
             templateOrderId: templateOrder.id,
@@ -172,7 +186,9 @@ export class OrderRecurrenceService {
                 quantity: omi.quantity,
                 tenantId: templateOrder.tenantId,
                 locationId: templateOrder.locationId,
-                containerOrderMenuItems: (omi.containerOrderMenuItems ?? []).map((c) =>
+                containerOrderMenuItems: (
+                    omi.containerOrderMenuItems ?? []
+                ).map((c) =>
                     m.create(OrderContainerItem, {
                         containedMenuItem: { id: c.containedMenuItem.id },
                         containedItemSize: { id: c.containedItemSize.id },
@@ -191,14 +207,20 @@ export class OrderRecurrenceService {
      * Regenerates a template order
      * @param templateOrderId
      */
-    public async handleTemplateOrderUpdate(templateOrderId: number): Promise<void> {
-        const templateOrder = await this.loadTemplateWithRelations(templateOrderId);
+    public async handleTemplateOrderUpdate(
+        templateOrderId: number,
+    ): Promise<void> {
+        const templateOrder =
+            await this.loadTemplateWithRelations(templateOrderId);
         if (!templateOrder?.recurrenceSchedule) return;
 
         await this.handleTemplateFulfillmentDate(templateOrder);
         const startFrom = startOfDayLocal(new Date());
         await this.removeFutureGeneratedOrders(templateOrder, startFrom);
-        const horizon = addDays(startOfDayLocal(new Date()), RECURRENCE_HORIZON_DAYS);
+        const horizon = addDays(
+            startOfDayLocal(new Date()),
+            RECURRENCE_HORIZON_DAYS,
+        );
         await this.ensureGeneratedOrders(templateOrder, horizon);
     }
 
@@ -213,10 +235,16 @@ export class OrderRecurrenceService {
         templateOrderId: number,
         manager?: EntityManager,
     ): Promise<void> {
-        const templateOrder = await this.loadTemplateWithRelations(templateOrderId, manager);
+        const templateOrder = await this.loadTemplateWithRelations(
+            templateOrderId,
+            manager,
+        );
         if (!templateOrder?.recurrenceSchedule) return;
 
-        const horizon = addDays(startOfDayLocal(new Date()), RECURRENCE_HORIZON_DAYS);
+        const horizon = addDays(
+            startOfDayLocal(new Date()),
+            RECURRENCE_HORIZON_DAYS,
+        );
         await this.ensureGeneratedOrders(templateOrder, horizon, manager);
     }
 
@@ -224,14 +252,21 @@ export class OrderRecurrenceService {
      * If the template orders fulfillment date is before the current date, the templates fulfillment date is set to the next occurence date.
      * @param templateOrder
      */
-    protected async handleTemplateFulfillmentDate(templateOrder: Order): Promise<void> {
+    protected async handleTemplateFulfillmentDate(
+        templateOrder: Order,
+    ): Promise<void> {
         if (!templateOrder.recurrenceSchedule?.rrule) return;
 
         const today = startOfDayLocal(new Date());
-        const fulfillmentDay = startOfDayLocal(new Date(templateOrder.fulfillmentDate));
+        const fulfillmentDay = startOfDayLocal(
+            new Date(templateOrder.fulfillmentDate),
+        );
         if (fulfillmentDay.getTime() >= today.getTime()) return;
 
-        const next = this.nextOccurence(templateOrder.recurrenceSchedule.rrule, today);
+        const next = this.nextOccurence(
+            templateOrder.recurrenceSchedule.rrule,
+            today,
+        );
         templateOrder.fulfillmentDate = next;
         await this.orderRepo.save(templateOrder);
     }
