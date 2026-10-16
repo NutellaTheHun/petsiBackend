@@ -56,11 +56,11 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
         return errorMap;
     }
 
-    public async resolveIdentity(dto: UpdateInventoryAreaCountDto | CreateInventoryAreaCountDto, id: number): Promise<ValidatorIdentityBaseInterface> {
-        let countedItemIdentities: InventoryAreaItemValidatorIdentity[] = [];
+    public async resolveIdentity(dto: UpdateInventoryAreaCountDto | CreateInventoryAreaCountDto, _id: number): Promise<ValidatorIdentityBaseInterface> {
+        const countedItemIdentities: InventoryAreaItemValidatorIdentity[] = [];
         if (dto.countedInventoryItems && dto.countedInventoryItems.length > 0) {
             for (const item of dto.countedInventoryItems) {
-                let itemId = item instanceof NestedCreateInventoryAreaItemDto ? item.createId : item.id;
+                const itemId = item instanceof NestedCreateInventoryAreaItemDto ? item.createId : item.id;
                 countedItemIdentities.push(await this.areaItemValidator.resolveIdentity(item, itemId));
             }
         }

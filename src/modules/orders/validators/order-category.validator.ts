@@ -39,7 +39,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateOrderCategoryDto | UpdateOrderCategoryDto, id: number | string): Promise<OrderCategoryValidatorIdentity> {
+    public async resolveIdentity(dto: CreateOrderCategoryDto | UpdateOrderCategoryDto, _id: number | string): Promise<OrderCategoryValidatorIdentity> {
         return {
             name: dto.name,
         } as OrderCategoryValidatorIdentity;

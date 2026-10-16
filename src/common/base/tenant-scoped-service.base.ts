@@ -46,7 +46,7 @@ export abstract class TenantScopedServiceBase<
     return entity;
   }
 
-  async remove(id: number): Promise<Boolean> {
+  async remove(id: number): Promise<boolean> {
     // Routed through findOne (rather than checking tenantId separately) so
     // the tenant check reuses the same NotFoundException-on-mismatch path,
     // and so remove() -- which ServiceBase implements as a raw manager

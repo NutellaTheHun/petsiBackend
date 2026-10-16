@@ -67,7 +67,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateTemplateDto | UpdateTemplateDto, id: number | string): Promise<TemplateValidatorIdentity> {
+    public async resolveIdentity(dto: CreateTemplateDto | UpdateTemplateDto, _id: number | string): Promise<TemplateValidatorIdentity> {
         const templateMenuItems: TemplateMenuItemValidatorIdentity[] = [];
         if (dto.templateMenuItems && dto.templateMenuItems.length) {
             for (const tmi of dto.templateMenuItems) {

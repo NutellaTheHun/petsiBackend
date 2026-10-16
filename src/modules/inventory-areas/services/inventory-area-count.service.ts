@@ -171,7 +171,7 @@ export class InventoryAreaCountService extends LocationScopedServiceBase<Invento
         query: SelectQueryBuilder<InventoryAreaCount>,
         startDate: string,
         endDate?: string,
-        dateBy?: string,
+        _dateBy?: string,
     ): void {
         query.andWhere(`DATE(entity.countDate) >= :startDate`, { startDate });
 

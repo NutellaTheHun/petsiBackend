@@ -73,7 +73,7 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateTemplateMenuItemDto })*/
     async create(
-        @Body() dto: CreateTemplateMenuItemDto,
+        @Body() _dto: CreateTemplateMenuItemDto,
     ): Promise<TemplateMenuItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -95,8 +95,8 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
     })
     @ApiBody({ type: UpdateTemplateMenuItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateTemplateMenuItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateTemplateMenuItemDto,
     ): Promise<TemplateMenuItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);

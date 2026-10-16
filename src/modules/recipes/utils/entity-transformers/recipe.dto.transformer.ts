@@ -14,7 +14,7 @@ export function recipeToUpdateDto(recipe: Recipe, merge: Partial<UpdateRecipeDto
         batchResultUnit: recipe.batchResultUnit ?? null,
         servingSizeQuantity: recipe.servingSizeQuantity ?? null,
         servingSizeUnit: recipe.servingSizeUnit ?? null,
-        salesPrice: Number(recipe.salesPrice) ?? null,
+        salesPrice: recipe.salesPrice != null ? Number(recipe.salesPrice) : null,
         isIngredient: recipe.isIngredient,
         categoryId: recipe.category?.id ?? null,
         subCategoryId: recipe.subCategory?.id ?? null,

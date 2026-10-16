@@ -18,7 +18,7 @@ describe('AuthController', () => {
     controller = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
 
-    let users = [
+    const users = [
       {
         name: USER_A,
         password: await hashPassword('passA'),

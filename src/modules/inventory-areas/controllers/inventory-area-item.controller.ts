@@ -71,7 +71,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     })
     @ApiBody({ type: CreateInventoryAreaItemDto })*/
     async create(
-        @Body() dto: CreateInventoryAreaItemDto,
+        @Body() _dto: CreateInventoryAreaItemDto,
     ): Promise<InventoryAreaItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -98,8 +98,8 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     })
     @ApiBody({ type: UpdateInventoryAreaItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateInventoryAreaItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateInventoryAreaItemDto,
     ): Promise<InventoryAreaItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);

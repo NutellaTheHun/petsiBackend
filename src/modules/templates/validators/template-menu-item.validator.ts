@@ -30,7 +30,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
         super(repo, 'TemplateMenuItem', requestContextService);
     }
 
-    public async resolveIdentity(dto: CreateTemplateMenuItemDto | NestedCreateTemplateMenuItemDto | UpdateTemplateMenuItemDto | NestedUpdateTemplateMenuItemDto, id: number | string): Promise<TemplateMenuItemValidatorIdentity> {
+    public async resolveIdentity(dto: CreateTemplateMenuItemDto | NestedCreateTemplateMenuItemDto | UpdateTemplateMenuItemDto | NestedUpdateTemplateMenuItemDto, _id: number | string): Promise<TemplateMenuItemValidatorIdentity> {
         return {
             id: dto instanceof NestedUpdateTemplateMenuItemDto ? dto.id : undefined,
             createId: dto instanceof NestedCreateTemplateMenuItemDto ? dto.createId : undefined,

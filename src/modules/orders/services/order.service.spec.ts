@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Between, DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';

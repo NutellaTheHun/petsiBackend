@@ -84,6 +84,22 @@ describe('label validator', () => {
         expect(errors).toBeNull();
     });
 
+    it('fail validate create: labelType does not exist', async () => {
+        const dto: CreateLabelDto = plainToInstance(CreateLabelDto, {
+            imageUrl: `${P}-missing-type-label.png`,
+            menuItemId: singleItems[0].id,
+            labelTypeId: 9_999_999,
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['labelType']),
+        );
+    });
+
     it('fail validate create: labelType and menuItem already exists for this item.', async () => {
         const existingLabel = labels[0];
 

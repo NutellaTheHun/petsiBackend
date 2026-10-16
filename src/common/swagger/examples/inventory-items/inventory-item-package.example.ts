@@ -1,6 +1,6 @@
 export function inventoryItemPackageExample(
   fnSet: Set<string>,
-  shallow: boolean,
+  _shallow: boolean,
 ) {
   fnSet.add(inventoryItemPackageExample.name);
   return {

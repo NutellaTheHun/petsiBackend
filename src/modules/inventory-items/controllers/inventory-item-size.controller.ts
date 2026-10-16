@@ -69,7 +69,7 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateInventoryItemSizeDto })*/
     async create(
-        @Body() dto: CreateInventoryItemSizeDto,
+        @Body() _dto: CreateInventoryItemSizeDto,
     ): Promise<InventoryItemSize> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -92,8 +92,8 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
     })
     @ApiBody({ type: UpdateMenuItemSizeDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateInventoryItemSizeDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateInventoryItemSizeDto,
     ): Promise<InventoryItemSize> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);

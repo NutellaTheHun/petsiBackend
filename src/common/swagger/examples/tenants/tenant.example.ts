@@ -1,4 +1,4 @@
-export function tenantExample(fnSet: Set<string>, shallow: boolean) {
+export function tenantExample(fnSet: Set<string>, _shallow: boolean) {
   fnSet.add(tenantExample.name);
   return {
     id: 1,

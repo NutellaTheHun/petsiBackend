@@ -2,32 +2,29 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
     Body,
     Controller,
-    Delete,
     Get,
     HttpCode,
     HttpStatus,
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiExtraModels,
-    ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
@@ -69,7 +66,7 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateOrderContainerItemDto })*/
     async create(
-        @Body() dto: CreateOrderContainerItemDto,
+        @Body() _dto: CreateOrderContainerItemDto,
     ): Promise<OrderContainerItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -91,8 +88,8 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
     })
     @ApiBody({ type: UpdateOrderContainerItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateOrderContainerItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateOrderContainerItemDto,
     ): Promise<OrderContainerItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);

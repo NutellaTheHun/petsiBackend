@@ -14,7 +14,6 @@ import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/n
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { orderMenuItemToUpdateDto } from '../utils/entity-transformers/order-menu-item.dto.transformer';
@@ -48,7 +47,6 @@ describe('order menu item service', () => {
     let orderMenuItemRepo: Repository<OrderMenuItem>;
     let orderRepo: Repository<Order>;
     let categoryRepo: Repository<OrderCategory>;
-    let containerItemRepo: Repository<OrderContainerItem>;
     let menuItemRepo: Repository<MenuItem>;
     let menuItemContainerItemRepo: Repository<MenuItemContainerItem>;
     let menuItemCategoryRepo: Repository<MenuItemCategory>;
@@ -89,7 +87,6 @@ describe('order menu item service', () => {
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
-        containerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));

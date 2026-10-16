@@ -38,7 +38,7 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
         );
     }
 
-    public async resolveIdentity(dto: CreateMenuItemContainerItemDto | UpdateMenuItemContainerItemDto | NestedCreateMenuItemContainerItemDto | NestedUpdateMenuItemContainerItemDto, id: number | string): Promise<MenuItemContainerItemValidatorIdentity> {
+    public async resolveIdentity(dto: CreateMenuItemContainerItemDto | UpdateMenuItemContainerItemDto | NestedCreateMenuItemContainerItemDto | NestedUpdateMenuItemContainerItemDto, _id: number | string): Promise<MenuItemContainerItemValidatorIdentity> {
         return {
             id: dto instanceof NestedUpdateMenuItemContainerItemDto ? dto.id : undefined,
             createId: dto instanceof NestedCreateMenuItemContainerItemDto ? dto.createId : undefined,

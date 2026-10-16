@@ -30,6 +30,14 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-argument': 'warn',
+      // Most async methods without an await implement an async contract
+      // (resolveIdentity, composer/service hooks); dropping async there only adds churn.
+      '@typescript-eslint/require-await': 'off',
+      // Overridden hooks must accept parameters they don't use; prefix those with _.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 );

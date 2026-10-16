@@ -32,7 +32,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.labelTypeId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.labelTypeId,
                 this.labelTypeRepo,
                 'labelType',
@@ -41,7 +41,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
         }
 
         if (identity.menuItemId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.menuItemId,
                 this.menuItemRepo,
                 'menuItem',
@@ -63,7 +63,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateLabelDto | UpdateLabelDto, id: number | string): Promise<LabelValidatorIdentity> {
+    public async resolveIdentity(dto: CreateLabelDto | UpdateLabelDto, _id: number | string): Promise<LabelValidatorIdentity> {
         return {
             imageUrl: dto.imageUrl,
             labelTypeId: dto.labelTypeId,

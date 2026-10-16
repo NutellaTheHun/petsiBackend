@@ -75,6 +75,23 @@ describe('inventory item size validator', () => {
         expect(errors).toBeNull();
     });
 
+    it('fail validate create: package does not exist', async () => {
+        const dto: CreateInventoryItemSizeDto = plainToInstance(CreateInventoryItemSizeDto, {
+            inventoryItemId: items[0].id,
+            packageId: 9_999_999,
+            unit: 'lb',
+            measureAmount: 500,
+            cost: 10.99,
+        });
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['package']),
+        );
+    });
+
     it('fail validate create: measureAmount with value 0', async () => {
         const dto: CreateInventoryItemSizeDto = plainToInstance(CreateInventoryItemSizeDto, {
             inventoryItemId: items[0].id,

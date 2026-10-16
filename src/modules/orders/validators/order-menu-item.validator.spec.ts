@@ -13,7 +13,6 @@ import { NestedUpdateOrderContainerItemDto } from '../dto/order-container-item/n
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';

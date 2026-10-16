@@ -37,7 +37,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.inventoryItemId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.inventoryItemId,
                 this.inventoryItemRepo,
                 'inventoryItem',
@@ -46,7 +46,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         }
 
         if (identity.packageId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.packageId,
                 this.packageRepo,
                 'package',

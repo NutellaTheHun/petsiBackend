@@ -200,7 +200,7 @@ export class MenuItemTestingUtil {
                 continue;
             }
 
-            let type = MENU_ITEM_TYPES.SINGLE;
+            const type = MENU_ITEM_TYPES.SINGLE;
 
             results.push(
                 await this.itemBuilder

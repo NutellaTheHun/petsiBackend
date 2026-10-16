@@ -176,7 +176,7 @@ describe('Seed Service', () => {
   });
 
   afterAll(async () => {
-    textContext.executeCleanupFunctions();
+    await textContext.executeCleanupFunctions();
   });
 
   it('should be defined', () => {

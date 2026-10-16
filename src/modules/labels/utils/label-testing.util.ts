@@ -60,7 +60,7 @@ export class LabelTestingUtil {
 
     // Label Types
     public async getTestLabelTypeEntities(
-        testContext: DatabaseTestContext,
+        _testContext: DatabaseTestContext,
     ): Promise<LabelType[]> {
         const names = getTestLabelTypeNames();
         const dimensions = [

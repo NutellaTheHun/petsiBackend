@@ -51,7 +51,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity, LabelType
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateLabelTypeDto | UpdateLabelTypeDto, id: number | string): Promise<LabelTypeValidatorIdentity> {
+    public async resolveIdentity(dto: CreateLabelTypeDto | UpdateLabelTypeDto, _id: number | string): Promise<LabelTypeValidatorIdentity> {
         return {
             name: dto.name,
             length: dto.length,

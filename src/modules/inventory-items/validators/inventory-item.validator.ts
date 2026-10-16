@@ -81,7 +81,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateInventoryItemDto | UpdateInventoryItemDto, id: number | string): Promise<InventoryItemValidatorIdentity> {
+    public async resolveIdentity(dto: CreateInventoryItemDto | UpdateInventoryItemDto, _id: number | string): Promise<InventoryItemValidatorIdentity> {
         const sizeIdentities: InventoryItemSizeValidatorIdentity[] = [];
         if (dto.sizes && dto.sizes.length) {
             for (const size of dto.sizes) {

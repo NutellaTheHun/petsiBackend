@@ -1,3 +1,5 @@
+// convert-units uses `export =`; without esModuleInterop a default import would be undefined at runtime.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import convert = require('convert-units');
 
 export type AppUnit = convert.Unit | 'ea';

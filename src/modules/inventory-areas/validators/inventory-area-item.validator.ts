@@ -94,7 +94,7 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto | NestedCreateInventoryAreaItemDto | NestedUpdateInventoryAreaItemDto, id: number | string): Promise<ValidatorIdentityBaseInterface> {
+    public async resolveIdentity(dto: CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto | NestedCreateInventoryAreaItemDto | NestedUpdateInventoryAreaItemDto, _id: number | string): Promise<ValidatorIdentityBaseInterface> {
         if (dto instanceof NestedCreateInventoryAreaItemDto || dto instanceof CreateInventoryAreaItemDto) {
             return {
                 createId: dto instanceof NestedCreateInventoryAreaItemDto ? dto.createId : undefined,

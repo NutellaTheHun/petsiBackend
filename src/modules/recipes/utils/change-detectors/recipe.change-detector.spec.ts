@@ -50,6 +50,16 @@ describe('RecipeChangeDetector', () => {
         expect(result.patch).toEqual({});
     });
 
+    it.each([
+        ['null', null],
+        ['zero', '0.00'],
+    ])('returns empty patch when salesPrice is %s and unchanged', (_label, salesPrice) => {
+        const entity = { ...baseEntity(), salesPrice } as unknown as Recipe;
+        const result = detector.detect(entity, recipeToUpdateDto(entity));
+        expect(result.hasChanges).toBe(false);
+        expect(result.patch).toEqual({});
+    });
+
     it('detects root field changes without ingredient changes', () => {
         const entity = baseEntity();
         const dto = recipeToUpdateDto(entity, { name: 'Cherry pie', salesPrice: 15 });

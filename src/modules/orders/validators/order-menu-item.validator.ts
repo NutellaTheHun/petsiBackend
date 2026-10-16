@@ -43,7 +43,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         super(repo, 'OrderMenuItem', requestContextService);
     }
 
-    public async resolveIdentity(dto: CreateOrderMenuItemDto | UpdateOrderMenuItemDto | NestedCreateOrderMenuItemDto | NestedUpdateOrderMenuItemDto, id: number | string): Promise<OrderMenuItemValidatorIdentity> {
+    public async resolveIdentity(dto: CreateOrderMenuItemDto | UpdateOrderMenuItemDto | NestedCreateOrderMenuItemDto | NestedUpdateOrderMenuItemDto, _id: number | string): Promise<OrderMenuItemValidatorIdentity> {
         const containerItemIdentities: OrderContainerItemValidatorIdentity[] = [];
         if (dto.containerOrderMenuItems && dto.containerOrderMenuItems.length) {
             for (const containerItem of dto.containerOrderMenuItems) {

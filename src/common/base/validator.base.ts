@@ -12,18 +12,14 @@ export abstract class ValidatorBase<
     T extends EntityBase<any, any, any>,
     I extends ValidatorIdentityBaseInterface,
 > {
-    protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto'], I>;
+    protected helper: ValidatorHelper<T['__Entity'], I>;
 
     constructor(
         private readonly entityRepo: Repository<T['__Entity']>,
         private readonly validationPrefix: string,
         protected readonly requestContextService: RequestContextService,
     ) {
-        this.helper = new ValidatorHelper<
-            T['__Entity'],
-            T['__CDto'] | T['__UDto'],
-            I
-        >();
+        this.helper = new ValidatorHelper<T['__Entity'], I>();
     }
 
     public async validateDto(

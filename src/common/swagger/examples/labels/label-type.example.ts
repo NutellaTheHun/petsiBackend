@@ -1,4 +1,4 @@
-export function labelTypeExample(fnSet: Set<string>, shallow: boolean) {
+export function labelTypeExample(fnSet: Set<string>, _shallow: boolean) {
   fnSet.add(labelTypeExample.name);
   return {
     id: 1,

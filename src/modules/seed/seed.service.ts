@@ -95,7 +95,7 @@ export class SeedService {
   }
 
   async seedTestDb(inputCtx?: DatabaseTestContext) {
-    let ctx = inputCtx ? inputCtx : new DatabaseTestContext();
+    const ctx = inputCtx ? inputCtx : new DatabaseTestContext();
     //const ctx: DatabaseTestContext = new DatabaseTestContext();
 
     await this.seedInventoryAreaModuleTestDb(ctx);
@@ -271,7 +271,7 @@ export class SeedService {
     await this.seedRoleTestDb(ctx);
   }
 
-  private async seedRoleTestDb(ctx: DatabaseTestContext) {
+  private async seedRoleTestDb(_ctx: DatabaseTestContext) {
     const { tenant } = await this.getSeedFixtureLocation();
     const roles = ['admin', 'manager', 'staff'];
     for (const role of roles) {

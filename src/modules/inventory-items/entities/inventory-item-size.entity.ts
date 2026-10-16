@@ -10,7 +10,6 @@ import { NestedEntityBase } from '../../../common/base/entity.base';
 import { AppUnit } from '../../../common/units';
 import { inventoryItemPackageExample } from '../../../common/swagger/examples/inventory-items/inventory-item-package.example';
 import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
-import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';

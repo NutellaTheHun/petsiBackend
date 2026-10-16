@@ -22,7 +22,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
   public async buildCreateDto(
     dto: any,
     parent?: any,
-    createId?: string,
+    _createId?: string,
   ): Promise<T> {
     this.reset();
     this.createEntity(dto, parent);

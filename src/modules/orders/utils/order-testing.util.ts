@@ -109,7 +109,7 @@ export class OrderTestingUtil {
 
     // Order Category
     public async getTestOrderTypeEntities(
-        testContext: DatabaseTestContext,
+        _testContext: DatabaseTestContext,
     ): Promise<OrderCategory[]> {
         const names = getTestOrderCategoryNames();
         const results: OrderCategory[] = [];
@@ -172,7 +172,7 @@ export class OrderTestingUtil {
         let menuItemIdx = 0;
         let quantity = 1;
         let sizeIdx = 0;
-        let orderItemMax = 4;
+        const orderItemMax = 4;
         const results: OrderMenuItem[] = [];
 
         for (const order of orders) {

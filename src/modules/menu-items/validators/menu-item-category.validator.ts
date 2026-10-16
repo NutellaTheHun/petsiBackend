@@ -40,7 +40,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto, id: number | string): Promise<MenuItemCategoryValidatorIdentity> {
+    public async resolveIdentity(dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto, _id: number | string): Promise<MenuItemCategoryValidatorIdentity> {
         return {
             name: dto.name,
         } as MenuItemCategoryValidatorIdentity;

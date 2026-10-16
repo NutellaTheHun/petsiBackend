@@ -49,7 +49,7 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateUserDto | UpdateUserDto, id: number | string): Promise<UserValidatorIdentity> {
+    public async resolveIdentity(dto: CreateUserDto | UpdateUserDto, _id: number | string): Promise<UserValidatorIdentity> {
         return {
             email: dto.email,
             password: dto.password,

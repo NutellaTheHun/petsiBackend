@@ -35,4 +35,7 @@ async function clearTestDb() {
     await app.close();
   }
 }
-clearTestDb();
+clearTestDb().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

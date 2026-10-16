@@ -38,7 +38,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto, id: number | string): Promise<InventoryItemCategoryValidatorIdentity> {
+    public async resolveIdentity(dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto, _id: number | string): Promise<InventoryItemCategoryValidatorIdentity> {
         return {
             name: dto.name,
         } as InventoryItemCategoryValidatorIdentity;

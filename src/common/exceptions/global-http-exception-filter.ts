@@ -12,7 +12,6 @@ import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { resolveRequestId } from '../middleware/request-id';
 import { ValidationException } from '../validation/validation-exception';
-import { AppHttpException } from './app-http-exception';
 import { DatabaseException } from './database-exception';
 
 /**

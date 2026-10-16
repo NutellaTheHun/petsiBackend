@@ -97,7 +97,7 @@ export class InventoryAreaTestUtil {
      * @returns 4 Inventory areas, Area_A, B, C, and D
      */
     public async getTestInventoryAreaEntities(
-        testContext: DatabaseTestContext,
+        _testContext: DatabaseTestContext,
     ): Promise<InventoryArea[]> {
         const results: InventoryArea[] = [];
         const names = getAreaNames();

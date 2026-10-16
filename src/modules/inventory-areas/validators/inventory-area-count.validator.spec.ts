@@ -15,7 +15,6 @@ import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
-import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { inventoryAreaCountToUpdateDto } from '../utils/entity-transformers/inventory-area-count.dto.transformer';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
@@ -44,7 +43,6 @@ describe('inventory area count validator', () => {
     let packages: InventoryItemPackage[];
     let items: InventoryItem[];
     let sizes: InventoryItemSize[];
-    let areaItems: InventoryAreaItem[];
 
     const reloadCount = async (id: number) =>
         countRepo.findOneOrFail({
@@ -75,7 +73,7 @@ describe('inventory area count validator', () => {
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
 
-        ({ areas, counts, categories, vendors, packages, items, sizes, areaItems } =
+        ({ areas, counts, categories, vendors, packages, items, sizes } =
             await testingUtil.seedItemCounts(P));
     });
 

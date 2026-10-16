@@ -6,7 +6,6 @@ import { ValidationErrorMap } from './validation-error';
 
 export class ValidatorHelper<
     TEntity extends ObjectLiteral,
-    TDto extends ObjectLiteral,
     TIdentity extends ValidatorIdentityBaseInterface,
 > {
     /**
@@ -264,12 +263,12 @@ export class ValidatorHelper<
      * @param rootErrMap error map to add error to
      * @param errMsg message describing error
      */
-    public async enforceNotInList<Prop extends keyof TEntity>(
+    public enforceNotInList<Prop extends keyof TEntity>(
         val: string | number | null | undefined,
         list: (string | number)[],
         field: Prop,
         rootErrMap: ValidationErrorMap,
-    ): Promise<void> {
+    ): void {
         if (val == null) return;
 
         if (list.includes(val)) {

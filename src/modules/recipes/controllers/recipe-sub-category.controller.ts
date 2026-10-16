@@ -69,7 +69,7 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRecipeSubCategoryDto })*/
     async create(
-        @Body() dto: CreateRecipeSubCategoryDto,
+        @Body() _dto: CreateRecipeSubCategoryDto,
     ): Promise<RecipeSubCategory> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -91,8 +91,8 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     })
     @ApiBody({ type: UpdateRecipeSubCategoryDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateRecipeSubCategoryDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateRecipeSubCategoryDto,
     ): Promise<RecipeSubCategory> {
         throw new Error('Endpoint not available');
         /*const result = super.update(id, dto);

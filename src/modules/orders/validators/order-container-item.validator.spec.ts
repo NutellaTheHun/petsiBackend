@@ -11,7 +11,6 @@ import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
@@ -25,7 +24,6 @@ describe('order container item validator', () => {
     let testCtx: DatabaseTestContext;
 
     let validator: OrderContainerItemValidator;
-    let orderContainerItemRepo: Repository<OrderContainerItem>;
     let orderMenuItemRepo: Repository<OrderMenuItem>;
     let orderRepo: Repository<Order>;
     let categoryRepo: Repository<OrderCategory>;
@@ -51,7 +49,6 @@ describe('order container item validator', () => {
 
         validator = module.get<OrderContainerItemValidator>(OrderContainerItemValidator);
 
-        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));

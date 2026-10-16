@@ -10,7 +10,6 @@ import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-conta
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
@@ -23,7 +22,6 @@ describe('order container item controller', () => {
     let testingUtil: OrderTestingUtil;
     let testCtx: DatabaseTestContext;
     let controller: OrderContainerItemController;
-    let orderContainerItemRepo: Repository<OrderContainerItem>;
     let orderMenuItemRepo: Repository<OrderMenuItem>;
     let orderRepo: Repository<Order>;
     let categoryRepo: Repository<OrderCategory>;
@@ -48,7 +46,6 @@ describe('order container item controller', () => {
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
 
         controller = module.get<OrderContainerItemController>(OrderContainerItemController);
-        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderRepo = module.get(getRepositoryToken(Order));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));

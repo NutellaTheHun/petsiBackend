@@ -37,7 +37,7 @@ export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdenti
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRoleDto | UpdateRoleDto, id: number | string): Promise<RoleValidatorIdentity> {
+    public async resolveIdentity(dto: CreateRoleDto | UpdateRoleDto, _id: number | string): Promise<RoleValidatorIdentity> {
         return {
             name: dto.name,
         } as RoleValidatorIdentity;

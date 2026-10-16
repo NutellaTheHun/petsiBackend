@@ -39,7 +39,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateInventoryItemVendorDto | UpdateInventoryItemVendorDto, id: number | string): Promise<InventoryItemVendorValidatorIdentity> {
+    public async resolveIdentity(dto: CreateInventoryItemVendorDto | UpdateInventoryItemVendorDto, _id: number | string): Promise<InventoryItemVendorValidatorIdentity> {
         return {
             name: dto.name,
         } as InventoryItemVendorValidatorIdentity;

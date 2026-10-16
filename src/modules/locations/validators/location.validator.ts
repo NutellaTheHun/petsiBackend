@@ -26,7 +26,7 @@ export class LocationValidator extends ValidatorBase<LocationEntity, LocationVal
         return new ValidationErrorMap(id);
     }
 
-    public async resolveIdentity(dto: CreateLocationDto | UpdateLocationDto, id: number | string): Promise<LocationValidatorIdentity> {
+    public async resolveIdentity(dto: CreateLocationDto | UpdateLocationDto, _id: number | string): Promise<LocationValidatorIdentity> {
         return {
             name: dto.name,
             address: dto.address,

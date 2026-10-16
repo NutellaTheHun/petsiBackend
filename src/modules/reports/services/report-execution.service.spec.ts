@@ -8,7 +8,6 @@ import { TestRequestContextService } from '../../../test/mocks/test-request-cont
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -49,7 +48,6 @@ describe('ReportExecutionService', () => {
     let orderFrozen: Order;
     let orderMenuItemAlice: OrderMenuItem;
     let orderMenuItemBob: OrderMenuItem;
-    let orderContainerItemRepo: Repository<OrderContainerItem>;
 
     beforeAll(async () => {
         module = await getReportsExecutionTestingModule();
@@ -60,7 +58,6 @@ describe('ReportExecutionService', () => {
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
-        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
         testContextService = module.get(RequestContextService) as TestRequestContextService;
 

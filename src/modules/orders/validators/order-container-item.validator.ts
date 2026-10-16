@@ -42,7 +42,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         );
     }
 
-    public async resolveIdentity(dto: CreateOrderContainerItemDto | UpdateOrderContainerItemDto | NestedCreateOrderContainerItemDto | NestedUpdateOrderContainerItemDto, id: number | string): Promise<OrderContainerItemValidatorIdentity> {
+    public async resolveIdentity(dto: CreateOrderContainerItemDto | UpdateOrderContainerItemDto | NestedCreateOrderContainerItemDto | NestedUpdateOrderContainerItemDto, _id: number | string): Promise<OrderContainerItemValidatorIdentity> {
         const containedMenuItem = await this.menuItemRepo.findOne({
             where: { id: dto.containedMenuItemId },
         });

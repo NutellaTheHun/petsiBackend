@@ -75,7 +75,7 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
         nextValue: dto.servingSizeUnit ?? null,
       });
     }
-    if (!this.unchanged(entity.salesPrice ? Number(entity.salesPrice) : null, dto.salesPrice ?? null)) {
+    if (!this.unchanged(entity.salesPrice != null ? Number(entity.salesPrice) : null, dto.salesPrice ?? null)) {
       patch.salesPrice = dto.salesPrice;
       changes.push({
         op: 'scalar',

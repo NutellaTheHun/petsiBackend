@@ -259,7 +259,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     return result;
   }
 
-  async remove(id: number): Promise<Boolean> {
+  async remove(id: number): Promise<boolean> {
     /* const requestId = this.requestContextService.getRequestId();
          try {
              //return (await this.entityRepo.remove( }))).affected !== 0;
@@ -325,24 +325,24 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
 
   protected applyFilters(
     _query: SelectQueryBuilder<TEntity['__Entity']>,
-    filters: Record<string, string[]>,
+    _filters: Record<string, string[]>,
   ): void {
     // Default: do nothing. To be overridden by subclass if needed.
   }
 
   protected applyDate(
     _query: SelectQueryBuilder<TEntity['__Entity']>,
-    startDate: string,
-    endDate?: string,
-    dateBy?: string,
+    _startDate: string,
+    _endDate?: string,
+    _dateBy?: string,
   ) {
     // Default: do nothing. To be overridden by subclass if needed.
   }
 
   protected applySortBy(
     _query: SelectQueryBuilder<TEntity['__Entity']>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
+    _sortBy: string,
+    _sortOrder: 'ASC' | 'DESC',
   ): void {
     // To be overridden by subclass if needed.
 

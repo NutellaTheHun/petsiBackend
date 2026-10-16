@@ -23,7 +23,6 @@ describe('inventory area item controller', () => {
     let testingUtil: InventoryAreaTestUtil;
     let testCtx: DatabaseTestContext;
     let controller: InventoryAreaItemController;
-    let areaItemRepo: Repository<InventoryAreaItem>;
     let countRepo: Repository<InventoryAreaCount>;
     let areaRepo: Repository<InventoryArea>;
     let categoryRepo: Repository<InventoryItemCategory>;
@@ -48,7 +47,6 @@ describe('inventory area item controller', () => {
         controller = module.get<InventoryAreaItemController>(
             InventoryAreaItemController,
         );
-        areaItemRepo = module.get(getRepositoryToken(InventoryAreaItem));
         countRepo = module.get(getRepositoryToken(InventoryAreaCount));
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));

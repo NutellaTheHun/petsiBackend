@@ -69,7 +69,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRecipeIngredientDto })*/
     async create(
-        @Body() dto: CreateRecipeIngredientDto,
+        @Body() _dto: CreateRecipeIngredientDto,
     ): Promise<RecipeIngredient> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -91,8 +91,8 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
     })
     @ApiBody({ type: UpdateRecipeIngredientDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateRecipeIngredientDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateRecipeIngredientDto,
     ): Promise<RecipeIngredient> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);

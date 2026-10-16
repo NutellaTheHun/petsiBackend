@@ -11,13 +11,9 @@ import { EntityBase } from '../../../common/base/entity.base';
 import { inventoryItemCategoryExample } from '../../../common/swagger/examples/inventory-items/inventory-item-category.example';
 import { inventoryItemSizeExample } from '../../../common/swagger/examples/inventory-items/inventory-item-size.example';
 import { inventoryItemVendorExample } from '../../../common/swagger/examples/inventory-items/inventory-item-vendor.example';
-import { InventoryAreaCount } from '../../inventory-areas/entities/inventory-area-count.entity';
-import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
-import { RecipeIngredient } from '../../recipes/entities/recipe-ingredient.entity';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from './inventory-item-category.entity';
-import { InventoryItemPackage } from './inventory-item-package.entity';
 import { InventoryItemSize } from './inventory-item-size.entity';
 import { InventoryItemVendor } from './inventory-item-vendor.entity';
 

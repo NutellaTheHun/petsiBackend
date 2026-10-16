@@ -12,7 +12,6 @@ import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
-import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
 
 const P = `t${Date.now()}`;

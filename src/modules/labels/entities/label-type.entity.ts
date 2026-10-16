@@ -3,7 +3,6 @@ import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
-import { Label } from './label.entity';
 
 export type LabelTypeEntity = EntityBase<
   LabelType,

@@ -36,7 +36,7 @@ export class TenantValidator extends ValidatorBase<TenantEntity, TenantValidator
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateTenantDto | UpdateTenantDto, id: number | string): Promise<TenantValidatorIdentity> {
+    public async resolveIdentity(dto: CreateTenantDto | UpdateTenantDto, _id: number | string): Promise<TenantValidatorIdentity> {
         return {
             name: dto.name,
             subdomain: dto.subdomain,

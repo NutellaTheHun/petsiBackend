@@ -39,7 +39,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateMenuItemSizeDto | UpdateMenuItemSizeDto, id: number | string): Promise<MenuItemSizeValidatorIdentity> {
+    public async resolveIdentity(dto: CreateMenuItemSizeDto | UpdateMenuItemSizeDto, _id: number | string): Promise<MenuItemSizeValidatorIdentity> {
         return {
             name: dto.name,
         } as MenuItemSizeValidatorIdentity;

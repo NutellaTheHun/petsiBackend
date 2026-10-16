@@ -56,7 +56,7 @@ export class AuthGuard implements CanActivate {
           ns.set('locations', payload.locations);
         }
       }
-    } catch (err) {
+    } catch (_err) {
       throw new UnauthorizedException();
     }
     return true;

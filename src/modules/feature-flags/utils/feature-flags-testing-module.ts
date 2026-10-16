@@ -22,7 +22,6 @@ import { RoleFeature } from '../entities/role-feature.entity';
 import { TenantFeature } from '../entities/tenant-feature.entity';
 import { FeatureFlagsModule } from '../feature-flags.module';
 import { RoleFeatureService } from '../services/role-feature.service';
-import { TenantFeatureService } from '../services/tenant-feature.service';
 
 export async function getFeatureFlagsTestingModule(opts?: {
     roleFeatureServiceClass?: new (...args: any[]) => RoleFeatureService;

@@ -196,7 +196,7 @@ export class RecipeTestUtil {
      * @returns 4 Categories with no subcategories or recipies, catgories A,B, C and category "no category".
      */
     public async getTestRecipeCategoryEntities(
-        testContext: DatabaseTestContext,
+        _testContext: DatabaseTestContext,
     ): Promise<RecipeCategory[]> {
         const tenantId = await this.getDefaultTenantId();
         const categories = [

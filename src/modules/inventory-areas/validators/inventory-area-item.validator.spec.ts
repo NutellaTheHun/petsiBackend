@@ -29,7 +29,6 @@ describe('inventory area item validator', () => {
 
     let countRepo: Repository<InventoryAreaCount>;
     let areaRepo: Repository<InventoryArea>;
-    let areaItemRepo: Repository<InventoryAreaItem>;
     let categoryRepo: Repository<InventoryItemCategory>;
     let vendorRepo: Repository<InventoryItemVendor>;
     let packageRepo: Repository<InventoryItemPackage>;
@@ -55,7 +54,6 @@ describe('inventory area item validator', () => {
 
         countRepo = module.get(getRepositoryToken(InventoryAreaCount));
         areaRepo = module.get(getRepositoryToken(InventoryArea));
-        areaItemRepo = module.get(getRepositoryToken(InventoryAreaItem));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));

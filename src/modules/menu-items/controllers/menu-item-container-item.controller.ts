@@ -2,32 +2,29 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
     Body,
     Controller,
-    Delete,
     Get,
     HttpCode,
     HttpStatus,
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiExtraModels,
-    ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
@@ -69,7 +66,7 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateMenuItemContainerItemDto })*/
     async create(
-        @Body() dto: CreateMenuItemContainerItemDto,
+        @Body() _dto: CreateMenuItemContainerItemDto,
     ): Promise<MenuItemContainerItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -91,8 +88,8 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
     })
     @ApiBody({ type: UpdateMenuItemContainerItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateMenuItemContainerItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateMenuItemContainerItemDto,
     ): Promise<MenuItemContainerItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);

@@ -157,7 +157,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRecipeDto | UpdateRecipeDto, id: number | string): Promise<RecipeValidatorIdentity> {
+    public async resolveIdentity(dto: CreateRecipeDto | UpdateRecipeDto, _id: number | string): Promise<RecipeValidatorIdentity> {
         const ingredientIdentities: RecipeIngredientValidatorIdentity[] = [];
         if (dto.ingredients && dto.ingredients.length) {
             for (const ingredient of dto.ingredients) {
