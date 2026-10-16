@@ -1,5 +1,6 @@
-import { INestApplication, ValidationPipe, BadRequestException } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import { DtoValidationException } from './common/exceptions/dto-validation-exception';
 import { GlobalHttpExceptionFilter } from './common/exceptions/global-http-exception-filter';
 import { requestIdHeaderMiddleware } from './common/middleware/request-id';
 
@@ -27,7 +28,7 @@ export function setupApp(app: INestApplication, opts?: SetupAppOptions): void {
             whitelist: true, // strips unknown properties
             forbidNonWhitelisted: true, // throws on unknown properties
             transform: true, // auto-transform payload to DTO instances
-            exceptionFactory: (errors) => new BadRequestException(errors),
+            exceptionFactory: (errors) => DtoValidationException.fromErrors(errors),
         }),
     );
 

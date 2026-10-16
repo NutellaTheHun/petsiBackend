@@ -13,6 +13,7 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { resolveRequestId } from '../middleware/request-id';
 import { ValidationException } from '../validation/validation-exception';
 import { DatabaseException } from './database-exception';
+import { DtoValidationException } from './dto-validation-exception';
 
 /**
  * The subset of nestjs-pino's `PinoLogger` the filter uses. Tests inject a
@@ -26,6 +27,7 @@ export type ExceptionFilterRequestContext = Pick<RequestContextService, 'get'>;
 const PG_UNIQUE_VIOLATION = '23505';
 const PG_FOREIGN_KEY_VIOLATION = '23503';
 
+const INVALID_REQUEST_MESSAGE = "This request couldn't be processed";
 const INTERNAL_ERROR_MESSAGE = 'Something went wrong';
 const ALREADY_EXISTS_MESSAGE = 'This already exists';
 const REFERENCE_CONFLICT_MESSAGE = 'A referenced item is in use or no longer exists';
@@ -88,6 +90,26 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
                 message: 'Validation failed',
                 code: 'VALIDATION_ERROR',
                 details: { validationErrors: exception.errors },
+            };
+        }
+
+        if (exception instanceof DtoValidationException) {
+            // DTO checks mirror the frontend's, so a shape failure is a frontend bug: log it.
+            // Paths and constraint names only; the raw errors carry submitted values.
+            return {
+                status: HttpStatus.BAD_REQUEST,
+                message: INVALID_REQUEST_MESSAGE,
+                code: 'INVALID_REQUEST',
+                details: { fields: exception.fieldPaths() },
+                log: {
+                    level: 'warn',
+                    fields: {
+                        source: 'dto',
+                        dto: exception.dtoName,
+                        constraints: exception.failedConstraints(),
+                    },
+                    msg: 'DTO shape validation failed',
+                },
             };
         }
 
