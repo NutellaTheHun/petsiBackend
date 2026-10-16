@@ -15,12 +15,24 @@ interface LocationClaim {
 export class RoleGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
+  /**
+   * `@Roles` alone: the caller must hold one of the roles at any of their
+   * locations. `@LocationScope` (with or without `@Roles`): the caller must
+   * be assigned to the target location, and hold one of the roles there if
+   * any are required. A target locationId that can't be resolved from the
+   * request is denied. Tenant admins pass both checks.
+   */
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    if (!requiredRoles || requiredRoles.length === 0) {
+    const requiredRoles =
+      this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? [];
+    const locationScope = this.reflector.getAllAndOverride<LocationScopeMetadata>(
+      LOCATION_SCOPE_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (requiredRoles.length === 0 && !locationScope) {
       return true;
     }
 
@@ -36,18 +48,19 @@ export class RoleGuard implements CanActivate {
       ? user.locations
       : [];
 
-    const locationScope = this.reflector.getAllAndOverride<LocationScopeMetadata>(
-      LOCATION_SCOPE_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-
     if (locationScope) {
       const targetLocationId = this.extractLocationId(context, locationScope);
       if (targetLocationId == null) {
         return false;
       }
       const claim = locations.find((l) => l.locationId === targetLocationId);
-      return !!claim && requiredRoles.some((role) => claim.roles.includes(role));
+      if (!claim) {
+        return false;
+      }
+      return (
+        requiredRoles.length === 0 ||
+        requiredRoles.some((role) => claim.roles.includes(role))
+      );
     }
 
     return locations.some((l) =>

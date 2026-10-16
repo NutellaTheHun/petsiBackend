@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
@@ -20,7 +19,6 @@ export class InventoryItemPackageService extends TenantScopedServiceBase<Invento
     @InjectRepository(InventoryItemPackage)
     repo: Repository<InventoryItemPackage>,
     requestContextService: RequestContextService,
-    logger: AppLogger,
     validator: InventoryItemPackageValidator,
     private readonly inventoryItemPackageChangeDetector: InventoryItemPackageChangeDetector,
   ) {
@@ -28,7 +26,6 @@ export class InventoryItemPackageService extends TenantScopedServiceBase<Invento
       repo,
       'InventoryItemPackageService',
       requestContextService,
-      logger,
       validator,
     );
   }

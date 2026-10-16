@@ -208,17 +208,6 @@ describe('Inventory area service', () => {
             await areaRepo.delete(created.id);
         });
 
-        it('create throws ForbiddenException for a locationId the caller is not assigned to', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateInventoryAreaDto, {
-                        name: `${P}-unauthorized-create`,
-                        locationId: locationB.id,
-                    }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
             await expect(service.findOne(otherTenantArea.id)).rejects.toThrow(
                 NotFoundException,

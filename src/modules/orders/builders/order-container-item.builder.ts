@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -26,13 +25,11 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
     private readonly sizeRepo: Repository<MenuItemSize>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
     super(
       OrderContainerItem,
       'OrderContainerItemBuilder',
       requestContextService,
-      logger,
     );
   }
 

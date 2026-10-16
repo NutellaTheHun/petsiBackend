@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -19,10 +18,9 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
         @InjectRepository(Template)
         private readonly repo: Repository<Template>,
         private readonly templateItemValidator: TemplateMenuItemValidator,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Template', requestContextService, logger);
+        super(repo, 'Template', requestContextService);
     }
 
     protected async validateIdentity(identity: TemplateValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

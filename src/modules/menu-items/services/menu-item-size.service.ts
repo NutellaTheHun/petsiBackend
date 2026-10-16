@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
@@ -20,7 +19,6 @@ export class MenuItemSizeService extends TenantScopedServiceBase<MenuItemSizeEnt
     @InjectRepository(MenuItemSize)
     repo: Repository<MenuItemSize>,
     requestContextService: RequestContextService,
-    logger: AppLogger,
     validator: MenuItemSizeValidator,
     private readonly menuItemSizeChangeDetector: MenuItemSizeChangeDetector,
   ) {
@@ -28,7 +26,6 @@ export class MenuItemSizeService extends TenantScopedServiceBase<MenuItemSizeEnt
       repo,
       'MenuItemSizeService',
       requestContextService,
-      logger,
       validator,
     );
   }

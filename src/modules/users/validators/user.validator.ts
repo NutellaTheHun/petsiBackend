@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -15,10 +14,9 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
     constructor(
         @InjectRepository(User)
         private readonly repo: Repository<User>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'User', requestContextService, logger);
+        super(repo, 'User', requestContextService);
     }
     protected async validateIdentity(identity: UserValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);

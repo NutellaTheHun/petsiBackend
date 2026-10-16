@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
@@ -8,8 +7,8 @@ import { LabelType } from '../entities/label-type.entity';
 
 @Injectable()
 export class LabelTypeBuilder extends BuilderBase<LabelType> {
-  constructor(requestContextService: RequestContextService, logger: AppLogger) {
-    super(LabelType, 'LabelTypeBuilder', requestContextService, logger);
+  constructor(requestContextService: RequestContextService) {
+    super(LabelType, 'LabelTypeBuilder', requestContextService);
   }
 
   protected createEntity(dto: CreateLabelTypeDto): void {

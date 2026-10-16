@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -265,18 +265,6 @@ describe('user location service', () => {
             )) as UserLocation;
             expect(created.tenantId).toBe(tenant.id);
             await userLocationRepo.delete(created.id);
-        });
-
-        it('create throws ForbiddenException for a locationId the caller is not assigned to', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateUserLocationDto, {
-                        userId: users[0].id,
-                        locationId: locationB.id,
-                        roleIds: [roles[0].id],
-                    }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {

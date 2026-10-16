@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, IsNull, Repository } from 'typeorm';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { AppHttpException } from '../../../common/exceptions/app-http-exception';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateSettingDto } from '../dto/create-setting.dto';
 import { EffectiveSettingDto } from '../dto/effective-setting.dto';
@@ -19,11 +18,10 @@ export class SettingsService extends LocationScopedServiceBase<SettingEntity> {
     constructor(
         @InjectRepository(Setting) repo: Repository<Setting>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: SettingValidator,
         private readonly settingChangeDetector: SettingChangeDetector,
     ) {
-        super(repo, 'SettingsService', requestContextService, logger, validator);
+        super(repo, 'SettingsService', requestContextService, validator);
     }
 
     protected async createEntity(dto: CreateSettingDto, manager: EntityManager): Promise<Setting> {

@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { InventoryItemCategoryBuilder } from './builders/inventory-item-category.builder';
@@ -48,7 +47,6 @@ import { InventoryItemValidator } from './validators/inventory-item.validator';
     ]),
 
     CacheModule.register(),
-    AppLoggingModule,
     RequestContextModule,
     TenantsModule,
   ],

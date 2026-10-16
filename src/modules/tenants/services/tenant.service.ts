@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTenantDto } from '../dto/create-tenant.dto';
 import { UpdateTenantDto } from '../dto/update-tenant.dto';
@@ -17,11 +16,10 @@ export class TenantService extends ServiceBase<TenantEntity> {
         @InjectRepository(Tenant)
         repo: Repository<Tenant>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: TenantValidator,
         private readonly tenantChangeDetector: TenantChangeDetector,
     ) {
-        super(repo, 'TenantService', requestContextService, logger, validator);
+        super(repo, 'TenantService', requestContextService, validator);
     }
 
     protected async createEntity(

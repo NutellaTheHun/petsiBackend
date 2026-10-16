@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -24,11 +23,9 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
 
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Label', requestContextService, logger);
+        super(repo, 'Label', requestContextService);
     }
 
     protected async validateIdentity(identity: LabelValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

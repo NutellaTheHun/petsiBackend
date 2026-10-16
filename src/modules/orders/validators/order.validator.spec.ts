@@ -723,6 +723,22 @@ describe('order validator', () => {
     );
   });
 
+  it('fail validate update: locationId cannot change', async () => {
+    const orderToUpdate = await loadOrder();
+
+    const dto = orderToUpdateDto(orderToUpdate, {
+      locationId: orderToUpdate.locationId + 1,
+    });
+
+    const errors = await validator.validateDto(dto, orderToUpdate.id);
+    expectValidationErrorSize(errors, 1);
+    expectValidationErrorPayload(
+      errors,
+      [],
+      createValidationErrorPayload('IMMUTABLE_FIELD', undefined, ['locationId']),
+    );
+  });
+
   it('fail validate update: order for delivery must have a delivery address', async () => {
     const orderToUpdate = await loadOrder();
 

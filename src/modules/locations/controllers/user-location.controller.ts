@@ -30,9 +30,10 @@ import {
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
+import { LocationScope } from '../../../common/decorators/LocationScope';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateUserLocationDto } from '../dto/create-user-location.dto';
@@ -49,7 +50,7 @@ export class UserLocationController extends ControllerBase<UserLocationEntity> {
     constructor(
         userLocationService: UserLocationService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -63,6 +64,7 @@ export class UserLocationController extends ControllerBase<UserLocationEntity> {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @LocationScope('body', 'locationId')
     @ApiOperation({ summary: 'Assigns a User to a Location with a set of Roles' })
     @ApiCreatedResponse({ description: 'UserLocation successfully created', type: UserLocation })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })

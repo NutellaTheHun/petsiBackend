@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { DynamicPropertyConfig } from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { DynamicPropertiesModule } from '../../dynamic-properties/dynamic-properties.module';
 import { OrderCategory } from '../../orders/entities/order-category.entity';
@@ -91,9 +90,8 @@ export async function getMenuItemTestingModule(opts?: {
             ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { transport: { target: 'pino-pretty' } },
+                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
             }),
-            AppLoggingModule,
             RequestContextModule,
             TenantsModule,
         ],

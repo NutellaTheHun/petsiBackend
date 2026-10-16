@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
@@ -32,11 +31,9 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
 
         @InjectRepository(InventoryItemVendor)
         private readonly vendorRepo: Repository<InventoryItemVendor>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'InventoryItem', requestContextService, logger);
+        super(repo, 'InventoryItem', requestContextService);
     }
 
     protected async validateIdentity(identity: InventoryItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

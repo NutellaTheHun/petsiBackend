@@ -20,7 +20,6 @@ import {
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -59,7 +58,6 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         @InjectRepository(MenuItem)
         repo: Repository<MenuItem>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: MenuItemValidator,
 
         @InjectRepository(OrderMenuItem)
@@ -70,7 +68,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         private readonly menuItemChangeDetector: MenuItemChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
     ) {
-        super(repo, 'MenuItemService', requestContextService, logger, validator);
+        super(repo, 'MenuItemService', requestContextService, validator);
     }
 
     protected async createEntity(

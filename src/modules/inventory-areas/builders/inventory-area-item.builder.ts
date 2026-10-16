@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemSizeBuilder } from '../../inventory-items/builders/inventory-item-size.builder';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
@@ -33,15 +32,12 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     private readonly sizeRepo: Repository<InventoryItemSize>,
 
     private readonly itemSizeBuilder: InventoryItemSizeBuilder,
-
-    logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
     super(
       InventoryAreaItem,
       'InventoryAreaItemBuilder',
       requestContextService,
-      logger,
     );
   }
 

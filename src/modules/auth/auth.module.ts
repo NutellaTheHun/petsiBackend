@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { UserLocation } from '../locations/entities/user-location.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
@@ -26,8 +25,6 @@ import { AuthService } from './services/auth.service';
         signOptions: { expiresIn: '60s' },
       }),
     }),
-
-    AppLoggingModule,
     RequestContextModule,
     UserModule,
     FeatureFlagsModule,

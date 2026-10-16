@@ -4,7 +4,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { UserLocation } from '../../locations/entities/user-location.entity';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RoleFeature } from '../../feature-flags/entities/role-feature.entity';
 import { TenantFeatureService } from '../../feature-flags/services/tenant-feature.service';
 import {
@@ -12,7 +11,6 @@ import {
   UserRoleIdsByLocation,
 } from '../../feature-flags/utils/effective-features.resolver';
 import { Feature } from '../../feature-flags/utils/feature.registry';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { User } from '../../users/entities/user.entities';
 import { isPassHashMatch } from '../utils/hash';
 
@@ -28,8 +26,6 @@ export class AuthService {
     private readonly tenantFeatureService: TenantFeatureService,
     private readonly jwtService: JwtService,
     private readonly configSerivce: ConfigService,
-    private readonly requestContextService: RequestContextService,
-    private readonly logger: AppLogger,
   ) {}
 
   async signIn(
@@ -37,22 +33,14 @@ export class AuthService {
     rawPass: string,
     tenantId: number,
   ): Promise<{ access_token: string; roles: string[]; features: string[] }> {
-    const requestId = this.requestContextService.getRequestId();
-
     const user = await this.userRepo.findOne({
       where: { tenantId, name: username },
     });
     if (!user) {
-      this.logger.logAction('Authentication', requestId, 'SIGN IN', 'FAIL', {
-        requestId,
-      });
       throw new UnauthorizedException('Invalid username or password');
     }
 
     if (!(await isPassHashMatch(rawPass, user.password))) {
-      this.logger.logAction('Authentication', requestId, 'SIGN IN', 'FAIL', {
-        requestId,
-      });
       throw new UnauthorizedException('Invalid username or password');
     }
 

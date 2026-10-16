@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
@@ -16,13 +15,11 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
     private readonly itemRepo: Repository<InventoryItem>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
     super(
       InventoryItemCategory,
       'InventoryItemCategoryBuilder',
       requestContextService,
-      logger,
     );
   }
 

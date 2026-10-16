@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { InventoryItem } from '../inventory-items/entities/inventory-item.entity';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
@@ -50,7 +49,6 @@ import { RecipeValidator } from './validators/recipe.valdiator';
     MenuItemsModule,
     TenantsModule,
     CacheModule.register(),
-    AppLoggingModule,
     RequestContextModule,
   ],
   controllers: [

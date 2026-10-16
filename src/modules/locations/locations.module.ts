@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { Role } from '../roles/entities/role.entity';
 import { RoleModule } from '../roles/role.module';
@@ -30,7 +29,6 @@ import { UserLocationValidator } from './validators/user-location.validator';
         UserModule,
         RoleModule,
         CacheModule.register(),
-        AppLoggingModule,
         RequestContextModule,
     ],
     controllers: [LocationController, UserLocationController],

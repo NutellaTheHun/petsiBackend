@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { createValidationErrorPayload, ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
@@ -31,11 +30,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
 
         @InjectRepository(RecipeSubCategory)
         private readonly recipeSubCategoryRepo: Repository<RecipeSubCategory>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Recipe', requestContextService, logger);
+        super(repo, 'Recipe', requestContextService);
     }
 
     protected async validateIdentity(identity: RecipeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

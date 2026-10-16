@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
@@ -24,11 +23,9 @@ export class RecipeSubCategoryValidator extends NestedValidatorBase<RecipeSubCat
 
         @InjectRepository(RecipeCategory)
         private readonly recipeCategoryRepo: Repository<RecipeCategory>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'RecipeSubCategory', requestContextService, logger);
+        super(repo, 'RecipeSubCategory', requestContextService);
     }
 
     protected async validateIdentity(identity: RecipeSubCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

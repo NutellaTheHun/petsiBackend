@@ -3,5 +3,7 @@ import { ValidatorIdentityBaseInterface } from "../../../../common/base/validato
 export interface UserLocationValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly userId?: number;
     readonly locationId?: number;
+    /** Stored locationId on update; undefined on create. */
+    readonly existingLocationId?: number;
     readonly roleIds?: number[];
 }

@@ -1,7 +1,6 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { BuilderBase } from "../../../common/base/builder.base";
-import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
 import { UpdateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
@@ -17,9 +16,8 @@ export class RecurringOrderScheduleBuilder extends BuilderBase<RecurringOrderSch
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(RecurringOrderSchedule, 'RecurringOrderScheduleBuilder', requestContextService, logger);
+        super(RecurringOrderSchedule, 'RecurringOrderScheduleBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateRecurringOrderScheduleDto): void {

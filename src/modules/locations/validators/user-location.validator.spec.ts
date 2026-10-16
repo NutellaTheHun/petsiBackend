@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
@@ -13,6 +14,7 @@ import { UserTestUtil } from '../../users/utils/user-test.util';
 import { CreateUserLocationDto } from '../dto/create-user-location.dto';
 import { UpdateUserLocationDto } from '../dto/update-user-location.dto';
 import { Location } from '../entities/location.entity';
+import { UserLocation } from '../entities/user-location.entity';
 import { getLocationsTestingModule } from '../utils/locations-testing.module';
 import { LocationTestUtil } from '../utils/location-test.util';
 import { UserLocationValidator } from './user-location.validator';
@@ -30,6 +32,8 @@ describe('user location validator', () => {
 
     let tenant: Tenant;
     let location: Location;
+    let otherLocation: Location;
+    let userLocationRepo: Repository<UserLocation>;
     let users: User[];
     let roles: Role[];
 
@@ -41,7 +45,8 @@ describe('user location validator', () => {
         validator = module.get<UserLocationValidator>(UserLocationValidator);
         requestContext = module.get(RequestContextService) as TestRequestContextService;
 
-        ({ tenant, locations: [location] } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({ tenant, locations: [location, otherLocation] } = await locationTestUtil.seedLocations(P, undefined, 2));
+        userLocationRepo = module.get(getRepositoryToken(UserLocation));
         ({ users } = await userTestUtil.seedUsers(P, tenant.id));
         ({ roles } = await roleTestUtil.seedRoles(P, tenant.id));
 
@@ -103,13 +108,44 @@ describe('user location validator', () => {
         );
     });
 
-    it('successfully validates update: no validation errors', async () => {
-        const dto = plainToInstance(UpdateUserLocationDto, {
-            locationId: location.id,
-            roleIds: [roles[1].id],
+    describe('update', () => {
+        let assignment: UserLocation;
+
+        beforeEach(async () => {
+            assignment = await userLocationRepo.save(
+                userLocationRepo.create({
+                    tenantId: tenant.id,
+                    locationId: location.id,
+                    user: { id: users[0].id },
+                    roles: [],
+                }),
+            );
+            testCtx.addCleanupFunction(async () => { await userLocationRepo.delete(assignment.id); });
         });
 
-        const errors = await validator.validateDto(dto, 1);
-        expect(errors).toBeNull();
+        it('successfully validates update: no validation errors', async () => {
+            const dto = plainToInstance(UpdateUserLocationDto, {
+                locationId: location.id,
+                roleIds: [roles[1].id],
+            });
+
+            const errors = await validator.validateDto(dto, assignment.id);
+            expect(errors).toBeNull();
+        });
+
+        it('fails validate update: locationId cannot change', async () => {
+            const dto = plainToInstance(UpdateUserLocationDto, {
+                locationId: otherLocation.id,
+                roleIds: [roles[1].id],
+            });
+
+            const errors = await validator.validateDto(dto, assignment.id);
+            expectValidationErrorSize(errors, 1);
+            expectValidationErrorPayload(
+                errors,
+                [],
+                createValidationErrorPayload('IMMUTABLE_FIELD', undefined, ['locationId']),
+            );
+        });
     });
 });

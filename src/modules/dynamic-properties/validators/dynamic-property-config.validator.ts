@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
@@ -25,10 +24,9 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
         private readonly repo: Repository<DynamicPropertyConfig>,
         @InjectRepository(MenuItemDynamicPropertyValue)
         private readonly dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'DynamicPropertyConfig', requestContextService, logger);
+        super(repo, 'DynamicPropertyConfig', requestContextService);
     }
 
     protected async validateIdentity(

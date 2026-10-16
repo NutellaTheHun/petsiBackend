@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
 import { Location } from '../entities/location.entity';
@@ -12,19 +8,12 @@ import { Location } from '../entities/location.entity';
 @Injectable()
 export class LocationBuilder extends BuilderBase<Location> {
     constructor(
-        @InjectRepository(Tenant)
-        private readonly tenantRepo: Repository<Tenant>,
-
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(Location, 'LocationBuilder', requestContextService, logger);
+        super(Location, 'LocationBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateLocationDto): void {
-        if (dto.tenantId !== undefined) {
-            this.tenantById(dto.tenantId);
-        }
         if (dto.name !== undefined) {
             this.locationName(dto.name);
         }
@@ -40,9 +29,6 @@ export class LocationBuilder extends BuilderBase<Location> {
     }
 
     protected updateEntity(dto: UpdateLocationDto): void {
-        if (dto.tenantId !== undefined) {
-            this.tenantById(dto.tenantId);
-        }
         if (dto.name !== undefined) {
             this.locationName(dto.name);
         }
@@ -55,14 +41,6 @@ export class LocationBuilder extends BuilderBase<Location> {
         if (dto.email !== undefined) {
             this.locationEmail(dto.email);
         }
-    }
-
-    public tenantById(id: number): this {
-        return this.setPropById(
-            async (id: number) => await this.tenantRepo.findOne({ where: { id } }),
-            'tenant',
-            id,
-        );
     }
 
     public locationName(name: string): this {

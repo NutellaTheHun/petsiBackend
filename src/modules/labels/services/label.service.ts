@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -19,11 +18,10 @@ export class LabelService extends TenantScopedServiceBase<LabelEntity> {
     @InjectRepository(Label)
     repo: Repository<Label>,
     requestContextService: RequestContextService,
-    logger: AppLogger,
     validator: LabelValidator,
     private readonly labelChangeDetector: LabelChangeDetector,
   ) {
-    super(repo, 'LabelService', requestContextService, logger, validator);
+    super(repo, 'LabelService', requestContextService, validator);
   }
 
   protected async createEntity(

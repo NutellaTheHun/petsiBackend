@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
@@ -21,7 +20,6 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
         @InjectRepository(RecipeIngredient)
         repo: Repository<RecipeIngredient>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: RecipeIngredientValidator,
 
         private readonly ingredientComposer: RecipeIngredientComposer,
@@ -31,7 +29,6 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
             repo,
             'RecipeIngredientService',
             requestContextService,
-            logger,
             validator,
         );
     }

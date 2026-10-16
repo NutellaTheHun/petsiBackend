@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { Location } from '../../locations/entities/location.entity';
 import { UserLocation } from '../../locations/entities/user-location.entity';
 import { LocationsModule } from '../../locations/locations.module';
@@ -34,11 +33,10 @@ export async function getRoleTestingModule(opts?: {
       RoleModule,
       LocationsModule,
       TenantsModule,
-      AppLoggingModule,
       RequestContextModule,
       CacheModule.register(),
       LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
+        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
       }),
     ],
     controllers: [RoleController],

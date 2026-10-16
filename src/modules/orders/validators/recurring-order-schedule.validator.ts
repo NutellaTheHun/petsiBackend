@@ -2,7 +2,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { NestedValidatorBase } from "../../../common/base/nested-validator.base";
 import { ValidationErrorMap } from "../../../common/validation/validation-error";
-import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
 import { NestedCreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto";
@@ -19,11 +18,9 @@ export class RecurringOrderScheduleValidator extends NestedValidatorBase<Recurri
 
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'RecurringOrderSchedule', requestContextService, logger);
+        super(repo, 'RecurringOrderSchedule', requestContextService);
     }
 
     public async resolveIdentity(dto: CreateRecurringOrderScheduleDto | UpdateRecurringOrderScheduleDto | NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto, id: number | string): Promise<RecurringOrderScheduleValidatorIdentity> {

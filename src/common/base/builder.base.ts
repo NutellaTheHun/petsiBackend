@@ -1,6 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
 import { ObjectLiteral } from 'typeorm';
-import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { AppHttpException } from '../exceptions/app-http-exception';
 import { ENTITY_NOT_FOUND } from '../exceptions/error_constants';
@@ -13,7 +12,6 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     private entityConstructor: new () => T,
     public builderPrefix: string,
     private readonly requestContextService: RequestContextService,
-    private readonly logger: AppLogger,
   ) {
     this.reset();
   }
@@ -66,27 +64,15 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     prop: K,
     id: number,
   ): this {
-    const contextId = this.requestContextService.getRequestId();
-
     this.buildQueue.push(async () => {
       const result = await findById(id);
       if (!result) {
-        const err = new AppHttpException(
+        throw new AppHttpException(
           `${this.builderPrefix}: ${prop.toString()} with id ${id} not found`,
           HttpStatus.BAD_REQUEST,
           ENTITY_NOT_FOUND,
           { id },
         );
-
-        this.logger.logError(
-          this.builderPrefix,
-          contextId,
-          'Set Prop By Id',
-          err,
-          { contextId },
-        );
-
-        throw err;
       }
       this.entity[prop] = result;
     });
@@ -98,28 +84,15 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     prop: K,
     ids: number[],
   ): this {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
-
     this.buildQueue.push(async () => {
       const results = await findByIds(ids);
       if (!results) {
-        const err = new AppHttpException(
+        throw new AppHttpException(
           `${this.builderPrefix}: ${prop.toString()} with multiple ids not found`,
           HttpStatus.BAD_REQUEST,
           ENTITY_NOT_FOUND,
           { ids },
         );
-
-        this.logger.logError(
-          this.builderPrefix,
-          requestId,
-          'Set Prop By Ids',
-          err,
-          { requestId },
-        );
-
-        throw err;
       }
       this.entity[prop] = results;
     });

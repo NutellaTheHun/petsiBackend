@@ -17,7 +17,6 @@ import { pinoHttpRequestIdOptions } from './common/middleware/request-id';
 import { RequestIdMiddleware } from './common/middleware/RequestIdMiddleware';
 import { TenantResolutionMiddleware } from './common/middleware/TenantResolutionMiddleware';
 import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.module';
-import { AppLoggingModule } from './modules/app-logging/app-logging.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { DynamicPropertiesModule } from './modules/dynamic-properties/dynamic-properties.module';
@@ -69,20 +68,23 @@ import { UserModule } from './modules/users/user.module';
     LoggerModule.forRoot({
       pinoHttp: {
         ...pinoHttpRequestIdOptions,
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          },
-        },
+        // Production writes plain JSON lines; pretty-printing is dev-only.
+        transport:
+          process.env.NODE_ENV === 'production'
+            ? undefined
+            : {
+              target: 'pino-pretty',
+              options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                ignore: 'pid,hostname',
+              },
+            },
       },
     }),
 
     ExceptionsModule,
     AuthModule,
-    AppLoggingModule,
     RequestContextModule,
     SeedModule,
 

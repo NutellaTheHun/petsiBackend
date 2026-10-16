@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { DynamicPropertyConfigService } from '../../dynamic-properties/services/dynamic-property-config.service';
 import { HolderEntityType, ValueType } from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -34,11 +33,9 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
         private readonly categoryRepo: Repository<MenuItemCategory>,
 
         private readonly configService: DynamicPropertyConfigService,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'MenuItem', requestContextService, logger);
+        super(repo, 'MenuItem', requestContextService);
     }
 
     protected async validateIdentity(identity: MenuItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

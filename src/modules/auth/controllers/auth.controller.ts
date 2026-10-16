@@ -7,8 +7,6 @@ import {
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Public } from '../../../common/decorators/PublicLogin';
-import { AppLogger } from '../../app-logging/app-logger';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { SignInDto } from '../dto/sign-in.dto';
 import { AuthService } from '../services/auth.service';
@@ -18,8 +16,6 @@ import { AuthService } from '../services/auth.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly requestContextService: RequestContextService,
-    private readonly logger: AppLogger,
   ) {}
 
   @ApiOperation({ summary: 'Sign in and receive a JWT token and user roles.' })
@@ -32,12 +28,6 @@ export class AuthController {
     @Body() signInDto: SignInDto,
     @Req() req: Request,
   ): Promise<AuthResponseDto> {
-    const requestId = this.requestContextService.getRequestId();
-
-    this.logger.logAction('Authentication', requestId, 'SIGN IN', 'REQUEST', {
-      requestId,
-    });
-
     // Resolved by TenantResolutionMiddleware before this handler runs,
     // for every route including this @Public() one.
     const tenantId = req['tenant']?.id;
@@ -47,10 +37,6 @@ export class AuthController {
       signInDto.password,
       tenantId,
     );
-
-    this.logger.logAction('Authentication', requestId, 'SIGN IN', 'SUCCESS', {
-      requestId,
-    });
 
     return result;
   }

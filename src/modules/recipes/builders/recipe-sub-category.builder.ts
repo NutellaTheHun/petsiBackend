@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
@@ -25,13 +24,11 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
     private readonly recipeRepo: Repository<Recipe>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
     super(
       RecipeSubCategory,
       'RecipeSubCategoryBuilder',
       requestContextService,
-      logger,
     );
   }
 

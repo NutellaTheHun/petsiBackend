@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
@@ -26,11 +25,9 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
         private readonly menuItemRepo: Repository<MenuItem>,
         @InjectRepository(Template)
         private readonly templateRepo: Repository<Template>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'TemplateMenuItem', requestContextService, logger);
+        super(repo, 'TemplateMenuItem', requestContextService);
     }
 
     public async resolveIdentity(dto: CreateTemplateMenuItemDto | NestedCreateTemplateMenuItemDto | UpdateTemplateMenuItemDto | NestedUpdateTemplateMenuItemDto, id: number | string): Promise<TemplateMenuItemValidatorIdentity> {

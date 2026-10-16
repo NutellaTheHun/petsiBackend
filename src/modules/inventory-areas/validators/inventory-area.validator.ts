@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
@@ -19,15 +18,15 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, I
     constructor(
         @InjectRepository(InventoryArea)
         private readonly repo: Repository<InventoryArea>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'InventoryArea', requestContextService, logger);
+        super(repo, 'InventoryArea', requestContextService);
     }
 
     protected async validateIdentity(identity: InventoryAreaValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
+
+        this.helper.enforceUnchanged(identity.existingLocationId, identity.locationId, 'locationId', errorMap);
 
         if (identity.name) {
             await this.helper.enforceUnique(
@@ -50,6 +49,9 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, I
         return {
             name: dto.name,
             locationId: dto.locationId,
+            existingLocationId: typeof id === 'number'
+                ? (await this.repo.findOne({ where: { id }, select: { id: true, locationId: true } }))?.locationId
+                : undefined,
         } as InventoryAreaValidatorIdentity;
     }
 }

@@ -31,7 +31,7 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { LocationScope } from '../../../common/decorators/LocationScope';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
 import { CreateSettingDto } from '../dto/create-setting.dto';
@@ -63,7 +63,7 @@ export class SettingsController extends ControllerBase<SettingEntity> {
     constructor(
         private readonly settingsService: SettingsService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(

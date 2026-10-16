@@ -130,6 +130,27 @@ export class ValidatorHelper<
     }
 
     /**
+     * An update may not change a field. Returns 'IMMUTABLE_FIELD' when both
+     * values are present and differ; skipped on create (no existing value)
+     * or when the update omits the field.
+     * @param existing value currently stored on the entity
+     * @param next value the update would set
+     * @param field corresponding property of entity
+     * @param rootErrMap error map to add error to
+     */
+    public enforceUnchanged<EntityProp extends keyof TEntity>(
+        existing: unknown,
+        next: unknown,
+        field: EntityProp,
+        rootErrMap: ValidationErrorMap,
+    ): void {
+        if (existing == null || next == null) return;
+        if (existing !== next) {
+            rootErrMap.addError('IMMUTABLE_FIELD', undefined, [String(field)]);
+        }
+    }
+
+    /**
      * Value must be found in array. Returns 'INVALID_PROPERTY_VALUE' error if not found.
      * @param val value to be found in array
      * @param list array to be searched

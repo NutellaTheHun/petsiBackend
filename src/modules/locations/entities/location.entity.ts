@@ -3,6 +3,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -37,7 +38,18 @@ export class Location {
         type: () => Tenant,
     })
     @ManyToOne(() => Tenant, { onDelete: 'CASCADE', nullable: false })
+    @JoinColumn({ name: 'tenantId' })
     tenant: Tenant;
+
+    /**
+     * Scalar FK for `tenant`, read by `TenantScopedServiceBase` scoping.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
     @ApiProperty({ example: 'Downtown', description: 'Name of the location' })
     @Column()

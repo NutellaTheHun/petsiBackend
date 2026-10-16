@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe, BadRequestException } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 import { GlobalHttpExceptionFilter } from './common/exceptions/global-http-exception-filter';
 import { requestIdHeaderMiddleware } from './common/middleware/request-id';
 
@@ -17,6 +18,8 @@ export interface SetupAppOptions {
  * middleware is registered ahead of module middleware (pino-http included).
  */
 export function setupApp(app: INestApplication, opts?: SetupAppOptions): void {
+    app.useLogger(app.get(Logger));
+
     app.use(requestIdHeaderMiddleware);
 
     app.useGlobalPipes(
@@ -24,10 +27,7 @@ export function setupApp(app: INestApplication, opts?: SetupAppOptions): void {
             whitelist: true, // strips unknown properties
             forbidNonWhitelisted: true, // throws on unknown properties
             transform: true, // auto-transform payload to DTO instances
-            exceptionFactory: (errors) => {
-                console.error('Validation errors:', errors); // logs errors server-side
-                return new BadRequestException(errors);
-            },
+            exceptionFactory: (errors) => new BadRequestException(errors),
         }),
     );
 

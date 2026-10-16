@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -20,9 +19,8 @@ export class LabelBuilder extends BuilderBase<Label> {
     private readonly typeRepo: Repository<LabelType>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
-    super(Label, 'LabelBuilder', requestContextService, logger);
+    super(Label, 'LabelBuilder', requestContextService);
   }
 
   protected createEntity(dto: CreateLabelDto): void {

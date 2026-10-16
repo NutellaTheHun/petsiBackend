@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTenantDto } from '../dto/create-tenant.dto';
 import { UpdateTenantDto } from '../dto/update-tenant.dto';
@@ -16,10 +15,9 @@ export class TenantValidator extends ValidatorBase<TenantEntity, TenantValidator
     constructor(
         @InjectRepository(Tenant)
         private readonly repo: Repository<Tenant>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Tenant', requestContextService, logger);
+        super(repo, 'Tenant', requestContextService);
     }
 
     protected async validateIdentity(identity: TenantValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

@@ -34,7 +34,7 @@ export async function getReportsTestingModule(opts?: {
             RequestContextModule,
             TenantsModule,
             LoggerModule.forRoot({
-                pinoHttp: { transport: { target: 'pino-pretty' } },
+                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
             }),
         ],
         controllers: [ReportDefinitionController],
@@ -77,7 +77,7 @@ export async function getReportsExecutionTestingModule(): Promise<TestingModule>
             RequestContextModule,
             TenantsModule,
             LoggerModule.forRoot({
-                pinoHttp: { transport: { target: 'pino-pretty' } },
+                pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
             }),
         ],
         providers: [ReportDefinitionService, ReportExecutionService],

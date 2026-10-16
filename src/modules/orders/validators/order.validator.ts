@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
@@ -30,15 +29,15 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
         private readonly orderCategoryRepo: Repository<OrderCategory>,
 
         private readonly recurringOrderScheduleValidator: RecurringOrderScheduleValidator,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Order', requestContextService, logger);
+        super(repo, 'Order', requestContextService);
     }
 
     protected async validateIdentity(identity: OrderValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
+
+        this.helper.enforceUnchanged(identity.existingLocationId, identity.locationId, 'locationId', errorMap);
 
         if (identity.categoryId !== undefined) {
             await this.helper.enforceExists(
@@ -181,6 +180,10 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             isWeekly: dto.isWeekly,
             weeklyFulfillment: dto.weeklyFulfillment,
             categoryId: dto.categoryId,
+            locationId: dto.locationId,
+            existingLocationId: typeof id === 'number'
+                ? (await this.repo.findOne({ where: { id }, select: { id: true, locationId: true } }))?.locationId
+                : undefined,
             orderedItems: orderedItems,
             templateOrderId: 'templateOrderId' in dto ? dto.templateOrderId ?? undefined : undefined,
             occurrenceType: dto.occurrenceType,

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
@@ -21,7 +20,6 @@ export class InventoryAreaService extends LocationScopedServiceBase<InventoryAre
     repo: Repository<InventoryArea>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
     validator: InventoryAreaValidator,
     private readonly inventoryAreaChangeDetector: InventoryAreaChangeDetector,
   ) {
@@ -29,7 +27,6 @@ export class InventoryAreaService extends LocationScopedServiceBase<InventoryAre
       repo,
       'InventoryAreaService',
       requestContextService,
-      logger,
       validator,
     );
   }
@@ -52,9 +49,6 @@ export class InventoryAreaService extends LocationScopedServiceBase<InventoryAre
   ): Promise<void> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
-    }
-    if (dto.locationId !== undefined) {
-      entity.locationId = dto.locationId;
     }
     await manager.save(entity);
   }

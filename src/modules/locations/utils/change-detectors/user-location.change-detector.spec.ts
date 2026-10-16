@@ -20,13 +20,6 @@ describe('UserLocationChangeDetector', () => {
         expect(result.patch).toEqual({});
     });
 
-    it('detects locationId change', () => {
-        const entity = baseEntity();
-        const result = detector.detect(entity, { locationId: 20, roleIds: [100, 200] });
-        expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ locationId: 20 });
-    });
-
     it('does not flag roleIds when same ids in different order', () => {
         const entity = baseEntity();
         const result = detector.detect(entity, { locationId: 10, roleIds: [200, 100] });

@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
@@ -26,7 +25,6 @@ import { LabelValidator } from './validators/label.validator';
     MenuItemsModule,
     TenantsModule,
     CacheModule.register(),
-    AppLoggingModule,
     RequestContextModule,
   ],
 

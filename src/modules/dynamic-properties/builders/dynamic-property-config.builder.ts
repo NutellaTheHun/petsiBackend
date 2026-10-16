@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
@@ -19,9 +18,8 @@ export class DynamicPropertyConfigBuilder extends BuilderBase<DynamicPropertyCon
         @InjectRepository(MenuItemCategory)
         private readonly categoryRepo: Repository<MenuItemCategory>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(DynamicPropertyConfig, 'DynamicPropertyConfigBuilder', requestContextService, logger);
+        super(DynamicPropertyConfig, 'DynamicPropertyConfigBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateDynamicPropertyConfigDto): void {

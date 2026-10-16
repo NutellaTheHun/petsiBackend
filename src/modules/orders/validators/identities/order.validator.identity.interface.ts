@@ -3,6 +3,9 @@ import { OrderMenuItemValidatorIdentity } from "./order-menu-item.validator.iden
 import { RecurringOrderScheduleValidatorIdentity } from "./recurring-order-schedule.identity.interface";
 
 export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
+    readonly locationId?: number;
+    /** Stored locationId on update; undefined on create. */
+    readonly existingLocationId?: number;
     readonly recipient: string;
     readonly fulfillmentDate: Date;
     readonly fulfillmentType: string;

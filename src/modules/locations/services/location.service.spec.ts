@@ -4,6 +4,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
@@ -42,6 +44,8 @@ describe('Location Service', () => {
 
     let tenant: Tenant;
     let locations: Location[];
+    let otherTenant: Tenant;
+    let otherTenantLocations: Location[];
 
     beforeAll(async () => {
         const module: TestingModule = await getLocationsTestingModule({
@@ -54,11 +58,14 @@ describe('Location Service', () => {
         tenantRepo = module.get(getRepositoryToken(Tenant));
 
         ({ tenant, locations } = await locationTestUtil.seedLocations(P));
+        ({ tenant: otherTenant, locations: otherTenantLocations } =
+            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        (module.get(RequestContextService) as TestRequestContextService).setContext({ tenantId: tenant.id });
     });
 
     afterAll(async () => {
-        await locationRepo.delete(locations.map((l) => l.id));
-        await tenantRepo.delete(tenant.id);
+        await locationRepo.delete([...locations, ...otherTenantLocations].map((l) => l.id));
+        await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
     beforeEach(() => {
@@ -74,7 +81,6 @@ describe('Location Service', () => {
 
         it('should create location', async () => {
             const dto = plainToInstance(CreateLocationDto, {
-                tenantId: tenant.id,
                 name: `${P}-location-create`,
             });
             await dataSource.transaction(async (manager) => {
@@ -86,7 +92,6 @@ describe('Location Service', () => {
 
         it('should update location', async () => {
             const dto = plainToInstance(UpdateLocationDto, {
-                tenantId: tenant.id,
                 name: `${P}-location-updated`,
             });
             await dataSource.transaction(async (manager) => {
@@ -113,6 +118,31 @@ describe('Location Service', () => {
         const result = await locationService.findOne(locations[0].id, ['tenant']);
         expect(result.id).toEqual(locations[0].id);
         expect(result.tenant.id).toEqual(tenant.id);
+    });
+
+    describe('tenant scoping', () => {
+        it("findAll excludes another tenant's locations", async () => {
+            const result = await locationService.findAll({ limit: 1000 });
+            const ids = result.items.map((l) => l.id);
+            expect(ids).toEqual(expect.arrayContaining(locations.map((l) => l.id)));
+            expect(ids).not.toContain(otherTenantLocations[0].id);
+        });
+
+        it("findOne throws NotFoundException for another tenant's location", async () => {
+            await expect(locationService.findOne(otherTenantLocations[0].id)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+
+        it("createEntity stamps the caller's tenant", async () => {
+            const dto = plainToInstance(CreateLocationDto, { name: `${P}-location-stamped` });
+            let created!: Location;
+            await dataSource.transaction(async (manager) => {
+                created = await locationService.createEntityForTest(dto, manager);
+            });
+            testCtx.addCleanupFunction(async () => { await locationRepo.delete(created.id); });
+            expect(created.tenantId).toBe(tenant.id);
+        });
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {

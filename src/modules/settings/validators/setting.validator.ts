@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateSettingDto } from '../dto/create-setting.dto';
 import { UpdateSettingDto } from '../dto/update-setting.dto';
@@ -17,11 +16,9 @@ export class SettingValidator extends ValidatorBase<SettingEntity, SettingValida
     constructor(
         @InjectRepository(Setting)
         private readonly repo: Repository<Setting>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Setting', requestContextService, logger);
+        super(repo, 'Setting', requestContextService);
     }
 
     protected async validateIdentity(

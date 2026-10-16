@@ -4,7 +4,6 @@ import { Location } from "../../entities/location.entity";
 
 export function locationToUpdateDto(location: Location, merge: Partial<UpdateLocationDto> = {}): UpdateLocationDto {
     return plainToInstance(UpdateLocationDto, {
-        tenantId: location.tenant.id,
         name: location.name,
         address: location.address ?? undefined,
         phoneNumber: location.phoneNumber ?? undefined,

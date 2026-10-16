@@ -14,16 +14,6 @@ export class UserLocationChangeDetector extends ChangeDetectorBase<UserLocation,
         const patch: MutablePartial<UpdateUserLocationDto> = {};
         const changes: ChangeDetectorChange[] = [];
 
-        if (!this.unchanged(entity.locationId, dto.locationId)) {
-            patch.locationId = dto.locationId;
-            changes.push({
-                op: 'scalar',
-                path: 'locationId',
-                previousValue: entity.locationId,
-                nextValue: dto.locationId,
-            });
-        }
-
         const existingRoleIds = (entity.roles ?? [])
             .map((role) => role.id)
             .sort((a, b) => a - b);

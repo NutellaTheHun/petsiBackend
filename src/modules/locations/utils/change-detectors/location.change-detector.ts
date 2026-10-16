@@ -14,17 +14,6 @@ export class LocationChangeDetector extends ChangeDetectorBase<Location, UpdateL
         const patch: MutablePartial<UpdateLocationDto> = {};
         const changes: ChangeDetectorChange[] = [];
 
-        const existingTenantId = entity.tenant?.id;
-        if (!this.unchanged(existingTenantId, dto.tenantId)) {
-            patch.tenantId = dto.tenantId;
-            changes.push({
-                op: 'reference',
-                path: 'tenantId',
-                previousValue: existingTenantId,
-                nextValue: dto.tenantId,
-            });
-        }
-
         if (!this.unchanged(entity.name, dto.name)) {
             patch.name = dto.name;
             changes.push({

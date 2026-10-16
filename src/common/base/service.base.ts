@@ -7,10 +7,9 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { PaginatedResult } from '../dto/paginated-result';
-import { DataBaseExceptionHandler } from '../exceptions/database-exception.handler';
+import { DatabaseError } from '../exceptions/database-error';
 import { ValidationException } from '../validation/validation-exception';
 import {
   ChangeDetectionResult,
@@ -21,28 +20,20 @@ import { ValidatorIdentityBaseInterface } from './validator-identity.base.interf
 import { ValidatorBase } from './validator.base';
 
 export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
-  private databaseExceptionHandler: DataBaseExceptionHandler;
-
   constructor(
     protected readonly entityRepo: Repository<TEntity['__Entity']>,
     public readonly servicePrefix: string,
     protected readonly requestContextService: RequestContextService,
-    private readonly logger: AppLogger,
-
     private readonly validator?: ValidatorBase<
       TEntity,
       ValidatorIdentityBaseInterface
     >,
-  ) {
-    this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
-  }
+  ) { }
 
   /**
    * @returns The created entity or throws AppHttpException from validation errors.
    */
   public async create(createDto: any): Promise<TEntity['__Entity']> {
-    const requestId = this.requestContextService.getRequestId();
-
     if (this.validator) {
       const validationErrors = await this.validator.validateDto(
         createDto,
@@ -60,12 +51,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
           await this.afterCreateInTransaction(manager, entity);
           return entity;
         } catch (err) {
-          throw this.databaseExceptionHandler.handle(
-            err,
-            this.servicePrefix,
-            requestId,
-            'CREATE',
-          );
+          throw DatabaseError.fromTypeOrmError(err);
         }
       },
     );
@@ -81,8 +67,6 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
    * @returns Updated entity or throws AppHttpException if validation fails, or NotFoundException if the supplied ID doesn't aquire an entity.
    */
   async update(id: number, updateDto: any): Promise<TEntity['__Entity']> {
-    const requestId = this.requestContextService.getRequestId();
-
     if (this.validator) {
       const validationErrors = await this.validator.validateDto(updateDto, id);
       if (validationErrors) {
@@ -125,12 +109,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
           detectionResult,
         });
       } catch (err) {
-        throw this.databaseExceptionHandler.handle(
-          err,
-          this.servicePrefix,
-          requestId,
-          'UPDATE',
-        );
+        throw DatabaseError.fromTypeOrmError(err);
       }
     });
     const resultEntity = await this.entityRepo.findOne({
@@ -157,9 +136,6 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     endDate?: string;
     locationId?: number;
   }): Promise<PaginatedResult<TEntity['__Entity']>> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
-
     // Set options with default settings
     options = {
       limit: 10,
@@ -224,12 +200,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     try {
       results = await query.getMany();
     } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'FIND_ALL',
-      );
+      throw DatabaseError.fromTypeOrmError(err);
     }
 
     // handle cursor
@@ -242,15 +213,6 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
         nextCursor = (nextEntity as any)[cursorCol].toString();
       }
     }
-
-    // log result
-    this.logger.logAction(
-      this.servicePrefix,
-      requestId,
-      'FIND_ALL',
-      'REQUEST',
-      { requestId, message: `${results.length} entities queried` },
-    );
 
     // return result and cursor
     return {
@@ -266,9 +228,6 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     id: number,
     relations?: string[],
   ): Promise<TEntity['__Entity']> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
-
     // run query and return
     let result: TEntity['__Entity'] | null;
     try {
@@ -277,22 +236,10 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
         relations: relations,
       });
     } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'FIND_ONE',
-      );
+      throw DatabaseError.fromTypeOrmError(err);
     }
 
     if (!result) {
-      this.logger.logAction(
-        this.servicePrefix,
-        requestId,
-        'FIND_ONE',
-        'REQUEST',
-        { requestId, id, message: `no entity found with id: ${id}` },
-      );
       throw new NotFoundException();
     }
 
@@ -303,22 +250,11 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
     ids: number[],
     relations?: Array<keyof TEntity['__Entity']>,
   ): Promise<TEntity['__Entity'][]> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
-
     // run query and return
     const result = await this.entityRepo.find({
       where: { id: In(ids) } as unknown as FindOptionsWhere<TEntity>,
       relations: relations as string[],
     });
-
-    this.logger.logAction(
-      this.servicePrefix,
-      requestId,
-      'FIND_ENTITIES_BY_ID',
-      'REQUEST',
-      { requestId, message: `${result.length} entities queried` },
-    );
 
     return result;
   }
@@ -332,14 +268,8 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
              });
              return true;
          } catch (err) {
-             throw this.databaseExceptionHandler.handle(
-                 err,
-                 this.servicePrefix,
-                 requestId,
-                 'REMOVE',
-             );
+             throw DatabaseError.fromTypeOrmError(err);
          }*/
-    const requestId = this.requestContextService.getRequestId();
 
     try {
       return await this.entityRepo.manager.transaction(async (manager) => {
@@ -358,12 +288,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
         return true;
       });
     } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'REMOVE',
-      );
+      throw DatabaseError.fromTypeOrmError(err);
     }
   }
 
@@ -384,16 +309,10 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
   }
 
   getQueryBuilder(): QueryBuilder<TEntity['__Entity']> {
-    const requestId = this.requestContextService.getRequestId();
     try {
       return this.entityRepo.createQueryBuilder();
     } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'GET_BUILDER',
-      );
+      throw DatabaseError.fromTypeOrmError(err);
     }
   }
 

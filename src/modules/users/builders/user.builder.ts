@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { hashPassword } from '../../auth/utils/hash';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -9,8 +8,8 @@ import { User } from '../entities/user.entities';
 
 @Injectable()
 export class UserBuilder extends BuilderBase<User> {
-  constructor(requestContextService: RequestContextService, logger: AppLogger) {
-    super(User, 'UserBuilder', requestContextService, logger);
+  constructor(requestContextService: RequestContextService) {
+    super(User, 'UserBuilder', requestContextService);
   }
 
   protected createEntity(dto: CreateUserDto): void {

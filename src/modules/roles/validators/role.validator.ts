@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -16,10 +15,9 @@ export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdenti
     constructor(
         @InjectRepository(Role)
         private readonly repo: Repository<Role>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Role', requestContextService, logger);
+        super(repo, 'Role', requestContextService);
     }
 
     protected async validateIdentity(identity: RoleValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

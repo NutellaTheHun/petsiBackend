@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
@@ -34,15 +33,12 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
 
         @InjectRepository(OrderMenuItem)
         private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(
             orderContainerItemRepo,
             'OrderContainerItem',
             requestContextService,
-            logger,
         );
     }
 

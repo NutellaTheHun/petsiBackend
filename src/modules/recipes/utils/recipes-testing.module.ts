@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { InventoryItemsModule } from '../../inventory-items/inventory-items.module';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
@@ -60,9 +59,8 @@ export async function getRecipeTestingModule(opts?: {
       TenantsModule,
       CacheModule.register(),
       LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
+        pinoHttp: { level: 'warn', transport: { target: 'pino-pretty' } },
       }),
-      AppLoggingModule,
       RequestContextModule,
     ],
     controllers: [],

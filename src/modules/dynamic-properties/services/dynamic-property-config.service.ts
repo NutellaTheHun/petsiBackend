@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -23,10 +22,9 @@ export class DynamicPropertyConfigService extends TenantScopedServiceBase<Dynami
         @InjectRepository(MenuItemDynamicPropertyValue)
         private readonly dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: DynamicPropertyConfigValidator,
     ) {
-        super(repo, 'DynamicPropertyConfigService', requestContextService, logger, validator);
+        super(repo, 'DynamicPropertyConfigService', requestContextService, validator);
     }
 
     protected async createEntity(

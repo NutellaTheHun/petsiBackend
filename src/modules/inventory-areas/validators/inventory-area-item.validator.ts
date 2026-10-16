@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidatorIdentityBaseInterface } from '../../../common/base/validator-identity.base.interface';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemSizeValidatorIdentity } from '../../inventory-items/validators/identities/inventory-item-size.validator.identity.interface';
 import { InventoryItemSizeValidator } from '../../inventory-items/validators/inventory-item-size.validator';
@@ -31,11 +30,9 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
 
         @Inject(forwardRef(() => InventoryItemSizeValidator))
         private readonly itemSizeValidator: InventoryItemSizeValidator,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'InventoryAreaItem', requestContextService, logger);
+        super(repo, 'InventoryAreaItem', requestContextService);
     }
 
     protected async validateIdentity(identity: InventoryAreaItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

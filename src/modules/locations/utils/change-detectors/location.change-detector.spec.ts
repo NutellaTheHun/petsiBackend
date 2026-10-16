@@ -23,10 +23,9 @@ describe('LocationChangeDetector', () => {
         expect(result.patch).toEqual({});
     });
 
-    it('detects tenantId, name, address, phoneNumber, and email changes', () => {
+    it('detects name, address, phoneNumber, and email changes', () => {
         const entity = baseEntity();
         const dto = locationToUpdateDto(entity, {
-            tenantId: 11,
             name: 'Uptown',
             address: '2 Main St',
             phoneNumber: '555-111-1111',
@@ -35,7 +34,6 @@ describe('LocationChangeDetector', () => {
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({
-            tenantId: 11,
             name: 'Uptown',
             address: '2 Main St',
             phoneNumber: '555-111-1111',

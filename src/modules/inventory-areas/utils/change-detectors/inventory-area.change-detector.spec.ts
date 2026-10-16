@@ -21,12 +21,4 @@ describe('InventoryAreaChangeDetector', () => {
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toEqual({ name: 'Cold storage' });
     });
-
-    it('detects locationId change', () => {
-        const entity = baseEntity();
-        const dto = { name: entity.name, locationId: 2 };
-        const result = detector.detect(entity, dto);
-        expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ locationId: 2 });
-    });
 });

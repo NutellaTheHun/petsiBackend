@@ -30,10 +30,11 @@ import {
 import { Cache } from 'cache-manager';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { ControllerBase } from '../../../common/base/controller.base';
+import { LocationScope } from '../../../common/decorators/LocationScope';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { OrderResponseDto } from '../dto/order/order-response.dto';
@@ -56,7 +57,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         private readonly orderService: OrderService,
         private readonly revisionHistoryService: RevisionHistoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -73,6 +74,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
      */
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @LocationScope('body', 'locationId')
     @ApiOperation({ summary: 'Creates a Order' })
     @ApiCreatedResponse({
         description: 'Order successfully created',

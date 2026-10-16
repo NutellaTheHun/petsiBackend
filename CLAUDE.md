@@ -47,6 +47,10 @@ Every domain entity's `ServiceBase` can wire up a `ChangeDetectorBase` to diff a
 
 `selectTypeOrmModule()` picks the config by `NODE_ENV`: non-`production` uses `TypeORMPostgresTesting`, which reads `DB_TEST_DATABASE` and sets `synchronize: true`. Production uses `TypeORMPostgresProd` (no synchronize).
 
+### Logging
+
+There is no application logger wrapper. Logs come from exactly three places: the pino-http access line (`LoggerModule.forRoot` in `AppModule`), `GlobalHttpExceptionFilter` (the only component that logs errors — see `src/common/exceptions/CLAUDE.md`), and `ControllerBase`'s debug-level cache events. `setupApp` installs nestjs-pino as Nest's app logger. Outside `NODE_ENV=production` output goes through `pino-pretty`; production writes plain JSON lines. Inject nestjs-pino's `PinoLogger` if a component genuinely needs to log.
+
 ### Testing
 
 Tests are always run sequentially with the --runInBand flag.

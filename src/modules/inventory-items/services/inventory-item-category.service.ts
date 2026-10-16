@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
@@ -20,7 +19,6 @@ export class InventoryItemCategoryService extends TenantScopedServiceBase<Invent
     @InjectRepository(InventoryItemCategory)
     repo: Repository<InventoryItemCategory>,
     requestContextService: RequestContextService,
-    logger: AppLogger,
     validator: InventoryItemCategoryValidator,
     private readonly inventoryItemCategoryChangeDetector: InventoryItemCategoryChangeDetector,
   ) {
@@ -28,7 +26,6 @@ export class InventoryItemCategoryService extends TenantScopedServiceBase<Invent
       repo,
       'InventoryItemCategoryService',
       requestContextService,
-      logger,
       validator,
     );
   }

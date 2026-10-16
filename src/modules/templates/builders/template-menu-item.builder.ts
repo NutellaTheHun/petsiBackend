@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
@@ -25,13 +24,11 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
     private readonly menuItemRepo: Repository<MenuItem>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
     super(
       TemplateMenuItem,
       'TemplateMenuItemBuilder',
       requestContextService,
-      logger,
     );
   }
 

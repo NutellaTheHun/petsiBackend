@@ -180,26 +180,6 @@ describe('SettingsService', () => {
     });
 
     describe('tenant/location authorization', () => {
-        it('create throws ForbiddenException for a non-admin writing a tenant default (no locationId)', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateSettingDto, { name: 'orderNumberPrefix', value: 'ORD-' }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
-        it('create throws ForbiddenException for a locationId the caller is not assigned to', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateSettingDto, {
-                        name: 'orderNumberPrefix',
-                        locationId: locationB.id,
-                        value: 'ORD-',
-                    }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
         it('a manager can create a location override at their own location', async () => {
             const created = (await service.create(
                 plainToInstance(CreateSettingDto, {

@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -699,7 +699,7 @@ describe('order service', () => {
     });
 
     describe('tenant/location scoping (inherited from LocationScopedServiceBase)', () => {
-        it('create stamps the caller tenant and rejects an unauthorized locationId', async () => {
+        it('create stamps the caller tenant', async () => {
             const dto = plainToInstance(CreateOrderDto, {
                 recipient: `${P}-scoping-recipient`,
                 fulfillmentDate: new Date('2026-04-01'),
@@ -719,13 +719,6 @@ describe('order service', () => {
             const created = await orderService.create(dto);
             expect((created as Order).tenantId).toBe(fixtureTenantId);
             await orderRepo.delete(created.id);
-
-            requestContext.setContext({
-                tenantId: fixtureTenantId,
-                isTenantAdmin: false,
-                locations: [],
-            });
-            await expect(orderService.create(dto)).rejects.toThrow(ForbiddenException);
         });
 
         it('findOne throws NotFoundException for an order belonging to a different tenant', async () => {

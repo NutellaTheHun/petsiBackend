@@ -1,12 +1,10 @@
 import { Repository } from 'typeorm';
-import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { ValidatorHelper } from '../validation/validatator-helper';
 import {
     ValidationErrorMap,
     ValidationErrorResponse,
 } from '../validation/validation-error';
-import { ValidationExceptionHandler } from '../validation/validation-exception.handler';
 import { EntityBase } from './entity.base';
 import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 
@@ -15,15 +13,12 @@ export abstract class ValidatorBase<
     I extends ValidatorIdentityBaseInterface,
 > {
     protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto'], I>;
-    private exceptionHandler: ValidationExceptionHandler;
 
     constructor(
         private readonly entityRepo: Repository<T['__Entity']>,
         private readonly validationPrefix: string,
         protected readonly requestContextService: RequestContextService,
-        private readonly logger: AppLogger,
     ) {
-        this.exceptionHandler = new ValidationExceptionHandler(logger);
         this.helper = new ValidatorHelper<
             T['__Entity'],
             T['__CDto'] | T['__UDto'],

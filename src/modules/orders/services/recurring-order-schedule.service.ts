@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
 import { LocationScopedServiceBase } from "../../../common/base/location-scoped-service.base";
-import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
 import { RecurringOrderScheduleResponseDto } from "../dto/recurring-order-schedule/recurring-order-schedule-response.dto";
@@ -19,7 +18,6 @@ export class RecurringOrderScheduleService extends LocationScopedServiceBase<Rec
         repo: Repository<RecurringOrderSchedule>,
 
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: RecurringOrderScheduleValidator,
 
         private readonly recurringOrderScheduleComposer: RecurringOrderScheduleComposer,
@@ -28,7 +26,6 @@ export class RecurringOrderScheduleService extends LocationScopedServiceBase<Rec
             repo,
             'RecurringOrderScheduleService',
             requestContextService,
-            logger,
             validator,
         );
     }

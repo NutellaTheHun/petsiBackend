@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppUnit } from '../../../common/units';
-import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
@@ -26,13 +25,11 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
     private readonly itemRepo: Repository<InventoryItem>,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
     super(
       RecipeIngredient,
       'RecipeIngredientBuilder',
       requestContextService,
-      logger,
     );
   }
 

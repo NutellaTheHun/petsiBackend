@@ -9,7 +9,7 @@ async function bootstrap() {
     const app = await NestFactory.create(
         AppModule,
         /*{ logger: ['error', 'warn', 'log', 'debug'] }*/
-        { bufferLogs: false }, // optional, buffers logs until logger is initialized
+        { bufferLogs: true }, // hold startup logs until setupApp installs the pino logger
     );
 
     // Recommended when docker containerization
@@ -36,8 +36,6 @@ async function bootstrap() {
     if (process.env.NODE_ENV !== 'production') {
         writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
     }
-
-    //app.useLogger(app.get(Logger));
 
     app.enableCors(); // FOR DEVELOPEMENT
     // When in production, look into this

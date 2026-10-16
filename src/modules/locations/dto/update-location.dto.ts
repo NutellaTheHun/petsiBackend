@@ -1,17 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { EntityId } from '../../../common/types';
-import { Tenant } from '../../tenants/entities/tenant.entity';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateLocationDto {
-    @ApiProperty({
-        description: 'Id of the Tenant entity this Location belongs to.',
-        example: 1,
-    })
-    @IsNumber()
-    @IsNotEmpty()
-    readonly tenantId: EntityId<Tenant>;
-
     @ApiProperty({ description: 'Name of the Location entity.', example: 'Downtown' })
     @IsString()
     @IsNotEmpty()

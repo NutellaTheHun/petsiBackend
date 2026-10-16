@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
@@ -30,15 +29,12 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
 
         @InjectRepository(MenuItemSize)
         private readonly menuItemSizeRepo: Repository<MenuItemSize>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(
             containerItemRepo,
             'MenuItemContainerItem',
             requestContextService,
-            logger,
         );
     }
 

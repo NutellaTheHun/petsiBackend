@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
@@ -18,14 +17,12 @@ export class OrderCategoryService extends TenantScopedServiceBase<OrderCategoryE
     @InjectRepository(OrderCategory)
     repo: Repository<OrderCategory>,
     requestContextService: RequestContextService,
-    logger: AppLogger,
     validator: OrderCategoryValidator,
   ) {
     super(
       repo,
       'OrderCategoryService',
       requestContextService,
-      logger,
       validator,
     );
   }

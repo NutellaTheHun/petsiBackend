@@ -31,7 +31,7 @@ import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateLocationDto } from '../dto/create-location.dto';
@@ -48,7 +48,7 @@ export class LocationController extends ControllerBase<LocationEntity> {
     constructor(
         locationService: LocationService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -127,13 +127,6 @@ export class LocationController extends ControllerBase<LocationEntity> {
         description: 'Sort order: ASC or DESC',
     })
     @ApiQuery({ name: 'search', required: false, type: String })
-    @ApiQuery({
-        name: 'filters',
-        required: false,
-        isArray: true,
-        type: String,
-        description: 'Filter by tenant id, e.g. filters=tenant=1',
-    })
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,

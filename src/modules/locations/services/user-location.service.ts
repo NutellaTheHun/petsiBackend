@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { Role } from '../../roles/entities/role.entity';
 import { User } from '../../users/entities/user.entities';
@@ -19,11 +18,10 @@ export class UserLocationService extends LocationScopedServiceBase<UserLocationE
         @InjectRepository(UserLocation)
         repo: Repository<UserLocation>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: UserLocationValidator,
         private readonly userLocationChangeDetector: UserLocationChangeDetector,
     ) {
-        super(repo, 'UserLocationService', requestContextService, logger, validator);
+        super(repo, 'UserLocationService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -44,9 +42,6 @@ export class UserLocationService extends LocationScopedServiceBase<UserLocationE
         manager: EntityManager,
         entity: UserLocation,
     ): Promise<void> {
-        if (dto.locationId !== undefined) {
-            entity.locationId = dto.locationId;
-        }
         if (dto.roleIds !== undefined) {
             entity.roles = dto.roleIds.map((id) => ({ id }) as Role);
         }

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
@@ -29,11 +28,9 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
 
         @InjectRepository(InventoryItemPackage)
         private readonly packageRepo: Repository<InventoryItemPackage>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'InventoryItemSize', requestContextService, logger);
+        super(repo, 'InventoryItemSize', requestContextService);
     }
 
     protected async validateIdentity(identity: InventoryItemSizeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
@@ -86,7 +83,6 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             });
             if (exists && exists.id !== id) {
                 errorMap.addError('ALREADY_EXISTS', undefined, ['unit', 'package', 'measureAmount']);
-                console.log("ALREADY EXISTS");
             }
 
         }

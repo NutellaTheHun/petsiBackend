@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -36,9 +35,8 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     private readonly containerItemBuilder: OrderContainerItemBuilder,
 
     requestContextService: RequestContextService,
-    logger: AppLogger,
   ) {
-    super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger);
+    super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService);
   }
 
   protected createEntity(dto: CreateOrderMenuItemDto, parent?: Order): void {

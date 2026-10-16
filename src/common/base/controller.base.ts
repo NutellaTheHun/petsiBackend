@@ -15,11 +15,11 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { parse, stringify } from 'flatted';
+import { PinoLogger } from 'nestjs-pino';
 import {
     invalidateFindAllCache,
     trackFindAllKey,
 } from '../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { EntityBase } from './entity.base';
 import { ServiceBase } from './service.base';
@@ -32,20 +32,27 @@ export class ControllerBase<
         @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
         public controllerPrefix: string,
         private readonly requestContextService: RequestContextService,
-        private readonly logger: AppLogger,
+        private readonly logger: PinoLogger,
     ) { }
+
+    private logCacheEvent(
+        event: 'CACHE HIT' | 'RESULT CACHED' | 'CACHE INVALIDATED',
+        action: string,
+        cacheKey: string,
+    ): void {
+        this.logger.debug(
+            {
+                controllerPrefix: this.controllerPrefix,
+                servicePrefix: this.entityService.servicePrefix,
+                action,
+                cacheKey,
+            },
+            event,
+        );
+    }
 
     @Post()
     async create(@Body() createDto: any): Promise<TEntity['__Entity']> {
-        const requestId = this.requestContextService.getRequestId();
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'CREATE',
-            'REQUEST',
-            { requestId },
-        );
-
         const result = await this.entityService.create(createDto);
 
         // Invalidate findAll cache
@@ -53,14 +60,6 @@ export class ControllerBase<
             this.entityService.servicePrefix,
             this.cacheManager,
             this.entityService.getCacheInvalidationScope(),
-        );
-
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'CREATE',
-            'SUCCESS',
-            { requestId },
         );
         return result;
     }
@@ -78,8 +77,6 @@ export class ControllerBase<
         @Query('startDate') startDate?: string, // ISO format string
         @Query('endDate') endDate?: string, // ISO format string
     ): Promise<{ items: TEntity['__Entity'][]; nextCursor?: string }> {
-        const requestId = this.requestContextService.getRequestId();
-
         let relations: string[] = [];
         if (rawRelations) {
             relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
@@ -94,27 +91,6 @@ export class ControllerBase<
             : filters
                 ? [filters]
                 : [];
-
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'FIND_ALL',
-            'REQUEST',
-            {
-                requestId,
-                options: {
-                    relations,
-                    limit,
-                    cursor,
-                    sortBy,
-                    sortOrder,
-                    search,
-                    filters: filterArray,
-                    startDate,
-                    endDate,
-                },
-            },
-        );
 
         // Build cache key — scoped by the caller's tenant (and, for
         // location-scoped entities, authorized locations) so a cached
@@ -138,13 +114,7 @@ export class ControllerBase<
         // Check cache
         const cached = await this.cacheManager.get<string>(cacheKey);
         if (cached) {
-            this.logger.logAction(
-                this.controllerPrefix,
-                requestId,
-                'FIND_ALL',
-                'CACHE HIT',
-                { requestId },
-            );
+            this.logCacheEvent('CACHE HIT', 'FIND_ALL', cacheKey);
             return parse(cached);
         }
 
@@ -173,24 +143,9 @@ export class ControllerBase<
 
         // Cache Result
         if (result) {
-            this.logger.logAction(
-                this.controllerPrefix,
-                requestId,
-                'FIND_ALL',
-                'RESULT CACHED',
-                { requestId },
-            );
+            this.logCacheEvent('RESULT CACHED', 'FIND_ALL', cacheKey);
             await this.cacheManager.set(cacheKey, stringify(result), 60_000);
         }
-
-        // Return result
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'FIND_ALL',
-            'SUCCESS',
-            { requestId },
-        );
         return result;
     }
 
@@ -199,15 +154,6 @@ export class ControllerBase<
         @Param('id', ParseIntPipe) id: number,
         @Query('relations') rawRelations?: string | string[],
     ): Promise<TEntity['__Entity']> {
-        const requestId = this.requestContextService.getRequestId();
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'FIND_ONE',
-            'REQUEST',
-            { requestId, id },
-        );
-
         let relations: string[] = [];
         if (rawRelations) {
             relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
@@ -224,13 +170,7 @@ export class ControllerBase<
         // Check cache
         const cached = await this.cacheManager.get<string>(cacheKey);
         if (cached) {
-            this.logger.logAction(
-                this.controllerPrefix,
-                requestId,
-                'FIND_ONE',
-                'CACHE HIT',
-                { requestId },
-            );
+            this.logCacheEvent('CACHE HIT', 'FIND_ONE', cacheKey);
 
             // return if cache hit
             return parse(cached);
@@ -241,22 +181,7 @@ export class ControllerBase<
 
         // Cache result
         await this.cacheManager.set(cacheKey, stringify(result), 60_000);
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'FIND_ONE',
-            'RESULT CACHED',
-            { requestId },
-        );
-
-        // Return result
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'FIND_ONE',
-            'SUCCESS',
-            { requestId },
-        );
+        this.logCacheEvent('RESULT CACHED', 'FIND_ONE', cacheKey);
         return result;
     }
 
@@ -265,15 +190,6 @@ export class ControllerBase<
         @Param('id', ParseIntPipe) id: number,
         @Body() updateDto: any,
     ): Promise<TEntity['__Entity']> {
-        const requestId = this.requestContextService.getRequestId();
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'UPDATE',
-            'REQUEST',
-            { requestId, id },
-        );
-
         // Update
         const updated = await this.entityService.update(id, updateDto);
 
@@ -281,13 +197,7 @@ export class ControllerBase<
 
         // Cache result
         await this.cacheManager.set(cacheKey, stringify(updated), 60_000);
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'UPDATE',
-            'RESULT CACHED',
-            { requestId },
-        );
+        this.logCacheEvent('RESULT CACHED', 'UPDATE', cacheKey);
 
         // Invalidate findAll cache
         await invalidateFindAllCache(
@@ -295,58 +205,25 @@ export class ControllerBase<
             this.cacheManager,
             this.entityService.getCacheInvalidationScope(),
         );
-
-        // Return result
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'UPDATE',
-            'SUCCESS',
-            { requestId },
-        );
         return updated;
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        const requestId = this.requestContextService.getRequestId();
-        this.logger.logAction(
-            this.controllerPrefix,
-            requestId,
-            'REMOVE',
-            'REQUEST',
-            { requestId },
-        );
-
         // Remove from db
         const removal = await this.entityService.remove(id);
         if (removal) {
-            this.logger.logAction(
-                this.controllerPrefix,
-                requestId,
-                'REMOVE',
-                'CACHE INVALIDATED',
-            );
-
             // invalidate findOne and findAll cache
             const singleCacheKey = `${this.entityService.servicePrefix}-findOne-${this.entityService.getCacheScope()}-${id}`;
             await this.cacheManager.del(singleCacheKey);
+            this.logCacheEvent('CACHE INVALIDATED', 'REMOVE', singleCacheKey);
             await invalidateFindAllCache(
                 this.entityService.servicePrefix,
                 this.cacheManager,
                 this.entityService.getCacheInvalidationScope(),
             );
-
-            // Log result
-            this.logger.logAction(
-                this.controllerPrefix,
-                requestId,
-                'REMOVE',
-                'SUCCESS',
-            );
         } else {
-            this.logger.logAction(this.controllerPrefix, requestId, 'REMOVE', 'FAIL');
             throw new NotFoundException();
         }
     }

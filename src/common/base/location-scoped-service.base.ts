@@ -11,16 +11,17 @@ import { TenantScopedServiceBase } from './tenant-scoped-service.base';
  * class also overrides the concrete CRUD methods, layering location
  * authorization on top of the inherited tenant scoping.
  *
- * Two distinct failure modes, matching how `TenantScopedServiceBase` treats
- * tenant mismatches:
+ * Scopes data, not requests:
  * - Reading/mutating an *existing* entity at a location the caller isn't
  *   assigned to behaves like the entity doesn't exist (`NotFoundException`),
  *   same reasoning as the tenant case.
- * - Targeting a locationId the caller chose explicitly (on create, or moving
- *   an entity to a different location on update) is a `ForbiddenException`
- *   instead — the caller isn't confused about whether the location exists
- *   (Location is tenant-wide-readable catalog data), they're just not
- *   authorized to act there.
+ * - Authorizing a client-chosen target `locationId` on create is
+ *   `RoleGuard`'s job, via `@LocationScope('body', 'locationId')` on the
+ *   route — not this class. Moving an entity to another location is rejected
+ *   by the domain validator (`IMMUTABLE_FIELD`).
+ * - A location the guard can't see (derived from a referenced entity, e.g.
+ *   `InventoryAreaCount` via `inventoryAreaId`) is checked in
+ *   `createEntity` with `assertLocationAuthorized`.
  *
  * A domain service extending this only needs to: add `tenantId`/`locationId`
  * columns to its entity, stamp them via `this.getTenantId()`/`dto.locationId`
@@ -56,30 +57,6 @@ export abstract class LocationScopedServiceBase<
     if (!this.isLocationAuthorized(locationId)) {
       throw new ForbiddenException();
     }
-  }
-
-  /**
-   * Only pre-checks when the create DTO carries an explicit `locationId` —
-   * some location-bound entities (nested children stamped from an
-   * already-authorized parent, e.g. `OrderMenuItem`, or entities whose
-   * location is derived from a referenced entity, e.g. `InventoryAreaCount`
-   * via its `inventoryAreaId`) never put `locationId` on the create DTO at
-   * all. Those domains are responsible for authorizing the *derived*
-   * location themselves inside `createEntity` (via `assertLocationAuthorized`,
-   * inherited below) — this mirrors `update()`'s existing conditional check.
-   */
-  async create(createDto: any): Promise<TEntity['__Entity']> {
-    if (createDto?.locationId != null) {
-      this.assertLocationAuthorized(createDto.locationId);
-    }
-    return super.create(createDto);
-  }
-
-  async update(id: number, updateDto: any): Promise<TEntity['__Entity']> {
-    if (updateDto?.locationId != null) {
-      this.assertLocationAuthorized(updateDto.locationId);
-    }
-    return super.update(id, updateDto);
   }
 
   async findOne(

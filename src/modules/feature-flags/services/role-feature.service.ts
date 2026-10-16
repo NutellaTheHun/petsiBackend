@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleFeatureDto } from '../dto/create-role-feature.dto';
 import { UpdateRoleFeatureDto } from '../dto/update-role-feature.dto';
@@ -14,9 +13,8 @@ export class RoleFeatureService extends TenantScopedServiceBase<RoleFeatureEntit
         @InjectRepository(RoleFeature)
         repo: Repository<RoleFeature>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(repo, 'RoleFeatureService', requestContextService, logger);
+        super(repo, 'RoleFeatureService', requestContextService);
     }
 
     protected async createEntity(

@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
-import { ServiceBase } from '../../../common/base/service.base';
-import { AppLogger } from '../../app-logging/app-logger';
+import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
 import { Location, LocationEntity } from '../entities/location.entity';
@@ -13,16 +11,15 @@ import { LocationChangeDetector } from '../utils/change-detectors/location.chang
 import { LocationValidator } from '../validators/location.validator';
 
 @Injectable()
-export class LocationService extends ServiceBase<LocationEntity> {
+export class LocationService extends TenantScopedServiceBase<LocationEntity> {
     constructor(
         @InjectRepository(Location)
         repo: Repository<Location>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: LocationValidator,
         private readonly locationChangeDetector: LocationChangeDetector,
     ) {
-        super(repo, 'LocationService', requestContextService, logger, validator);
+        super(repo, 'LocationService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -30,7 +27,7 @@ export class LocationService extends ServiceBase<LocationEntity> {
         manager: EntityManager,
     ): Promise<Location> {
         const result = manager.create(Location, {
-            tenant: { id: dto.tenantId },
+            tenantId: this.getTenantId(),
             name: dto.name,
             address: dto.address ?? null,
             phoneNumber: dto.phoneNumber ?? null,
@@ -44,9 +41,6 @@ export class LocationService extends ServiceBase<LocationEntity> {
         manager: EntityManager,
         entity: Location,
     ): Promise<void> {
-        if (dto.tenantId !== undefined) {
-            entity.tenant = manager.create(Tenant, { id: dto.tenantId });
-        }
         if (dto.name !== undefined) {
             entity.name = dto.name;
         }
@@ -72,22 +66,7 @@ export class LocationService extends ServiceBase<LocationEntity> {
         }
     }
 
-    protected applyFilters(
-        query: SelectQueryBuilder<Location>,
-        filters: Record<string, string[]>,
-    ): void {
-        if (filters.tenant && filters.tenant.length > 0) {
-            query.andWhere('entity.tenant IN (:...tenants)', {
-                tenants: filters.tenant,
-            });
-        }
-    }
-
     protected getChangeDetector(): ChangeDetectorBase<Location, UpdateLocationDto> | undefined {
         return this.locationChangeDetector;
-    }
-
-    protected getUpdateDiffRelations(): string[] {
-        return ['tenant'];
     }
 }

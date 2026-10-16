@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
@@ -25,15 +24,12 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
 
     @Inject(forwardRef(() => InventoryAreaItemBuilder))
     private readonly itemCountBuilder: InventoryAreaItemBuilder,
-
-    logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
     super(
       InventoryAreaCount,
       'InventoryAreaCountBuilder',
       requestContextService,
-      logger,
     );
   }
 

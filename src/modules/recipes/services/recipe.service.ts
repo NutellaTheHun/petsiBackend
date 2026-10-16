@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
@@ -22,13 +21,12 @@ export class RecipeService extends TenantScopedServiceBase<RecipeEntity> {
         @InjectRepository(Recipe)
         repo: Repository<Recipe>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: RecipeValidator,
 
         private readonly ingredientComposer: RecipeIngredientComposer,
         private readonly recipeChangeDetector: RecipeChangeDetector,
     ) {
-        super(repo, 'RecipeService', requestContextService, logger, validator);
+        super(repo, 'RecipeService', requestContextService, validator);
     }
 
     protected async createEntity(

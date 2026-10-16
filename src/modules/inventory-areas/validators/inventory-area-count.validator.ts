@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { ValidatorIdentityBaseInterface } from '../../../common/base/validator-identity.base.interface';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
@@ -24,7 +23,6 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     constructor(
         @InjectRepository(InventoryAreaCount)
         private readonly repo: Repository<InventoryAreaCount>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
 
         @InjectRepository(InventoryArea)
@@ -33,7 +31,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
         @Inject(forwardRef(() => InventoryAreaItemValidator))
         private readonly areaItemValidator: InventoryAreaItemValidator,
     ) {
-        super(repo, 'InventoryAreaCount', requestContextService, logger);
+        super(repo, 'InventoryAreaCount', requestContextService);
     }
 
     protected async validateIdentity(identity: InventoryAreaCountValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

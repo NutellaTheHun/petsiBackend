@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
@@ -19,11 +18,9 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
     constructor(
         @InjectRepository(MenuItemCategory)
         private readonly repo: Repository<MenuItemCategory>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'MenuItemCategory', requestContextService, logger);
+        super(repo, 'MenuItemCategory', requestContextService);
     }
 
     protected async validateIdentity(identity: MenuItemCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {

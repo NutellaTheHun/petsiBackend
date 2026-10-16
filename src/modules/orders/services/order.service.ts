@@ -11,7 +11,6 @@ import {
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
 import { RevisionHistoryService } from '../../revision-history/revision-history.service';
@@ -53,7 +52,6 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         @InjectRepository(Order)
         repo: Repository<Order>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: OrderValidator,
 
         private readonly orderMenuItemComposer: OrderMenuItemComposer,
@@ -64,7 +62,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         private readonly orderChangeDetector: OrderChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
     ) {
-        super(repo, 'OrderService', requestContextService, logger, validator);
+        super(repo, 'OrderService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -196,9 +194,6 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             }
         }
 
-        if (dto.locationId !== undefined) {
-            entity.locationId = dto.locationId;
-        }
 
         if (dto.occurrenceType !== undefined) {
             entity.occurrenceType = dto.occurrenceType as OccurrenceType | null;
