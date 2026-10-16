@@ -175,6 +175,26 @@ describe('menu item validator', () => {
         );
     });
 
+    it('fail validate create: variableMaxAmount with value 0', async () => {
+        const dto: CreateMenuItemDto = plainToInstance(CreateMenuItemDto, {
+            name: `${P}-new-item`,
+            type: MENU_ITEM_TYPES.CONTAINER,
+            sizeIds: sizes.map((s) => s.id),
+            categoryId: null,
+            variableMaxAmount: 0,
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'variableMaxAmount',
+            ]),
+        );
+    });
+
     it('fail validate create: containerMenuItems errors: duplicate container item', async () => {
         const containedItem = singleItems[0];
 

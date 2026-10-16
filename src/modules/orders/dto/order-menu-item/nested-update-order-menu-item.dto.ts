@@ -42,7 +42,6 @@ export class NestedUpdateOrderMenuItemDto extends NestedUpdateDto {
     @ApiProperty({ description: 'Amount being ordered.', example: 3 })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

@@ -4,6 +4,7 @@ import {
     IsArray,
     IsBoolean,
     IsDate,
+    IsIn,
     IsInt,
     IsNotEmpty,
     IsNumber,
@@ -12,6 +13,11 @@ import {
     IsString,
     ValidateNested,
 } from 'class-validator';
+import {
+    OCCURRENCE_STATES,
+    OCCURRENCE_TYPES,
+} from '../../utils/occurence-types';
+import { FULFILLMENT_TYPES } from '../../utils/fulfillment-types';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
@@ -30,16 +36,19 @@ export class CreateOrderDto {
         description: 'Date the order is to be available or delivered.',
         example: '2025-06-08T20:26:45.883Z',
     })
+    @Type(() => Date)
     @IsDate()
     @IsNotEmpty()
     readonly fulfillmentDate: Date;
 
     @ApiProperty({
+        enum: Object.values(FULFILLMENT_TYPES),
         description: "Method of Order's dispersal.",
         example: 'delivery',
     })
     @IsString()
     @IsNotEmpty()
+    @IsIn(Object.values(FULFILLMENT_TYPES))
     readonly fulfillmentType: string;
 
     @ApiProperty({
@@ -184,6 +193,7 @@ export class CreateOrderDto {
     readonly templateOrderId?: number | null;
 
     @ApiProperty({
+        enum: Object.values(OCCURRENCE_TYPES),
         example: 'TEMPLATE',
         description: 'The type of the occurence',
         type: 'string',
@@ -191,9 +201,11 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
+    @IsIn(Object.values(OCCURRENCE_TYPES))
     readonly occurrenceType?: string | null;
 
     @ApiProperty({
+        enum: Object.values(OCCURRENCE_STATES),
         example: 'GENERATED',
         description: 'The state of the occurence',
         type: 'string',
@@ -201,6 +213,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
+    @IsIn(Object.values(OCCURRENCE_STATES))
     readonly occurrenceState?: string | null;
 
     @ApiProperty({
@@ -209,6 +222,7 @@ export class CreateOrderDto {
             'The original of the occurence, used to properly regenerated orders',
         nullable: true,
     })
+    @Type(() => Date)
     @IsDate()
     @IsOptional()
     readonly recurrenceDate?: Date | null;

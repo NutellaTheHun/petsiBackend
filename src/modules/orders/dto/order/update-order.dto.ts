@@ -1,9 +1,10 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
     IsDate,
+    IsIn,
     IsInt,
     IsNotEmpty,
     IsNumber,
@@ -12,6 +13,11 @@ import {
     IsString,
     ValidateNested,
 } from 'class-validator';
+import {
+    OCCURRENCE_STATES,
+    OCCURRENCE_TYPES,
+} from '../../utils/occurence-types';
+import { FULFILLMENT_TYPES } from '../../utils/fulfillment-types';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
@@ -35,17 +41,20 @@ export class UpdateOrderDto {
         example: '2025-06-08T20:26:45.883Z',
         type: 'string',
     })
+    @Type(() => Date)
     @IsDate()
     @IsNotEmpty()
     readonly fulfillmentDate: Date;
 
     @ApiProperty({
+        enum: Object.values(FULFILLMENT_TYPES),
         description: "Method of Order's dispersal.",
         example: 'delivery',
         type: 'string',
     })
     @IsString()
     @IsNotEmpty()
+    @IsIn(Object.values(FULFILLMENT_TYPES))
     readonly fulfillmentType: string;
 
     @ApiProperty({
@@ -189,6 +198,7 @@ export class UpdateOrderDto {
     )[];
 
     @ApiProperty({
+        enum: Object.values(OCCURRENCE_TYPES),
         example: 'TEMPLATE',
         description: 'The type of the occurence',
         type: 'string',
@@ -196,9 +206,11 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
+    @IsIn(Object.values(OCCURRENCE_TYPES))
     readonly occurrenceType?: string | null;
 
     @ApiProperty({
+        enum: Object.values(OCCURRENCE_STATES),
         example: 'GENERATED',
         description: 'The state of the occurence',
         type: 'string',
@@ -206,6 +218,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
+    @IsIn(Object.values(OCCURRENCE_STATES))
     readonly occurrenceState?: string | null;
 
     @ApiProperty({

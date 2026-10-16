@@ -12,7 +12,6 @@ import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-conta
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { NestedCreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto';
-import { UpdateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/update-recurring-order-schedule.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
@@ -120,32 +119,6 @@ describe('recurring order schedule validator', () => {
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
-    });
-
-    // fail create invalid frequency
-    it('fail create invalid frequency', async () => {
-        const dto: NestedCreateRecurringOrderScheduleDto = plainToInstance(
-            NestedCreateRecurringOrderScheduleDto,
-            {
-                createId: 'r1',
-                frequency: 'invalid' as
-                    | 'DAILY'
-                    | 'WEEKLY'
-                    | 'MONTHLY'
-                    | 'YEARLY',
-                startDate: new Date(),
-            },
-        );
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'frequency',
-            ]),
-        );
     });
     // fail create invalid interval
     it('fail create invalid interval', async () => {
@@ -299,54 +272,12 @@ describe('recurring order schedule validator', () => {
         );
     });
 
-    // fail create invalid timeZone
-    it('fail create invalid timeZone', async () => {
-        const dto: NestedCreateRecurringOrderScheduleDto = plainToInstance(
-            NestedCreateRecurringOrderScheduleDto,
-            {
-                createId: 'r1',
-                frequency: 'WEEKLY',
-                startDate: new Date(),
-                timezone: 'invalid',
-            },
-        );
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'timezone',
-            ]),
-        );
-    });
-
     // pass update validation: no validation errors
     it('pass update validation: no validation errors', async () => {
         const recurringOrderSchedule = await getRecurringOrderSchedule();
         const dto = recurringOrderScheduleToUpdateDto(recurringOrderSchedule);
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
-    });
-
-    // fail update invalid frequency
-    it('fail update invalid frequency', async () => {
-        const entity = await getRecurringOrderSchedule();
-        const dto = recurringOrderScheduleToUpdateDto(entity, {
-            frequency:
-                'invalid' as unknown as UpdateRecurringOrderScheduleDto['frequency'],
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'frequency',
-            ]),
-        );
     });
 
     // fail update invalid interval
@@ -447,24 +378,6 @@ describe('recurring order schedule validator', () => {
             [],
             createValidationErrorPayload('OUT_OF_RANGE', undefined, [
                 'endDate',
-            ]),
-        );
-    });
-
-    // fail update invalid timeZone
-    it('fail update invalid timeZone', async () => {
-        const entity = await getRecurringOrderSchedule();
-        const dto = recurringOrderScheduleToUpdateDto(entity, {
-            timezone: 'invalid',
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'timezone',
             ]),
         );
     });

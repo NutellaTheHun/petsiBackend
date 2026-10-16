@@ -20,7 +20,6 @@ export class UpdateTemplateMenuItemDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly tablePosIndex: number;
 
     @ApiProperty({

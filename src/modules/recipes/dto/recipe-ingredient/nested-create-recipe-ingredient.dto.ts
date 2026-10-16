@@ -43,7 +43,6 @@ export class NestedCreateRecipeIngredientDto extends NestedCreateDto {
         example: 4,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 

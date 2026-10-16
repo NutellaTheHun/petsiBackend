@@ -30,7 +30,6 @@ export class NestedCreateInventoryAreaItemDto extends NestedCreateDto {
         type: Number,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly amount: number;
 

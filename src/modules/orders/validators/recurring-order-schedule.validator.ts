@@ -67,15 +67,6 @@ export class RecurringOrderScheduleValidator extends NestedValidatorBase<
             );
         }
 
-        if (identity.frequency !== undefined) {
-            const validFrequencies = ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'];
-            if (!validFrequencies.includes(identity.frequency)) {
-                errorMap.addError('INCONSISTENT_STATE', undefined, [
-                    'frequency',
-                ]);
-            }
-        }
-
         if (identity.interval !== undefined) {
             if (identity.interval <= 0) {
                 errorMap.addError('OUT_OF_RANGE', undefined, ['interval']);
@@ -128,20 +119,6 @@ export class RecurringOrderScheduleValidator extends NestedValidatorBase<
                 identity.startDate >= identity.endDate
             ) {
                 errorMap.addError('OUT_OF_RANGE', undefined, ['endDate']);
-            }
-        }
-
-        if (identity.timezone !== undefined) {
-            const validTimezones = [
-                'America/New_York',
-                'Europe/London',
-                'Asia/Tokyo',
-            ];
-
-            if (!validTimezones.includes(identity.timezone)) {
-                errorMap.addError('INCONSISTENT_STATE', undefined, [
-                    'timezone',
-                ]);
             }
         }
 

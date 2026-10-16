@@ -18,12 +18,10 @@ import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/n
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
-import { NestedCreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
-import { OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderValidator } from './order.validator';
@@ -230,36 +228,6 @@ describe('order validator', () => {
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
-    });
-
-    it('fail validate create: invalid fulfillment type', async () => {
-        const category = categories[0];
-        const singleMenuItem = singleItems[0];
-
-        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
-            recipient: 'John Doe',
-            fulfillmentDate: new Date(),
-            fulfillmentType: 'invalid_type',
-            categoryId: category.id,
-            orderedItems: [
-                plainToInstance(NestedCreateOrderMenuItemDto, {
-                    createId: 'c1',
-                    menuItemId: singleMenuItem.id,
-                    sizeId: singleMenuItem.sizes[0].id,
-                    quantity: 2,
-                }),
-            ],
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'fulfillmentType',
-            ]),
-        );
     });
 
     it('fail validate create: order for delivery must have a delivery address', async () => {
@@ -610,64 +578,6 @@ describe('order validator', () => {
         );
     });
 
-    // Validate Create: Invalid recurrence schedule
-    it('fail validate create: invalid recurrence schedule, frequency is invalid', async () => {
-        const category = categories[0];
-        const singleMenuItem = singleItems[0];
-        const anotherMenuItem = singleItems[1];
-
-        const recurrenceSchedule = plainToInstance(
-            NestedCreateRecurringOrderScheduleDto,
-            {
-                createId: 'r1',
-                frequency: 'INVALID',
-                interval: 1,
-                daysOfWeek: [6],
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
-            },
-        );
-
-        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
-            recipient: 'John Doe',
-            fulfillmentDate: new Date(),
-            fulfillmentType: 'pickup',
-            categoryId: category.id,
-            orderedItems: [
-                plainToInstance(NestedCreateOrderMenuItemDto, {
-                    createId: 'c1',
-                    menuItemId: singleMenuItem.id,
-                    sizeId: singleMenuItem.sizes[0].id,
-                    quantity: 2,
-                }),
-                plainToInstance(NestedCreateOrderMenuItemDto, {
-                    createId: 'c2',
-                    menuItemId: anotherMenuItem.id,
-                    sizeId: anotherMenuItem.sizes[0].id,
-                    quantity: 3,
-                }),
-                plainToInstance(NestedCreateOrderMenuItemDto, {
-                    createId: 'c3',
-                    menuItemId: anotherMenuItem.id,
-                    sizeId: anotherMenuItem.sizes[1].id,
-                    quantity: 4,
-                }),
-            ],
-            recurrenceSchedule: recurrenceSchedule,
-            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'recurrenceSchedule' }],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'frequency',
-            ]),
-        );
-    });
-
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const orderToUpdate = await loadOrder();
@@ -735,24 +645,6 @@ describe('order validator', () => {
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
         expect(errors).toBeNull();
-    });
-
-    it('fail validate update: invalid fulfillment type', async () => {
-        const orderToUpdate = await loadOrder();
-
-        const dto = orderToUpdateDto(orderToUpdate, {
-            fulfillmentType: 'invalid_type',
-        });
-
-        const errors = await validator.validateDto(dto, orderToUpdate.id);
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'fulfillmentType',
-            ]),
-        );
     });
 
     it('fail validate update: locationId cannot change', async () => {
@@ -1138,36 +1030,6 @@ describe('order validator', () => {
             ],
             createValidationErrorPayload('OUT_OF_RANGE', undefined, [
                 'quantity',
-            ]),
-        );
-    });
-
-    it('fail validate update: invalid recurrence schedule, frequency is invalid', async () => {
-        const orderToUpdate = await loadOrder();
-        const recurrenceSchedule = plainToInstance(
-            NestedCreateRecurringOrderScheduleDto,
-            {
-                createId: 'c1',
-                frequency: 'INVALID',
-                interval: 1,
-                daysOfWeek: [6],
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
-            },
-        );
-
-        const dto = orderToUpdateDto(orderToUpdate, {
-            recurrenceSchedule: recurrenceSchedule,
-            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
-        });
-
-        const errors = await validator.validateDto(dto, orderToUpdate.id);
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'recurrenceSchedule' }],
-            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                'frequency',
             ]),
         );
     });

@@ -43,7 +43,6 @@ export class UpdateRecipeIngredientDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

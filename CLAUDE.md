@@ -45,6 +45,10 @@ See `src/common/base/CLAUDE.md`.
 
 Every domain entity's `ServiceBase` can wire up a `ChangeDetectorBase` to diff an incoming update DTO against the current entity; when a detector is present, `update` short-circuits to a no-op if nothing changed, and only the changed-field patch reaches `updateEntity`. Domains that track history persist a versioned snapshot + change log from that diff via `RevisionHistoryService`. Revision-history internals and pruning-cron details: see `src/modules/revision-history/CLAUDE.md`.
 
+### Validation layers
+
+DTO decorators check only presence, type, dropdown membership and id format, and a failure there is a 400 `INVALID_REQUEST` (a frontend bug, logged). Rules about user-entered values belong in the domain validator and come back as a 400 `VALIDATION_ERROR` tree. See `src/common/validation/CLAUDE.md` → "Division between DTO and business validator" before adding a check.
+
 ### Database configuration
 
 `selectTypeOrmModule()` picks the config by `NODE_ENV`: non-`production` uses `TypeORMPostgresTesting`, which reads `DB_TEST_DATABASE` and sets `synchronize: true`. Production uses `TypeORMPostgresProd` (no synchronize).

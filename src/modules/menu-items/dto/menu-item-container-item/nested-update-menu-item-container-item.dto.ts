@@ -30,7 +30,6 @@ export class NestedUpdateMenuItemContainerItemDto extends NestedUpdateDto {
         example: 3,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 }

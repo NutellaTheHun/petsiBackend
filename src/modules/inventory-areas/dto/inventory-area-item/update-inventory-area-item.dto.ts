@@ -28,7 +28,6 @@ export class UpdateInventoryAreaItemDto {
         example: 6,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly amount: number;
 

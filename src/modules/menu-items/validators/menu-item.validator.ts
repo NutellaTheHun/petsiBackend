@@ -72,6 +72,17 @@ export class MenuItemValidator extends ValidatorBase<
             );
         }
 
+        if (
+            identity.variableMaxAmount !== undefined &&
+            identity.variableMaxAmount !== null
+        ) {
+            this.helper.enforcePositive(
+                identity.variableMaxAmount,
+                'variableMaxAmount',
+                errorMap,
+            );
+        }
+
         if (identity.sizeIds && identity.sizeIds.length) {
             for (const sizeId of identity.sizeIds) {
                 await this.helper.enforceExists(

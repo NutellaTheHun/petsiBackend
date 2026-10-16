@@ -21,7 +21,6 @@ export class NestedCreateTemplateMenuItemDto extends NestedCreateDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly tablePosIndex: number;
 
     @ApiProperty({

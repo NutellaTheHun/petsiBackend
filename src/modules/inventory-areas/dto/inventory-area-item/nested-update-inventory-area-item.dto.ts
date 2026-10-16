@@ -29,7 +29,6 @@ export class NestedUpdateInventoryAreaItemDto extends NestedUpdateDto {
         example: 6,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly amount: number;
 

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
     IsArray,
+    IsIn,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -9,6 +10,7 @@ import {
     IsString,
     ValidateNested,
 } from 'class-validator';
+import { MENU_ITEM_TYPES } from '../../utils/menu-item-type';
 import { EntityId } from '../../../../common/types';
 import { MenuItemCategory } from '../../entities/menu-item-category.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
@@ -26,13 +28,15 @@ export class CreateMenuItemDto {
     readonly name: string;
 
     @ApiProperty({
-        description: 'Can be single, fixed_container, or variable_container',
-        example: 'fixed_container',
+        enum: Object.values(MENU_ITEM_TYPES),
+        description: 'Either single or container',
+        example: 'single',
         nullable: true,
         type: 'string',
     })
     @IsNotEmpty()
     @IsString()
+    @IsIn(Object.values(MENU_ITEM_TYPES))
     readonly type: string;
 
     @ApiProperty({
@@ -91,7 +95,6 @@ export class CreateMenuItemDto {
     })
     @IsOptional()
     @IsNumber()
-    @IsPositive()
     readonly variableMaxAmount?: number | null;
 
     @ApiProperty({

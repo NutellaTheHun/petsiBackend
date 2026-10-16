@@ -37,7 +37,6 @@ export class CreateOrderMenuItemDto {
     @ApiProperty({ description: 'Amount being ordered.' })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

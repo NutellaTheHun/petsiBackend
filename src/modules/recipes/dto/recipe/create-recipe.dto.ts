@@ -9,7 +9,6 @@ import {
     IsOptional,
     IsPositive,
     IsString,
-    Min,
     ValidateNested,
 } from 'class-validator';
 import { AppUnit, UNITS } from '../../../../common/units';
@@ -47,7 +46,6 @@ export class CreateRecipeDto {
         nullable: true,
     })
     @IsNumber()
-    @IsPositive()
     @IsOptional()
     readonly batchResultQuantity?: number | null;
 
@@ -69,7 +67,6 @@ export class CreateRecipeDto {
         format: 'decimal',
     })
     @IsNumber()
-    @IsPositive()
     @IsOptional()
     readonly servingSizeQuantity?: number | null;
 
@@ -91,7 +88,6 @@ export class CreateRecipeDto {
     })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
-    @Min(0)
     readonly salesPrice?: number | null;
 
     @ApiProperty({

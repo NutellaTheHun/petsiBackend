@@ -1,6 +1,7 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
     IsArray,
+    IsIn,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -8,6 +9,7 @@ import {
     IsString,
     ValidateNested,
 } from 'class-validator';
+import { MENU_ITEM_TYPES } from '../../utils/menu-item-type';
 
 import { plainToInstance, Transform, Type } from 'class-transformer';
 import { EntityId } from '../../../../common/types';
@@ -33,12 +35,14 @@ export class UpdateMenuItemDto {
     readonly name: string;
 
     @ApiProperty({
-        description: 'Can be single, fixed_container, or variable_container',
-        example: 'fixed_container',
+        enum: Object.values(MENU_ITEM_TYPES),
+        description: 'Either single or container',
+        example: 'single',
         type: 'string',
     })
     @IsNotEmpty()
     @IsString()
+    @IsIn(Object.values(MENU_ITEM_TYPES))
     readonly type: string;
 
     @ApiProperty({
@@ -120,7 +124,6 @@ export class UpdateMenuItemDto {
     })
     @IsOptional()
     @IsNumber()
-    @IsPositive()
     readonly variableMaxAmount?: number | null;
 
     @ApiProperty({

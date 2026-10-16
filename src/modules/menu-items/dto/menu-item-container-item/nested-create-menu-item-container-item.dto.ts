@@ -31,7 +31,6 @@ export class NestedCreateMenuItemContainerItemDto extends NestedCreateDto {
         example: 5,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 

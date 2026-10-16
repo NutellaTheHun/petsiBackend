@@ -42,7 +42,6 @@ export class CreateRecipeIngredientDto {
         example: 4,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 

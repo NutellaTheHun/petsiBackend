@@ -44,7 +44,6 @@ export class NestedUpdateRecipeIngredientDto extends NestedUpdateDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

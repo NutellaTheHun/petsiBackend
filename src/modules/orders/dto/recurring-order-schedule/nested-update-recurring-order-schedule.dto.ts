@@ -3,21 +3,27 @@ import {
     IsArray,
     IsDate,
     IsDateString,
+    IsIn,
     IsNotEmpty,
     IsNumber,
     IsOptional,
-    IsPositive,
     IsString,
 } from 'class-validator';
+import {
+    RECURRENCE_FREQUENCIES,
+    RECURRENCE_TIMEZONES,
+} from '../../utils/recurrence-options';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 
 export class NestedUpdateRecurringOrderScheduleDto extends NestedUpdateDto {
     @ApiProperty({
+        enum: RECURRENCE_FREQUENCIES,
         description: 'The frequency of the schedule',
         example: 'WEEKLY',
     })
     @IsString()
     @IsNotEmpty()
+    @IsIn(RECURRENCE_FREQUENCIES)
     readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
     @ApiProperty({
@@ -27,7 +33,6 @@ export class NestedUpdateRecurringOrderScheduleDto extends NestedUpdateDto {
     })
     @IsNumber()
     @IsOptional()
-    @IsPositive()
     readonly interval?: number;
 
     @ApiProperty({
@@ -49,7 +54,6 @@ export class NestedUpdateRecurringOrderScheduleDto extends NestedUpdateDto {
     })
     @IsNumber()
     @IsOptional()
-    @IsPositive()
     readonly dayOfMonth?: number;
 
     @ApiProperty({
@@ -60,7 +64,6 @@ export class NestedUpdateRecurringOrderScheduleDto extends NestedUpdateDto {
     })
     @IsNumber()
     @IsOptional()
-    @IsPositive()
     readonly monthOfYear?: number;
 
     @ApiProperty({
@@ -85,6 +88,7 @@ export class NestedUpdateRecurringOrderScheduleDto extends NestedUpdateDto {
     readonly endDate?: Date;
 
     @ApiProperty({
+        enum: RECURRENCE_TIMEZONES,
         description:
             'The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York',
         example: 'America/New_York',
@@ -93,5 +97,6 @@ export class NestedUpdateRecurringOrderScheduleDto extends NestedUpdateDto {
     @IsString()
     @IsOptional()
     @IsString()
+    @IsIn(RECURRENCE_TIMEZONES)
     readonly timezone?: string;
 }

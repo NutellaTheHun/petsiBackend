@@ -112,14 +112,15 @@ describe('order controller', () => {
         await testCtx.executeCleanupFunctions();
     });
 
-    it('createOrderResponse throws ValidationException for invalid fulfillmentType', async () => {
+    it('createOrderResponse throws ValidationException for a delivery order missing its phone number', async () => {
         const category = categories[0];
         const singleMenuItem = singleItems[0];
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: `${P}-invalid-fulfillment-type`,
+            recipient: `${P}-delivery-no-phone`,
             fulfillmentDate: new Date(),
-            fulfillmentType: 'invalid_type',
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 main st',
             categoryId: category.id,
             locationId: fixtureLocationId,
             orderedItems: [
@@ -141,8 +142,8 @@ describe('order controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
-                    'fulfillmentType',
+                createValidationErrorPayload('MISSING_PROPERTY', undefined, [
+                    'phoneNumber',
                 ]),
             );
         }

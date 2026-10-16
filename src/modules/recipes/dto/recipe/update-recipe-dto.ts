@@ -9,7 +9,6 @@ import {
     IsOptional,
     IsPositive,
     IsString,
-    Min,
     ValidateNested,
 } from 'class-validator';
 import { AppUnit, UNITS } from '../../../../common/units';
@@ -51,7 +50,6 @@ export class UpdateRecipeDto {
         nullable: true,
     })
     @IsNumber()
-    @IsPositive()
     @IsOptional()
     readonly batchResultQuantity?: number | null;
 
@@ -74,7 +72,6 @@ export class UpdateRecipeDto {
         nullable: true,
     })
     @IsNumber()
-    @IsPositive()
     @IsOptional()
     readonly servingSizeQuantity?: number | null;
 
@@ -96,7 +93,6 @@ export class UpdateRecipeDto {
     })
     @IsNumber()
     @IsOptional()
-    @Min(0)
     readonly salesPrice?: number | null;
 
     @ApiProperty({

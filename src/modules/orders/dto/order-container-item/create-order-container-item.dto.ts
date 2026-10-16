@@ -32,7 +32,6 @@ export class CreateOrderContainerItemDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

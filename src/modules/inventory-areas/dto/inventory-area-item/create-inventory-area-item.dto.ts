@@ -30,7 +30,6 @@ export class CreateInventoryAreaItemDto {
         type: Number,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly amount: number;
 

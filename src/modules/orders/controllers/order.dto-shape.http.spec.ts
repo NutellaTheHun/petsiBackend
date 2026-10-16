@@ -98,8 +98,7 @@ describe('order DTO shape failures (HTTP)', () => {
         expect(JSON.stringify(res.body)).not.toContain('value');
     };
 
-    // `fulfillmentDate` can't pass `@IsDate()` from JSON, so every body also reports it;
-    // assert the path under test is present rather than the exact list.
+    // Assert the path under test is present rather than the exact list.
     const expectFields = (res: request.Response, path: string) => {
         const { fields } = (res.body as InvalidRequestBody).details;
         expect(fields).toContain(path);

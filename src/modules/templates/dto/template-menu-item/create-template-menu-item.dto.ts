@@ -21,7 +21,6 @@ export class CreateTemplateMenuItemDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly tablePosIndex: number;
 
     @ApiProperty({

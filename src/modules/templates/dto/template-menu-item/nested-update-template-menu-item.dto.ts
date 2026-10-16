@@ -21,7 +21,6 @@ export class NestedUpdateTemplateMenuItemDto extends NestedUpdateDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly tablePosIndex: number;
 
     @ApiProperty({

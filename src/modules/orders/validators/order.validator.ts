@@ -9,7 +9,7 @@ import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
-import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
+import { OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderValidatorIdentity } from './identities/order.validator.identity.interface';
 import { RecurringOrderScheduleValidatorIdentity } from './identities/recurring-order-schedule.identity.interface';
@@ -67,12 +67,6 @@ export class OrderValidator extends ValidatorBase<
         //if (identity.fulfillmentDate) { }
 
         if (identity.fulfillmentType) {
-            const validFulfillmentType = ['pickup', 'delivery'];
-            if (!validFulfillmentType.includes(identity.fulfillmentType)) {
-                errorMap.addError('INCONSISTENT_STATE', undefined, [
-                    'fulfillmentType',
-                ]);
-            }
             this.helper.enforceConditionalRequired(
                 identity,
                 'fulfillmentType',
@@ -109,34 +103,6 @@ export class OrderValidator extends ValidatorBase<
                     item,
                     errorMap,
                 );
-            }
-        }
-
-        if (
-            identity.occurrenceType !== null &&
-            identity.occurrenceType !== undefined
-        ) {
-            const validOccurenceTypes = Object.values(OCCURRENCE_TYPES).map(
-                (type) => type.toString(),
-            );
-            if (!validOccurenceTypes.includes(identity.occurrenceType)) {
-                errorMap.addError('INCONSISTENT_STATE', undefined, [
-                    'occurenceType',
-                ]);
-            }
-        }
-
-        if (
-            identity.occurrenceState !== null &&
-            identity.occurrenceState !== undefined
-        ) {
-            const validoccurrenceStates = Object.values(OCCURRENCE_STATES).map(
-                (state) => state.toString(),
-            );
-            if (!validoccurrenceStates.includes(identity.occurrenceState)) {
-                errorMap.addError('INCONSISTENT_STATE', undefined, [
-                    'occurrenceState',
-                ]);
             }
         }
 

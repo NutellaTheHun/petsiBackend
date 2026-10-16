@@ -18,7 +18,7 @@ last_reviewed: 2026-10-16
 
 How it's wired into the base-class hierarchy (`src/common/base`): every domain validator extends `ValidatorBase<T, I>` (or `NestedValidatorBase<T, I>` for validators only ever invoked as children). `ValidatorBase`'s constructor instantiates a fresh `ValidatorHelper<...>()` and exposes it as `protected helper`, so every subclass calls checks as `this.helper.enforceXxx(...)`. `ValidatorBase.validateDto` first calls the subclass's `resolveIdentity(dto, id)` to turn a create/update DTO into `I`, then calls the abstract `validateIdentity(identity, id)` which subclasses implement by building a `new ValidationErrorMap(id)` and threading it through one or more `this.helper.enforceXxx(...)` calls (and/or nested `validateNestedIdentity` calls). `ValidatorBase.validate(dto, id)` returns the non-empty `ValidationErrorMap` (or `null`); `validateDto` wraps it and returns `buildResponse()` (what validator specs assert on). `ServiceBase.create`/`update` call `validate` and throw `new ValidationException(errorMap)` when it's non-null. `GlobalHttpExceptionFilter` (`src/common/exceptions/global-http-exception-filter.ts`) catches it and returns HTTP 400 with `code: 'VALIDATION_ERROR'` and `details.validationErrors` set to `exception.errors`. If the tree contains any logged code, it also writes one `warn` entry (see below). To bypass validation in a test, spy on `validate`, not `validateDto`.
 
-Grepping `src/modules` confirms real adoption: `enforceExists` (16 files), `enforceUnique` (17 files), `enforceNoDuplicateElements` (6 files), `enforcePositive` (9 files), `enforceValidSize` (4 files), `enforceConditionalRequired`/`enforceOnlyOne` (2 files each), `enforceMutualRequired`/`enforcePropertyState` (1 file each) — `enforceArrayNotEmpty`, `enforceNonNegative`, `enforceValueInList`, and `enforceNotInList` currently have zero call sites in `src/modules`.
+Grepping `src/modules` confirms real adoption: `enforceExists` (16 files), `enforceUnique` (17 files), `enforceNoDuplicateElements` (6 files), `enforcePositive` (10 files), `enforceValidSize` (4 files), `enforceConditionalRequired`/`enforceOnlyOne` (2 files each), `enforceMutualRequired`/`enforcePropertyState` (1 file each) — `enforceArrayNotEmpty`, `enforceNonNegative`, `enforceValueInList`, and `enforceNotInList` currently have zero call sites in `src/modules`.
 
 **Key relationships:**
 - `ValidatorBase`/`NestedValidatorBase` (`src/common/base/validator.base.ts`, `nested-validator.base.ts`) own the `ValidatorHelper` instance and the `validateIdentity`/`resolveIdentity` contract; this directory only supplies the checks and the error-tree data structure, never the orchestration.
@@ -27,6 +27,10 @@ Grepping `src/modules` confirms real adoption: `enforceExists` (16 files), `enfo
 - The test helpers in `validation-error.ts` are the standard way `*.validator.spec.ts` files assert on nested error trees (see `src/modules/roles/validators/role.validator.spec.ts`, `src/modules/orders/validators/order-container-item.validator.spec.ts`).
 
 ## Enforced Patterns
+
+### Division between DTO and business validator
+
+The DTO (class-validator) checks exactly what the frontend checks: presence, type, dropdown/enum membership (`@IsIn`/`@IsEnum`), and identifier format (`@IsPositive` on `*Id`/`*Ids`). Every rule about a value the user types — positivity, bounds, date ordering, matching a variable max — lives only in the domain validator and emits `OUT_OF_RANGE`. Never put `@IsPositive`/`@Min`/`@Max` on a user-typed field: it fires first and turns a field-level error into a generic `INVALID_REQUEST`. Don't repeat a DTO-enforced membership check in a validator; checks that combine several fields (occurrence type vs `templateOrderId`/`recurrenceSchedule`) stay in the validator as `INCONSISTENT_STATE`.
 
 ### Code vocabulary and classification
 

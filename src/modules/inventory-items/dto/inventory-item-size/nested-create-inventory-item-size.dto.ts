@@ -5,7 +5,6 @@ import {
     IsNumber,
     IsOptional,
     IsPositive,
-    Min,
 } from 'class-validator';
 import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { AppUnit, UNITS } from '../../../../common/units';
@@ -35,7 +34,6 @@ export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
         example: 10,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly measureAmount: number;
 
@@ -46,6 +44,5 @@ export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
     })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
-    @Min(0)
     readonly cost?: number | null;
 }

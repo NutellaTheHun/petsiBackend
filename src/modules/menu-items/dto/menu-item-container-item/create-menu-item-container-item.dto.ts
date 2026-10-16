@@ -30,7 +30,6 @@ export class CreateMenuItemContainerItemDto {
         example: 5,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 

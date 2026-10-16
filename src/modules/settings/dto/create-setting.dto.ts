@@ -1,11 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsDefined,
+    IsIn,
     IsInt,
     IsNotEmpty,
     IsOptional,
     IsString,
 } from 'class-validator';
+import { SETTING_KEY_REGISTRY } from '../utils/setting-key.registry';
 import { SettingValue } from '../utils/setting-value.util';
 
 export class CreateSettingDto {
@@ -19,12 +21,14 @@ export class CreateSettingDto {
     readonly locationId?: number;
 
     @ApiProperty({
+        enum: Object.keys(SETTING_KEY_REGISTRY),
         description:
             'Setting key. Must be a name registered in the backend SettingKey registry.',
         example: 'taxRate',
     })
     @IsString()
     @IsNotEmpty()
+    @IsIn(Object.keys(SETTING_KEY_REGISTRY))
     readonly name: string;
 
     @ApiProperty({
