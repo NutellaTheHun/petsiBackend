@@ -137,7 +137,7 @@ describe('order menu item validator', () => {
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['size']));
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_REFERENCE', undefined, ['size']));
     });
 
     it('fail validate create: duplicate container item', async () => {
@@ -371,7 +371,7 @@ describe('order menu item validator', () => {
 
         const errors = await validator.validateDto(dto, orderMenuItemToUpdate.id);
         expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['size']));
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_REFERENCE', undefined, ['size']));
     });
 
     it('fail validate update: duplicate container item', async () => {

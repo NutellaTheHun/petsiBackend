@@ -79,7 +79,7 @@ describe('UserLocationController', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['user']),
+                createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['user']),
             );
         }
     });

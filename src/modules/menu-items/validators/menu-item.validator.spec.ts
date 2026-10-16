@@ -214,7 +214,7 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
         );
     });
 
@@ -244,7 +244,7 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
         );
     });
 
@@ -425,7 +425,7 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
         );
     });
 
@@ -459,7 +459,7 @@ describe('menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
         );
     });
 

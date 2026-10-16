@@ -26,10 +26,22 @@ export abstract class ValidatorBase<
         dto: T['__CDto'] | T['__UDto'],
         id: number | string,
     ): Promise<ValidationErrorResponse | null> {
+        const result = await this.validate(dto, id);
+        return result ? this.getValidateResponse(result) : null;
+    }
+
+    /**
+     * Same as `validateDto`, but returns the error map itself (with log-only context)
+     * so `ServiceBase` can hand it to `ValidationException`. Null when there are no errors.
+     */
+    public async validate(
+        dto: T['__CDto'] | T['__UDto'],
+        id: number | string,
+    ): Promise<ValidationErrorMap | null> {
         const resolvedIdentity = await this.resolveIdentity(dto, id);
 
         const result = await this.validateIdentity(resolvedIdentity, id);
-        return this.getValidateResponse(result);
+        return result.isEmpty() ? null : result;
     }
 
     protected abstract validateIdentity(

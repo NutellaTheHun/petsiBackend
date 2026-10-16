@@ -12,8 +12,10 @@ import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { resolveRequestId } from '../middleware/request-id';
 import { ValidationException } from '../validation/validation-exception';
+import { AppHttpException } from './app-http-exception';
 import { DatabaseException } from './database-exception';
 import { DtoValidationException } from './dto-validation-exception';
+import { REFERENCE_NOT_FOUND } from './error_constants';
 
 /**
  * The subset of nestjs-pino's `PinoLogger` the filter uses. Tests inject a
@@ -85,11 +87,20 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
      */
     private classify(exception: any): Classified {
         if (exception instanceof ValidationException) {
+            // Only anomalous codes are logged; errors the user can fix are left out
+            const loggedErrors = exception.errorMap.collectLoggedErrors();
             return {
                 status: HttpStatus.BAD_REQUEST,
                 message: 'Validation failed',
                 code: 'VALIDATION_ERROR',
                 details: { validationErrors: exception.errors },
+                log: loggedErrors.length
+                    ? {
+                          level: 'warn',
+                          fields: { source: 'business', errors: loggedErrors },
+                          msg: 'Business validation anomaly',
+                      }
+                    : undefined,
             };
         }
 
@@ -130,6 +141,20 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
                     typeof responseBody === 'string' ? responseBody : responseBody.message,
                 code: responseBody.code,
                 details: responseBody.details,
+                log:
+                    exception instanceof AppHttpException && exception.code === REFERENCE_NOT_FOUND
+                        ? {
+                              level: 'warn',
+                              // ids only; a by-name lookup's name is not logged
+                              fields: {
+                                  source: 'business',
+                                  code: REFERENCE_NOT_FOUND,
+                                  id: exception.details?.id,
+                                  ids: exception.details?.ids,
+                              },
+                              msg: 'Referenced entity not found',
+                          }
+                        : undefined,
             };
         }
 

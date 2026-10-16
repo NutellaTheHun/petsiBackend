@@ -94,7 +94,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
         );
     });
 
@@ -115,7 +115,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
         );
     });
 
@@ -151,8 +151,61 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['parentItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['parentItemSize']),
         );
+    });
+
+    it('fail validate create: missing contained item adds REFERENCE_NOT_FOUND instead of throwing', async () => {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
+            containedMenuItemId: 9_999_999,
+            containedItemSizeId: sizes[0].id,
+            quantity: 2,
+            parentMenuItemId: fixedContainerItems[0].id,
+            parentItemSizeId: sizes[2].id,
+        });
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 3);
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['containedMenuItem']));
+        // enforcePropertyState on the missing contained item
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['type']));
+        // enforceValidSize with a missing contained item
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['containedItemSize']));
+    });
+
+    it('fail validate create: missing parent item adds REFERENCE_NOT_FOUND to the size check instead of throwing', async () => {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
+            containedMenuItemId: singleItems[0].id,
+            containedItemSizeId: sizes[0].id,
+            quantity: 2,
+            parentMenuItemId: 9_999_999,
+            parentItemSizeId: sizes[2].id,
+        });
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 3);
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['parentMenuItem']));
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['type']));
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['parentItemSize']));
+    });
+
+    it('built response never contains log-only context', async () => {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
+            containedMenuItemId: 9_999_999,
+            containedItemSizeId: sizes[0].id,
+            quantity: 2,
+            parentMenuItemId: fixedContainerItems[0].id,
+            parentItemSizeId: sizes[2].id,
+        });
+
+        // the map keeps the checked id for the exception filter
+        const errorMap = await validator.validate(dto, 'root');
+        expect(errorMap!.errors).toContainEqual(expect.objectContaining({ logContext: { value: 9_999_999 } }));
+
+        const response = errorMap!.buildResponse();
+        for (const payload of response.errorPayload!) {
+            expect(Object.keys(payload).sort()).toEqual(['errorCode', 'fields', 'ids']);
+        }
+        expect(JSON.stringify(response)).not.toContain('logContext');
+        expect(JSON.stringify(response)).not.toContain('9999999');
     });
 
     it('successfully validate update: no validation errors', async () => {
@@ -179,7 +232,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
         );
     });
 
@@ -198,7 +251,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
         );
     });
 
@@ -217,7 +270,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['containedItemSize']),
         );
     });
 
@@ -246,7 +299,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['type']),
         );
     });
 });

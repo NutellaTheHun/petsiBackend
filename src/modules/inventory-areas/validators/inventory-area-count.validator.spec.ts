@@ -167,7 +167,7 @@ describe('inventory area count validator', () => {
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['countedItemSize']),
         );
     });
 
@@ -372,7 +372,7 @@ describe('inventory area count validator', () => {
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['countedItemSize']),
         );
     });
 
@@ -506,7 +506,7 @@ describe('inventory area count validator', () => {
                     id: countToUpdate.countedInventoryItems[0].id,
                 },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['countedItemSize']),
         );
     });
 

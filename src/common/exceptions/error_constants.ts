@@ -6,3 +6,4 @@ export const EXIST = 'EXIST';
 export const DUPLICATE = 'DUPLICATE';
 export const INVALID = 'INVALID';
 export const MISSING = 'MISSING';
+export const REFERENCE_NOT_FOUND = 'REFERENCE_NOT_FOUND';

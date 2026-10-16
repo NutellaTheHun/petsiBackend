@@ -1,4 +1,4 @@
-import { ValidationErrorCode } from "./validation-error-codes";
+import { VALIDATION_ERROR_CODE_LOGGED, ValidationErrorCode } from "./validation-error-codes";
 
 /**
  * Response object to be returned to the client. A translated version of ValidationErrorMap.
@@ -21,6 +21,25 @@ export function createValidationErrorPayload(errorCode: ValidationErrorCode, ids
     return { errorCode, ids, fields };
 }
 
+/**
+ * Log-only context attached to an error, e.g. the identifier a reference check looked up.
+ * Never part of the client response; only `GlobalHttpExceptionFilter` reads it.
+ */
+export type ValidationLogContext = { value: string | number };
+
+/** An error as stored in the map: the client payload plus optional log-only context. */
+export type StoredValidationError = ValidationErrorPayload & { logContext?: ValidationLogContext };
+
+/** One logged (anomalous) error, flattened with its path in the tree. */
+export type LoggedValidationError = {
+    /** Nested `prop[id]` segments joined by `.`; empty for errors on the root entity. */
+    path: string;
+    code: ValidationErrorCode;
+    fields?: string[];
+    ids?: (string | number)[];
+    value?: string | number;
+};
+
 export class ValidationErrorMap {
     /**
      * Nested ValidationErrorMap objects, key is property, ValidationErrorMap array is resulting validation errors for that property from its validator.
@@ -33,9 +52,9 @@ export class ValidationErrorMap {
     /**
      * Actual errors resulting from validation, contains error code, ids associated with error, and fields associated with error.
      */
-    errors?: ValidationErrorPayload[];
+    errors?: StoredValidationError[];
 
-    constructor(id?: string | number, errs?: ValidationErrorPayload[]) {
+    constructor(id?: string | number, errs?: StoredValidationError[]) {
         this.id = id;
         this.errors = errs;
     }
@@ -58,8 +77,16 @@ export class ValidationErrorMap {
         this.children.set(field, list);
     }
 
-    public addError(errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[]) {
-        const newError = createValidationErrorPayload(errorCode, ids, fields);
+    public addError(
+        errorCode: ValidationErrorCode,
+        ids?: (string | number)[],
+        fields?: string[],
+        logContext?: ValidationLogContext,
+    ) {
+        const newError: StoredValidationError = createValidationErrorPayload(errorCode, ids, fields);
+        if (logContext) {
+            newError.logContext = logContext;
+        }
         if (this.errors) {
             this.errors.push(newError);
         } else {
@@ -85,7 +112,8 @@ export class ValidationErrorMap {
         }
 
         if (this.errors) {
-            result.errorPayload = this.errors;
+            // log-only context never reaches the client
+            result.errorPayload = this.errors.map(({ errorCode, ids, fields }) => ({ errorCode, ids, fields }));
         }
 
         if (this.children && this.children.size > 0) {
@@ -96,6 +124,35 @@ export class ValidationErrorMap {
             }
 
             result.nestedErrors = errors;
+        }
+
+        return result;
+    }
+
+    /**
+     * Flattens the tree into the errors whose code is classified as logged
+     * (see `VALIDATION_ERROR_CODE_LOGGED`), with their log-only context.
+     * @param path path of this map within the root tree, used when recursing
+     */
+    public collectLoggedErrors(path = ''): LoggedValidationError[] {
+        const result: LoggedValidationError[] = [];
+
+        for (const err of this.errors ?? []) {
+            if (!VALIDATION_ERROR_CODE_LOGGED[err.errorCode]) continue;
+            result.push({
+                path,
+                code: err.errorCode,
+                fields: err.fields,
+                ids: err.ids,
+                value: err.logContext?.value,
+            });
+        }
+
+        for (const [field, children] of this.children?.entries() ?? []) {
+            for (const child of children) {
+                const segment = `${field}[${child.id}]`;
+                result.push(...child.collectLoggedErrors(path ? `${path}.${segment}` : segment));
+            }
         }
 
         return result;

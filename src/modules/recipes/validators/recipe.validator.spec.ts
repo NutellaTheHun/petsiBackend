@@ -174,7 +174,7 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['subCategory']),
         );
     });
 
@@ -505,7 +505,7 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['subCategory']),
         );
     });
 

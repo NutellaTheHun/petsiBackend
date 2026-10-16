@@ -96,7 +96,7 @@ describe('label validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['labelType']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['labelType']),
         );
     });
 

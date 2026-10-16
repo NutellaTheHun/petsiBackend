@@ -35,12 +35,12 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
    */
   public async create(createDto: any): Promise<TEntity['__Entity']> {
     if (this.validator) {
-      const validationErrors = await this.validator.validateDto(
+      const validationErrors = await this.validator.validate(
         createDto,
         'root',
       );
       if (validationErrors) {
-        throw new ValidationException(validationErrors); // logging?
+        throw new ValidationException(validationErrors);
       }
     }
 
@@ -68,9 +68,9 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
    */
   async update(id: number, updateDto: any): Promise<TEntity['__Entity']> {
     if (this.validator) {
-      const validationErrors = await this.validator.validateDto(updateDto, id);
+      const validationErrors = await this.validator.validate(updateDto, id);
       if (validationErrors) {
-        throw new ValidationException(validationErrors); // logging?
+        throw new ValidationException(validationErrors);
       }
     }
 

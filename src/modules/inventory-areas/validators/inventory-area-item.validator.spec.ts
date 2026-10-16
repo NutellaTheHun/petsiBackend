@@ -171,7 +171,7 @@ describe('inventory area item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['countedItemSize']),
         );
     });
 
@@ -267,7 +267,7 @@ describe('inventory area item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['countedItemSize']),
         );
     });
 
@@ -285,7 +285,7 @@ describe('inventory area item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, ['countedItemSize']),
         );
     });
 

@@ -88,7 +88,7 @@ describe('inventory item size validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['package']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['package']),
         );
     });
 

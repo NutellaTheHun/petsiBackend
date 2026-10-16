@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
 import { ValidatorIdentityBaseInterface } from '../base/validator-identity.base.interface';
 import { ArrayKeys, NumericKeys } from '../types';
@@ -29,7 +28,8 @@ export class ValidatorHelper<
     }
 
     /**
-     * Entity with provided id must exist in the database. Returns 'NOT_FOUND' error if not found.
+     * Entity with provided id must exist in the database. Returns 'REFERENCE_NOT_FOUND' error,
+     * with the id as log-only context, if not found.
      * @param id id of the entity
      * @param repo repository of the entity
      * @param field property of the entity
@@ -46,12 +46,13 @@ export class ValidatorHelper<
             where: { id } as unknown as FindOptionsWhere<Entity>,
         });
         if (!exists) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+            rootErrMap.addError('REFERENCE_NOT_FOUND', undefined, [String(field)], { value: id });
         }
     }
 
     /**
-     * Property must be equal to the target value. Returns 'INVALID_PROPERTY_VALUE' error if not equal.
+     * Property of the referenced entity must be equal to the target value. Returns 'INVALID_REFERENCE' error if not equal,
+     * or 'REFERENCE_NOT_FOUND' if the entity doesn't exist. Both carry the id as log-only context.
      * @param id id of the entity
      * @param field property of the entity
      * @param targetValue target value of the property
@@ -72,11 +73,12 @@ export class ValidatorHelper<
             where: { id } as unknown as FindOptionsWhere<Entity>,
         });
         if (!entity) {
-            throw new NotFoundException();
+            rootErrMap.addError('REFERENCE_NOT_FOUND', undefined, [String(field)], { value: id });
+            return;
         }
 
         if (entity[field] !== targetValue) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+            rootErrMap.addError('INVALID_REFERENCE', undefined, [String(field)], { value: id });
         }
     }
 
@@ -172,7 +174,8 @@ export class ValidatorHelper<
 
     /**
      * Given size ID must be found within the entities list of valid sizes.
-     * Returns 'INVALID_PROPERTY_VALUE' error if not found.
+     * Returns 'INVALID_REFERENCE' error (size id as log-only context) if not found.
+     * Returns 'REFERENCE_NOT_FOUND' on the same field (foreign entity id as log-only context) if the foreign entity doesn't exist.
      *
      * List of sizes to validate from will come from a foreign entity
      *
@@ -208,16 +211,19 @@ export class ValidatorHelper<
             relations: [foreignEntitySizeArrayProp as string],
         });
         if (!entity) {
-            throw new Error();
+            rootErrMap.addError('REFERENCE_NOT_FOUND', undefined, [String(field)], {
+                value: foreignEntityId as number,
+            });
+            return;
         }
 
         const sizeArray = entity[foreignEntitySizeArrayProp] as Array<{
             id: number;
         }>;
 
-        const validIds = sizeArray.map((s) => s.id);
-
-        this.enforceValueInList(sizeId, validIds, String(field), rootErrMap);
+        if (!sizeArray.some((s) => s.id === sizeId)) {
+            rootErrMap.addError('INVALID_REFERENCE', undefined, [String(field)], { value: sizeId });
+        }
     }
 
     /**

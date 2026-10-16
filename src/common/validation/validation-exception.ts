@@ -1,11 +1,15 @@
-import { ValidationErrorResponse } from './validation-error';
+import { ValidationErrorMap, ValidationErrorResponse } from './validation-error';
 
 export class ValidationException extends Error {
+    /** Client-facing tree, without log-only context. */
     public readonly errors: ValidationErrorResponse;
+    /** Source tree, read by `GlobalHttpExceptionFilter` for logged codes and their log-only context. */
+    public readonly errorMap: ValidationErrorMap;
 
-    constructor(errors: ValidationErrorResponse, message = 'Validation failed') {
+    constructor(errorMap: ValidationErrorMap, message = 'Validation failed') {
         super(message);
         this.name = 'ValidationException';
-        this.errors = errors;
+        this.errorMap = errorMap;
+        this.errors = errorMap.buildResponse();
     }
 }

@@ -5,6 +5,7 @@ import * as request from 'supertest';
 import { EntityManager, QueryFailedError, Repository } from 'typeorm';
 import { MenuItemCategory } from '../../modules/menu-items/entities/menu-item-category.entity';
 import { MenuItem } from '../../modules/menu-items/entities/menu-item.entity';
+import { MenuItemSize } from '../../modules/menu-items/entities/menu-item-size.entity';
 import { MenuItemCategoryService } from '../../modules/menu-items/services/menu-item-category.service';
 import { MenuItemCategoryValidator } from '../../modules/menu-items/validators/menu-item-category.validator';
 import { AppHttpException } from './app-http-exception';
@@ -12,6 +13,7 @@ import { DatabaseError } from './database-error';
 import { getMenuItemTestingModule } from '../../modules/menu-items/utils/menu-item-testing.module';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { Tenant } from '../../modules/tenants/entities/tenant.entity';
+import { expectValidationErrorCode } from '../validation/validation-error';
 import { createHttpTestApp, RecordingLogger } from '../../test/http-test-app';
 import { TestRequestContextService } from '../../test/mocks/test-request-context.service';
 
@@ -138,7 +140,7 @@ describe('database and server error mapping (HTTP)', () => {
 
     it('maps a unique violation that slipped past the validator to 409 ALREADY_EXISTS', async () => {
         // Simulates the race where a concurrent request inserted the name after validation
-        jest.spyOn(categoryValidator, 'validateDto').mockResolvedValueOnce(null);
+        jest.spyOn(categoryValidator, 'validate').mockResolvedValueOnce(null);
 
         const res = await request(app.getHttpServer())
             .post('/menu-item-categories')
@@ -312,6 +314,127 @@ describe('database and server error mapping (HTTP)', () => {
             .expect(404);
 
         expectNoInternals(res.body);
+        expect(logger.logs).toHaveLength(0);
+    });
+});
+
+describe('business validation logging (HTTP)', () => {
+    let app: INestApplication;
+    let logger: RecordingLogger;
+    let tenantRepo: Repository<Tenant>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+    let tenant: Tenant;
+    let existingCategory: MenuItemCategory;
+    let size: MenuItemSize;
+    const userId = 4343;
+
+    beforeAll(async () => {
+        const module: TestingModule = await getMenuItemTestingModule();
+        tenantRepo = module.get(getRepositoryToken(Tenant));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        const requestContext = module.get(RequestContextService) as TestRequestContextService;
+
+        tenant = await tenantRepo.save({ name: `${P}-bv-tenant`, subdomain: `${P}-bv-subdomain` });
+        requestContext.setContext({ tenantId: tenant.id, userId });
+        existingCategory = await categoryRepo.save({ tenantId: tenant.id, name: `${P}-bv-taken` });
+        size = await sizeRepo.save({ tenantId: tenant.id, name: `${P}-bv-size` });
+
+        ({ app, logger } = await createHttpTestApp(module));
+    });
+
+    afterAll(async () => {
+        await sizeRepo.delete(size.id);
+        await categoryRepo.delete(existingCategory.id);
+        await tenantRepo.delete(tenant.id);
+        await app.close();
+    });
+
+    beforeEach(() => logger.clear());
+
+    it('returns REFERENCE_NOT_FOUND for a missing reference and logs it once with the id', async () => {
+        const res = await request(app.getHttpServer())
+            .post('/menu-items')
+            .send({ name: `${P}-bv-item`, type: 'single', categoryId: 9_999_999, sizeIds: [size.id] })
+            .expect(400);
+
+        expect(res.body).toEqual(
+            expect.objectContaining({
+                statusCode: 400,
+                code: 'VALIDATION_ERROR',
+                requestId: res.headers['x-request-id'],
+            }),
+        );
+        expectValidationErrorCode(res.body.details.validationErrors, [], 'REFERENCE_NOT_FOUND');
+        expect(res.body.details.validationErrors.errorPayload).toContainEqual({
+            errorCode: 'REFERENCE_NOT_FOUND',
+            fields: ['category'],
+        });
+        // log-only context never reaches the client
+        expect(JSON.stringify(res.body)).not.toContain('logContext');
+        expect(JSON.stringify(res.body)).not.toContain('9999999');
+
+        expect(logger.logs).toHaveLength(1);
+        const entry = logger.logs[0];
+        expect(entry.level).toBe('warn');
+        expect(entry.payload).toEqual(
+            expect.objectContaining({
+                source: 'business',
+                requestId: res.headers['x-request-id'],
+                method: 'POST',
+                route: '/menu-items',
+                userId,
+                tenantId: tenant.id,
+                errors: [{ path: '', code: 'REFERENCE_NOT_FOUND', fields: ['category'], value: 9_999_999 }],
+            }),
+        );
+        expect(JSON.stringify(entry.payload)).not.toContain(`${P}-bv-item`);
+    });
+
+    it('logs nested anomalies with prop[id] path segments', async () => {
+        const res = await request(app.getHttpServer())
+            .post('/menu-items')
+            .send({
+                name: `${P}-bv-container`,
+                type: 'container',
+                sizeIds: [size.id],
+                containerMenuItems: [
+                    {
+                        createId: 'c1',
+                        containedMenuItemId: 9_999_999,
+                        containedItemSizeId: size.id,
+                        quantity: 1,
+                        parentItemSizeId: size.id,
+                    },
+                ],
+            })
+            .expect(400);
+
+        expectValidationErrorCode(
+            res.body.details.validationErrors,
+            [{ prop: 'containerMenuItems', id: 'c1' }],
+            'REFERENCE_NOT_FOUND',
+        );
+        expect(JSON.stringify(res.body)).not.toContain('9999999');
+
+        expect(logger.logs).toHaveLength(1);
+        expect((logger.logs[0].payload as any).errors).toContainEqual({
+            path: 'containerMenuItems[c1]',
+            code: 'REFERENCE_NOT_FOUND',
+            fields: ['containedMenuItem'],
+            value: 9_999_999,
+        });
+    });
+
+    it('does not log an error the user can fix (ALREADY_EXISTS)', async () => {
+        const res = await request(app.getHttpServer())
+            .post('/menu-item-categories')
+            .send({ name: `${P}-bv-taken` })
+            .expect(400);
+
+        expect(res.body.code).toBe('VALIDATION_ERROR');
+        expectValidationErrorCode(res.body.details.validationErrors, [], 'ALREADY_EXISTS');
         expect(logger.logs).toHaveLength(0);
     });
 });

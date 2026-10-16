@@ -88,7 +88,7 @@ describe('user location validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['user']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['user']),
         );
     });
 
@@ -104,7 +104,7 @@ describe('user location validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['roles']),
+            createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, ['roles']),
         );
     });
 

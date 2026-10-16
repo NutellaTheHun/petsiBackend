@@ -2,7 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import { ObjectLiteral } from 'typeorm';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { AppHttpException } from '../exceptions/app-http-exception';
-import { ENTITY_NOT_FOUND } from '../exceptions/error_constants';
+import { REFERENCE_NOT_FOUND } from '../exceptions/error_constants';
 
 export abstract class BuilderBase<T extends ObjectLiteral> {
   protected entity: T;
@@ -70,7 +70,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         throw new AppHttpException(
           `${this.builderPrefix}: ${prop.toString()} with id ${id} not found`,
           HttpStatus.BAD_REQUEST,
-          ENTITY_NOT_FOUND,
+          REFERENCE_NOT_FOUND,
           { id },
         );
       }
@@ -90,7 +90,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         throw new AppHttpException(
           `${this.builderPrefix}: ${prop.toString()} with multiple ids not found`,
           HttpStatus.BAD_REQUEST,
-          ENTITY_NOT_FOUND,
+          REFERENCE_NOT_FOUND,
           { ids },
         );
       }
@@ -110,7 +110,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         throw new AppHttpException(
           `${this.builderPrefix}: ${prop.toString()} with name ${name} not found`,
           HttpStatus.BAD_REQUEST,
-          ENTITY_NOT_FOUND,
+          REFERENCE_NOT_FOUND,
           { name },
         );
       }
