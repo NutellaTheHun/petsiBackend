@@ -8,7 +8,9 @@ import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-crea
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderValidatorIdentity } from './identities/order.validator.identity.interface';
@@ -31,6 +33,12 @@ export class OrderValidator extends ValidatorBase<
         private readonly orderCategoryRepo: Repository<OrderCategory>,
 
         private readonly recurringOrderScheduleValidator: RecurringOrderScheduleValidator,
+
+        @InjectRepository(OrderMenuItem)
+        private readonly orderItemRepo: Repository<OrderMenuItem>,
+
+        @InjectRepository(RecurringOrderSchedule)
+        private readonly scheduleRepo: Repository<RecurringOrderSchedule>,
         requestContextService: RequestContextService,
     ) {
         super(repo, 'Order', requestContextService);
@@ -85,6 +93,16 @@ export class OrderValidator extends ValidatorBase<
         //if (identity.recipient) { }
 
         if (identity.orderedItems && identity.orderedItems.length > 0) {
+            await this.helper.enforceNestedOwnership(
+                identity.orderedItems,
+                id,
+                this.orderItemRepo,
+                'parentOrder',
+                this.requestContextService.get<number>('tenantId'),
+                'orderedItems',
+                errorMap,
+            );
+
             // Check Duplicates
             this.helper.enforceNoDuplicateElements(
                 identity.orderedItems,
@@ -134,6 +152,16 @@ export class OrderValidator extends ValidatorBase<
         }
 
         if (identity.recurrenceSchedule) {
+            await this.helper.enforceNestedOwnership(
+                [identity.recurrenceSchedule],
+                id,
+                this.scheduleRepo,
+                'order',
+                this.requestContextService.get<number>('tenantId'),
+                'recurrenceSchedule',
+                errorMap,
+            );
+
             await this.recurringOrderScheduleValidator.validateNestedIdentity(
                 'recurrenceSchedule',
                 identity.recurrenceSchedule,

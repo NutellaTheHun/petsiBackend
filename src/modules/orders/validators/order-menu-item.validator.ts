@@ -13,6 +13,7 @@ import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
+import { OrderContainerItem } from '../entities/order-container-item.entity';
 import {
     OrderMenuItem,
     OrderMenuItemEntity,
@@ -38,6 +39,8 @@ export class OrderMenuItemValidator extends NestedValidatorBase<
         private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
+        @InjectRepository(OrderContainerItem)
+        private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
 
         private readonly orderContainerItemValidator: OrderContainerItemValidator,
         requestContextService: RequestContextService,
@@ -157,6 +160,16 @@ export class OrderMenuItemValidator extends NestedValidatorBase<
             identity.containerOrderMenuItems &&
             identity.containerOrderMenuItems.length
         ) {
+            await this.helper.enforceNestedOwnership(
+                identity.containerOrderMenuItems,
+                id,
+                this.orderContainerItemRepo,
+                'parentOrderMenuItem',
+                this.requestContextService.get<number>('tenantId'),
+                'containerOrderMenuItems',
+                errorMap,
+            );
+
             // validate menu item is a container
             if (identity.menuItemType !== MENU_ITEM_TYPES.CONTAINER) {
                 errorMap.addError('INCONSISTENT_STATE', undefined, [

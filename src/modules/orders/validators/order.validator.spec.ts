@@ -15,6 +15,7 @@ import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
+import { NestedUpdateOrderContainerItemDto } from '../dto/order-container-item/nested-update-order-container-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
@@ -1032,5 +1033,150 @@ describe('order validator', () => {
                 'quantity',
             ]),
         );
+    });
+
+    describe('nested id ownership', () => {
+        const itemOf = (orderId: number, container = false) =>
+            orderMenuItems.find(
+                (i) =>
+                    i.parentOrder.id === orderId &&
+                    (i.containerOrderMenuItems?.length ?? 0) > 0 === container,
+            )!;
+
+        it('fail validate update: nested ordered item id does not exist', async () => {
+            const orderToUpdate = await loadOrder();
+            const template = orderToUpdate.orderedItems[0];
+
+            const dto = orderToUpdateDto(orderToUpdate, {
+                orderedItems: [
+                    plainToInstance(NestedUpdateOrderMenuItemDto, {
+                        id: 9_999_999,
+                        menuItemId: template.menuItem.id,
+                        sizeId: template.size?.id,
+                        quantity: 1,
+                    }),
+                ],
+            });
+
+            const errors = await validator.validateDto(dto, orderToUpdate.id);
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'orderedItems', id: 9_999_999 }],
+                createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                    'id',
+                ]),
+            );
+        });
+
+        it('fail validate update: nested ordered item id belongs to another order', async () => {
+            const orderToUpdate = await loadOrder();
+            const foreign = itemOf(orders[0].id);
+
+            const dto = orderToUpdateDto(orderToUpdate, {
+                orderedItems: [
+                    plainToInstance(NestedUpdateOrderMenuItemDto, {
+                        id: foreign.id,
+                        menuItemId: foreign.menuItem.id,
+                        sizeId: foreign.size?.id,
+                        quantity: foreign.quantity,
+                    }),
+                ],
+            });
+
+            const errors = await validator.validateDto(dto, orderToUpdate.id);
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'orderedItems', id: foreign.id }],
+                createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                    'id',
+                ]),
+            );
+            // the order's own items are its children and pass
+            for (const own of orderToUpdate.orderedItems) {
+                expect(
+                    findValidationErrors(errors, [
+                        { prop: 'orderedItems', id: own.id },
+                    ]),
+                ).toBeNull();
+            }
+        });
+
+        // CreateOrderDto only types nested creates, so over HTTP this is an INVALID_REQUEST
+        // shape failure. Built by hand (bypassing the pipe) to cover the validator safeguard.
+        it('fail validate create: any nested ordered item id is invalid', async () => {
+            const foreign = itemOf(orders[0].id);
+
+            const dto = {
+                recipient: 'John Doe',
+                fulfillmentDate: new Date(),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                orderedItems: [
+                    plainToInstance(NestedUpdateOrderMenuItemDto, {
+                        id: foreign.id,
+                        menuItemId: foreign.menuItem.id,
+                        sizeId: foreign.size?.id,
+                        quantity: foreign.quantity,
+                    }),
+                ],
+            } as unknown as CreateOrderDto;
+
+            const errors = await validator.validateDto(dto, 'root');
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'orderedItems', id: foreign.id }],
+                createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                    'id',
+                ]),
+            );
+        });
+
+        it('fail validate update: nested container item id belongs to another ordered item', async () => {
+            // orders[0] and orders[1] each carry one container line with container children
+            const order = await orderRepo.findOneOrFail({
+                where: { id: orders[0].id },
+                relations: [
+                    'orderedItems',
+                    'orderedItems.menuItem',
+                    'orderedItems.size',
+                    'category',
+                    'orderedItems.containerOrderMenuItems',
+                    'orderedItems.containerOrderMenuItems.containedMenuItem',
+                    'orderedItems.containerOrderMenuItems.containedItemSize',
+                ],
+            });
+            const containerLine = order.orderedItems.find(
+                (i) => (i.containerOrderMenuItems?.length ?? 0) > 0,
+            )!;
+            const foreignChild = itemOf(orders[1].id, true)
+                .containerOrderMenuItems![0];
+
+            const dto = orderToUpdateDto(order);
+            const line = dto.orderedItems!.find(
+                (i) => 'id' in i && i.id === containerLine.id,
+            ) as NestedUpdateOrderMenuItemDto;
+            line.containerOrderMenuItems!.push(
+                plainToInstance(NestedUpdateOrderContainerItemDto, {
+                    id: foreignChild.id,
+                    containedMenuItemId: foreignChild.containedMenuItem.id,
+                    containedItemSizeId: foreignChild.containedItemSize.id,
+                    quantity: foreignChild.quantity,
+                    parentMenuItemIdCtx: containerLine.menuItem.id,
+                    parentMenuItemSizeIdCtx: containerLine.size?.id,
+                }),
+            );
+
+            const errors = await validator.validateDto(dto, order.id);
+            expectValidationErrorPayload(
+                errors,
+                [
+                    { prop: 'orderedItems', id: containerLine.id },
+                    { prop: 'containerOrderMenuItems', id: foreignChild.id },
+                ],
+                createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                    'id',
+                ]),
+            );
+        });
     });
 });

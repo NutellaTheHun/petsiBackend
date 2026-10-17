@@ -13,6 +13,7 @@ import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
@@ -36,6 +37,9 @@ export class MenuItemValidator extends ValidatorBase<
 
         @InjectRepository(MenuItemCategory)
         private readonly categoryRepo: Repository<MenuItemCategory>,
+
+        @InjectRepository(MenuItemContainerItem)
+        private readonly containerItemRepo: Repository<MenuItemContainerItem>,
 
         private readonly configService: DynamicPropertyConfigService,
         requestContextService: RequestContextService,
@@ -98,6 +102,16 @@ export class MenuItemValidator extends ValidatorBase<
             if (identity.type !== MENU_ITEM_TYPES.CONTAINER) {
                 errorMap.addError('INCONSISTENT_STATE', undefined, ['type']);
             }
+
+            await this.helper.enforceNestedOwnership(
+                identity.containerMenuItems,
+                id,
+                this.containerItemRepo,
+                'parentMenuItem',
+                this.requestContextService.get<number>('tenantId'),
+                'containerMenuItems',
+                errorMap,
+            );
 
             // validate no duplicates
             this.helper.enforceNoDuplicateElements(

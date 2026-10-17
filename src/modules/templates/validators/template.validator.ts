@@ -7,6 +7,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
+import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template, TemplateEntity } from '../entities/template.entity';
 import { TemplateMenuItemValidatorIdentity } from './identities/template-menu-item.validator.identities.interface';
 import { TemplateValidatorIdentity } from './identities/template.validator.identities.interface';
@@ -21,6 +22,8 @@ export class TemplateValidator extends ValidatorBase<
         @InjectRepository(Template)
         private readonly repo: Repository<Template>,
         private readonly templateItemValidator: TemplateMenuItemValidator,
+        @InjectRepository(TemplateMenuItem)
+        private readonly templateItemRepo: Repository<TemplateMenuItem>,
         requestContextService: RequestContextService,
     ) {
         super(repo, 'Template', requestContextService);
@@ -47,6 +50,16 @@ export class TemplateValidator extends ValidatorBase<
         }
 
         if (identity.templateMenuItems && identity.templateMenuItems.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.templateMenuItems,
+                id,
+                this.templateItemRepo,
+                'parentTemplate',
+                this.requestContextService.get<number>('tenantId'),
+                'templateMenuItems',
+                errorMap,
+            );
+
             // enforce no duplicate menuItem
             this.helper.enforceNoDuplicateElements(
                 identity.templateMenuItems,

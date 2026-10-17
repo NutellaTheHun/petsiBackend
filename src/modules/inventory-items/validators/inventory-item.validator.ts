@@ -7,6 +7,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import {
     InventoryItem,
@@ -33,6 +34,9 @@ export class InventoryItemValidator extends ValidatorBase<
 
         @InjectRepository(InventoryItemVendor)
         private readonly vendorRepo: Repository<InventoryItemVendor>,
+
+        @InjectRepository(InventoryItemSize)
+        private readonly sizeRepo: Repository<InventoryItemSize>,
         requestContextService: RequestContextService,
     ) {
         super(repo, 'InventoryItem', requestContextService);
@@ -77,6 +81,16 @@ export class InventoryItemValidator extends ValidatorBase<
         }
 
         if (identity.sizes && identity.sizes?.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.sizes,
+                id,
+                this.sizeRepo,
+                'inventoryItem',
+                this.requestContextService.get<number>('tenantId'),
+                'sizes',
+                errorMap,
+            );
+
             for (const size of identity.sizes) {
                 await this.itemSizeValidator.validateNestedIdentity(
                     'sizes',

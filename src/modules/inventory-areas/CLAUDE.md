@@ -31,3 +31,5 @@ Key relationships:
 - **`InventoryAreaCount`/`InventoryAreaItem` are `LocationScopedServiceBase` with denormalized `tenantId`/`locationId`, but neither's create DTO carries a client-facing `locationId`.** `InventoryAreaCountService.createEntity`/`updateEntity` look up the referenced `InventoryArea`, copy its `tenantId`/`locationId`, and call `this.assertLocationAuthorized(area.locationId)` explicitly — `RoleGuard`'s `@LocationScope` can't see a location derived from `inventoryAreaId`. `InventoryAreaItem` inherits its values from the parent `InventoryAreaCount` via composer context. `InventoryAreaController.create` carries `@LocationScope('body', 'locationId')`; `update` doesn't, since an area's `locationId` can't change (`IMMUTABLE_FIELD` from `InventoryAreaValidator`).
 
 ## Gotchas
+
+2026-10-17 — `InventoryAreaItemComposer`'s nested `countedItemSize` `id` path was assumed to load any size; HTTP can't reach it (the DTO is create-only), and it now only updates the item's current `countedItemSize` — to switch sizes, use `countedItemSizeId`.

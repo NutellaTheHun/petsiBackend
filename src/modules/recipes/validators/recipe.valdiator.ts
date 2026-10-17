@@ -12,6 +12,7 @@ import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeIngredientValidatorIdentity } from './identities/recipe-ingredient.validator.identity.interface';
@@ -36,6 +37,9 @@ export class RecipeValidator extends ValidatorBase<
 
         @InjectRepository(RecipeSubCategory)
         private readonly recipeSubCategoryRepo: Repository<RecipeSubCategory>,
+
+        @InjectRepository(RecipeIngredient)
+        private readonly ingredientRepo: Repository<RecipeIngredient>,
         requestContextService: RequestContextService,
     ) {
         super(repo, 'Recipe', requestContextService);
@@ -157,6 +161,16 @@ export class RecipeValidator extends ValidatorBase<
         }
 
         if (identity.ingredients && identity.ingredients.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.ingredients,
+                id,
+                this.ingredientRepo,
+                'parentRecipe',
+                this.requestContextService.get<number>('tenantId'),
+                'ingredients',
+                errorMap,
+            );
+
             this.helper.enforceNoDuplicateElements(
                 identity.ingredients,
                 (ingredient) => ({

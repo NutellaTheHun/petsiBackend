@@ -72,13 +72,36 @@ export class ValidationErrorMap {
         this.errors = errs;
     }
 
+    /**
+     * Adds a child map under `field`. A child with the same id as one already under
+     * `field` is merged into it, so each nested entity appears once in the tree.
+     */
     public addChild(field: string, child: ValidationErrorMap) {
         if (!this.children) {
             this.children = new Map();
         }
         const list = this.children.get(field) ?? [];
-        list.push(child);
+        const existing =
+            child.id !== undefined
+                ? list.find((c) => c.id === child.id)
+                : undefined;
+        if (existing) {
+            existing.merge(child);
+        } else {
+            list.push(child);
+        }
         this.children.set(field, list);
+    }
+
+    private merge(other: ValidationErrorMap) {
+        if (other.errors?.length) {
+            this.errors = [...(this.errors ?? []), ...other.errors];
+        }
+        for (const [field, children] of other.children?.entries() ?? []) {
+            for (const child of children) {
+                this.addChild(field, child);
+            }
+        }
     }
 
     public addChildren(field: string, children: ValidationErrorMap[]) {

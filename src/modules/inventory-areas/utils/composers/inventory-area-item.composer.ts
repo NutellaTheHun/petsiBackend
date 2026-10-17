@@ -75,10 +75,12 @@ export class InventoryAreaItemComposer extends ComposerBase<InventoryAreaItemEnt
         }
 
         if (dto.countedItemSize !== undefined) {
+            // an `id` may only update the size this item already counts; switch sizes with countedItemSizeId
             const itemSize = await this.itemSizeResolver.composeNestedEntity(
                 dto.countedItemSize,
                 manager,
                 { inventoryItemId: dto.countedInventoryItemId },
+                entity.countedItemSize,
             );
             entity.countedItemSize = itemSize;
         }

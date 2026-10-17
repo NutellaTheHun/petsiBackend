@@ -11,6 +11,7 @@ import {
     RecipeCategory,
     RecipeCategoryEntity,
 } from '../entities/recipe-category.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeCategoryValidatorIdentity } from './identities/recipe-category.validator.identity.interface';
 import { RecipeSubCategoryValidatorIdentity } from './identities/recipe-sub-category.validator.identity.interface';
 import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
@@ -24,6 +25,9 @@ export class RecipeCategoryValidator extends ValidatorBase<
         private readonly repo: Repository<RecipeCategory>,
 
         private readonly subCategoryValidator: RecipeSubCategoryValidator,
+
+        @InjectRepository(RecipeSubCategory)
+        private readonly subCategoryRepo: Repository<RecipeSubCategory>,
         requestContextService: RequestContextService,
     ) {
         super(repo, 'RecipeCategory', requestContextService);
@@ -50,6 +54,16 @@ export class RecipeCategoryValidator extends ValidatorBase<
         }
 
         if (identity.subCategories && identity.subCategories.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.subCategories,
+                id,
+                this.subCategoryRepo,
+                'parentCategory',
+                this.requestContextService.get<number>('tenantId'),
+                'subCategories',
+                errorMap,
+            );
+
             this.helper.enforceNoDuplicateElements(
                 identity.subCategories,
                 (item) => ({

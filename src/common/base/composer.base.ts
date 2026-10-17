@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityTarget, FindOptionsWhere } from 'typeorm';
+import { EntityManager, EntityTarget } from 'typeorm';
 import { ResolverContext } from '../types/resolver-context.type';
 import { NestedEntityBase } from './entity.base';
 import { NestedCreateDto } from './nested-create-dto.base';
@@ -99,24 +99,29 @@ export abstract class ComposerBase<
      *
      * Context is used to pass the parent entity to the nested composers. Or any other context needed to create the entity.
      *
-     * Returns the composed entity or throws an error if the entity is not found.
+     * Existing is the parent's current child. An `id` dto may only update that child: any other id
+     * throws, so a child can never be loaded from (and moved off) another parent. The parent's
+     * validator rejects such ids first (`enforceNestedOwnership`), so the throw is a safeguard.
+     *
+     * Returns the composed entity.
      */
     async composeNestedEntity(
         dto: T['__NcDto'] | T['__NuDto'],
         manager: EntityManager,
         context?: ResolverContext,
+        existing?: T['__Entity'] | null,
     ): Promise<T['__Entity']> {
         if ('createId' in dto) {
             const fullDto = this.resolveCreateDto(dto, context);
             return this.createInTransaction(fullDto, manager);
         } else {
-            const entity = await manager.findOneOrFail(this.entityClass, {
-                where: {
-                    id: dto.id,
-                } as unknown as FindOptionsWhere<T['__Entity']>,
-            });
-            await this.updateInTransaction(dto, manager, entity);
-            return entity;
+            if (!existing || existing.id !== dto.id) {
+                throw new Error(
+                    `Nested entity with id ${dto.id} is not a child of the parent being composed`,
+                );
+            }
+            await this.updateInTransaction(dto, manager, existing);
+            return existing;
         }
     }
 
@@ -125,7 +130,10 @@ export abstract class ComposerBase<
      *
      * Manager is used to create the entities and return it to the caller.
      *
-     * Existing entities are used to update the entities.
+     * Existing entities are the parent's current children (loaded by the caller). An `id` dto may only
+     * update one of them: any other id throws, so a child can never be loaded from (and moved off)
+     * another parent. The parent's validator rejects such ids first (`enforceNestedOwnership`), so the
+     * throw is a safeguard.
      *
      * Context is used to pass the parent entity to the nested composers. Or any other context needed to create the entities.
      *
@@ -152,18 +160,11 @@ export abstract class ComposerBase<
                 );
                 map.set(dto.createId, created);
             } else {
-                let entity = map.get(dto.id);
+                const entity = map.get(dto.id);
                 if (!entity) {
-                    //throw new Error(`Entity with id ${(dto as any).id} not found`);
-                    entity = await manager.findOneOrFail(this.entityClass, {
-                        where: {
-                            id: dto.id,
-                        } as unknown as FindOptionsWhere<T['__Entity']>,
-                    });
-                    if (!entity) {
-                        throw new Error(`Entity with id ${dto.id} not found`);
-                    }
-                    map.set(dto.id, entity);
+                    throw new Error(
+                        `Nested entity with id ${dto.id} is not a child of the parent being composed`,
+                    );
                 }
 
                 await this.updateInTransaction(dto, manager, entity);

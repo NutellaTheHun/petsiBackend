@@ -12,6 +12,7 @@ import {
     InventoryAreaCount,
     InventoryAreaCountEntity,
 } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaCountValidatorIdentity } from './identities/inventory-area-count.validator.identity.interface';
 import { InventoryAreaItemValidatorIdentity } from './identities/inventory-area-item.validator.identity.interface';
@@ -29,6 +30,9 @@ export class InventoryAreaCountValidator extends ValidatorBase<
 
         @InjectRepository(InventoryArea)
         private readonly inventoryAreaRepo: Repository<InventoryArea>,
+
+        @InjectRepository(InventoryAreaItem)
+        private readonly areaItemRepo: Repository<InventoryAreaItem>,
 
         @Inject(forwardRef(() => InventoryAreaItemValidator))
         private readonly areaItemValidator: InventoryAreaItemValidator,
@@ -56,6 +60,16 @@ export class InventoryAreaCountValidator extends ValidatorBase<
             identity.countedInventoryItems &&
             identity.countedInventoryItems.length > 0
         ) {
+            await this.helper.enforceNestedOwnership(
+                identity.countedInventoryItems,
+                id,
+                this.areaItemRepo,
+                'parentInventoryCount',
+                this.requestContextService.get<number>('tenantId'),
+                'countedInventoryItems',
+                errorMap,
+            );
+
             for (const item of identity.countedInventoryItems) {
                 await this.areaItemValidator.validateNestedIdentity(
                     'countedInventoryItems',

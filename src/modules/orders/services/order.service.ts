@@ -248,6 +248,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
                             tenantId: entity.tenantId,
                             locationId: entity.locationId,
                         },
+                        entity.recurrenceSchedule,
                     );
             }
         }

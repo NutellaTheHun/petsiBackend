@@ -344,4 +344,70 @@ describe('template validator', () => {
             ]),
         );
     });
+
+    describe('nested id ownership', () => {
+        const loadTemplate = (id: number) =>
+            templateRepo.findOneOrFail({
+                where: { id },
+                relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+            });
+
+        it('fail validate update: nested template menu item id does not exist', async () => {
+            const templateToUpdate = await loadTemplate(templates[0].id);
+
+            const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
+                templateMenuItems: [
+                    plainToInstance(NestedUpdateTemplateMenuItemDto, {
+                        id: 9_999_999,
+                        tablePosIndex: 600,
+                        displayName: `${P}-missing-item`,
+                        menuItemId: singleItems[3].id,
+                    }),
+                ],
+            });
+
+            const errors = await validator.validateDto(
+                dto,
+                templateToUpdate.id,
+            );
+            expectValidationErrorSize(errors, 1);
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'templateMenuItems', id: 9_999_999 }],
+                createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                    'id',
+                ]),
+            );
+        });
+
+        it('fail validate update: nested template menu item id belongs to another template', async () => {
+            const templateToUpdate = await loadTemplate(templates[0].id);
+            const other = await loadTemplate(templates[1].id);
+            const foreign = other.templateMenuItems[0];
+
+            const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
+                templateMenuItems: [
+                    plainToInstance(NestedUpdateTemplateMenuItemDto, {
+                        id: foreign.id,
+                        tablePosIndex: 601,
+                        displayName: foreign.displayName,
+                        menuItemId: foreign.menuItem.id,
+                    }),
+                ],
+            });
+
+            const errors = await validator.validateDto(
+                dto,
+                templateToUpdate.id,
+            );
+            expectValidationErrorSize(errors, 1);
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'templateMenuItems', id: foreign.id }],
+                createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                    'id',
+                ]),
+            );
+        });
+    });
 });

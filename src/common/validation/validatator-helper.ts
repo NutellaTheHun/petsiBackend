@@ -1,4 +1,4 @@
-import { FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
+import { FindOptionsWhere, In, ObjectLiteral, Repository } from 'typeorm';
 import { ValidatorIdentityBaseInterface } from '../base/validator-identity.base.interface';
 import { ArrayKeys, NumericKeys } from '../types';
 import { ValidationErrorMap } from './validation-error';
@@ -252,6 +252,67 @@ export class ValidatorHelper<
                 [String(field)],
                 { value: sizeId },
             );
+        }
+    }
+
+    /**
+     * Every nested item upserted by `id` must be an existing child of the parent being validated.
+     * Errors go on the item's own child map under `field` (keyed by the nested id), on its `id` field,
+     * with the nested id as log-only context:
+     * - 'REFERENCE_NOT_FOUND' when no row has that id, or the row is in another tenant
+     *   (another tenant's data is never confirmed to exist).
+     * - 'INVALID_REFERENCE' when the row exists but belongs to a different parent. On create
+     *   (`parentId` isn't a number) there is no parent yet, so any nested id is invalid.
+     *
+     * Items with only a `createId` are skipped.
+     * @param items nested identities of the collection (or a single nested child wrapped in an array)
+     * @param parentId id of the entity being validated; a string ('root' or a createId) on create
+     * @param childRepo repository of the nested entity
+     * @param parentRelation relation on the nested entity that points at its parent
+     * @param tenantId caller's tenant; when undefined the tenant check is skipped
+     * @param field property of the parent entity holding the nested collection
+     * @param rootErrMap error map to add errors to
+     */
+    public async enforceNestedOwnership<
+        Child extends ObjectLiteral & { id: number; tenantId: number },
+    >(
+        items: ValidatorIdentityBaseInterface[] | null | undefined,
+        parentId: number | string | undefined,
+        childRepo: Repository<Child>,
+        parentRelation: keyof Child & string,
+        tenantId: number | undefined,
+        field: keyof TEntity,
+        rootErrMap: ValidationErrorMap,
+    ): Promise<void> {
+        const ids = (items ?? [])
+            .map((item) => item.id)
+            .filter((id): id is number => id != null);
+        if (ids.length === 0) return;
+
+        // loadRelationIds replaces the relation with the raw parent id
+        const rows = await childRepo.find({
+            where: { id: In(ids) } as unknown as FindOptionsWhere<Child>,
+            loadEagerRelations: false,
+            loadRelationIds: { relations: [parentRelation] },
+        });
+        const byId = new Map(rows.map((row) => [row.id, row]));
+
+        for (const id of ids) {
+            const row = byId.get(id);
+            let code: 'REFERENCE_NOT_FOUND' | 'INVALID_REFERENCE' | undefined;
+            if (!row || (tenantId != null && row.tenantId !== tenantId)) {
+                code = 'REFERENCE_NOT_FOUND';
+            } else if (
+                typeof parentId !== 'number' ||
+                (row[parentRelation] as unknown) !== parentId
+            ) {
+                code = 'INVALID_REFERENCE';
+            }
+            if (!code) continue;
+
+            const childErrMap = new ValidationErrorMap(id);
+            childErrMap.addError(code, undefined, ['id'], { value: id });
+            rootErrMap.addChild(String(field), childErrMap);
         }
     }
 
