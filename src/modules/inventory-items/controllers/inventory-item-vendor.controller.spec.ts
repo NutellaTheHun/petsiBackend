@@ -33,13 +33,22 @@ describe('Inventory Item Vendor Controller', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        controller = module.get<InventoryItemVendorController>(InventoryItemVendorController);
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        controller = module.get<InventoryItemVendorController>(
+            InventoryItemVendorController,
+        );
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         ({ vendors } = await testingUtil.seedVendors(P, tenant.id));
@@ -71,16 +80,22 @@ describe('Inventory Item Vendor Controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });
 
     it('remove deletes created vendor then findOne fails', async () => {
         const created = await controller.create(
-            plainToInstance(CreateInventoryItemVendorDto, { name: `${P}-to-remove` }),
+            plainToInstance(CreateInventoryItemVendorDto, {
+                name: `${P}-to-remove`,
+            }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

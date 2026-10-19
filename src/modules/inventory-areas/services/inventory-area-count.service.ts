@@ -1,9 +1,13 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
@@ -22,7 +26,6 @@ export class InventoryAreaCountService extends LocationScopedServiceBase<Invento
     constructor(
         @InjectRepository(InventoryAreaCount)
         repo: Repository<InventoryAreaCount>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
         @Inject(forwardRef(() => InventoryAreaCountValidator))
         validator: InventoryAreaCountValidator,
@@ -34,7 +37,6 @@ export class InventoryAreaCountService extends LocationScopedServiceBase<Invento
             repo,
             'InventoryAreaCountService',
             requestContextService,
-            logger,
             validator,
         );
     }
@@ -110,15 +112,17 @@ export class InventoryAreaCountService extends LocationScopedServiceBase<Invento
         if (dto.countedInventoryItems !== undefined) {
             const existingItems = entity.countedInventoryItems ?? [];
             const incomingIds = dto.countedInventoryItems
-                .map((i: any) => ('id' in i ? i.id : undefined))
-                .filter((id: any): id is number => typeof id === 'number');
+                .map((i) => ('id' in i ? i.id : undefined))
+                .filter((id): id is number => typeof id === 'number');
 
             const idsToRemove = existingItems
                 .map((i) => i.id)
                 .filter((id) => !incomingIds.includes(id));
 
             if (idsToRemove.length) {
-                await manager.delete(InventoryAreaItem, { id: In(idsToRemove) });
+                await manager.delete(InventoryAreaItem, {
+                    id: In(idsToRemove),
+                });
                 entity.countedInventoryItems = existingItems.filter(
                     (i) => !idsToRemove.includes(i.id),
                 );
@@ -174,7 +178,7 @@ export class InventoryAreaCountService extends LocationScopedServiceBase<Invento
         query: SelectQueryBuilder<InventoryAreaCount>,
         startDate: string,
         endDate?: string,
-        dateBy?: string,
+        _dateBy?: string,
     ): void {
         query.andWhere(`DATE(entity.countDate) >= :startDate`, { startDate });
 

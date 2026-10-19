@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
@@ -22,31 +21,30 @@ import { TemplateMenuItemValidator } from './validators/template-menu-item.valid
 import { TemplateValidator } from './validators/template.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
-    MenuItemsModule,
-    TenantsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [TemplateController, TemplateMenuItemController],
-  providers: [
-    TemplateService,
-    TemplateMenuItemService,
+    imports: [
+        TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
+        MenuItemsModule,
+        TenantsModule,
+        CacheModule.register(),
+        RequestContextModule,
+    ],
+    controllers: [TemplateController, TemplateMenuItemController],
+    providers: [
+        TemplateService,
+        TemplateMenuItemService,
 
-    TemplateBuilder,
-    TemplateMenuItemBuilder,
+        TemplateBuilder,
+        TemplateMenuItemBuilder,
 
-    TemplateValidator,
-    TemplateMenuItemValidator,
+        TemplateValidator,
+        TemplateMenuItemValidator,
 
-    TemplateMenuItemComposer,
-    TemplateMenuItemChangeDetector,
-    TemplateChangeDetector,
+        TemplateMenuItemComposer,
+        TemplateMenuItemChangeDetector,
+        TemplateChangeDetector,
 
-    TemplateTestingUtil,
-  ],
-  exports: [TemplateService, TemplateMenuItemService, TemplateTestingUtil],
+        TemplateTestingUtil,
+    ],
+    exports: [TemplateService, TemplateMenuItemService, TemplateTestingUtil],
 })
 export class TemplatesModule {}

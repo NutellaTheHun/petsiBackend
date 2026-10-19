@@ -14,7 +14,7 @@ export class RoleTestUtil {
 
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
-    ) { }
+    ) {}
 
     /**
      * `Role` now requires a tenantId (NOT NULL). Most role fixtures don't
@@ -25,7 +25,8 @@ export class RoleTestUtil {
      * through. Tests that actually exercise tenant scoping seed and pass
      * their own explicit tenantId.
      */
-    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'role-test-util-fixture-tenant';
+    private static readonly DEFAULT_TENANT_SUBDOMAIN =
+        'role-test-util-fixture-tenant';
     private defaultTenantId?: number;
     public async getDefaultTenantId(): Promise<number> {
         if (this.defaultTenantId === undefined) {
@@ -46,7 +47,10 @@ export class RoleTestUtil {
     // ─── Atomic-prefix seed methods ─────────────────────────────────────────────
     // These do not register cleanup — callers are responsible for deleting by ID.
 
-    public async seedRoles(P: string = '', tenantId?: number): Promise<{ tenantId: number; roles: Role[] }> {
+    public async seedRoles(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{ tenantId: number; roles: Role[] }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
 
         const names = ['role-a', 'role-b', 'role-c'];

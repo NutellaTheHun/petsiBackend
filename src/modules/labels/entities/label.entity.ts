@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { labelTypeExample } from '../../../common/swagger/examples/labels/label-type.example';
@@ -22,57 +22,57 @@ export type LabelEntity = EntityBase<Label, CreateLabelDto, UpdateLabelDto>;
 @Entity()
 @Unique(['tenantId', 'menuItem', 'imageUrl', 'labelType'])
 export class Label {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * The Tenant this label belongs to. Denormalized scalar column (not a
-   * relation) so ServiceBase-level tenant filtering never needs a join.
-   */
-  @ApiProperty({
-    example: 1,
-    description: 'The Tenant this entity belongs to',
-  })
-  @Column()
-  tenantId: number;
+    /**
+     * The Tenant this label belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
-  /**
-   * Url of image stored in 3rd party source
-   */
-  @ApiProperty({
-    description: 'URL path to the stored image file',
-    example: 'http://toMyImages.gov',
-  })
-  @Column({ type: 'text' })
-  imageUrl: string;
+    /**
+     * Url of image stored in 3rd party source
+     */
+    @ApiProperty({
+        description: 'URL path to the stored image file',
+        example: 'http://toMyImages.gov',
+    })
+    @Column({ type: 'text' })
+    imageUrl: string;
 
-  /**
-   * MenuItem that this image/type combination is for.
-   * Example:
-   * - MenuItem: Classic Apple, Type: 4x2, imageUrl: image.com/wsClapple
-   * - MenuItem: Classic Apple, Type: 2x1, imageUrl: image.com/cutieClapple
-   * - MenuItem: ChickenPotPie, Type: 4x6, imageUrl: image.com/frozenPotPie
-   */
-  @ApiProperty({
-    example: menuItemExample(new Set<string>(), true),
-    description: 'The MenuItem this label is for',
-    type: MenuItem,
-  })
-  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
-  menuItem: MenuItem;
+    /**
+     * MenuItem that this image/type combination is for.
+     * Example:
+     * - MenuItem: Classic Apple, Type: 4x2, imageUrl: image.com/wsClapple
+     * - MenuItem: Classic Apple, Type: 2x1, imageUrl: image.com/cutieClapple
+     * - MenuItem: ChickenPotPie, Type: 4x6, imageUrl: image.com/frozenPotPie
+     */
+    @ApiProperty({
+        example: menuItemExample(new Set<string>(), true),
+        description: 'The MenuItem this label is for',
+        type: MenuItem,
+    })
+    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
+    menuItem: MenuItem;
 
-  /**
-   * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"
-   */
-  @ApiProperty({
-    example: labelTypeExample(new Set<string>(), false),
-    description: 'The label type describing size characteristics',
-    type: LabelType,
-  })
-  @ManyToOne(() => LabelType, { onDelete: 'SET NULL' })
-  labelType: LabelType;
+    /**
+     * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"
+     */
+    @ApiProperty({
+        example: labelTypeExample(new Set<string>(), false),
+        description: 'The label type describing size characteristics',
+        type: LabelType,
+    })
+    @ManyToOne(() => LabelType, { onDelete: 'SET NULL' })
+    labelType: LabelType;
 }

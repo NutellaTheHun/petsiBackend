@@ -3,71 +3,71 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import {
-  InventoryItemPackage,
-  InventoryItemPackageEntity,
+    InventoryItemPackage,
+    InventoryItemPackageEntity,
 } from '../entities/inventory-item-package.entity';
 import { InventoryItemPackageChangeDetector } from '../utils/change-detectors/inventory-item-package.change-detector';
 import { InventoryItemPackageValidator } from '../validators/inventory-item-package.validator';
 
 @Injectable()
 export class InventoryItemPackageService extends TenantScopedServiceBase<InventoryItemPackageEntity> {
-  constructor(
-    @InjectRepository(InventoryItemPackage)
-    repo: Repository<InventoryItemPackage>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    validator: InventoryItemPackageValidator,
-    private readonly inventoryItemPackageChangeDetector: InventoryItemPackageChangeDetector,
-  ) {
-    super(
-      repo,
-      'InventoryItemPackageService',
-      requestContextService,
-      logger,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateInventoryItemPackageDto,
-    manager: EntityManager,
-  ): Promise<InventoryItemPackage> {
-    const result = manager.create(InventoryItemPackage, {
-      name: dto.name,
-      tenantId: this.getTenantId(),
-    });
-    return await manager.save(result);
-  }
-
-  protected async updateEntity(
-    dto: UpdateInventoryItemPackageDto,
-    manager: EntityManager,
-    entity: InventoryItemPackage,
-  ): Promise<void> {
-    if (dto.name !== undefined) {
-      entity.name = dto.name;
+    constructor(
+        @InjectRepository(InventoryItemPackage)
+        repo: Repository<InventoryItemPackage>,
+        requestContextService: RequestContextService,
+        validator: InventoryItemPackageValidator,
+        private readonly inventoryItemPackageChangeDetector: InventoryItemPackageChangeDetector,
+    ) {
+        super(
+            repo,
+            'InventoryItemPackageService',
+            requestContextService,
+            validator,
+        );
     }
-    await manager.save(entity);
-  }
 
-  protected applySortBy(
-    query: SelectQueryBuilder<InventoryItemPackage>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'name') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
+    protected async createEntity(
+        dto: CreateInventoryItemPackageDto,
+        manager: EntityManager,
+    ): Promise<InventoryItemPackage> {
+        const result = manager.create(InventoryItemPackage, {
+            name: dto.name,
+            tenantId: this.getTenantId(),
+        });
+        return await manager.save(result);
     }
-  }
 
-  protected getChangeDetector():
-    | ChangeDetectorBase<InventoryItemPackage, UpdateInventoryItemPackageDto>
-    | undefined {
-    return this.inventoryItemPackageChangeDetector;
-  }
+    protected async updateEntity(
+        dto: UpdateInventoryItemPackageDto,
+        manager: EntityManager,
+        entity: InventoryItemPackage,
+    ): Promise<void> {
+        if (dto.name !== undefined) {
+            entity.name = dto.name;
+        }
+        await manager.save(entity);
+    }
+
+    protected applySortBy(
+        query: SelectQueryBuilder<InventoryItemPackage>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<
+              InventoryItemPackage,
+              UpdateInventoryItemPackageDto
+          >
+        | undefined {
+        return this.inventoryItemPackageChangeDetector;
+    }
 }

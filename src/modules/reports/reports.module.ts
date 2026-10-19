@@ -15,7 +15,15 @@ import { ReportSchemaService } from './services/report-schema.service';
         RequestContextModule,
     ],
     controllers: [ReportDefinitionController, ReportSchemaController],
-    providers: [ReportDefinitionService, ReportExecutionService, ReportSchemaService],
-    exports: [ReportDefinitionService, ReportExecutionService, ReportSchemaService],
+    providers: [
+        ReportDefinitionService,
+        ReportExecutionService,
+        ReportSchemaService,
+    ],
+    exports: [
+        ReportDefinitionService,
+        ReportExecutionService,
+        ReportSchemaService,
+    ],
 })
 export class ReportsModule {}

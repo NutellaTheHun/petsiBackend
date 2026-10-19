@@ -49,9 +49,11 @@ export abstract class ChangeDetectorBase<TEntity, TUpdateDto extends object> {
         const currentMs = new Date(currentValue).getTime();
         const incomingMs = new Date(incomingValue).getTime();
 
-        return Number.isFinite(currentMs) &&
+        return (
+            Number.isFinite(currentMs) &&
             Number.isFinite(incomingMs) &&
-            currentMs === incomingMs;
+            currentMs === incomingMs
+        );
     }
 
     protected sameNumberArray(

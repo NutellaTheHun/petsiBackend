@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -13,8 +12,10 @@ import { Label, LabelEntity } from '../entities/label.entity';
 import { LabelValidatorIdentity } from './identities/label.validator.identity.interface';
 
 @Injectable()
-export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIdentity> {
-
+export class LabelValidator extends ValidatorBase<
+    LabelEntity,
+    LabelValidatorIdentity
+> {
     constructor(
         @InjectRepository(Label)
         private readonly repo: Repository<Label>,
@@ -24,18 +25,19 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
 
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Label', requestContextService, logger);
+        super(repo, 'Label', requestContextService);
     }
 
-    protected async validateIdentity(identity: LabelValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: LabelValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.labelTypeId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.labelTypeId,
                 this.labelTypeRepo,
                 'labelType',
@@ -44,7 +46,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
         }
 
         if (identity.menuItemId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.menuItemId,
                 this.menuItemRepo,
                 'menuItem',
@@ -66,12 +68,14 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateLabelDto | UpdateLabelDto, id: number | string): Promise<LabelValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateLabelDto | UpdateLabelDto,
+        _id: number | string,
+    ): Promise<LabelValidatorIdentity> {
         return {
             imageUrl: dto.imageUrl,
             labelTypeId: dto.labelTypeId,
             menuItemId: dto.menuItemId,
-        } as LabelValidatorIdentity;
+        };
     }
-
 }

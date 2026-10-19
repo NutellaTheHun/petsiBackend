@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
@@ -17,9 +16,8 @@ export class TemplateBuilder extends BuilderBase<Template> {
         private readonly itemBuilder: TemplateMenuItemBuilder,
 
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(Template, 'TemplateBuilder', requestContextService, logger);
+        super(Template, 'TemplateBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateTemplateDto): void {

@@ -37,9 +37,14 @@ describe('menu item size controller', () => {
         controller = module.get<MenuItemSizeController>(MenuItemSizeController);
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         ({ sizes } = await testingUtil.seedSizes(P, tenant.id));
@@ -59,7 +64,9 @@ describe('menu item size controller', () => {
     });
 
     it('create throws ValidationException when name already exists', async () => {
-        const dto = plainToInstance(CreateMenuItemSizeDto, { name: sizes[0].name });
+        const dto = plainToInstance(CreateMenuItemSizeDto, {
+            name: sizes[0].name,
+        });
         try {
             await controller.create(dto);
             throw new Error('expected ValidationException');
@@ -69,7 +76,9 @@ describe('menu item size controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });
@@ -79,6 +88,8 @@ describe('menu item size controller', () => {
             plainToInstance(CreateMenuItemSizeDto, { name: `${P}-to-remove` }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
@@ -38,9 +37,8 @@ export class OrderBuilder extends BuilderBase<Order> {
         private readonly recurrenceScheduleBuilder: RecurringOrderScheduleBuilder,
 
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(Order, 'OrderBuilder', requestContextService, logger);
+        super(Order, 'OrderBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateOrderDto): void {
@@ -141,7 +139,8 @@ export class OrderBuilder extends BuilderBase<Order> {
 
     public categoryById(id: number): this {
         return this.setPropById(
-            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            async (id: number) =>
+                await this.categoryRepo.findOne({ where: { id } }),
             'category',
             id,
         );
@@ -224,12 +223,19 @@ export class OrderBuilder extends BuilderBase<Order> {
         );
     }
 
-    public recurrenceScheduleByBuilder(dto: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto | null): this {
+    public recurrenceScheduleByBuilder(
+        dto:
+            | NestedCreateRecurringOrderScheduleDto
+            | NestedUpdateRecurringOrderScheduleDto
+            | null,
+    ): this {
         if (dto === null) {
             return this.setPropByVal('recurrenceSchedule', null);
         }
         return this.setPropByBuilder(
-            this.recurrenceScheduleBuilder.build.bind(this.recurrenceScheduleBuilder),
+            this.recurrenceScheduleBuilder.build.bind(
+                this.recurrenceScheduleBuilder,
+            ),
             'recurrenceSchedule',
             this.entity,
             dto,

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
@@ -19,8 +18,10 @@ import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemValidatorIdentity } from './identities/menu-item-container-item.validator.identity.interface';
 
 @Injectable()
-export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItemContainerItemEntity, MenuItemContainerItemValidatorIdentity> {
-
+export class MenuItemContainerItemValidator extends NestedValidatorBase<
+    MenuItemContainerItemEntity,
+    MenuItemContainerItemValidatorIdentity
+> {
     constructor(
         @InjectRepository(MenuItemContainerItem)
         private readonly containerItemRepo: Repository<MenuItemContainerItem>,
@@ -30,31 +31,51 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
 
         @InjectRepository(MenuItemSize)
         private readonly menuItemSizeRepo: Repository<MenuItemSize>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(
             containerItemRepo,
             'MenuItemContainerItem',
             requestContextService,
-            logger,
         );
     }
 
-    public async resolveIdentity(dto: CreateMenuItemContainerItemDto | UpdateMenuItemContainerItemDto | NestedCreateMenuItemContainerItemDto | NestedUpdateMenuItemContainerItemDto, id: number | string): Promise<MenuItemContainerItemValidatorIdentity> {
+    public async resolveIdentity(
+        dto:
+            | CreateMenuItemContainerItemDto
+            | UpdateMenuItemContainerItemDto
+            | NestedCreateMenuItemContainerItemDto
+            | NestedUpdateMenuItemContainerItemDto,
+        _id: number | string,
+    ): Promise<MenuItemContainerItemValidatorIdentity> {
         return {
-            id: dto instanceof NestedUpdateMenuItemContainerItemDto ? dto.id : undefined,
-            createId: dto instanceof NestedCreateMenuItemContainerItemDto ? dto.createId : undefined,
+            id:
+                dto instanceof NestedUpdateMenuItemContainerItemDto
+                    ? dto.id
+                    : undefined,
+            createId:
+                dto instanceof NestedCreateMenuItemContainerItemDto
+                    ? dto.createId
+                    : undefined,
             containedMenuItemId: dto.containedMenuItemId,
             containedItemSizeId: dto.containedItemSizeId,
             quantity: dto.quantity,
-            parentMenuItemId: dto instanceof CreateMenuItemContainerItemDto ? dto.parentMenuItemId : undefined,
-            parentItemSizeId: dto instanceof CreateMenuItemContainerItemDto || dto instanceof NestedCreateMenuItemContainerItemDto ? dto.parentItemSizeId : undefined,
-        } as MenuItemContainerItemValidatorIdentity;
+            parentMenuItemId:
+                dto instanceof CreateMenuItemContainerItemDto
+                    ? dto.parentMenuItemId
+                    : undefined,
+            parentItemSizeId:
+                dto instanceof CreateMenuItemContainerItemDto ||
+                dto instanceof NestedCreateMenuItemContainerItemDto
+                    ? dto.parentItemSizeId
+                    : undefined,
+        };
     }
 
-    protected async validateIdentity(identity: MenuItemContainerItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: MenuItemContainerItemValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.containedItemSizeId !== undefined) {

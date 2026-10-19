@@ -32,7 +32,7 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
@@ -51,7 +51,7 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategoryEntit
     constructor(
         categoryService: RecipeCategoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -72,7 +72,9 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategoryEntit
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRecipeCategoryDto })
-    async create(@Body() dto: CreateRecipeCategoryDto): Promise<RecipeCategory> {
+    async create(
+        @Body() dto: CreateRecipeCategoryDto,
+    ): Promise<RecipeCategory> {
         return super.create(dto);
     }
 
@@ -83,7 +85,9 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategoryEntit
         type: RecipeCategory,
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiNotFoundResponse({ description: 'Recipe Category to update not found.' })
+    @ApiNotFoundResponse({
+        description: 'Recipe Category to update not found.',
+    })
     @ApiBody({ type: UpdateRecipeCategoryDto })
     async update(
         @Param('id', ParseIntPipe) id: number,
@@ -95,7 +99,9 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategoryEntit
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Recipe Category' })
-    @ApiNoContentResponse({ description: 'Recipe Category successfully removed' })
+    @ApiNoContentResponse({
+        description: 'Recipe Category successfully removed',
+    })
     @ApiNotFoundResponse({ description: 'Recipe Category not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return super.remove(id);
@@ -171,7 +177,10 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategoryEntit
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrieves one Recipe Category' })
-    @ApiOkResponse({ description: 'Recipe Category found', type: RecipeCategory })
+    @ApiOkResponse({
+        description: 'Recipe Category found',
+        type: RecipeCategory,
+    })
     @ApiNotFoundResponse({ description: 'Recipe Category not found' })
     async findOne(
         @Param('id', ParseIntPipe) id: number,

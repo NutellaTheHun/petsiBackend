@@ -2,16 +2,16 @@ import { handleSetHas } from '../handlers/handlers';
 import { templateMenuItemExample } from './template-menu-item.example';
 
 export function templateExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(templateExample.name);
-  return {
-    id: 1,
+    fnSet.add(templateExample.name);
+    return {
+        id: 1,
 
-    name: 'Summer Pies',
+        name: 'Summer Pies',
 
-    isPie: true,
+        isPie: true,
 
-    templateMenuItems: [
-      handleSetHas(shallow, fnSet, templateMenuItemExample, false),
-    ],
-  };
+        templateMenuItems: [
+            handleSetHas(shallow, fnSet, templateMenuItemExample, false),
+        ],
+    };
 }

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -11,16 +10,21 @@ import { User, UserEntity } from '../entities/user.entities';
 import { UserValidatorIdentity } from './identities/user.valdiator.identity.interface';
 
 @Injectable()
-export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdentity> {
+export class UserValidator extends ValidatorBase<
+    UserEntity,
+    UserValidatorIdentity
+> {
     constructor(
         @InjectRepository(User)
         private readonly repo: Repository<User>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'User', requestContextService, logger);
+        super(repo, 'User', requestContextService);
     }
-    protected async validateIdentity(identity: UserValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: UserValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.email) {
@@ -44,14 +48,20 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateUserDto | UpdateUserDto, id: number | string): Promise<UserValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateUserDto | UpdateUserDto,
+        _id: number | string,
+    ): Promise<UserValidatorIdentity> {
         return {
             email: dto.email,
             password: dto.password,

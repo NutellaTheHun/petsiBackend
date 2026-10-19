@@ -117,9 +117,9 @@ describe('Inventory area count service', () => {
         });
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
-        countService = module.get(
+        countService = module.get<TestableInventoryAreaCountService>(
             InventoryAreaCountService,
-        ) as TestableInventoryAreaCountService;
+        );
         dataSource = module.get(DataSource);
 
         areaRepo = module.get(getRepositoryToken(InventoryArea));
@@ -130,16 +130,23 @@ describe('Inventory area count service', () => {
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         // InventoryItemSize is tenant-scoped — this file creates new sizes via
         // nested-create DTOs, which route through InventoryItemSizeComposer
         // and stamp tenantId from RequestContextService. Set a tenant/location
         // so that stamp (and InventoryAreaCount's own tenant/location
         // scoping) has something consistent to write/authorize against.
-        ({ tenant, locations: [location] } = await locationTestUtil.seedLocations(P, undefined, 1));
-        ({ tenant: otherTenant, locations: [otherTenantLocation] } =
-            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        ({
+            tenant,
+            locations: [location],
+        } = await locationTestUtil.seedLocations(P, undefined, 1));
+        ({
+            tenant: otherTenant,
+            locations: [otherTenantLocation],
+        } = await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
         setAdminContext();
 
         ({ areas } = await testingUtil.seedAreas(P, tenant.id, location.id));
@@ -221,13 +228,16 @@ describe('Inventory area count service', () => {
                 createId: `c${i}`,
                 countedInventoryItemId: items[idx].id,
                 amount: 1,
-                countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
-                    createId: `s${i}`,
-                    unit: 'lb',
-                    measureAmount: 1,
-                    packageId: packages[i].id,
-                    cost: 1,
-                }),
+                countedItemSize: plainToInstance(
+                    NestedCreateInventoryItemSizeDto,
+                    {
+                        createId: `s${i}`,
+                        unit: 'lb',
+                        measureAmount: 1,
+                        packageId: packages[i].id,
+                        cost: 1,
+                    },
+                ),
             }),
         );
         const count = await createSeededCount(areas[0].id, itemDtos);
@@ -249,16 +259,22 @@ describe('Inventory area count service', () => {
                 createId: `d${i}`,
                 countedInventoryItemId: items[idx].id,
                 amount: 1,
-                countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
-                    createId: `s${i}`,
-                    unit: 'lb',
-                    measureAmount: 1,
-                    packageId: packages[i].id,
-                    cost: 1,
-                }),
+                countedItemSize: plainToInstance(
+                    NestedCreateInventoryItemSizeDto,
+                    {
+                        createId: `s${i}`,
+                        unit: 'lb',
+                        measureAmount: 1,
+                        packageId: packages[i].id,
+                        cost: 1,
+                    },
+                ),
             }),
         );
-        const count = await createSeededCount(areas[0].id, [...idIdtos, ...dtoIdtos]);
+        const count = await createSeededCount(areas[0].id, [
+            ...idIdtos,
+            ...dtoIdtos,
+        ]);
         const reloaded = await reloadCount(count.id);
         expect(reloaded.countedInventoryItems.length).toBe(6);
     });
@@ -300,9 +316,13 @@ describe('Inventory area count service', () => {
         const loaded = await reloadCount(count.id);
 
         const transform = inventoryAreaCountToUpdateDto(loaded);
-        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+        const countedInventoryItems = [
+            ...(transform.countedInventoryItems ?? []),
+        ];
         const areaItemToUpdate = countedInventoryItems.pop();
-        const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
+        const areaItemUpdateId = (
+            areaItemToUpdate as NestedUpdateInventoryAreaItemDto
+        ).id;
         countedInventoryItems.push(
             plainToInstance(NestedUpdateInventoryAreaItemDto, {
                 id: areaItemUpdateId,
@@ -376,34 +396,47 @@ describe('Inventory area count service', () => {
         const count = await createSeededCount(areas[0].id, itemDtos);
         const loaded = await reloadCount(count.id);
 
-        const createSizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
-            createId: 'sNew',
-            packageId: packages[2].id,
-            unit: 'lb',
-            measureAmount: 1,
-            cost: 1,
-        });
-        const createdItemDto = plainToInstance(NestedCreateInventoryAreaItemDto, {
-            createId: 'cNew',
-            countedInventoryItemId: items[3].id,
-            countedItemSize: createSizeDto,
-            amount: 20,
-        });
+        const createSizeDto = plainToInstance(
+            NestedCreateInventoryItemSizeDto,
+            {
+                createId: 'sNew',
+                packageId: packages[2].id,
+                unit: 'lb',
+                measureAmount: 1,
+                cost: 1,
+            },
+        );
+        const createdItemDto = plainToInstance(
+            NestedCreateInventoryAreaItemDto,
+            {
+                createId: 'cNew',
+                countedInventoryItemId: items[3].id,
+                countedItemSize: createSizeDto,
+                amount: 20,
+            },
+        );
 
         const transform = inventoryAreaCountToUpdateDto(loaded, {
             countedInventoryItems: [createdItemDto],
         });
-        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+        const countedInventoryItems = [
+            ...(transform.countedInventoryItems ?? []),
+        ];
         const areaItemToUpdate = countedInventoryItems.pop();
-        const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
+        const areaItemUpdateId = (
+            areaItemToUpdate as NestedUpdateInventoryAreaItemDto
+        ).id;
 
-        const updateSizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
-            createId: 'sUpdate',
-            packageId: packages[2].id,
-            unit: 'lb',
-            measureAmount: 1,
-            cost: 1,
-        });
+        const updateSizeDto = plainToInstance(
+            NestedCreateInventoryItemSizeDto,
+            {
+                createId: 'sUpdate',
+                packageId: packages[2].id,
+                unit: 'lb',
+                measureAmount: 1,
+                cost: 1,
+            },
+        );
         countedInventoryItems.push(
             plainToInstance(NestedUpdateInventoryAreaItemDto, {
                 id: areaItemUpdateId,
@@ -470,7 +503,11 @@ describe('Inventory area count service', () => {
         const count = await createSeededCount(areas[0].id);
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const endOfMonth = new Date(
+            today.getFullYear(),
+            today.getMonth() + 1,
+            0,
+        );
         const startDate = startOfMonth.toISOString().split('T')[0];
         const endDate = endOfMonth.toISOString().split('T')[0];
 
@@ -500,7 +537,10 @@ describe('Inventory area count service', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(InventoryAreaCountService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                InventoryAreaCountService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -538,10 +578,13 @@ describe('Inventory area count service', () => {
             const loaded = await reloadCount(count.id);
 
             const transform = inventoryAreaCountToUpdateDto(loaded);
-            const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+            const countedInventoryItems = [
+                ...(transform.countedInventoryItems ?? []),
+            ];
             const areaItemToUpdate = countedInventoryItems.pop();
-            const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto)
-                .id;
+            const areaItemUpdateId = (
+                areaItemToUpdate as NestedUpdateInventoryAreaItemDto
+            ).id;
             countedInventoryItems.push(
                 plainToInstance(NestedUpdateInventoryAreaItemDto, {
                     id: areaItemUpdateId,
@@ -567,7 +610,7 @@ describe('Inventory area count service', () => {
     });
 
     describe('tenant/location scoping (inherited from LocationScopedServiceBase)', () => {
-        it('createEntity rejects a caller not authorized for the target area\'s (derived) location', async () => {
+        it("createEntity rejects a caller not authorized for the target area's (derived) location", async () => {
             requestContext.setContext({
                 tenantId: tenant.id,
                 isTenantAdmin: false,
@@ -578,7 +621,7 @@ describe('Inventory area count service', () => {
             );
         });
 
-        it('findOne throws NotFoundException for a count belonging to a different tenant\'s area', async () => {
+        it("findOne throws NotFoundException for a count belonging to a different tenant's area", async () => {
             const otherArea = await areaRepo.save({
                 name: `${P}-other-tenant-area`,
                 tenantId: otherTenant.id,

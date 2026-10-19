@@ -4,18 +4,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import {
-  ThrottlerGuard,
-  ThrottlerModule,
-  ThrottlerModuleOptions,
+    ThrottlerGuard,
+    ThrottlerModule,
+    ThrottlerModuleOptions,
 } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ExceptionsModule } from './common/exceptions/exceptions.module';
+import { pinoHttpRequestIdOptions } from './common/middleware/request-id';
 import { RequestIdMiddleware } from './common/middleware/RequestIdMiddleware';
 import { TenantResolutionMiddleware } from './common/middleware/TenantResolutionMiddleware';
 import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.module';
-import { AppLoggingModule } from './modules/app-logging/app-logging.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { DynamicPropertiesModule } from './modules/dynamic-properties/dynamic-properties.module';
@@ -40,95 +41,101 @@ import { TenantsModule } from './modules/tenants/tenants.module';
 import { UserModule } from './modules/users/user.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
 
-    ScheduleModule.forRoot(),
+        ScheduleModule.forRoot(),
 
-    selectTypeOrmModule([]),
+        selectTypeOrmModule([]),
 
-    // Lives inside container, wiped on container restart, each container has its own cache
-    CacheModule.register(),
+        // Lives inside container, wiped on container restart, each container has its own cache
+        CacheModule.register(),
 
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
-        throttlers: [
-          {
-            ttl: config.get('THROTTLE_TTL') || 60000,
-            //limit: config.get('THROTTLE_LIMIT') || 500,
-            limit: config.get('NODE_ENV') === 'development' ? 999999 : 500,
-          },
-        ],
-      }),
-      inject: [ConfigService],
-    }),
-
-    LoggerModule.forRoot({
-      pinoHttp: {
-        genReqId: (req) => req['requestId'],
-        customProps: (req) => ({
-          requestId: req['requestId'],
+        ThrottlerModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
+                throttlers: [
+                    {
+                        ttl: config.get('THROTTLE_TTL') || 60000,
+                        //limit: config.get('THROTTLE_LIMIT') || 500,
+                        limit:
+                            config.get('NODE_ENV') === 'development'
+                                ? 999999
+                                : 500,
+                    },
+                ],
+            }),
+            inject: [ConfigService],
         }),
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          },
+
+        LoggerModule.forRoot({
+            pinoHttp: {
+                ...pinoHttpRequestIdOptions,
+                // Production writes plain JSON lines; pretty-printing is dev-only.
+                transport:
+                    process.env.NODE_ENV === 'production'
+                        ? undefined
+                        : {
+                              target: 'pino-pretty',
+                              options: {
+                                  colorize: true,
+                                  translateTime: 'SYS:standard',
+                                  ignore: 'pid,hostname',
+                              },
+                          },
+            },
+        }),
+
+        ExceptionsModule,
+        AuthModule,
+        RequestContextModule,
+        SeedModule,
+
+        OrdersModule,
+        MenuItemsModule,
+        TemplatesModule,
+        LabelsModule,
+        InventoryAreasModule,
+        InventoryItemsModule,
+        RecipesModule,
+        UserModule,
+        RoleModule,
+        DynamicPropertiesModule,
+        ReportsModule,
+        TenantsModule,
+        LocationsModule,
+        TenantProvisioningModule,
+        SettingsModule,
+        FeatureFlagsModule,
+    ],
+
+    controllers: [AppController],
+
+    providers: [
+        AppService,
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
         },
-      },
-    }),
-
-    AuthModule,
-    AppLoggingModule,
-    RequestContextModule,
-    SeedModule,
-
-    OrdersModule,
-    MenuItemsModule,
-    TemplatesModule,
-    LabelsModule,
-    InventoryAreasModule,
-    InventoryItemsModule,
-    RecipesModule,
-    UserModule,
-    RoleModule,
-    DynamicPropertiesModule,
-    ReportsModule,
-    TenantsModule,
-    LocationsModule,
-    TenantProvisioningModule,
-    SettingsModule,
-    FeatureFlagsModule,
-  ],
-
-  controllers: [AppController],
-
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RoleGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: FeatureGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+        {
+            provide: APP_GUARD,
+            useClass: RoleGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: FeatureGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware, TenantResolutionMiddleware).forRoutes('*');
-  }
-  constructor(private dataSource: DataSource) {}
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(RequestIdMiddleware, TenantResolutionMiddleware)
+            .forRoutes('*');
+    }
+    constructor(private dataSource: DataSource) {}
 }

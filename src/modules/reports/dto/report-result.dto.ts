@@ -6,25 +6,25 @@ export interface ColumnDefDto {
     dataType: DataType;
 }
 
-interface TableSectionResultDto {
+export interface TableSectionResultDto {
     type: 'table';
     title: string;
     columns: ColumnDefDto[];
-    rows: Record<string, any>[];
+    rows: Record<string, unknown>[];
 }
 
-interface MetricValueDto {
+export interface MetricValueDto {
     label: string;
-    value: any;
+    value: unknown;
 }
 
-interface MetricSectionResultDto {
+export interface MetricSectionResultDto {
     type: 'metric';
     title: string;
     metrics: MetricValueDto[];
 }
 
-interface TextSectionResultDto {
+export interface TextSectionResultDto {
     type: 'text';
     title: string;
     content: string;

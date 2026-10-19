@@ -1,5 +1,19 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+    IsArray,
+    IsDate,
+    IsDateString,
+    IsIn,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    IsString,
+} from 'class-validator';
+import {
+    RECURRENCE_FREQUENCIES,
+    RECURRENCE_TIMEZONES,
+} from '../../utils/recurrence-options';
 
 export class CreateRecurringOrderScheduleDto {
     @ApiProperty({
@@ -9,15 +23,17 @@ export class CreateRecurringOrderScheduleDto {
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
-    readonly orderId: number
+    readonly orderId: number;
 
     @ApiProperty({
+        enum: RECURRENCE_FREQUENCIES,
         description: 'The frequency of the schedule',
         example: 'WEEKLY',
     })
     @IsString()
     @IsNotEmpty()
-    readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+    @IsIn(RECURRENCE_FREQUENCIES)
+    readonly frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
     @ApiProperty({
         description: 'The interval of the schedule',
@@ -26,11 +42,11 @@ export class CreateRecurringOrderScheduleDto {
     })
     @IsNumber()
     @IsOptional()
-    @IsPositive()
     readonly interval?: number | null;
 
     @ApiProperty({
-        description: 'The days of the week that the schedule is active, values between 0-6',
+        description:
+            'The days of the week that the schedule is active, values between 0-6',
         example: [0, 1, 2, 3, 4],
         nullable: true,
     })
@@ -40,53 +56,58 @@ export class CreateRecurringOrderScheduleDto {
     readonly daysOfWeek?: number[] | null;
 
     @ApiProperty({
-        description: 'The day of the month that the schedule is active, values between 1-31',
+        description:
+            'The day of the month that the schedule is active, values between 1-31',
         example: 1,
         nullable: true,
     })
     @IsNumber()
     @IsOptional()
-    @IsPositive()
-    readonly dayOfMonth?: number
+    readonly dayOfMonth?: number;
 
     @ApiProperty({
-        description: 'The month of the year that the schedule is active, values between 1-12',
+        description:
+            'The month of the year that the schedule is active, values between 1-12',
         example: 1,
         nullable: true,
     })
     @IsNumber()
     @IsOptional()
-    @IsPositive()
-    readonly monthOfYear?: number
+    readonly monthOfYear?: number;
 
     @ApiProperty({
-        description: 'The start date of the schedule, maps to DTSTART in the rrule string',
+        description:
+            'The start date of the schedule, maps to DTSTART in the rrule string',
         example: '2026-03-17T15:58:22.212Z',
     })
     @IsDate()
     @IsNotEmpty()
     @IsDateString()
-    readonly startDate: Date
+    readonly startDate: Date;
 
     @ApiProperty({
-        description: 'The end date of the schedule, maps to UNTIL in the rrule string',
+        description:
+            'The end date of the schedule, maps to UNTIL in the rrule string',
         example: '2026-03-17T15:58:22.212Z',
         nullable: true,
     })
     @IsDate()
     @IsOptional()
     @IsDateString()
-    readonly endDate?: Date
+    readonly endDate?: Date;
 
     @ApiProperty({
-        description: 'The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York',
+        enum: RECURRENCE_TIMEZONES,
+        description:
+            'The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York',
         example: 'America/New_York',
         nullable: true,
     })
     @IsString()
     @IsOptional()
     @IsString()
-    readonly timezone?: string
+    @IsIn(RECURRENCE_TIMEZONES)
+    readonly timezone?: string;
 
     /**
      * Stamped from the parent Order's own tenantId/locationId (see
@@ -94,7 +115,8 @@ export class CreateRecurringOrderScheduleDto {
      * by a client and never independently re-derived from request context.
      */
     @ApiProperty({
-        description: "The parent Order's tenantId. Populated internally, not client-supplied.",
+        description:
+            "The parent Order's tenantId. Populated internally, not client-supplied.",
         example: 1,
     })
     @IsNumber()
@@ -103,7 +125,8 @@ export class CreateRecurringOrderScheduleDto {
     readonly tenantId: number;
 
     @ApiProperty({
-        description: "The parent Order's locationId. Populated internally, not client-supplied.",
+        description:
+            "The parent Order's locationId. Populated internally, not client-supplied.",
         example: 1,
     })
     @IsNumber()

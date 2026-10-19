@@ -1,5 +1,5 @@
-import { TypeORMPostgresModule } from "./configs/TypeORMPostgresProd";
-import { TypeORMPostgresTestingModule } from "./configs/TypeORMPostgresTesting";
+import { TypeORMPostgresModule } from './configs/TypeORMPostgresProd';
+import { TypeORMPostgresTestingModule } from './configs/TypeORMPostgresTesting';
 
 export function selectTypeOrmModule(entities: any[] = []) {
     const env = process.env.NODE_ENV;

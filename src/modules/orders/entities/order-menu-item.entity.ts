@@ -87,7 +87,11 @@ export class OrderMenuItem {
         description: 'The size of the ordered MenuItem',
         type: MenuItemSize,
     })
-    @ManyToOne(() => MenuItemSize, { eager: true, nullable: true, onDelete: 'SET NULL' })
+    @ManyToOne(() => MenuItemSize, {
+        eager: true,
+        nullable: true,
+        onDelete: 'SET NULL',
+    })
     size: MenuItemSize | null = null;
 
     /**

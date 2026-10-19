@@ -1,10 +1,10 @@
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-export const TypeORMPostgresModule = (entities: any[]) =>
+export const TypeORMPostgresModule = (_entities: any[]) =>
     TypeOrmModule.forRootAsync({
         imports: [ConfigModule],
-        useFactory: async (configService: ConfigService) => ({
+        useFactory: (configService: ConfigService) => ({
             type: 'postgres',
             host: configService.get<string>('DB_HOST'),
             port: configService.get<number>('DB_PORT'),

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
@@ -14,19 +13,22 @@ import {
 import { MenuItemCategoryValidatorIdentity } from './identities/menu-item-category.validator.identity.interface';
 
 @Injectable()
-export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEntity, MenuItemCategoryValidatorIdentity> {
-
+export class MenuItemCategoryValidator extends ValidatorBase<
+    MenuItemCategoryEntity,
+    MenuItemCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(MenuItemCategory)
         private readonly repo: Repository<MenuItemCategory>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'MenuItemCategory', requestContextService, logger);
+        super(repo, 'MenuItemCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: MenuItemCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: MenuItemCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -36,16 +38,22 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto, id: number | string): Promise<MenuItemCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto,
+        _id: number | string,
+    ): Promise<MenuItemCategoryValidatorIdentity> {
         return {
             name: dto.name,
-        } as MenuItemCategoryValidatorIdentity;
+        };
     }
 }

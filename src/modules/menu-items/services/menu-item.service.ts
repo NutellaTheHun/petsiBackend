@@ -20,7 +20,6 @@ import {
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -59,7 +58,6 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         @InjectRepository(MenuItem)
         repo: Repository<MenuItem>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: MenuItemValidator,
 
         @InjectRepository(OrderMenuItem)
@@ -70,7 +68,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         private readonly menuItemChangeDetector: MenuItemChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
     ) {
-        super(repo, 'MenuItemService', requestContextService, logger, validator);
+        super(repo, 'MenuItemService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -90,7 +88,9 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
                 ? manager.create(MenuItemCategory, { id: dto.categoryId! })
                 : null,
             name: dto.name,
-            sizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
+            sizes: dto.sizeIds.map((id) =>
+                manager.create(MenuItemSize, { id }),
+            ),
             variableMaxAmount: dto.variableMaxAmount ?? null,
             tenantId: this.getTenantId(),
         });
@@ -167,14 +167,15 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
 
         if (dto.containerMenuItems !== undefined) {
             const previous = [...(entity.containerMenuItems ?? [])];
-            const newItems = await this.containerItemComposer.composeManyNestedEntity(
-                dto.containerMenuItems ?? [],
-                manager,
-                previous,
-                {
-                    parentMenuItemId: entity.id,
-                },
-            );
+            const newItems =
+                await this.containerItemComposer.composeManyNestedEntity(
+                    dto.containerMenuItems ?? [],
+                    manager,
+                    previous,
+                    {
+                        parentMenuItemId: entity.id,
+                    },
+                );
             const newIds = new Set(newItems.map((x) => x.id));
             for (const old of previous) {
                 if (!newIds.has(old.id)) {
@@ -228,13 +229,17 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
             if (!row) {
                 row = manager.create(MenuItemDynamicPropertyValue, {
                     menuItem: manager.create(MenuItem, { id: menuItemId }),
-                    config: manager.create(DynamicPropertyConfig, { id: dp.configId }),
+                    config: manager.create(DynamicPropertyConfig, {
+                        id: dp.configId,
+                    }),
                 });
             }
 
             if (config.valueType === ValueType.EntityReference) {
                 row.valueText = null;
-                row.valueEntity = manager.create(MenuItem, { id: parseInt(dp.value, 10) });
+                row.valueEntity = manager.create(MenuItem, {
+                    id: parseInt(dp.value, 10),
+                });
             } else {
                 row.valueText = dp.value;
                 row.valueEntity = null;
@@ -281,7 +286,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         await this.revisionHistoryService.appendRevision(manager, {
             entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
             entityId: full.id,
-            changeLog: changeLog as unknown as Record<string, unknown>,
+            changeLog: changeLog,
             payload: payload as unknown as Record<string, unknown>,
         });
     }
@@ -311,7 +316,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         await this.revisionHistoryService.appendRevision(manager, {
             entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
             entityId: full.id,
-            changeLog: changeLog as unknown as Record<string, unknown>,
+            changeLog: changeLog,
             payload: payload as unknown as Record<string, unknown>,
         });
     }
@@ -326,7 +331,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         snap: MenuItemSnapshotV1,
     ): Promise<void> {
         entity.name = snap.name;
-        entity.type = snap.type as MenuItem['type'];
+        entity.type = snap.type;
 
         if (snap.categoryId != null) {
             const exists = await manager.findOne(MenuItemCategory, {
@@ -376,7 +381,11 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         entity: MenuItem,
         snap: MenuItemSnapshotV2,
     ): Promise<void> {
-        await this.applyMenuItemSnapshotV1(manager, entity, snap as unknown as MenuItemSnapshotV1);
+        await this.applyMenuItemSnapshotV1(
+            manager,
+            entity,
+            snap as unknown as MenuItemSnapshotV1,
+        );
 
         const existing = await manager.find(MenuItemDynamicPropertyValue, {
             where: { menuItem: { id: entity.id } },
@@ -388,7 +397,9 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         for (const dp of snap.dynamicProperties) {
             const row = manager.create(MenuItemDynamicPropertyValue, {
                 menuItem: manager.create(MenuItem, { id: entity.id }),
-                config: manager.create(DynamicPropertyConfig, { id: dp.configId }),
+                config: manager.create(DynamicPropertyConfig, {
+                    id: dp.configId,
+                }),
                 valueText: dp.valueText,
                 valueEntity:
                     dp.valueEntityId != null
@@ -446,7 +457,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
             if (isMenuItemSnapshotV1(payload)) {
                 await this.applyMenuItemSnapshotV1(manager, entity, payload);
             } else {
-                await this.applyMenuItemSnapshotV2(manager, entity, payload as MenuItemSnapshotV2);
+                await this.applyMenuItemSnapshotV2(manager, entity, payload);
             }
             const changeLog = buildRevertedChangeLog(
                 targetRevisionNumber,
@@ -462,7 +473,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
             await this.revisionHistoryService.appendRevision(manager, {
                 entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
                 entityId: menuItemId,
-                changeLog: changeLog as unknown as Record<string, unknown>,
+                changeLog: changeLog,
                 payload: menuItemToSnapshotV2(full) as unknown as Record<
                     string,
                     unknown
@@ -519,7 +530,9 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<MenuItem, UpdateMenuItemDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<MenuItem, UpdateMenuItemDto>
+        | undefined {
         return this.menuItemChangeDetector;
     }
 

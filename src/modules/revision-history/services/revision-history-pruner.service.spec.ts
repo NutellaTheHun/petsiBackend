@@ -131,7 +131,7 @@ describe('RevisionHistoryPrunerService', () => {
         const rows: Partial<RevisionHistory>[] = [];
         for (let rev = 1; rev <= params.count; rev++) {
             rows.push({
-                entityType: params.entityType as any,
+                entityType: params.entityType as RevisionHistory['entityType'],
                 entityId: params.entityId,
                 revisionNumber: rev,
                 changeLog: {
@@ -155,7 +155,9 @@ describe('RevisionHistoryPrunerService', () => {
             .createQueryBuilder()
             .update(RevisionHistory)
             .set({ createdAt: cutoff })
-            .where('entity_type = :entityType', { entityType: params.entityType })
+            .where('entity_type = :entityType', {
+                entityType: params.entityType,
+            })
             .andWhere('entity_id = :entityId', { entityId: params.entityId })
             .andWhere('revision_number BETWEEN 2 AND :maxRev', {
                 maxRev: params.backdateBeforeRevision,
@@ -163,4 +165,3 @@ describe('RevisionHistoryPrunerService', () => {
             .execute();
     }
 });
-

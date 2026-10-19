@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    ValidateNested,
+} from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { NestedCreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemSize } from '../../../inventory-items/entities/inventory-item-size.entity';
@@ -24,7 +30,6 @@ export class CreateInventoryAreaItemDto {
         type: Number,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly amount: number;
 
@@ -74,7 +79,8 @@ export class CreateInventoryAreaItemDto {
      * a client and never independently re-derived from request context.
      */
     @ApiProperty({
-        description: "The parent InventoryAreaCount's tenantId. Populated internally, not client-supplied.",
+        description:
+            "The parent InventoryAreaCount's tenantId. Populated internally, not client-supplied.",
         type: Number,
         required: false,
     })
@@ -84,7 +90,8 @@ export class CreateInventoryAreaItemDto {
     readonly tenantId: number;
 
     @ApiProperty({
-        description: "The parent InventoryAreaCount's locationId. Populated internally, not client-supplied.",
+        description:
+            "The parent InventoryAreaCount's locationId. Populated internally, not client-supplied.",
         type: Number,
         required: false,
     })

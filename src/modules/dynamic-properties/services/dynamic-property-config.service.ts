@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -23,10 +22,14 @@ export class DynamicPropertyConfigService extends TenantScopedServiceBase<Dynami
         @InjectRepository(MenuItemDynamicPropertyValue)
         private readonly dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: DynamicPropertyConfigValidator,
     ) {
-        super(repo, 'DynamicPropertyConfigService', requestContextService, logger, validator);
+        super(
+            repo,
+            'DynamicPropertyConfigService',
+            requestContextService,
+            validator,
+        );
     }
 
     protected async createEntity(
@@ -35,12 +38,16 @@ export class DynamicPropertyConfigService extends TenantScopedServiceBase<Dynami
     ): Promise<DynamicPropertyConfig> {
         const holderCategory =
             dto.holderCategoryId != null
-                ? await manager.findOne(MenuItemCategory, { where: { id: dto.holderCategoryId } })
+                ? await manager.findOne(MenuItemCategory, {
+                      where: { id: dto.holderCategoryId },
+                  })
                 : null;
 
         const valueEntityCategory =
             dto.valueEntityCategoryId != null
-                ? await manager.findOne(MenuItemCategory, { where: { id: dto.valueEntityCategoryId } })
+                ? await manager.findOne(MenuItemCategory, {
+                      where: { id: dto.valueEntityCategoryId },
+                  })
                 : null;
 
         const entity = manager.create(DynamicPropertyConfig, {
@@ -70,7 +77,9 @@ export class DynamicPropertyConfigService extends TenantScopedServiceBase<Dynami
         if (dto.holderCategoryId !== undefined) {
             entity.holderCategory =
                 dto.holderCategoryId != null
-                    ? await manager.findOne(MenuItemCategory, { where: { id: dto.holderCategoryId } })
+                    ? await manager.findOne(MenuItemCategory, {
+                          where: { id: dto.holderCategoryId },
+                      })
                     : null;
         }
 
@@ -89,7 +98,9 @@ export class DynamicPropertyConfigService extends TenantScopedServiceBase<Dynami
         if (dto.valueEntityCategoryId !== undefined) {
             entity.valueEntityCategory =
                 dto.valueEntityCategoryId != null
-                    ? await manager.findOne(MenuItemCategory, { where: { id: dto.valueEntityCategoryId } })
+                    ? await manager.findOne(MenuItemCategory, {
+                          where: { id: dto.valueEntityCategoryId },
+                      })
                     : null;
         }
 
@@ -110,13 +121,19 @@ export class DynamicPropertyConfigService extends TenantScopedServiceBase<Dynami
         return this.entityRepo.findOne({ where: { id } });
     }
 
-    async hasStaleDynamicPropertyValues(menuItemId: number, newCategoryId: number | null): Promise<boolean> {
+    async hasStaleDynamicPropertyValues(
+        menuItemId: number,
+        newCategoryId: number | null,
+    ): Promise<boolean> {
         const rows = await this.dynPropValueRepo.find({
             where: { menuItem: { id: menuItemId } },
         });
-        return rows.some(row => {
+        return rows.some((row) => {
             if (row.config.holderCategory === null) return false;
-            return newCategoryId === null || row.config.holderCategory.id !== newCategoryId;
+            return (
+                newCategoryId === null ||
+                row.config.holderCategory.id !== newCategoryId
+            );
         });
     }
 }

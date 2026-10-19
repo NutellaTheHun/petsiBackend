@@ -2,15 +2,17 @@ import { handleSetHas } from '../handlers/handlers';
 import { inventoryItemExample } from './inventory-item.example';
 
 export function inventoryItemCategoryExample(
-  fnSet: Set<string>,
-  shallow: boolean,
+    fnSet: Set<string>,
+    shallow: boolean,
 ) {
-  fnSet.add(inventoryItemCategoryExample.name);
-  return {
-    id: 1,
+    fnSet.add(inventoryItemCategoryExample.name);
+    return {
+        id: 1,
 
-    name: 'dry goods',
+        name: 'dry goods',
 
-    inventoryItems: [handleSetHas(shallow, fnSet, inventoryItemExample, false)],
-  };
+        inventoryItems: [
+            handleSetHas(shallow, fnSet, inventoryItemExample, false),
+        ],
+    };
 }

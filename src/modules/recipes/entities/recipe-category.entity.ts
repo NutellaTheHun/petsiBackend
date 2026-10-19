@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+    Column,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    Unique,
+} from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { recipeSubCategoryExample } from '../../../common/swagger/examples/recipes/recipe-sub-category.example';
 import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
@@ -9,9 +15,9 @@ import { RecipeSubCategory } from './recipe-sub-category.entity';
 import { Recipe } from './recipe.entity';
 
 export type RecipeCategoryEntity = EntityBase<
-  RecipeCategory,
-  CreateRecipeCategoryDto,
-  UpdateRecipeCategoryDto
+    RecipeCategory,
+    CreateRecipeCategoryDto,
+    UpdateRecipeCategoryDto
 >;
 
 /**
@@ -22,51 +28,51 @@ export type RecipeCategoryEntity = EntityBase<
 @Entity()
 @Unique(['tenantId', 'name'])
 export class RecipeCategory {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * The Tenant this category belongs to. Denormalized scalar column (not a
-   * relation) so ServiceBase-level tenant filtering never needs a join.
-   */
-  @ApiProperty({
-    example: 1,
-    description: 'The Tenant this entity belongs to',
-  })
-  @Column()
-  tenantId: number;
+    /**
+     * The Tenant this category belongs to. Denormalized scalar column (not a
+     * relation) so ServiceBase-level tenant filtering never needs a join.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
-  @ApiProperty({ example: 'Pie', description: 'The name of the category' })
-  @Column()
-  name: string;
+    @ApiProperty({ example: 'Pie', description: 'The name of the category' })
+    @Column()
+    name: string;
 
-  /**
-   * {@link RecipeSubCategory} of "Pie" could be "Sweet Pie", "Savory Pie"
-   */
-  @ApiProperty({
-    example: [recipeSubCategoryExample(new Set<string>(), true)],
-    description: 'List of subcategories under the category',
-    type: () => RecipeSubCategory,
-    isArray: true,
-  })
-  @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, {
-    cascade: true,
-  })
-  subCategories: RecipeSubCategory[];
+    /**
+     * {@link RecipeSubCategory} of "Pie" could be "Sweet Pie", "Savory Pie"
+     */
+    @ApiProperty({
+        example: [recipeSubCategoryExample(new Set<string>(), true)],
+        description: 'List of subcategories under the category',
+        type: () => RecipeSubCategory,
+        isArray: true,
+    })
+    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, {
+        cascade: true,
+    })
+    subCategories: RecipeSubCategory[];
 
-  /**
-   * List of {@link Recipe} under the category.
-   */
-  @ApiProperty({
-    example: [recipeExample(new Set<string>(), true)],
-    description: 'List of recipes under the category',
-    type: () => Recipe,
-    isArray: true,
-  })
-  @OneToMany(() => Recipe, (recipe) => recipe.category)
-  recipes: Recipe[];
+    /**
+     * List of {@link Recipe} under the category.
+     */
+    @ApiProperty({
+        example: [recipeExample(new Set<string>(), true)],
+        description: 'List of recipes under the category',
+        type: () => Recipe,
+        isArray: true,
+    })
+    @OneToMany(() => Recipe, (recipe) => recipe.category)
+    recipes: Recipe[];
 }

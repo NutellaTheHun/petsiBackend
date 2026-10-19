@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { DynamicPropertyConfig } from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { DynamicPropertiesModule } from '../../dynamic-properties/dynamic-properties.module';
 import { OrderCategory } from '../../orders/entities/order-category.entity';
@@ -47,10 +46,18 @@ export async function getMenuItemTestingModule(opts?: {
     menuItemContainerItemServiceClass?: new (
         ...args: any[]
     ) => MenuItemContainerItemService;
-    menuItemChangeDetectorClass?: new (...args: any[]) => MenuItemChangeDetector;
-    menuItemCategoryChangeDetectorClass?: new (...args: any[]) => MenuItemCategoryChangeDetector;
-    menuItemSizeChangeDetectorClass?: new (...args: any[]) => MenuItemSizeChangeDetector;
-    menuItemContainerItemChangeDetectorClass?: new (...args: any[]) => MenuItemContainerItemChangeDetector;
+    menuItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemChangeDetector;
+    menuItemCategoryChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemCategoryChangeDetector;
+    menuItemSizeChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemSizeChangeDetector;
+    menuItemContainerItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => MenuItemContainerItemChangeDetector;
     mockRevisionHistory?: boolean;
 }): Promise<TestingModule> {
     const mockRevisionHistory = opts?.mockRevisionHistory ?? true;
@@ -91,9 +98,11 @@ export async function getMenuItemTestingModule(opts?: {
             ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
-            AppLoggingModule,
             RequestContextModule,
             TenantsModule,
         ],

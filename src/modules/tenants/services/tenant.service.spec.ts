@@ -45,7 +45,7 @@ describe('Tenant Service', () => {
             tenantServiceClass: TestableTenantService,
         });
         tenantTestUtil = module.get<TenantTestUtil>(TenantTestUtil);
-        tenantService = module.get(TenantService) as TestableTenantService;
+        tenantService = module.get<TestableTenantService>(TenantService);
         dataSource = module.get(DataSource);
         tenantRepo = module.get(getRepositoryToken(Tenant));
 
@@ -88,7 +88,9 @@ describe('Tenant Service', () => {
             await dataSource.transaction(async (manager) => {
                 await tenantService.updateEntityForTest(dto, tenant, manager);
             });
-            const result = await tenantRepo.findOneOrFail({ where: { id: tenant.id } });
+            const result = await tenantRepo.findOneOrFail({
+                where: { id: tenant.id },
+            });
             expect(result.name).toEqual(dto.name);
             expect(result.subdomain).toEqual(dto.subdomain);
         });
@@ -96,7 +98,9 @@ describe('Tenant Service', () => {
         it('should remove tenant', async () => {
             const deleteResult = await tenantService.remove(tenant.id);
             expect(deleteResult).toBe(true);
-            await expect(tenantService.findOne(tenant.id)).rejects.toThrow(NotFoundException);
+            await expect(tenantService.findOne(tenant.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -110,7 +114,9 @@ describe('Tenant Service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(tenantService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(tenantService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
@@ -133,10 +139,14 @@ describe('Tenant Service', () => {
 
         it('calls updateEntity when name changes', async () => {
             const tenant = tenants[1];
-            const dto = tenantToUpdateDto(tenant, { name: `${P}-tenant-renamed` });
+            const dto = tenantToUpdateDto(tenant, {
+                name: `${P}-tenant-renamed`,
+            });
             await tenantService.update(tenant.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await tenantRepo.findOneOrFail({ where: { id: tenant.id } });
+            const row = await tenantRepo.findOneOrFail({
+                where: { id: tenant.id },
+            });
             expect(row.name).toEqual(`${P}-tenant-renamed`);
         });
     });

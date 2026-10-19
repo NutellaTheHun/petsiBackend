@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
@@ -25,10 +24,9 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
         private readonly repo: Repository<DynamicPropertyConfig>,
         @InjectRepository(MenuItemDynamicPropertyValue)
         private readonly dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>,
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'DynamicPropertyConfig', requestContextService, logger);
+        super(repo, 'DynamicPropertyConfig', requestContextService);
     }
 
     protected async validateIdentity(
@@ -45,41 +43,66 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
                 },
             });
             if (existing && existing.id !== id) {
-                errorMap.addError('ALREADY_EXISTS', undefined, ['propertyName']);
+                errorMap.addError('ALREADY_EXISTS', undefined, [
+                    'propertyName',
+                ]);
             }
         }
 
         if (
             identity.valueType === ValueType.EntityReference &&
-            (identity.valueEntityType == null || identity.valueEntityType === '')
+            (identity.valueEntityType == null ||
+                identity.valueEntityType === '')
         ) {
-            errorMap.addError('MISSING_PROPERTY', undefined, ['valueEntityType']);
+            errorMap.addError('MISSING_PROPERTY', undefined, [
+                'valueEntityType',
+            ]);
         }
 
         if (identity.existingHolderEntityType !== undefined) {
             const changedFields: string[] = [];
 
-            if (identity.holderEntityType !== undefined && identity.holderEntityType !== identity.existingHolderEntityType) {
+            if (
+                identity.holderEntityType !== undefined &&
+                identity.holderEntityType !== identity.existingHolderEntityType
+            ) {
                 changedFields.push('holderEntityType');
             }
-            if (identity.holderCategoryId !== undefined && identity.holderCategoryId !== identity.existingHolderCategoryId) {
+            if (
+                identity.holderCategoryId !== undefined &&
+                identity.holderCategoryId !== identity.existingHolderCategoryId
+            ) {
                 changedFields.push('holderCategoryId');
             }
-            if (identity.valueType !== undefined && identity.valueType !== identity.existingValueType) {
+            if (
+                identity.valueType !== undefined &&
+                identity.valueType !== identity.existingValueType
+            ) {
                 changedFields.push('valueType');
             }
-            if ('valueEntityType' in identity && identity.valueEntityType !== identity.existingValueEntityType) {
+            if (
+                'valueEntityType' in identity &&
+                identity.valueEntityType !== identity.existingValueEntityType
+            ) {
                 changedFields.push('valueEntityType');
             }
-            if (identity.valueEntityCategoryId !== undefined && identity.valueEntityCategoryId !== identity.existingValueEntityCategoryId) {
+            if (
+                identity.valueEntityCategoryId !== undefined &&
+                identity.valueEntityCategoryId !==
+                    identity.existingValueEntityCategoryId
+            ) {
                 changedFields.push('valueEntityCategoryId');
             }
 
             if (changedFields.length > 0) {
-                const hasValues = await this.dynPropValueRepo.exists({ where: { config: { id: id as number } } });
+                const hasValues = await this.dynPropValueRepo.exists({
+                    where: { config: { id: id as number } },
+                });
                 if (hasValues) {
                     for (const field of changedFields) {
-                        errorMap.addError('IMMUTABLE_FIELD', undefined, [field]);
+                        errorMap.addError('IMMUTABLE_FIELD', undefined, [
+                            field,
+                        ]);
                     }
                 }
             }
@@ -94,7 +117,10 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
     ): Promise<DynamicPropertyConfigValidatorIdentity> {
         let existing: DynamicPropertyConfig | null = null;
         if (id !== 'root') {
-            existing = await this.repo.findOne({ where: { id: id as number }, relations: ['holderCategory', 'valueEntityCategory'] });
+            existing = await this.repo.findOne({
+                where: { id: id as number },
+                relations: ['holderCategory', 'valueEntityCategory'],
+            });
         }
 
         return {
@@ -102,14 +128,17 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
             holderCategoryId: dto.holderCategoryId,
             propertyName: dto.propertyName,
             valueType: dto.valueType,
-            ...('valueEntityType' in dto && { valueEntityType: dto.valueEntityType }),
+            ...('valueEntityType' in dto && {
+                valueEntityType: dto.valueEntityType,
+            }),
             valueEntityCategoryId: dto.valueEntityCategoryId,
             ...(existing != null && {
                 existingHolderEntityType: existing.holderEntityType,
                 existingHolderCategoryId: existing.holderCategory?.id ?? null,
                 existingValueType: existing.valueType,
                 existingValueEntityType: existing.valueEntityType ?? null,
-                existingValueEntityCategoryId: existing.valueEntityCategory?.id ?? null,
+                existingValueEntityCategoryId:
+                    existing.valueEntityCategory?.id ?? null,
             }),
         };
     }

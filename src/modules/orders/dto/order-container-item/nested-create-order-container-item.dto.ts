@@ -32,7 +32,6 @@ export class NestedCreateOrderContainerItemDto extends NestedCreateDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

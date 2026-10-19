@@ -73,9 +73,9 @@ describe('recipe ingredient service', () => {
         });
 
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        ingredientService = module.get(
+        ingredientService = module.get<TestableRecipeIngredientService>(
             RecipeIngredientService,
-        ) as TestableRecipeIngredientService;
+        );
         dataSource = module.get(DataSource);
 
         recipeRepo = module.get(getRepositoryToken(Recipe));
@@ -86,13 +86,22 @@ describe('recipe ingredient service', () => {
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         const tenantId = await testingUtil.getDefaultTenantId();
         requestContext.setContext({ tenantId });
 
-        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
-            await testingUtil.seedIngredients(P));
+        ({
+            categories,
+            subCategories,
+            recipes,
+            invCategories,
+            invVendors,
+            invItems,
+            ingredients,
+        } = await testingUtil.seedIngredients(P));
 
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
@@ -112,8 +121,14 @@ describe('recipe ingredient service', () => {
     });
 
     afterAll(async () => {
-        await ingredientRepo.delete([...ingredients.map((i) => i.id), otherTenantIngredient.id]);
-        await recipeRepo.delete([...recipes.map((r) => r.id), otherTenantRecipe.id]);
+        await ingredientRepo.delete([
+            ...ingredients.map((i) => i.id),
+            otherTenantIngredient.id,
+        ]);
+        await recipeRepo.delete([
+            ...recipes.map((r) => r.id),
+            otherTenantRecipe.id,
+        ]);
         await subCategoryRepo.delete(subCategories.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await invItemRepo.delete(invItems.map((i) => i.id));
@@ -142,7 +157,10 @@ describe('recipe ingredient service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                ingredient = await ingredientService.createEntityForTest(dto, manager);
+                ingredient = await ingredientService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(ingredient.id).toBeDefined();
             expect(Number(ingredient.quantity)).toEqual(dto.quantity);
@@ -153,22 +171,38 @@ describe('recipe ingredient service', () => {
             const newQuantity = 99;
             const loaded = await ingredientRepo.findOneOrFail({
                 where: { id: ingredient.id },
-                relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'],
+                relations: [
+                    'ingredientInventoryItem',
+                    'ingredientRecipe',
+                    'parentRecipe',
+                ],
             });
-            const dto = recipeIngredientToUpdateDto(loaded, { quantity: newQuantity });
+            const dto = recipeIngredientToUpdateDto(loaded, {
+                quantity: newQuantity,
+            });
 
             await dataSource.transaction(async (manager) => {
-                await ingredientService.updateEntityForTest(dto, loaded, manager);
+                await ingredientService.updateEntityForTest(
+                    dto,
+                    loaded,
+                    manager,
+                );
             });
 
-            const result = await ingredientRepo.findOneOrFail({ where: { id: ingredient.id } });
+            const result = await ingredientRepo.findOneOrFail({
+                where: { id: ingredient.id },
+            });
             expect(Number(result.quantity)).toEqual(newQuantity);
         });
 
         it('should update recipe ingredient to reference a recipe instead of an inventory item', async () => {
             const loaded = await ingredientRepo.findOneOrFail({
                 where: { id: ingredient.id },
-                relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'],
+                relations: [
+                    'ingredientInventoryItem',
+                    'ingredientRecipe',
+                    'parentRecipe',
+                ],
             });
             const dto = recipeIngredientToUpdateDto(loaded, {
                 ingredientInventoryItemId: undefined,
@@ -176,7 +210,11 @@ describe('recipe ingredient service', () => {
             });
 
             await dataSource.transaction(async (manager) => {
-                await ingredientService.updateEntityForTest(dto, loaded, manager);
+                await ingredientService.updateEntityForTest(
+                    dto,
+                    loaded,
+                    manager,
+                );
             });
 
             const result = await ingredientRepo.findOneOrFail({
@@ -188,9 +226,9 @@ describe('recipe ingredient service', () => {
 
         it('should remove recipe ingredient', async () => {
             await ingredientService.remove(ingredient.id);
-            await expect(ingredientService.findOne(ingredient.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                ingredientService.findOne(ingredient.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -234,10 +272,17 @@ describe('recipe ingredient service', () => {
         it('skips updateEntity when DTO matches entity', async () => {
             const loaded = await ingredientRepo.findOneOrFail({
                 where: { id: ingredients[2].id },
-                relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'],
+                relations: [
+                    'ingredientInventoryItem',
+                    'ingredientRecipe',
+                    'parentRecipe',
+                ],
             });
             const dto = recipeIngredientToUpdateDto(loaded);
-            const result = await ingredientService.update(ingredients[2].id, dto);
+            const result = await ingredientService.update(
+                ingredients[2].id,
+                dto,
+            );
             expect(result.id).toEqual(ingredients[2].id);
             expect(spy).not.toHaveBeenCalled();
         });
@@ -245,12 +290,18 @@ describe('recipe ingredient service', () => {
         it('calls updateEntity when quantity changes', async () => {
             const loaded = await ingredientRepo.findOneOrFail({
                 where: { id: ingredients[2].id },
-                relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'],
+                relations: [
+                    'ingredientInventoryItem',
+                    'ingredientRecipe',
+                    'parentRecipe',
+                ],
             });
             const dto = recipeIngredientToUpdateDto(loaded, { quantity: 42 });
             await ingredientService.update(ingredients[2].id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await ingredientRepo.findOneOrFail({ where: { id: ingredients[2].id } });
+            const row = await ingredientRepo.findOneOrFail({
+                where: { id: ingredients[2].id },
+            });
             expect(Number(row.quantity)).toEqual(42);
         });
     });
@@ -266,10 +317,15 @@ describe('recipe ingredient service', () => {
 
             let created!: RecipeIngredient;
             await dataSource.transaction(async (manager) => {
-                created = await ingredientService.createEntityForTest(dto, manager);
+                created = await ingredientService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
 
-            expect(created.tenantId).toBe(await testingUtil.getDefaultTenantId());
+            expect(created.tenantId).toBe(
+                await testingUtil.getDefaultTenantId(),
+            );
             await ingredientRepo.delete(created.id);
         });
 

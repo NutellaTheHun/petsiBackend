@@ -1,12 +1,21 @@
-import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
-import { UpdateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
+import { CreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/create-recurring-order-schedule.dto';
+import { UpdateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/update-recurring-order-schedule.dto';
 
 /**
  * Parse a rrule string with the following format:
  * "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR"
  * So there is the DTSTART:... and the RRULE:...
  */
-export function parseRruleString(rruleString: string): { frequency: string; interval: number | undefined; daysOfWeek: number[] | undefined; dayOfMonth: number | undefined; monthOfYear: number | undefined; startDate: Date; endDate: Date | undefined; timezone: string | undefined; } {
+export function parseRruleString(rruleString: string): {
+    frequency: string;
+    interval: number | undefined;
+    daysOfWeek: number[] | undefined;
+    dayOfMonth: number | undefined;
+    monthOfYear: number | undefined;
+    startDate: Date;
+    endDate: Date | undefined;
+    timezone: string | undefined;
+} {
     if (!rruleString || !rruleString.includes('RRULE:')) {
         return {
             frequency: 'WEEKLY',
@@ -62,7 +71,7 @@ export function parseRruleString(rruleString: string): { frequency: string; inte
         dayOfMonth: dayOfMonth ? parseInt(dayOfMonth) : undefined,
         monthOfYear: monthOfYear ? parseInt(monthOfYear) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        timezone: timezone ?? undefined
+        timezone: timezone ?? undefined,
     };
 }
 
@@ -70,13 +79,27 @@ export function parseDaysOfWeek(daysOfWeek: string): number[] {
     const days: number[] = [];
     for (const day of daysOfWeek.split(',')) {
         switch (day) {
-            case 'SU': days.push(0); break;
-            case 'MO': days.push(1); break;
-            case 'TU': days.push(2); break;
-            case 'WE': days.push(3); break;
-            case 'TH': days.push(4); break;
-            case 'FR': days.push(5); break;
-            case 'SA': days.push(6); break;
+            case 'SU':
+                days.push(0);
+                break;
+            case 'MO':
+                days.push(1);
+                break;
+            case 'TU':
+                days.push(2);
+                break;
+            case 'WE':
+                days.push(3);
+                break;
+            case 'TH':
+                days.push(4);
+                break;
+            case 'FR':
+                days.push(5);
+                break;
+            case 'SA':
+                days.push(6);
+                break;
         }
     }
     return days;
@@ -84,24 +107,36 @@ export function parseDaysOfWeek(daysOfWeek: string): number[] {
 
 export function getDayOfWeekValue(daysOfWeek: number[]): string {
     // convert dto number (0-6) to string (SU, MO, TU, WE, TH, FR, SA)
-    return daysOfWeek.map(day => {
-        switch (day) {
-            case 0: return 'SU';
-            case 1: return 'MO';
-            case 2: return 'TU';
-            case 3: return 'WE';
-            case 4: return 'TH';
-            case 5: return 'FR';
-            case 6: return 'SA';
-            default: throw new Error(`Invalid day of week: ${day}`);
-        }
-    }).join(',');
+    return daysOfWeek
+        .map((day) => {
+            switch (day) {
+                case 0:
+                    return 'SU';
+                case 1:
+                    return 'MO';
+                case 2:
+                    return 'TU';
+                case 3:
+                    return 'WE';
+                case 4:
+                    return 'TH';
+                case 5:
+                    return 'FR';
+                case 6:
+                    return 'SA';
+                default:
+                    throw new Error(`Invalid day of week: ${day}`);
+            }
+        })
+        .join(',');
 }
 
 /**
  * Build a rrule string from a DTO to be stored in a recurring order schedule entity.
  */
-export function buildRruleString(dto: CreateRecurringOrderScheduleDto | UpdateRecurringOrderScheduleDto): string {
+export function buildRruleString(
+    dto: CreateRecurringOrderScheduleDto | UpdateRecurringOrderScheduleDto,
+): string {
     const parts: string[] = [];
     if (dto.frequency) {
         parts.push(`FREQ=${dto.frequency.toUpperCase()}`);

@@ -16,7 +16,8 @@ export class NestedUpdateMenuItemContainerItemDto extends NestedUpdateDto {
     readonly containedMenuItemId: EntityId<MenuItem>;
 
     @ApiProperty({
-        description: 'Id of a MenuItemSize entity. The size of the contained item',
+        description:
+            'Id of a MenuItemSize entity. The size of the contained item',
         example: 2,
     })
     @IsNumber()
@@ -29,7 +30,6 @@ export class NestedUpdateMenuItemContainerItemDto extends NestedUpdateDto {
         example: 3,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 }

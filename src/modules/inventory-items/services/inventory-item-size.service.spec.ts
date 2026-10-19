@@ -69,8 +69,12 @@ describe('Inventory Item Size Service', () => {
         const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemSizeServiceClass: TestableInventoryItemSizeService,
         });
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        sizeService = module.get(InventoryItemSizeService) as TestableInventoryItemSizeService;
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        sizeService = module.get<TestableInventoryItemSizeService>(
+            InventoryItemSizeService,
+        );
         dataSource = module.get(DataSource);
 
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
@@ -79,19 +83,22 @@ describe('Inventory Item Size Service', () => {
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
-            P,
-            tenant.id,
-        ));
+        ({ categories, vendors, packages, items, sizes } =
+            await testingUtil.seedSizes(P, tenant.id));
 
         ({
             categories: otherTenantCategories,
@@ -104,8 +111,14 @@ describe('Inventory Item Size Service', () => {
     });
 
     afterAll(async () => {
-        await sizeRepo.delete([...sizes.map((s) => s.id), ...otherTenantSizes.map((s) => s.id)]);
-        await itemRepo.delete([...items.map((i) => i.id), ...otherTenantItems.map((i) => i.id)]);
+        await sizeRepo.delete([
+            ...sizes.map((s) => s.id),
+            ...otherTenantSizes.map((s) => s.id),
+        ]);
+        await itemRepo.delete([
+            ...items.map((i) => i.id),
+            ...otherTenantItems.map((i) => i.id),
+        ]);
         await packageRepo.delete([
             ...packages.map((p) => p.id),
             ...otherTenantPackages.map((p) => p.id),
@@ -163,13 +176,17 @@ describe('Inventory Item Size Service', () => {
                 await sizeService.updateEntityForTest(dto, loaded, manager);
                 await manager.save(loaded);
             });
-            const reloaded = await sizeRepo.findOneOrFail({ where: { id: created.id } });
+            const reloaded = await sizeRepo.findOneOrFail({
+                where: { id: created.id },
+            });
             expect(Number(reloaded.cost)).toBe(25.99);
         });
 
         it('should remove size', async () => {
             await sizeService.remove(created.id);
-            await expect(sizeService.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(sizeService.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -180,7 +197,10 @@ describe('Inventory Item Size Service', () => {
     });
 
     it('should find one size with relations', async () => {
-        const result = await sizeService.findOne(sizes[0].id, ['inventoryItem', 'package']);
+        const result = await sizeService.findOne(sizes[0].id, [
+            'inventoryItem',
+            'package',
+        ]);
         expect(result.id).toBe(sizes[0].id);
         expect(result.inventoryItem).toBeDefined();
         expect(result.package).toBeDefined();
@@ -188,7 +208,9 @@ describe('Inventory Item Size Service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(sizeService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(sizeService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('tenant scoping', () => {
@@ -209,9 +231,9 @@ describe('Inventory Item Size Service', () => {
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(sizeService.findOne(otherTenantSize.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                sizeService.findOne(otherTenantSize.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateTenantDto } from '../dto/create-tenant.dto';
 import { UpdateTenantDto } from '../dto/update-tenant.dto';
@@ -65,7 +69,9 @@ describe('tenant validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['subdomain']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                'subdomain',
+            ]),
         );
     });
 
@@ -94,7 +100,9 @@ describe('tenant validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['subdomain']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                'subdomain',
+            ]),
         );
     });
 });

@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
@@ -31,9 +30,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
         private readonly containerItemBuilder: MenuItemContainerItemBuilder,
 
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
-        super(MenuItem, 'MenuItemBuilder', requestContextService, logger);
+        super(MenuItem, 'MenuItemBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateMenuItemDto): void {
@@ -116,7 +114,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(
-            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            async (id: number) =>
+                await this.categoryRepo.findOne({ where: { id } }),
             'category',
             id,
         );

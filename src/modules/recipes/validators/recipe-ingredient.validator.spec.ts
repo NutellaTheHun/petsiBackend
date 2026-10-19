@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
@@ -44,7 +48,9 @@ describe('recipe ingredient validator', () => {
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        validator = module.get<RecipeIngredientValidator>(RecipeIngredientValidator);
+        validator = module.get<RecipeIngredientValidator>(
+            RecipeIngredientValidator,
+        );
 
         recipeRepo = module.get(getRepositoryToken(Recipe));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
@@ -54,8 +60,15 @@ describe('recipe ingredient validator', () => {
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
 
-        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
-            await testingUtil.seedIngredients(P));
+        ({
+            categories,
+            subCategories,
+            recipes,
+            invCategories,
+            invVendors,
+            invItems,
+            ingredients,
+        } = await testingUtil.seedIngredients(P));
     });
 
     afterAll(async () => {
@@ -78,75 +91,98 @@ describe('recipe ingredient validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateRecipeIngredientDto = plainToInstance(CreateRecipeIngredientDto, {
-            parentRecipeId: recipes[3].id,
-            ingredientInventoryItemId: invItems[0].id,
-            quantity: 5,
-            unit: 'oz',
-        });
+        const dto: CreateRecipeIngredientDto = plainToInstance(
+            CreateRecipeIngredientDto,
+            {
+                parentRecipeId: recipes[3].id,
+                ingredientInventoryItemId: invItems[0].id,
+                quantity: 5,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: missing reference for ingredient', async () => {
-        const dto: CreateRecipeIngredientDto = plainToInstance(CreateRecipeIngredientDto, {
-            parentRecipeId: recipes[3].id,
-            quantity: 5,
-            unit: 'oz',
-        });
+        const dto: CreateRecipeIngredientDto = plainToInstance(
+            CreateRecipeIngredientDto,
+            {
+                parentRecipeId: recipes[3].id,
+                quantity: 5,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate create: cannot provide both an inventory item and a recipe as an ingredient', async () => {
-        const dto: CreateRecipeIngredientDto = plainToInstance(CreateRecipeIngredientDto, {
-            parentRecipeId: recipes[3].id,
-            ingredientInventoryItemId: invItems[0].id,
-            ingredientRecipeId: recipes[1].id,
-            quantity: 5,
-            unit: 'oz',
-        });
+        const dto: CreateRecipeIngredientDto = plainToInstance(
+            CreateRecipeIngredientDto,
+            {
+                parentRecipeId: recipes[3].id,
+                ingredientInventoryItemId: invItems[0].id,
+                ingredientRecipeId: recipes[1].id,
+                quantity: 5,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate create: quantity cannot be 0', async () => {
-        const dto: CreateRecipeIngredientDto = plainToInstance(CreateRecipeIngredientDto, {
-            parentRecipeId: recipes[3].id,
-            ingredientInventoryItemId: invItems[0].id,
-            quantity: 0,
-            unit: 'oz',
-        });
+        const dto: CreateRecipeIngredientDto = plainToInstance(
+            CreateRecipeIngredientDto,
+            {
+                parentRecipeId: recipes[3].id,
+                ingredientInventoryItemId: invItems[0].id,
+                quantity: 0,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const dto: UpdateRecipeIngredientDto = plainToInstance(UpdateRecipeIngredientDto, {
-            quantity: 10,
-            ingredientInventoryItemId: invItems[1].id,
-            unit: 'oz',
-        });
+        const dto: UpdateRecipeIngredientDto = plainToInstance(
+            UpdateRecipeIngredientDto,
+            {
+                quantity: 10,
+                ingredientInventoryItemId: invItems[1].id,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, ingredients[0].id);
         expect(errors).toBeNull();
@@ -155,54 +191,71 @@ describe('recipe ingredient validator', () => {
     it('fail validate update: missing reference for ingredient', async () => {
         const ingredientToUpdate = ingredients[0];
 
-        const dto: UpdateRecipeIngredientDto = plainToInstance(UpdateRecipeIngredientDto, {
-            quantity: 1,
-            unit: 'oz',
-        });
+        const dto: UpdateRecipeIngredientDto = plainToInstance(
+            UpdateRecipeIngredientDto,
+            {
+                quantity: 1,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, ingredientToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate update: cannot provide both an inventory item and a recipe as an ingredient', async () => {
         const ingredientToUpdate = ingredients[0];
 
-        const dto: UpdateRecipeIngredientDto = plainToInstance(UpdateRecipeIngredientDto, {
-            ingredientInventoryItemId: invItems[0].id,
-            ingredientRecipeId: recipes[1].id,
-            quantity: 1,
-            unit: 'oz',
-        });
+        const dto: UpdateRecipeIngredientDto = plainToInstance(
+            UpdateRecipeIngredientDto,
+            {
+                ingredientInventoryItemId: invItems[0].id,
+                ingredientRecipeId: recipes[1].id,
+                quantity: 1,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, ingredientToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate update: quantity cannot be 0', async () => {
         const ingredientToUpdate = ingredients[0];
 
-        const dto: UpdateRecipeIngredientDto = plainToInstance(UpdateRecipeIngredientDto, {
-            quantity: 0,
-            unit: 'oz',
-            ingredientInventoryItemId: invItems[0].id,
-        });
+        const dto: UpdateRecipeIngredientDto = plainToInstance(
+            UpdateRecipeIngredientDto,
+            {
+                quantity: 0,
+                unit: 'oz',
+                ingredientInventoryItemId: invItems[0].id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, ingredientToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
@@ -212,18 +265,23 @@ describe('recipe ingredient validator', () => {
             relations: ['parentRecipe'],
         });
 
-        const dto: UpdateRecipeIngredientDto = plainToInstance(UpdateRecipeIngredientDto, {
-            ingredientRecipeId: ingredientToUpdate.parentRecipe.id,
-            quantity: 1,
-            unit: 'oz',
-        });
+        const dto: UpdateRecipeIngredientDto = plainToInstance(
+            UpdateRecipeIngredientDto,
+            {
+                ingredientRecipeId: ingredientToUpdate.parentRecipe.id,
+                quantity: 1,
+                unit: 'oz',
+            },
+        );
 
         const errors = await validator.validateDto(dto, ingredientToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'ingredientRecipe',
+            ]),
         );
     });
 });

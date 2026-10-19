@@ -31,9 +31,13 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { LocationScope } from '../../../common/decorators/LocationScope';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
+import {
+    ROLE_ADMIN,
+    ROLE_MANAGER,
+    ROLE_STAFF,
+} from '../../roles/utils/constants';
 import { CreateSettingDto } from '../dto/create-setting.dto';
 import { EffectiveSettingDto } from '../dto/effective-setting.dto';
 import { UpdateSettingDto } from '../dto/update-setting.dto';
@@ -63,7 +67,7 @@ export class SettingsController extends ControllerBase<SettingEntity> {
     constructor(
         private readonly settingsService: SettingsService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -79,8 +83,14 @@ export class SettingsController extends ControllerBase<SettingEntity> {
     @HttpCode(HttpStatus.CREATED)
     @Roles(ROLE_MANAGER, ROLE_ADMIN)
     @LocationScope('body', 'locationId')
-    @ApiOperation({ summary: 'Creates a Setting (tenant default if locationId is omitted, location override otherwise)' })
-    @ApiCreatedResponse({ description: 'Setting successfully created', type: Setting })
+    @ApiOperation({
+        summary:
+            'Creates a Setting (tenant default if locationId is omitted, location override otherwise)',
+    })
+    @ApiCreatedResponse({
+        description: 'Setting successfully created',
+        type: Setting,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     async create(@Body() dto: CreateSettingDto): Promise<Setting> {
         return super.create(dto);
@@ -88,8 +98,11 @@ export class SettingsController extends ControllerBase<SettingEntity> {
 
     @Put(':id')
     @Roles(ROLE_MANAGER, ROLE_ADMIN)
-    @ApiOperation({ summary: 'Updates a Setting\'s value' })
-    @ApiOkResponse({ description: 'Setting successfully updated', type: Setting })
+    @ApiOperation({ summary: "Updates a Setting's value" })
+    @ApiOkResponse({
+        description: 'Setting successfully updated',
+        type: Setting,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'Setting to update not found.' })
     async update(
@@ -102,7 +115,10 @@ export class SettingsController extends ControllerBase<SettingEntity> {
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @Roles(ROLE_MANAGER, ROLE_ADMIN)
-    @ApiOperation({ summary: 'Removes a Setting (a removed location override falls back to the tenant default)' })
+    @ApiOperation({
+        summary:
+            'Removes a Setting (a removed location override falls back to the tenant default)',
+    })
     @ApiNoContentResponse({ description: 'Setting successfully removed' })
     @ApiNotFoundResponse({ description: 'Setting not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
@@ -113,10 +129,19 @@ export class SettingsController extends ControllerBase<SettingEntity> {
     @HttpCode(HttpStatus.OK)
     @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
     @LocationScope('query', 'locationId')
-    @ApiOperation({ summary: 'Returns the effective settings (tenant defaults with location overrides applied) for one location in a single call' })
-    @ApiOkResponse({ description: 'Effective settings', type: EffectiveSettingDto, isArray: true })
+    @ApiOperation({
+        summary:
+            'Returns the effective settings (tenant defaults with location overrides applied) for one location in a single call',
+    })
+    @ApiOkResponse({
+        description: 'Effective settings',
+        type: EffectiveSettingDto,
+        isArray: true,
+    })
     @ApiQuery({ name: 'locationId', required: false, type: Number })
-    async getEffective(@Query('locationId') locationId?: number): Promise<EffectiveSettingDto[]> {
+    async getEffective(
+        @Query('locationId') locationId?: number,
+    ): Promise<EffectiveSettingDto[]> {
         return this.settingsService.getEffectiveSettings(
             locationId != null ? Number(locationId) : undefined,
         );
@@ -129,7 +154,10 @@ export class SettingsController extends ControllerBase<SettingEntity> {
         schema: {
             type: 'object',
             properties: {
-                items: { type: 'array', items: { $ref: getSchemaPath(Setting) } },
+                items: {
+                    type: 'array',
+                    items: { $ref: getSchemaPath(Setting) },
+                },
                 nextCursor: { type: 'string', example: '2' },
             },
         },

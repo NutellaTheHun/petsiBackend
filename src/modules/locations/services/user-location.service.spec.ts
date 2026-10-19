@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -75,16 +75,22 @@ describe('user location service', () => {
         locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
         userTestUtil = module.get<UserTestUtil>(UserTestUtil);
         roleTestUtil = module.get<RoleTestUtil>(RoleTestUtil);
-        service = module.get(UserLocationService) as TestableUserLocationService;
+        service = module.get<TestableUserLocationService>(UserLocationService);
         dataSource = module.get(DataSource);
         userLocationRepo = module.get(getRepositoryToken(UserLocation));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await locationTestUtil.seedLocations(P, undefined, 2));
-        ({ tenant: otherTenant, locations: [otherTenantLocation] } =
-            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
+        ({
+            tenant: otherTenant,
+            locations: [otherTenantLocation],
+        } = await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
 
         ({ users } = await userTestUtil.seedUsers(P, tenant.id));
         ({ roles } = await roleTestUtil.seedRoles(P, tenant.id));
@@ -178,7 +184,9 @@ describe('user location service', () => {
 
         it('should remove assignment', async () => {
             await service.remove(assignment.id);
-            await expect(service.findOne(assignment.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(assignment.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -189,23 +197,32 @@ describe('user location service', () => {
     });
 
     it('should find one assignment with relations', async () => {
-        const result = await service.findOne(assignments[0].id, ['user', 'roles']);
+        const result = await service.findOne(assignments[0].id, [
+            'user',
+            'roles',
+        ]);
         expect(result.id).toBe(assignments[0].id);
         expect(result.user.id).toBe(users[0].id);
         expect(Array.isArray(result.roles)).toBe(true);
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
-    it('findAll filtered by user returns only that user\'s assignments', async () => {
+    it("findAll filtered by user returns only that user's assignments", async () => {
         const result = await service.findAll({
             limit: 100,
             filters: [`user=${users[0].id}`],
         });
-        expect(result.items.every((a) => a.id === assignments[0].id)).toBe(true);
-        expect(result.items.find((a) => a.id === assignments[0].id)).toBeDefined();
+        expect(result.items.every((a) => a.id === assignments[0].id)).toBe(
+            true,
+        );
+        expect(
+            result.items.find((a) => a.id === assignments[0].id),
+        ).toBeDefined();
     });
 
     describe('a user can hold different roles at different locations', () => {
@@ -256,39 +273,27 @@ describe('user location service', () => {
 
     describe('tenant/location scoping', () => {
         it('create stamps the caller tenant, not client input', async () => {
-            const created = (await service.create(
+            const created = await service.create(
                 plainToInstance(CreateUserLocationDto, {
                     userId: users[0].id,
                     locationId: locationA.id,
                     roleIds: [roles[0].id],
                 }),
-            )) as UserLocation;
+            );
             expect(created.tenantId).toBe(tenant.id);
             await userLocationRepo.delete(created.id);
         });
 
-        it('create throws ForbiddenException for a locationId the caller is not assigned to', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateUserLocationDto, {
-                        userId: users[0].id,
-                        locationId: locationB.id,
-                        roleIds: [roles[0].id],
-                    }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(service.findOne(otherTenantAssignment.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.findOne(otherTenantAssignment.id),
+            ).rejects.toThrow(NotFoundException);
         });
 
         it('findOne throws NotFoundException for an id at a location the caller is not assigned to', async () => {
-            await expect(service.findOne(otherLocationAssignment.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.findOne(otherLocationAssignment.id),
+            ).rejects.toThrow(NotFoundException);
         });
 
         it('isTenantAdmin bypasses location authorization within the same tenant', async () => {

@@ -5,7 +5,7 @@ describe('InventoryItemCategoryChangeDetector', () => {
     const detector = new InventoryItemCategoryChangeDetector();
 
     const baseEntity = (): InventoryItemCategory =>
-        ({ id: 1, name: 'Dry' } as InventoryItemCategory);
+        ({ id: 1, name: 'Dry' }) as InventoryItemCategory;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

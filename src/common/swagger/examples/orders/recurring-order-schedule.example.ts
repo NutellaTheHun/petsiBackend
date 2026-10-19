@@ -1,7 +1,10 @@
-import { handleSetHas } from "../handlers/handlers";
-import { orderExample } from "./order.example";
+import { handleSetHas } from '../handlers/handlers';
+import { orderExample } from './order.example';
 
-export function recurringOrderScheduleExample(fnSet: Set<string>, shallow: boolean) {
+export function recurringOrderScheduleExample(
+    fnSet: Set<string>,
+    shallow: boolean,
+) {
     fnSet.add(recurringOrderScheduleExample.name);
     return {
         id: 1,

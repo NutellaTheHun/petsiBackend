@@ -1,8 +1,8 @@
-export function menuItemSizeExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(menuItemSizeExample.name);
-  return {
-    id: 1,
+export function menuItemSizeExample(fnSet: Set<string>, _shallow: boolean) {
+    fnSet.add(menuItemSizeExample.name);
+    return {
+        id: 1,
 
-    name: 'medium',
-  };
+        name: 'medium',
+    };
 }

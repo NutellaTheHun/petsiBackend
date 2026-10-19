@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import {
     InventoryItem,
@@ -18,8 +18,10 @@ import { InventoryItemValidatorIdentity } from './identities/inventory-item.vali
 import { InventoryItemSizeValidator } from './inventory-item-size.validator';
 
 @Injectable()
-export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, InventoryItemValidatorIdentity> {
-
+export class InventoryItemValidator extends ValidatorBase<
+    InventoryItemEntity,
+    InventoryItemValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryItem)
         private readonly repo: Repository<InventoryItem>,
@@ -33,13 +35,17 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         @InjectRepository(InventoryItemVendor)
         private readonly vendorRepo: Repository<InventoryItemVendor>,
 
-        logger: AppLogger,
+        @InjectRepository(InventoryItemSize)
+        private readonly sizeRepo: Repository<InventoryItemSize>,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'InventoryItem', requestContextService, logger);
+        super(repo, 'InventoryItem', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryItemValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -49,7 +55,10 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
@@ -72,6 +81,16 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         }
 
         if (identity.sizes && identity.sizes?.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.sizes,
+                id,
+                this.sizeRepo,
+                'inventoryItem',
+                this.requestContextService.get<number>('tenantId'),
+                'sizes',
+                errorMap,
+            );
+
             for (const size of identity.sizes) {
                 await this.itemSizeValidator.validateNestedIdentity(
                     'sizes',
@@ -84,15 +103,17 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateInventoryItemDto | UpdateInventoryItemDto, id: number | string): Promise<InventoryItemValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateInventoryItemDto | UpdateInventoryItemDto,
+        _id: number | string,
+    ): Promise<InventoryItemValidatorIdentity> {
         const sizeIdentities: InventoryItemSizeValidatorIdentity[] = [];
         if (dto.sizes && dto.sizes.length) {
             for (const size of dto.sizes) {
                 const sizeId = 'id' in size ? size.id : size.createId;
-                sizeIdentities.push(await this.itemSizeValidator.resolveIdentity(
-                    size,
-                    sizeId,
-                ));
+                sizeIdentities.push(
+                    await this.itemSizeValidator.resolveIdentity(size, sizeId),
+                );
             }
         }
 

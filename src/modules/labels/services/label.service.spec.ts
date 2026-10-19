@@ -67,7 +67,7 @@ describe('Label Service', () => {
         });
 
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
-        labelService = module.get(LabelService) as TestableLabelService;
+        labelService = module.get<TestableLabelService>(LabelService);
         dataSource = module.get(DataSource);
         labelRepo = module.get(getRepositoryToken(Label));
         labelTypeRepo = module.get(getRepositoryToken(LabelType));
@@ -75,17 +75,29 @@ describe('Label Service', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ labelTypes, categories, sizes, singleItems, fixedContainerItems, varContainerItems, labels } =
-            await testingUtil.seedLabels(P, tenant.id));
+        ({
+            labelTypes,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            labels,
+        } = await testingUtil.seedLabels(P, tenant.id));
 
         otherTenantLabel = await labelRepo.save({
             menuItem: singleItems[0],
@@ -96,7 +108,10 @@ describe('Label Service', () => {
     });
 
     afterAll(async () => {
-        await labelRepo.delete([...labels.map((l) => l.id), otherTenantLabel.id]);
+        await labelRepo.delete([
+            ...labels.map((l) => l.id),
+            otherTenantLabel.id,
+        ]);
         await labelTypeRepo.delete(labelTypes.map((t) => t.id));
         await itemRepo.delete([
             ...fixedContainerItems.map((i) => i.id),
@@ -144,7 +159,9 @@ describe('Label Service', () => {
                 await labelService.updateEntityForTest(dto, label, manager);
             });
 
-            const reloaded = await labelRepo.findOneOrFail({ where: { id: label.id } });
+            const reloaded = await labelRepo.findOneOrFail({
+                where: { id: label.id },
+            });
             expect(reloaded.imageUrl).toBe(dto.imageUrl);
         });
 
@@ -231,7 +248,9 @@ describe('Label Service', () => {
             });
             await labelService.update(label.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await labelRepo.findOneOrFail({ where: { id: label.id } });
+            const row = await labelRepo.findOneOrFail({
+                where: { id: label.id },
+            });
             expect(row.imageUrl).toBe(`${P}-label-renamed.png`);
         });
     });
@@ -254,15 +273,15 @@ describe('Label Service', () => {
                     imageUrl: `${P}-tenant-stamped.png`,
                 }),
             );
-            expect((created as Label).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await labelRepo.delete(created.id);
             await labelTypeRepo.delete(freshType.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(labelService.findOne(otherTenantLabel.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                labelService.findOne(otherTenantLabel.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

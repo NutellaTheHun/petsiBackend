@@ -4,31 +4,31 @@ import { inventoryItemExample } from '../inventory-items/inventory-item.example'
 import { inventoryAreaCountExample } from './inventory-area-count.example';
 
 export function inventoryAreaItemExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(inventoryAreaItemExample.name);
-  return {
-    id: 1,
+    fnSet.add(inventoryAreaItemExample.name);
+    return {
+        id: 1,
 
-    parentInventoryCount: handleSetHas(
-      shallow,
-      fnSet,
-      inventoryAreaCountExample,
-      true,
-    ),
+        parentInventoryCount: handleSetHas(
+            shallow,
+            fnSet,
+            inventoryAreaCountExample,
+            true,
+        ),
 
-    countedInventoryItem: handleShallow(
-      shallow,
-      fnSet,
-      inventoryItemExample,
-      false,
-    ),
+        countedInventoryItem: handleShallow(
+            shallow,
+            fnSet,
+            inventoryItemExample,
+            false,
+        ),
 
-    amount: 1,
+        amount: 1,
 
-    countedItemSize: handleShallow(
-      shallow,
-      fnSet,
-      inventoryItemSizeExample,
-      false,
-    ),
-  };
+        countedItemSize: handleShallow(
+            shallow,
+            fnSet,
+            inventoryItemSizeExample,
+            false,
+        ),
+    };
 }

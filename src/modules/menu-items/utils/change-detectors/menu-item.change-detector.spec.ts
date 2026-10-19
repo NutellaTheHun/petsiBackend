@@ -8,7 +8,9 @@ import { MenuItemContainerItemChangeDetector } from './menu-item-container-item.
 import { MenuItemChangeDetector } from './menu-item.change-detector';
 
 describe('MenuItemChangeDetector', () => {
-    const detector = new MenuItemChangeDetector(new MenuItemContainerItemChangeDetector());
+    const detector = new MenuItemChangeDetector(
+        new MenuItemContainerItemChangeDetector(),
+    );
 
     const containerChild = (): MenuItemContainerItem =>
         ({
@@ -16,7 +18,7 @@ describe('MenuItemChangeDetector', () => {
             containedMenuItem: { id: 1, name: 'x' } as MenuItem,
             containedItemSize: { id: 2 } as MenuItemSize,
             quantity: 3,
-        } as MenuItemContainerItem);
+        }) as MenuItemContainerItem;
 
     const baseEntity = (): MenuItem =>
         ({
@@ -30,7 +32,7 @@ describe('MenuItemChangeDetector', () => {
             dynamicPropertyValues: [],
             dynamicProperties: [],
             computeDynamicProperties: () => {},
-        } as unknown as MenuItem);
+        }) as unknown as MenuItem;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -51,10 +53,16 @@ describe('MenuItemChangeDetector', () => {
 
     it('detects root field changes without nested changes', () => {
         const entity = baseEntity();
-        const dto = menuItemToUpdateDto(entity, { name: 'New', type: MENU_ITEM_TYPES.SINGLE });
+        const dto = menuItemToUpdateDto(entity, {
+            name: 'New',
+            type: MENU_ITEM_TYPES.SINGLE,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toMatchObject({ name: 'New', type: MENU_ITEM_TYPES.SINGLE });
+        expect(result.patch).toMatchObject({
+            name: 'New',
+            type: MENU_ITEM_TYPES.SINGLE,
+        });
         expect(result.patch.containerMenuItems).toBeUndefined();
     });
 
@@ -67,7 +75,11 @@ describe('MenuItemChangeDetector', () => {
     });
 
     it('includes create container rows in nested patch', () => {
-        const entity = { ...baseEntity(), containerMenuItems: [], computeDynamicProperties: () => {} } as unknown as MenuItem;
+        const entity = {
+            ...baseEntity(),
+            containerMenuItems: [],
+            computeDynamicProperties: () => {},
+        } as unknown as MenuItem;
         const createRow = {
             createId: 'c1',
             containedMenuItemId: 9,
@@ -75,7 +87,9 @@ describe('MenuItemChangeDetector', () => {
             quantity: 1,
             parentItemSizeId: 10,
         };
-        const dto = menuItemToUpdateDto(entity, { containerMenuItems: [createRow] });
+        const dto = menuItemToUpdateDto(entity, {
+            containerMenuItems: [createRow],
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch.containerMenuItems).toEqual([createRow]);

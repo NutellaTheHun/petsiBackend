@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
@@ -19,7 +18,6 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
         @InjectRepository(OrderContainerItem)
         repo: Repository<OrderContainerItem>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: OrderContainerItemValidator,
 
         private readonly containerItemComposer: OrderContainerItemComposer,
@@ -28,7 +26,6 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
             repo,
             'OrderContainerItemService',
             requestContextService,
-            logger,
             validator,
         );
     }
@@ -47,7 +44,7 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
         manager: EntityManager,
         entity: OrderContainerItem,
     ): Promise<void> {
-        await this.containerItemComposer.composeUpdate(dto, manager, entity)
+        await this.containerItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -67,10 +64,16 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
         query: SelectQueryBuilder<OrderContainerItem>,
         filters: Record<string, string[]>,
     ): void {
-        if (filters.parentOrderMenuItem && filters.parentOrderMenuItem.length > 0) {
-            query.andWhere('entity.parentOrderMenuItem IN (:...parentOrderMenuItems)', {
-                parentOrderMenuItems: filters.parentOrderMenuItem,
-            });
+        if (
+            filters.parentOrderMenuItem &&
+            filters.parentOrderMenuItem.length > 0
+        ) {
+            query.andWhere(
+                'entity.parentOrderMenuItem IN (:...parentOrderMenuItems)',
+                {
+                    parentOrderMenuItems: filters.parentOrderMenuItem,
+                },
+            );
         }
     }
 }

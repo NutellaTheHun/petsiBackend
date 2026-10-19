@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,14 +20,14 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import {
     ROLE_ADMIN,
@@ -51,7 +51,7 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
     constructor(
         templateService: TemplateMenuItemService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -73,7 +73,7 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateTemplateMenuItemDto })*/
     async create(
-        @Body() dto: CreateTemplateMenuItemDto,
+        @Body() _dto: CreateTemplateMenuItemDto,
     ): Promise<TemplateMenuItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -95,8 +95,8 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
     })
     @ApiBody({ type: UpdateTemplateMenuItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateTemplateMenuItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateTemplateMenuItemDto,
     ): Promise<TemplateMenuItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);
@@ -139,7 +139,12 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -159,7 +164,8 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
         name: 'search',
         required: false,
         type: String,
-        description: 'Search by menu item name (case-insensitive partial match)',
+        description:
+            'Search by menu item name (case-insensitive partial match)',
     })
     @ApiQuery({
         name: 'filters',

@@ -5,4 +5,4 @@ import { RequestContextService } from './RequestContextService';
     providers: [RequestContextService],
     exports: [RequestContextService],
 })
-export class RequestContextModule { }
+export class RequestContextModule {}

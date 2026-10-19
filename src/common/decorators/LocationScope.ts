@@ -5,8 +5,8 @@ export const LOCATION_SCOPE_KEY = 'locationScope';
 export type LocationParamSource = 'params' | 'query' | 'body';
 
 export interface LocationScopeMetadata {
-  source: LocationParamSource;
-  key: string;
+    source: LocationParamSource;
+    key: string;
 }
 
 /**
@@ -17,5 +17,7 @@ export interface LocationScopeMetadata {
  * request — a route param, a query param, or a DTO field on the body —
  * since that varies per route and isn't dictated by this decorator.
  */
-export const LocationScope = (source: LocationParamSource, key = 'locationId') =>
-  SetMetadata(LOCATION_SCOPE_KEY, { source, key } as LocationScopeMetadata);
+export const LocationScope = (
+    source: LocationParamSource,
+    key = 'locationId',
+) => SetMetadata(LOCATION_SCOPE_KEY, { source, key });

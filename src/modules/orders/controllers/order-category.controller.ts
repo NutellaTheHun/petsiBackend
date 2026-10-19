@@ -32,7 +32,7 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
@@ -51,7 +51,7 @@ export class OrderCategoryController extends ControllerBase<OrderCategoryEntity>
     constructor(
         orderTypeService: OrderCategoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -119,7 +119,12 @@ export class OrderCategoryController extends ControllerBase<OrderCategoryEntity>
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -166,7 +171,9 @@ export class OrderCategoryController extends ControllerBase<OrderCategoryEntity>
     @ApiOperation({ summary: 'Retrieves one Order Type' })
     @ApiOkResponse({ description: 'Order Type found', type: OrderCategory })
     @ApiNotFoundResponse({ description: 'Order Type not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderCategory> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<OrderCategory> {
         return super.findOne(id);
     }
 }

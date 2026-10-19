@@ -66,8 +66,11 @@ describe('Inventory Item Service', () => {
         const module: TestingModule = await getInventoryItemTestingModule({
             inventoryItemServiceClass: TestableInventoryItemService,
         });
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        itemService = module.get(InventoryItemService) as TestableInventoryItemService;
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        itemService =
+            module.get<TestableInventoryItemService>(InventoryItemService);
         dataSource = module.get(DataSource);
 
         itemRepo = module.get(getRepositoryToken(InventoryItem));
@@ -76,19 +79,22 @@ describe('Inventory Item Service', () => {
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
-            P,
-            tenant.id,
-        ));
+        ({ categories, vendors, packages, items, sizes } =
+            await testingUtil.seedSizes(P, tenant.id));
         otherTenantItem = await itemRepo.save({
             name: `${P}-other-tenant-item`,
             tenantId: otherTenant.id,
@@ -144,17 +150,23 @@ describe('Inventory Item Service', () => {
                 where: { id: item.id },
                 relations: ['sizes', 'category', 'vendor', 'sizes.package'],
             });
-            const dto = inventoryItemToUpdateDto(loaded, { name: `${P}-lifecycle-item-updated` });
+            const dto = inventoryItemToUpdateDto(loaded, {
+                name: `${P}-lifecycle-item-updated`,
+            });
             await dataSource.transaction(async (manager) => {
                 await itemService.updateEntityForTest(dto, loaded, manager);
             });
-            const reloaded = await itemRepo.findOneOrFail({ where: { id: item.id } });
+            const reloaded = await itemRepo.findOneOrFail({
+                where: { id: item.id },
+            });
             expect(reloaded.name).toBe(`${P}-lifecycle-item-updated`);
         });
 
         it('should remove item', async () => {
             await itemService.remove(item.id);
-            await expect(itemService.findOne(item.id)).rejects.toThrow(NotFoundException);
+            await expect(itemService.findOne(item.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -165,26 +177,32 @@ describe('Inventory Item Service', () => {
         });
         if (!item.sizes?.length) throw new Error('item with sizes not found');
 
-        const createSizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
-            createId: 'c2',
-            packageId: packages[3].id,
-            unit: 'oz',
-            measureAmount: 30,
-            cost: 8.25,
-        });
+        const createSizeDto = plainToInstance(
+            NestedCreateInventoryItemSizeDto,
+            {
+                createId: 'c2',
+                packageId: packages[3].id,
+                unit: 'oz',
+                measureAmount: 30,
+                cost: 8.25,
+            },
+        );
 
         const dto = inventoryItemToUpdateDto(item, { sizes: [createSizeDto] });
 
         const sizeToUpdate = dto.sizes.pop();
         if (!sizeToUpdate) throw new Error('size to update not found');
         if ('createId' in sizeToUpdate) throw new Error('nested dto is create');
-        const updateSizeDto = plainToInstance(NestedUpdateInventoryItemSizeDto, {
-            id: sizeToUpdate.id,
-            cost: 15.5,
-            packageId: sizeToUpdate.packageId,
-            unit: sizeToUpdate.unit,
-            measureAmount: sizeToUpdate.measureAmount,
-        });
+        const updateSizeDto = plainToInstance(
+            NestedUpdateInventoryItemSizeDto,
+            {
+                id: sizeToUpdate.id,
+                cost: 15.5,
+                packageId: sizeToUpdate.packageId,
+                unit: sizeToUpdate.unit,
+                measureAmount: sizeToUpdate.measureAmount,
+            },
+        );
 
         dto.sizes.push(updateSizeDto);
 
@@ -207,7 +225,10 @@ describe('Inventory Item Service', () => {
 
     it('should find seeded food item in findAll search results', async () => {
         // P-prefixed food item names contain 'foodA', 'foodB', 'foodC'
-        const result = await itemService.findAll({ search: 'foodA', limit: 100 });
+        const result = await itemService.findAll({
+            search: 'foodA',
+            limit: 100,
+        });
         const found = result.items.find((i) => i.id === items[0].id);
         expect(found).toBeDefined();
     });
@@ -220,7 +241,11 @@ describe('Inventory Item Service', () => {
         });
         const found = result.items.find((i) => i.id === items[0].id);
         expect(found).toBeDefined();
-        expect(result.items.every((i) => i.category?.id === foodCat.id || !i.category)).toBe(true);
+        expect(
+            result.items.every(
+                (i) => i.category?.id === foodCat.id || !i.category,
+            ),
+        ).toBe(true);
     });
 
     it('should find seeded items filtered by vendor', async () => {
@@ -245,7 +270,11 @@ describe('Inventory Item Service', () => {
     });
 
     it('should find one item with relations', async () => {
-        const result = await itemService.findOne(items[0].id, ['category', 'vendor', 'sizes']);
+        const result = await itemService.findOne(items[0].id, [
+            'category',
+            'vendor',
+            'sizes',
+        ]);
         expect(result.id).toBe(items[0].id);
         expect(result.category).toBeDefined();
         expect(result.vendor).toBeDefined();
@@ -253,14 +282,19 @@ describe('Inventory Item Service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(itemService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(itemService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(InventoryItemService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                InventoryItemService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -285,10 +319,14 @@ describe('Inventory Item Service', () => {
                 relations: ['sizes', 'category', 'vendor', 'sizes.package'],
             });
             if (!item.sizes?.length) throw new Error('item sizes missing');
-            const dto = inventoryItemToUpdateDto(item, { name: `${P}-item-renamed` });
+            const dto = inventoryItemToUpdateDto(item, {
+                name: `${P}-item-renamed`,
+            });
             await itemService.update(item.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await itemRepo.findOneOrFail({ where: { id: item.id } });
+            const row = await itemRepo.findOneOrFail({
+                where: { id: item.id },
+            });
             expect(row.name).toBe(`${P}-item-renamed`);
         });
     });
@@ -307,9 +345,9 @@ describe('Inventory Item Service', () => {
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(itemService.findOne(otherTenantItem.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                itemService.findOne(otherTenantItem.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

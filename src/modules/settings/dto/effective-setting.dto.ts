@@ -18,7 +18,8 @@ export class EffectiveSettingDto {
     readonly value: SettingValue;
 
     @ApiProperty({
-        description: 'True if this value comes from a location-specific override rather than the tenant default.',
+        description:
+            'True if this value comes from a location-specific override rather than the tenant default.',
         example: false,
     })
     readonly isOverridden: boolean;

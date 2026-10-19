@@ -2,14 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { createValidationErrorPayload, ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
+import {
+    createValidationErrorPayload,
+    ValidationErrorMap,
+} from '../../../common/validation/validation-error';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeIngredientValidatorIdentity } from './identities/recipe-ingredient.validator.identity.interface';
@@ -17,7 +20,10 @@ import { RecipeValidatorIdentity } from './identities/recipe.validator.identity.
 import { RecipeIngredientValidator } from './recipe-ingredient.validator';
 
 @Injectable()
-export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidatorIdentity> {
+export class RecipeValidator extends ValidatorBase<
+    RecipeEntity,
+    RecipeValidatorIdentity
+> {
     constructor(
         @InjectRepository(Recipe)
         private readonly repo: Repository<Recipe>,
@@ -32,13 +38,17 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         @InjectRepository(RecipeSubCategory)
         private readonly recipeSubCategoryRepo: Repository<RecipeSubCategory>,
 
-        logger: AppLogger,
+        @InjectRepository(RecipeIngredient)
+        private readonly ingredientRepo: Repository<RecipeIngredient>,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'Recipe', requestContextService, logger);
+        super(repo, 'Recipe', requestContextService);
     }
 
-    protected async validateIdentity(identity: RecipeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: RecipeValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -48,11 +58,17 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
-        if (identity.batchResultQuantity !== undefined && identity.batchResultQuantity !== null) {
+        if (
+            identity.batchResultQuantity !== undefined &&
+            identity.batchResultQuantity !== null
+        ) {
             this.helper.enforcePositive(
                 identity.batchResultQuantity,
                 'batchResultQuantity',
@@ -69,7 +85,10 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.producedMenuItemId !== undefined && identity.producedMenuItemId !== null) {
+        if (
+            identity.producedMenuItemId !== undefined &&
+            identity.producedMenuItemId !== null
+        ) {
             await this.helper.enforceExists(
                 identity.producedMenuItemId,
                 this.menuItemRepo,
@@ -86,14 +105,20 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.servingSizeQuantity !== undefined && identity.servingSizeQuantity !== null) {
+        if (
+            identity.servingSizeQuantity !== undefined &&
+            identity.servingSizeQuantity !== null
+        ) {
             this.helper.enforcePositive(
                 identity.servingSizeQuantity,
                 'servingSizeQuantity',
                 errorMap,
             );
         }
-        if (identity.subCategoryId !== undefined && identity.subCategoryId !== null) {
+        if (
+            identity.subCategoryId !== undefined &&
+            identity.subCategoryId !== null
+        ) {
             await this.helper.enforceExists(
                 identity.subCategoryId,
                 this.recipeSubCategoryRepo,
@@ -103,7 +128,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         }
 
         if (identity.subCategoryId && !identity.categoryId) {
-            errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['subCategory']);
+            errorMap.addError('INVALID_REFERENCE', undefined, ['subCategory'], {
+                value: identity.subCategoryId,
+            });
         }
 
         if (identity.subCategoryId && identity.categoryId) {
@@ -134,10 +161,22 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         }
 
         if (identity.ingredients && identity.ingredients.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.ingredients,
+                id,
+                this.ingredientRepo,
+                'parentRecipe',
+                this.requestContextService.get<number>('tenantId'),
+                'ingredients',
+                errorMap,
+            );
 
             this.helper.enforceNoDuplicateElements(
                 identity.ingredients,
-                (ingredient) => ({ id: ingredient.id ?? ingredient.createId, identity: `${ingredient.ingredientInventoryItem}:${ingredient.ingredientRecipe}` }),
+                (ingredient) => ({
+                    id: ingredient.id ?? ingredient.createId,
+                    identity: `${ingredient.ingredientInventoryItem}:${ingredient.ingredientRecipe}`,
+                }),
                 'ingredients',
                 errorMap,
             );
@@ -145,8 +184,18 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             for (const ingredient of identity.ingredients) {
                 // An ingredient cannot be added to itself
                 if (ingredient.ingredientRecipe === id) {
-                    const errorPayload = createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']);
-                    errorMap.addChild('ingredients', new ValidationErrorMap(ingredient.id ?? ingredient.createId, [errorPayload]));
+                    const errorPayload = createValidationErrorPayload(
+                        'INCONSISTENT_STATE',
+                        undefined,
+                        ['ingredientRecipe'],
+                    );
+                    errorMap.addChild(
+                        'ingredients',
+                        new ValidationErrorMap(
+                            ingredient.id ?? ingredient.createId,
+                            [errorPayload],
+                        ),
+                    );
                 }
 
                 await this.ingredientValidator.validateNestedIdentity(
@@ -160,12 +209,23 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRecipeDto | UpdateRecipeDto, id: number | string): Promise<RecipeValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateRecipeDto | UpdateRecipeDto,
+        _id: number | string,
+    ): Promise<RecipeValidatorIdentity> {
         const ingredientIdentities: RecipeIngredientValidatorIdentity[] = [];
         if (dto.ingredients && dto.ingredients.length) {
             for (const ingredient of dto.ingredients) {
-                const ingredientId = ingredient instanceof NestedCreateRecipeIngredientDto ? ingredient.createId : ingredient.id;
-                ingredientIdentities.push(await this.ingredientValidator.resolveIdentity(ingredient, ingredientId));
+                const ingredientId =
+                    ingredient instanceof NestedCreateRecipeIngredientDto
+                        ? ingredient.createId
+                        : ingredient.id;
+                ingredientIdentities.push(
+                    await this.ingredientValidator.resolveIdentity(
+                        ingredient,
+                        ingredientId,
+                    ),
+                );
             }
         }
 

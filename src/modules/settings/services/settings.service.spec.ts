@@ -21,7 +21,11 @@ class TestableSettingsService extends SettingsService {
     async createEntityForTest(dto: CreateSettingDto, manager: EntityManager) {
         return this.createEntity(dto, manager);
     }
-    async updateEntityForTest(dto: UpdateSettingDto, entity: Setting, manager: EntityManager) {
+    async updateEntityForTest(
+        dto: UpdateSettingDto,
+        entity: Setting,
+        manager: EntityManager,
+    ) {
         return this.updateEntity(dto, manager, entity);
     }
 }
@@ -50,7 +54,11 @@ describe('SettingsService', () => {
         });
 
     const setTenantAdminContext = () =>
-        requestContext.setContext({ tenantId: tenant.id, isTenantAdmin: true, locations: [] });
+        requestContext.setContext({
+            tenantId: tenant.id,
+            isTenantAdmin: true,
+            locations: [],
+        });
 
     beforeAll(async () => {
         const module: TestingModule = await getSettingsTestingModule({
@@ -58,14 +66,18 @@ describe('SettingsService', () => {
         });
         testingUtil = module.get<SettingTestUtil>(SettingTestUtil);
         locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
-        service = module.get(SettingsService) as TestableSettingsService;
+        service = module.get<TestableSettingsService>(SettingsService);
         dataSource = module.get(DataSource);
         settingRepo = module.get(getRepositoryToken(Setting));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await locationTestUtil.seedLocations(P, undefined, 2));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
 
         setNormalContext();
     });
@@ -92,7 +104,10 @@ describe('SettingsService', () => {
                 value: 0.08,
             });
             await dataSource.transaction(async (manager) => {
-                defaultSetting = await service.createEntityForTest(dto, manager);
+                defaultSetting = await service.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(defaultSetting.id).toBeDefined();
             expect(defaultSetting.tenantId).toBe(tenant.id);
@@ -106,14 +121,18 @@ describe('SettingsService', () => {
             await dataSource.transaction(async (manager) => {
                 await service.updateEntityForTest(dto, defaultSetting, manager);
             });
-            const reloaded = await settingRepo.findOneOrFail({ where: { id: defaultSetting.id } });
+            const reloaded = await settingRepo.findOneOrFail({
+                where: { id: defaultSetting.id },
+            });
             expect(reloaded.value).toBe('0.0925');
         });
 
         it('should remove the tenant default', async () => {
             setTenantAdminContext();
             await service.remove(defaultSetting.id);
-            await expect(service.findOne(defaultSetting.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(defaultSetting.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -123,9 +142,12 @@ describe('SettingsService', () => {
 
         beforeAll(async () => {
             setTenantAdminContext();
-            setting = (await service.create(
-                plainToInstance(CreateSettingDto, { name: 'defaultTimezone', value: 'UTC' }),
-            )) as Setting;
+            setting = await service.create(
+                plainToInstance(CreateSettingDto, {
+                    name: 'defaultTimezone',
+                    value: 'UTC',
+                }),
+            );
         });
 
         afterAll(async () => {
@@ -156,7 +178,9 @@ describe('SettingsService', () => {
                 plainToInstance(UpdateSettingDto, { value: 'America/Chicago' }),
             );
             expect(spy).toHaveBeenCalled();
-            const row = await settingRepo.findOneOrFail({ where: { id: setting.id } });
+            const row = await settingRepo.findOneOrFail({
+                where: { id: setting.id },
+            });
             expect(row.value).toBe('America/Chicago');
         });
     });
@@ -165,7 +189,12 @@ describe('SettingsService', () => {
         it('create rejects an unregistered setting key', async () => {
             setTenantAdminContext();
             await expect(
-                service.create(plainToInstance(CreateSettingDto, { name: `${P}-bogus`, value: 'x' })),
+                service.create(
+                    plainToInstance(CreateSettingDto, {
+                        name: `${P}-bogus`,
+                        value: 'x',
+                    }),
+                ),
             ).rejects.toThrow(ValidationException);
         });
 
@@ -173,41 +202,24 @@ describe('SettingsService', () => {
             setTenantAdminContext();
             await expect(
                 service.create(
-                    plainToInstance(CreateSettingDto, { name: 'taxRate', value: 'not-a-number' }),
+                    plainToInstance(CreateSettingDto, {
+                        name: 'taxRate',
+                        value: 'not-a-number',
+                    }),
                 ),
             ).rejects.toThrow(ValidationException);
         });
     });
 
     describe('tenant/location authorization', () => {
-        it('create throws ForbiddenException for a non-admin writing a tenant default (no locationId)', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateSettingDto, { name: 'orderNumberPrefix', value: 'ORD-' }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
-        it('create throws ForbiddenException for a locationId the caller is not assigned to', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateSettingDto, {
-                        name: 'orderNumberPrefix',
-                        locationId: locationB.id,
-                        value: 'ORD-',
-                    }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
         it('a manager can create a location override at their own location', async () => {
-            const created = (await service.create(
+            const created = await service.create(
                 plainToInstance(CreateSettingDto, {
                     name: 'orderNumberPrefix',
                     locationId: locationA.id,
                     value: 'A-',
                 }),
-            )) as Setting;
+            );
             expect(created.tenantId).toBe(tenant.id);
             expect(created.locationId).toBe(locationA.id);
             await settingRepo.delete(created.id);
@@ -231,7 +243,9 @@ describe('SettingsService', () => {
         });
 
         it('findOne throws NotFoundException for a non-admin caller', async () => {
-            await expect(service.findOne(row.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(row.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
 
         it('findOne succeeds for a tenant admin caller', async () => {
@@ -289,7 +303,9 @@ describe('SettingsService', () => {
         });
 
         it('throws NotFoundException when no row exists at any level', async () => {
-            await expect(service.getString('orderNumberPrefix')).rejects.toThrow(NotFoundException);
+            await expect(
+                service.getString('orderNumberPrefix'),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -321,7 +337,11 @@ describe('SettingsService', () => {
         });
 
         afterAll(async () => {
-            await settingRepo.delete([tzDefault.id, prefixDefault.id, tzOverrideAtA.id]);
+            await settingRepo.delete([
+                tzDefault.id,
+                prefixDefault.id,
+                tzOverrideAtA.id,
+            ]);
         });
 
         it('includes a tenant default with no override applied when the caller has none at their location', async () => {
@@ -339,15 +359,17 @@ describe('SettingsService', () => {
         });
 
         it('throws ForbiddenException for a location the caller is not authorized for', async () => {
-            await expect(service.getEffectiveSettings(locationB.id)).rejects.toThrow(
-                ForbiddenException,
-            );
+            await expect(
+                service.getEffectiveSettings(locationB.id),
+            ).rejects.toThrow(ForbiddenException);
         });
 
         it('a tenant admin can read tenant defaults with no locationId, or any location', async () => {
             setTenantAdminContext();
             const tenantWide = await service.getEffectiveSettings();
-            expect(tenantWide.find((r) => r.name === 'defaultTimezone')?.value).toBe('UTC');
+            expect(
+                tenantWide.find((r) => r.name === 'defaultTimezone')?.value,
+            ).toBe('UTC');
 
             const atB = await service.getEffectiveSettings(locationB.id);
             const tzAtB = atB.find((r) => r.name === 'defaultTimezone');

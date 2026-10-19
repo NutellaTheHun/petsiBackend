@@ -23,11 +23,16 @@ describe('TenantFeatureController', () => {
     beforeAll(async () => {
         const module: TestingModule = await getFeatureFlagsTestingModule();
         controller = module.get(TenantFeatureController);
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
         tenantRepo = module.get(getRepositoryToken(Tenant));
         tenantFeatureRepo = module.get(getRepositoryToken(TenantFeature));
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         tenantFeature = await tenantFeatureRepo.save({
             tenantId: tenant.id,
             feature: 'ORDER_MANAGEMENT',
@@ -39,14 +44,19 @@ describe('TenantFeatureController', () => {
         await tenantRepo.delete(tenant.id);
     });
 
-    it('returns the caller tenant\'s enabled features when the caller is a tenant admin', async () => {
+    it("returns the caller tenant's enabled features when the caller is a tenant admin", async () => {
         requestContext.setContext({ tenantId: tenant.id, isTenantAdmin: true });
         const result = await controller.findEnabled();
         expect(result).toEqual(['ORDER_MANAGEMENT']);
     });
 
     it('rejects a non-tenant-admin caller', async () => {
-        requestContext.setContext({ tenantId: tenant.id, isTenantAdmin: false });
-        await expect(controller.findEnabled()).rejects.toThrow(ForbiddenException);
+        requestContext.setContext({
+            tenantId: tenant.id,
+            isTenantAdmin: false,
+        });
+        await expect(controller.findEnabled()).rejects.toThrow(
+            ForbiddenException,
+        );
     });
 });

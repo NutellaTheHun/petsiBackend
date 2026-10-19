@@ -23,7 +23,6 @@ describe('inventory area item controller', () => {
     let testingUtil: InventoryAreaTestUtil;
     let testCtx: DatabaseTestContext;
     let controller: InventoryAreaItemController;
-    let areaItemRepo: Repository<InventoryAreaItem>;
     let countRepo: Repository<InventoryAreaCount>;
     let areaRepo: Repository<InventoryArea>;
     let categoryRepo: Repository<InventoryItemCategory>;
@@ -48,7 +47,6 @@ describe('inventory area item controller', () => {
         controller = module.get<InventoryAreaItemController>(
             InventoryAreaItemController,
         );
-        areaItemRepo = module.get(getRepositoryToken(InventoryAreaItem));
         countRepo = module.get(getRepositoryToken(InventoryAreaCount));
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
@@ -56,9 +54,9 @@ describe('inventory area item controller', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
-        const requestContext = module.get(
+        const requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         const defaultLocation = await testingUtil.getDefaultLocation();
         requestContext.setContext({
@@ -67,8 +65,16 @@ describe('inventory area item controller', () => {
             locations: [],
         });
 
-        ({ areas, counts, categories, vendors, packages, items, sizes, areaItems } =
-            await testingUtil.seedItemCounts(P));
+        ({
+            areas,
+            counts,
+            categories,
+            vendors,
+            packages,
+            items,
+            sizes,
+            areaItems,
+        } = await testingUtil.seedItemCounts(P));
     });
 
     afterAll(async () => {

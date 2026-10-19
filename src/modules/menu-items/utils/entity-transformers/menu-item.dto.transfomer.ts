@@ -1,11 +1,14 @@
-import { plainToInstance } from "class-transformer";
-import { UpdateMenuItemDto } from "../../dto/menu-item/update-menu-item.dto";
-import { MenuItem } from "../../entities/menu-item.entity";
-import { menuItemContainerItemToNestedUpdateDto } from "./menu-item-container-item.dto.transfomer";
+import { plainToInstance } from 'class-transformer';
+import { UpdateMenuItemDto } from '../../dto/menu-item/update-menu-item.dto';
+import { MenuItem } from '../../entities/menu-item.entity';
+import { menuItemContainerItemToNestedUpdateDto } from './menu-item-container-item.dto.transfomer';
 
-export function menuItemToUpdateDto(menuItem: MenuItem, merge: Partial<UpdateMenuItemDto> = {}): UpdateMenuItemDto {
+export function menuItemToUpdateDto(
+    menuItem: MenuItem,
+    merge: Partial<UpdateMenuItemDto> = {},
+): UpdateMenuItemDto {
     const existingContainerItems =
-        menuItem.containerMenuItems?.map(ci =>
+        menuItem.containerMenuItems?.map((ci) =>
             menuItemContainerItemToNestedUpdateDto(ci),
         ) ?? [];
 
@@ -17,7 +20,7 @@ export function menuItemToUpdateDto(menuItem: MenuItem, merge: Partial<UpdateMen
         name: menuItem.name,
         type: menuItem.type,
         categoryId: menuItem.category?.id ?? null,
-        sizeIds: menuItem.sizes.map(size => size.id),
+        sizeIds: menuItem.sizes.map((size) => size.id),
         variableMaxAmount: menuItem.variableMaxAmount ?? null,
         ...merge,
         containerMenuItems: mergedContainerItems,

@@ -59,13 +59,15 @@ describe('order revision history (controller)', () => {
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(
+        requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         fixtureTenantId = await testingUtil.getDefaultTenantId();
         fixtureLocationId = await testingUtil.getDefaultLocationId();
@@ -75,8 +77,17 @@ describe('order revision history (controller)', () => {
             locations: [],
         });
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -87,7 +98,11 @@ describe('order revision history (controller)', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
         await module.close();
@@ -134,7 +149,9 @@ describe('order revision history (controller)', () => {
                 'orderedItems.containerOrderMenuItems.containedItemSize',
             ],
         });
-        const updateDto = orderToUpdateDto(row, { recipient: `${P}-revision-history-order-v2` });
+        const updateDto = orderToUpdateDto(row, {
+            recipient: `${P}-revision-history-order-v2`,
+        });
         await controller.updateOrderResponse(created.id, updateDto);
 
         const afterUpdate = await rhs.listRevisions('order', created.id);
@@ -227,9 +244,9 @@ describe('order revision history (controller)', () => {
             await expect(
                 controller.getOrderRevision(created.id, 1),
             ).rejects.toThrow(NotFoundException);
-            await expect(
-                controller.revertOrder(created.id, 1),
-            ).rejects.toThrow(NotFoundException);
+            await expect(controller.revertOrder(created.id, 1)).rejects.toThrow(
+                NotFoundException,
+            );
         } finally {
             await tenantRepo.delete(otherTenant.id);
             requestContext.setContext({
@@ -277,9 +294,9 @@ describe('order revision history (controller)', () => {
             await expect(
                 controller.getOrderRevision(created.id, 1),
             ).rejects.toThrow(NotFoundException);
-            await expect(
-                controller.revertOrder(created.id, 1),
-            ).rejects.toThrow(NotFoundException);
+            await expect(controller.revertOrder(created.id, 1)).rejects.toThrow(
+                NotFoundException,
+            );
         } finally {
             requestContext.setContext({
                 tenantId: fixtureTenantId,
@@ -289,4 +306,3 @@ describe('order revision history (controller)', () => {
         }
     });
 });
-

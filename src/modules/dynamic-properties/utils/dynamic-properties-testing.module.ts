@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
@@ -18,23 +17,35 @@ import { DynamicPropertyConfig } from '../entities/dynamic-property-config.entit
 import { DynamicPropertyConfigService } from '../services/dynamic-property-config.service';
 
 export async function getDynamicPropertiesTestingModule(opts?: {
-    dynamicPropertyConfigServiceClass?: new (...args: any[]) => DynamicPropertyConfigService;
+    dynamicPropertyConfigServiceClass?: new (
+        ...args: any[]
+    ) => DynamicPropertyConfigService;
 }): Promise<TestingModule> {
     return await Test.createTestingModule({
         imports: [
             ConfigModule.forRoot({ isGlobal: true }),
 
-            TypeORMPostgresTestingModule([DynamicPropertyConfig, MenuItemCategory, MenuItem]),
-            TypeOrmModule.forFeature([DynamicPropertyConfig, MenuItemCategory, MenuItem]),
+            TypeORMPostgresTestingModule([
+                DynamicPropertyConfig,
+                MenuItemCategory,
+                MenuItem,
+            ]),
+            TypeOrmModule.forFeature([
+                DynamicPropertyConfig,
+                MenuItemCategory,
+                MenuItem,
+            ]),
 
             DynamicPropertiesModule,
             MenuItemsModule,
 
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
-            AppLoggingModule,
             RequestContextModule,
         ],
 
@@ -45,7 +56,10 @@ export async function getDynamicPropertiesTestingModule(opts?: {
         .overrideProvider(RequestContextService)
         .useClass(TestRequestContextService)
         .overrideProvider(DynamicPropertyConfigService)
-        .useClass(opts?.dynamicPropertyConfigServiceClass || DynamicPropertyConfigService)
+        .useClass(
+            opts?.dynamicPropertyConfigServiceClass ||
+                DynamicPropertyConfigService,
+        )
         .overrideProvider(RevisionHistoryService)
         .useValue({
             appendRevision: jest.fn().mockResolvedValue({ id: 1 }),

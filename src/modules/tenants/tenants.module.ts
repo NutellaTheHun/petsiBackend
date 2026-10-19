@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { TenantBuilder } from './builders/tenant.builder';
 import { TenantController } from './controllers/tenant.controller';
@@ -15,11 +14,18 @@ import { TenantValidator } from './validators/tenant.validator';
     imports: [
         TypeOrmModule.forFeature([Tenant]),
         CacheModule.register(),
-        AppLoggingModule,
         RequestContextModule,
     ],
+    // TODO(host-role): TenantController is reachable by tenant admins; it must
+    // be guarded by a new host-level role. See the note on TenantController.
     controllers: [TenantController],
-    providers: [TenantService, TenantBuilder, TenantValidator, TenantTestUtil, TenantChangeDetector],
+    providers: [
+        TenantService,
+        TenantBuilder,
+        TenantValidator,
+        TenantTestUtil,
+        TenantChangeDetector,
+    ],
     exports: [TenantService, TenantTestUtil, TypeOrmModule],
 })
-export class TenantsModule { }
+export class TenantsModule {}

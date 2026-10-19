@@ -3,7 +3,6 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { DatabaseException } from '../../../common/exceptions/database-exception';
 import {
     createValidationErrorPayload,
     expectValidationErrorPayload,
@@ -61,12 +60,14 @@ describe('order controller', () => {
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         orderMenuItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
-        menuItemContainerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        menuItemContainerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
-        const requestContext = module.get(
+        const requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         const fixtureTenantId = await testingUtil.getDefaultTenantId();
         fixtureLocationId = await testingUtil.getDefaultLocationId();
@@ -76,8 +77,17 @@ describe('order controller', () => {
             locations: [],
         });
 
-        ({ categories, orders, singleItems, fixedContainerItems, varContainerItems, containerLines, orderMenuItems, menuItemCategories, menuItemSizes } =
-            await testingUtil.seedOrderMenuItems(P));
+        ({
+            categories,
+            orders,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+            orderMenuItems,
+            menuItemCategories,
+            menuItemSizes,
+        } = await testingUtil.seedOrderMenuItems(P));
     });
 
     afterAll(async () => {
@@ -85,7 +95,11 @@ describe('order controller', () => {
         await orderRepo.delete(orders.map((o) => o.id));
         await categoryRepo.delete(categories.map((c) => c.id));
         await menuItemContainerItemRepo.delete(containerLines.map((l) => l.id));
-        await menuItemRepo.delete([...singleItems, ...fixedContainerItems, ...varContainerItems].map((i) => i.id));
+        await menuItemRepo.delete(
+            [...singleItems, ...fixedContainerItems, ...varContainerItems].map(
+                (i) => i.id,
+            ),
+        );
         await menuItemSizeRepo.delete(menuItemSizes.map((s) => s.id));
         await menuItemCategoryRepo.delete(menuItemCategories.map((c) => c.id));
     });
@@ -98,14 +112,15 @@ describe('order controller', () => {
         await testCtx.executeCleanupFunctions();
     });
 
-    it('createOrderResponse throws ValidationException for invalid fulfillmentType', async () => {
+    it('createOrderResponse throws ValidationException for a delivery order missing its phone number', async () => {
         const category = categories[0];
         const singleMenuItem = singleItems[0];
 
         const dto = plainToInstance(CreateOrderDto, {
-            recipient: `${P}-invalid-fulfillment-type`,
+            recipient: `${P}-delivery-no-phone`,
             fulfillmentDate: new Date(),
-            fulfillmentType: 'invalid_type',
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 main st',
             categoryId: category.id,
             locationId: fixtureLocationId,
             orderedItems: [
@@ -127,20 +142,20 @@ describe('order controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, [
-                    'fulfillmentType',
+                createValidationErrorPayload('MISSING_PROPERTY', undefined, [
+                    'phoneNumber',
                 ]),
             );
         }
     });
 
-    it('updateOrderResponse surfaces missing entity via DatabaseException', async () => {
+    it('updateOrderResponse throws NotFoundException for a missing order', async () => {
         const dto = plainToInstance(UpdateOrderDto, {
             recipient: 'DoesNotMatter',
         });
         await expect(
             controller.updateOrderResponse(9_999_999, dto),
-        ).rejects.toThrow(DatabaseException);
+        ).rejects.toThrow(NotFoundException);
     });
 
     it('remove deletes a created order then findOne fails', async () => {
@@ -165,9 +180,9 @@ describe('order controller', () => {
             }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOneOrderResponse(created.id)).rejects.toThrow(
-            NotFoundException,
-        );
+        await expect(
+            controller.findOneOrderResponse(created.id),
+        ).rejects.toThrow(NotFoundException);
     });
 
     it('remove throws NotFoundException when id does not exist', async () => {

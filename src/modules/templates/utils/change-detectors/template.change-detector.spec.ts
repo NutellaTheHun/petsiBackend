@@ -7,7 +7,9 @@ import { TemplateMenuItemChangeDetector } from './template-menu-item.change-dete
 import { TemplateChangeDetector } from './template.change-detector';
 
 describe('TemplateChangeDetector', () => {
-    const detector = new TemplateChangeDetector(new TemplateMenuItemChangeDetector());
+    const detector = new TemplateChangeDetector(
+        new TemplateMenuItemChangeDetector(),
+    );
 
     const row = (id: number, name: string, pos: number): TemplateMenuItem =>
         ({
@@ -15,14 +17,14 @@ describe('TemplateChangeDetector', () => {
             displayName: name,
             tablePosIndex: pos,
             menuItem: { id: 100 + id } as MenuItem,
-        } as TemplateMenuItem);
+        }) as TemplateMenuItem;
 
     const baseEntity = (): Template =>
         ({
             id: 1,
             name: 'Breakfast',
             templateMenuItems: [row(10, 'Eggs', 0)],
-        } as Template);
+        }) as Template;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -49,7 +51,9 @@ describe('TemplateChangeDetector', () => {
             tablePosIndex: 0,
             menuItemId: 50,
         };
-        const dto = templateToUpdateDto(entity, { templateMenuItems: [createRow] });
+        const dto = templateToUpdateDto(entity, {
+            templateMenuItems: [createRow],
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch.templateMenuItems).toEqual([createRow]);
@@ -60,10 +64,16 @@ describe('TemplateChangeDetector', () => {
         const tm = row(10, 'Eggs', 0);
         const dto = {
             ...templateToUpdateDto(entity),
-            templateMenuItems: [templateMenuItemToNestedUpdateDto(tm, { displayName: 'Omelette' })],
+            templateMenuItems: [
+                templateMenuItemToNestedUpdateDto(tm, {
+                    displayName: 'Omelette',
+                }),
+            ],
         };
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch.templateMenuItems).toEqual([{ id: 10, displayName: 'Omelette' }]);
+        expect(result.patch.templateMenuItems).toEqual([
+            { id: 10, displayName: 'Omelette' },
+        ]);
     });
 });

@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
@@ -24,7 +28,9 @@ describe('menu item category validator', () => {
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        validator = module.get<MenuItemCategoryValidator>(MenuItemCategoryValidator);
+        validator = module.get<MenuItemCategoryValidator>(
+            MenuItemCategoryValidator,
+        );
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
 
         ({ categories } = await testingUtil.seedCategories(P));
@@ -43,17 +49,23 @@ describe('menu item category validator', () => {
     });
 
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateMenuItemCategoryDto = plainToInstance(CreateMenuItemCategoryDto, {
-            name: `${P}-new-category`,
-        });
+        const dto: CreateMenuItemCategoryDto = plainToInstance(
+            CreateMenuItemCategoryDto,
+            {
+                name: `${P}-new-category`,
+            },
+        );
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateMenuItemCategoryDto = plainToInstance(CreateMenuItemCategoryDto, {
-            name: categories[0].name,
-        });
+        const dto: CreateMenuItemCategoryDto = plainToInstance(
+            CreateMenuItemCategoryDto,
+            {
+                name: categories[0].name,
+            },
+        );
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
@@ -64,17 +76,23 @@ describe('menu item category validator', () => {
     });
 
     it('successfully validate update: no validation errors', async () => {
-        const dto: UpdateMenuItemCategoryDto = plainToInstance(UpdateMenuItemCategoryDto, {
-            name: `${P}-updated-name`,
-        });
+        const dto: UpdateMenuItemCategoryDto = plainToInstance(
+            UpdateMenuItemCategoryDto,
+            {
+                name: `${P}-updated-name`,
+            },
+        );
         const errors = await validator.validateDto(dto, categories[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const dto: UpdateMenuItemCategoryDto = plainToInstance(UpdateMenuItemCategoryDto, {
-            name: categories[1].name,
-        });
+        const dto: UpdateMenuItemCategoryDto = plainToInstance(
+            UpdateMenuItemCategoryDto,
+            {
+                name: categories[1].name,
+            },
+        );
         const errors = await validator.validateDto(dto, categories[0].id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(

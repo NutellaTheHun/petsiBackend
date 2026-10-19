@@ -64,31 +64,48 @@ describe('menu item container item service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
-            menuItemContainerItemServiceClass: TestableMenuItemContainerItemService,
+            menuItemContainerItemServiceClass:
+                TestableMenuItemContainerItemService,
         });
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         service = module.get<MenuItemContainerItemService>(
             MenuItemContainerItemService,
         ) as TestableMenuItemContainerItemService;
         dataSource = module.get(DataSource);
-        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        containerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, singleItems, fixedContainerItems, varContainerItems, sizes, containerLines } =
-            await testingUtil.seedContainerLines(P, tenant.id));
+        ({
+            categories,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            sizes,
+            containerLines,
+        } = await testingUtil.seedContainerLines(P, tenant.id));
 
-        const otherSeed = await testingUtil.seedContainerLines(`${P}-other`, otherTenant.id);
+        const otherSeed = await testingUtil.seedContainerLines(
+            `${P}-other`,
+            otherTenant.id,
+        );
         otherTenantCategories = otherSeed.categories;
         otherTenantSizes = otherSeed.sizes;
         otherTenantItems = [
@@ -155,20 +172,31 @@ describe('menu item container item service', () => {
         it('should update container item', async () => {
             const reloaded = await containerItemRepo.findOneOrFail({
                 where: { id: created.id },
-                relations: ['parentMenuItem', 'parentItemSize', 'containedMenuItem', 'containedItemSize'],
+                relations: [
+                    'parentMenuItem',
+                    'parentItemSize',
+                    'containedMenuItem',
+                    'containedItemSize',
+                ],
             });
-            const dto = menuItemContainerItemToUpdateDto(reloaded, { quantity: 10 });
+            const dto = menuItemContainerItemToUpdateDto(reloaded, {
+                quantity: 10,
+            });
             await dataSource.transaction(async (manager) => {
                 await service.updateEntityForTest(dto, reloaded, manager);
             });
-            const updated = await containerItemRepo.findOneOrFail({ where: { id: created.id } });
+            const updated = await containerItemRepo.findOneOrFail({
+                where: { id: created.id },
+            });
             expect(updated.quantity).toBe(10);
         });
 
         it('should remove container item', async () => {
             const result = await service.remove(created.id);
             expect(result).toBe(true);
-            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -191,7 +219,9 @@ describe('menu item container item service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('tenant scoping', () => {
@@ -206,14 +236,14 @@ describe('menu item container item service', () => {
                 quantity: 1,
             });
             const created = await service.create(dto);
-            expect((created as MenuItemContainerItem).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await containerItemRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(service.findOne(otherTenantContainerLine.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.findOne(otherTenantContainerLine.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

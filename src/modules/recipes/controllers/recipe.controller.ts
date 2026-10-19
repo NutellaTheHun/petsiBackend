@@ -32,7 +32,7 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
@@ -48,7 +48,7 @@ export class RecipeController extends ControllerBase<RecipeEntity> {
     constructor(
         recipeService: RecipeService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -113,7 +113,12 @@ export class RecipeController extends ControllerBase<RecipeEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -64,7 +64,8 @@ export class OrderTestingUtil {
      * plumb a tenantId through. Tests that actually exercise tenant scoping
      * (order-category.*.spec.ts) seed and pass their own explicit tenantId.
      */
-    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'order-testing-util-fixture-tenant';
+    private static readonly DEFAULT_TENANT_SUBDOMAIN =
+        'order-testing-util-fixture-tenant';
     private defaultTenantId?: number;
     public async getDefaultTenantId(): Promise<number> {
         if (this.defaultTenantId === undefined) {
@@ -109,7 +110,7 @@ export class OrderTestingUtil {
 
     // Order Category
     public async getTestOrderTypeEntities(
-        testContext: DatabaseTestContext,
+        _testContext: DatabaseTestContext,
     ): Promise<OrderCategory[]> {
         const names = getTestOrderCategoryNames();
         const results: OrderCategory[] = [];
@@ -133,10 +134,16 @@ export class OrderTestingUtil {
         }
         this.orderTypeInit = true;
 
-        testContext.addCleanupFunction(() => this.cleanupOrderCategoryTestDatabase());
+        testContext.addCleanupFunction(() =>
+            this.cleanupOrderCategoryTestDatabase(),
+        );
         const categories = await this.getTestOrderTypeEntities(testContext);
         for (const category of categories) {
-            if (await this.categoryRepo.findOne({ where: { name: category.name } })) {
+            if (
+                await this.categoryRepo.findOne({
+                    where: { name: category.name },
+                })
+            ) {
                 continue;
             }
             await this.categoryRepo.save(category);
@@ -172,7 +179,7 @@ export class OrderTestingUtil {
         let menuItemIdx = 0;
         let quantity = 1;
         let sizeIdx = 0;
-        let orderItemMax = 4;
+        const orderItemMax = 4;
         const results: OrderMenuItem[] = [];
 
         for (const order of orders) {
@@ -197,34 +204,48 @@ export class OrderTestingUtil {
 
         //Order Menu Item Container Items
         const containerMenuItems = await this.menuItemRepo.find({
-            relations: [
-                'sizes',
-            ],
+            relations: ['sizes'],
             where: { type: MENU_ITEM_TYPES.CONTAINER },
         });
 
         let containerItemIdx = 0;
 
         for (const order of orders) {
-            const containerMenuItem = containerMenuItems[containerItemIdx++ % containerMenuItems.length];
+            const containerMenuItem =
+                containerMenuItems[
+                    containerItemIdx++ % containerMenuItems.length
+                ];
 
-            const validContainerMenuItems = await this.menuItemContainerItemRepo.find({
-                where: { parentMenuItem: { id: containerMenuItem.id }, parentItemSize: { id: containerMenuItem.sizes[0].id } },
-                relations: ['containedMenuItem', 'containedItemSize', 'parentMenuItem', 'parentItemSize']
-            });
+            const validContainerMenuItems =
+                await this.menuItemContainerItemRepo.find({
+                    where: {
+                        parentMenuItem: { id: containerMenuItem.id },
+                        parentItemSize: { id: containerMenuItem.sizes[0].id },
+                    },
+                    relations: [
+                        'containedMenuItem',
+                        'containedItemSize',
+                        'parentMenuItem',
+                        'parentItemSize',
+                    ],
+                });
 
             if (containerMenuItem.variableMaxAmount) {
-                const containerOrderItem = ({
+                const containerOrderItem = {
                     parentOrder: order,
                     menuItem: containerMenuItem,
                     quantity: 1,
                     size: containerMenuItem.sizes[0],
                     tenantId: order.tenantId,
                     locationId: order.locationId,
-                    containerOrderMenuItems: [] as any,
-                });
-                for (const validItem of validContainerMenuItems) { // factor in container size with valid container menu items
-                    if (validItem.parentItemSize.id === containerMenuItem.sizes[0].id) {
+                    containerOrderMenuItems: [] as Record<string, unknown>[],
+                };
+                for (const validItem of validContainerMenuItems) {
+                    // factor in container size with valid container menu items
+                    if (
+                        validItem.parentItemSize.id ===
+                        containerMenuItem.sizes[0].id
+                    ) {
                         containerOrderItem.containerOrderMenuItems.push({
                             parentOrderMenuItem: containerOrderItem,
                             containedMenuItem: validItem.containedMenuItem,
@@ -234,22 +255,24 @@ export class OrderTestingUtil {
                             locationId: order.locationId,
                         });
                     }
-
                 }
-                results.push(containerOrderItem as OrderMenuItem);
-            }
-            else {
-                const containerOrderItem = ({
+                results.push(containerOrderItem as unknown as OrderMenuItem);
+            } else {
+                const containerOrderItem = {
                     parentOrder: order,
                     menuItem: containerMenuItem,
                     quantity: 1,
                     size: containerMenuItem.sizes[0],
                     tenantId: order.tenantId,
                     locationId: order.locationId,
-                    containerOrderMenuItems: [] as any,
-                });
-                for (const validItem of validContainerMenuItems) { // factor in container size with valid container menu items
-                    if (validItem.parentItemSize.id === containerMenuItem.sizes[0].id) {
+                    containerOrderMenuItems: [] as Record<string, unknown>[],
+                };
+                for (const validItem of validContainerMenuItems) {
+                    // factor in container size with valid container menu items
+                    if (
+                        validItem.parentItemSize.id ===
+                        containerMenuItem.sizes[0].id
+                    ) {
                         containerOrderItem.containerOrderMenuItems.push({
                             parentOrderMenuItem: containerOrderItem,
                             containedMenuItem: validItem.containedMenuItem,
@@ -260,7 +283,7 @@ export class OrderTestingUtil {
                         });
                     }
                 }
-                results.push(containerOrderItem as OrderMenuItem);
+                results.push(containerOrderItem as unknown as OrderMenuItem);
             }
         }
 
@@ -356,7 +379,7 @@ export class OrderTestingUtil {
                 tenantId,
                 locationId,
             } as RecurringOrderSchedule,
-        } as Order)
+        } as Order);
         return results;
     }
 
@@ -419,7 +442,10 @@ export class OrderTestingUtil {
      * (see `getDefaultTenantId`) — pass one explicitly when the test actually
      * exercises tenant scoping.
      */
-    public async seedCategories(P = '', tenantId?: number): Promise<{ categories: OrderCategory[] }> {
+    public async seedCategories(
+        P = '',
+        tenantId?: number,
+    ): Promise<{ categories: OrderCategory[] }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestOrderCategoryNames();
         const categories: OrderCategory[] = [];
@@ -446,8 +472,14 @@ export class OrderTestingUtil {
         varContainerItems: MenuItem[];
         containerLines: MenuItemContainerItem[];
     }> {
-        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
-            await this.menuItemTestUtil.seedContainerLines(P);
+        const {
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+        } = await this.menuItemTestUtil.seedContainerLines(P);
         return {
             menuItemCategories: categories,
             menuItemSizes: sizes,
@@ -473,7 +505,8 @@ export class OrderTestingUtil {
         orders: Order[];
     }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
-        const effectiveLocationId = locationId ?? (await this.getDefaultLocationId());
+        const effectiveLocationId =
+            locationId ?? (await this.getDefaultLocationId());
         const { categories } = await this.seedCategories(P, effectiveTenantId);
 
         const recipients = [
@@ -542,9 +575,19 @@ export class OrderTestingUtil {
         orderMenuItems: OrderMenuItem[];
         containerOrderMenuItems: OrderMenuItem[];
     }> {
-        const { categories, orders } = await this.seedOrders(P, tenantId, locationId);
-        const { menuItemCategories, menuItemSizes, singleItems, fixedContainerItems, varContainerItems, containerLines } =
-            await this.seedMenuItems(P);
+        const { categories, orders } = await this.seedOrders(
+            P,
+            tenantId,
+            locationId,
+        );
+        const {
+            menuItemCategories,
+            menuItemSizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            containerLines,
+        } = await this.seedMenuItems(P);
 
         const orderMenuItemRelations = [
             'menuItem',
@@ -600,7 +643,9 @@ export class OrderTestingUtil {
             } as OrderMenuItem);
 
             const relevantLines = containerLines.filter(
-                (l) => l.parentMenuItem.id === container.id && l.parentItemSize.id === size.id,
+                (l) =>
+                    l.parentMenuItem.id === container.id &&
+                    l.parentItemSize.id === size.id,
             );
             for (const line of relevantLines) {
                 await this.orderContainerItemRepo.save({
@@ -658,7 +703,9 @@ export class OrderTestingUtil {
         recurringOrderSchedule: RecurringOrderSchedule;
     }> {
         const seeded = await this.seedOrderMenuItems(P, tenantId, locationId);
-        const entityName = P ? `${P}-recurring-recipient` : 'recurring-recipient';
+        const entityName = P
+            ? `${P}-recurring-recipient`
+            : 'recurring-recipient';
         const effectiveTenantId = seeded.orders[0].tenantId;
         const effectiveLocationId = seeded.orders[0].locationId;
 

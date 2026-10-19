@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
@@ -19,18 +18,11 @@ export class OrderMenuItemService extends LocationScopedServiceBase<OrderMenuIte
         @InjectRepository(OrderMenuItem)
         repo: Repository<OrderMenuItem>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: OrderMenuItemValidator,
 
         private readonly menuItemComposer: OrderMenuItemComposer,
     ) {
-        super(
-            repo,
-            'OrderMenuItemService',
-            requestContextService,
-            logger,
-            validator,
-        );
+        super(repo, 'OrderMenuItemService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -47,7 +39,7 @@ export class OrderMenuItemService extends LocationScopedServiceBase<OrderMenuIte
         manager: EntityManager,
         entity: OrderMenuItem,
     ): Promise<void> {
-        await this.menuItemComposer.composeUpdate(dto, manager, entity)
+        await this.menuItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 

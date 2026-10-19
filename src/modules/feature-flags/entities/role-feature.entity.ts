@@ -5,7 +5,11 @@ import { CreateRoleFeatureDto } from '../dto/create-role-feature.dto';
 import { UpdateRoleFeatureDto } from '../dto/update-role-feature.dto';
 import { Feature } from '../utils/feature.registry';
 
-export type RoleFeatureEntity = EntityBase<RoleFeature, CreateRoleFeatureDto, UpdateRoleFeatureDto>;
+export type RoleFeatureEntity = EntityBase<
+    RoleFeature,
+    CreateRoleFeatureDto,
+    UpdateRoleFeatureDto
+>;
 
 /**
  * A sparse existence table: a row's presence means `roleId` grants

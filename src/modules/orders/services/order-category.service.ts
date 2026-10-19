@@ -2,63 +2,55 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import {
-  OrderCategory,
-  OrderCategoryEntity,
+    OrderCategory,
+    OrderCategoryEntity,
 } from '../entities/order-category.entity';
 import { OrderCategoryValidator } from '../validators/order-category.validator';
 
 @Injectable()
 export class OrderCategoryService extends TenantScopedServiceBase<OrderCategoryEntity> {
-  constructor(
-    @InjectRepository(OrderCategory)
-    repo: Repository<OrderCategory>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    validator: OrderCategoryValidator,
-  ) {
-    super(
-      repo,
-      'OrderCategoryService',
-      requestContextService,
-      logger,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateOrderCategoryDto,
-    manager: EntityManager,
-  ): Promise<OrderCategory> {
-    const result = manager.create(OrderCategory, {
-      name: dto.name,
-      tenantId: this.getTenantId(),
-    });
-    return await manager.save(result);
-  }
-
-  protected async updateEntity(
-    dto: UpdateOrderCategoryDto,
-    manager: EntityManager,
-    entity: OrderCategory,
-  ): Promise<void> {
-    if (dto.name !== undefined) {
-      entity.name = dto.name;
+    constructor(
+        @InjectRepository(OrderCategory)
+        repo: Repository<OrderCategory>,
+        requestContextService: RequestContextService,
+        validator: OrderCategoryValidator,
+    ) {
+        super(repo, 'OrderCategoryService', requestContextService, validator);
     }
-    await manager.save(entity);
-  }
 
-  protected applySortBy(
-    query: SelectQueryBuilder<OrderCategory>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'name') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
+    protected async createEntity(
+        dto: CreateOrderCategoryDto,
+        manager: EntityManager,
+    ): Promise<OrderCategory> {
+        const result = manager.create(OrderCategory, {
+            name: dto.name,
+            tenantId: this.getTenantId(),
+        });
+        return await manager.save(result);
     }
-  }
+
+    protected async updateEntity(
+        dto: UpdateOrderCategoryDto,
+        manager: EntityManager,
+        entity: OrderCategory,
+    ): Promise<void> {
+        if (dto.name !== undefined) {
+            entity.name = dto.name;
+        }
+        await manager.save(entity);
+    }
+
+    protected applySortBy(
+        query: SelectQueryBuilder<OrderCategory>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
 }

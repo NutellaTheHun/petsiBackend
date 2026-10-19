@@ -37,7 +37,6 @@ export class NestedCreateOrderMenuItemDto extends NestedCreateDto {
     @ApiProperty({ description: 'Amount being ordered.' })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({

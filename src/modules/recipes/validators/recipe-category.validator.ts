@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
@@ -12,24 +11,32 @@ import {
     RecipeCategory,
     RecipeCategoryEntity,
 } from '../entities/recipe-category.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeCategoryValidatorIdentity } from './identities/recipe-category.validator.identity.interface';
 import { RecipeSubCategoryValidatorIdentity } from './identities/recipe-sub-category.validator.identity.interface';
 import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
 @Injectable()
-export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity, RecipeCategoryValidatorIdentity> {
+export class RecipeCategoryValidator extends ValidatorBase<
+    RecipeCategoryEntity,
+    RecipeCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(RecipeCategory)
         private readonly repo: Repository<RecipeCategory>,
 
         private readonly subCategoryValidator: RecipeSubCategoryValidator,
 
-        logger: AppLogger,
+        @InjectRepository(RecipeSubCategory)
+        private readonly subCategoryRepo: Repository<RecipeSubCategory>,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'RecipeCategory', requestContextService, logger);
+        super(repo, 'RecipeCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: RecipeCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: RecipeCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -39,15 +46,30 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         if (identity.subCategories && identity.subCategories.length) {
+            await this.helper.enforceNestedOwnership(
+                identity.subCategories,
+                id,
+                this.subCategoryRepo,
+                'parentCategory',
+                this.requestContextService.get<number>('tenantId'),
+                'subCategories',
+                errorMap,
+            );
 
             this.helper.enforceNoDuplicateElements(
                 identity.subCategories,
-                (item) => ({ id: item.id ?? item.createId, identity: item.name ?? '' }),
+                (item) => ({
+                    id: item.id ?? item.createId,
+                    identity: item.name ?? '',
+                }),
                 'subCategories',
                 errorMap,
             );
@@ -64,15 +86,22 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRecipeCategoryDto | UpdateRecipeCategoryDto, id: number | string): Promise<RecipeCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateRecipeCategoryDto | UpdateRecipeCategoryDto,
+        id: number | string,
+    ): Promise<RecipeCategoryValidatorIdentity> {
         const subCategories: RecipeSubCategoryValidatorIdentity[] = [];
         if (dto.subCategories && dto.subCategories.length) {
             for (const subCategory of dto.subCategories) {
-                const subCategoryId = subCategory instanceof NestedCreateRecipeSubCategoryDto ? subCategory.createId : subCategory.id;
-                const resolved = await this.subCategoryValidator.resolveIdentity(
-                    subCategory,
-                    subCategoryId,
-                );
+                const subCategoryId =
+                    subCategory instanceof NestedCreateRecipeSubCategoryDto
+                        ? subCategory.createId
+                        : subCategory.id;
+                const resolved =
+                    await this.subCategoryValidator.resolveIdentity(
+                        subCategory,
+                        subCategoryId,
+                    );
                 if (
                     dto instanceof UpdateRecipeCategoryDto &&
                     subCategory instanceof NestedCreateRecipeSubCategoryDto
@@ -89,6 +118,6 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         return {
             name: dto.name,
             subCategories: subCategories,
-        } as RecipeCategoryValidatorIdentity;
+        };
     }
 }

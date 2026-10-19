@@ -29,3 +29,5 @@ Key relationships:
 - **`Order`/`OrderMenuItem`/`OrderContainerItem`/`RecurringOrderSchedule` are all `LocationScopedServiceBase`.** `Order` stamps `tenantId`/`locationId` from `this.getTenantId()`/`dto.locationId` in `createEntity`; every nested composer (`OrderMenuItemComposer`, `OrderContainerItemComposer`, `RecurringOrderScheduleComposer`) receives them via `context.tenantId`/`context.locationId` threaded down from the just-saved parent, never re-derived from `RequestContextService`. `OrderRecurrenceService.cloneTemplateToOccurence` and `OrderService.applyOrderSnapshotV1` follow the same rule, copying from the template/reverting order since both run without (or bypassing) request context.
 
 ## Gotchas
+
+2026-10-16 — `@IsDate()` on a DTO field without `@Type(() => Date)` rejects every JSON request (it receives a string), so order create/update never reached the validator over HTTP — every `@IsDate()` field needs `@Type(() => Date)`. The recurring-schedule `startDate`/`endDate` fields combine `@IsDate` and `@IsDateString` and are still affected.

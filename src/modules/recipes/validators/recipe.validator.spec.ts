@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemCategory } from '../../inventory-items/entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../../inventory-items/entities/inventory-item-vendor.entity';
@@ -56,8 +60,15 @@ describe('recipe validator', () => {
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
 
-        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
-            await testingUtil.seedIngredients(P));
+        ({
+            categories,
+            subCategories,
+            recipes,
+            invCategories,
+            invVendors,
+            invItems,
+            ingredients,
+        } = await testingUtil.seedIngredients(P));
     });
 
     afterAll(async () => {
@@ -152,7 +163,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'subCategory',
+            ]),
         );
     });
 
@@ -174,7 +187,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'subCategory',
+            ]),
         );
     });
 
@@ -193,7 +208,10 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['batchResultQuantity', 'batchResultUnit']),
+            createValidationErrorPayload('CONFLICTING_VALUES', undefined, [
+                'batchResultQuantity',
+                'batchResultUnit',
+            ]),
         );
     });
 
@@ -212,7 +230,10 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['servingSizeQuantity', 'servingSizeUnit']),
+            createValidationErrorPayload('CONFLICTING_VALUES', undefined, [
+                'servingSizeQuantity',
+                'servingSizeUnit',
+            ]),
         );
     });
 
@@ -232,7 +253,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['servingSizeQuantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'servingSizeQuantity',
+            ]),
         );
     });
 
@@ -252,7 +275,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['batchResultQuantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'batchResultQuantity',
+            ]),
         );
     });
 
@@ -273,7 +298,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['salesPrice']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'salesPrice',
+            ]),
         );
     });
 
@@ -306,7 +333,11 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['ingredients']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['ingredients'],
+            ),
         );
     });
 
@@ -331,10 +362,11 @@ describe('recipe validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [
-                { prop: 'ingredients', id: 'c1' },
-            ],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            [{ prop: 'ingredients', id: 'c1' }],
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
@@ -361,7 +393,10 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
@@ -388,7 +423,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'ingredientRecipe',
+            ]),
         );
     });
 
@@ -415,7 +452,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
@@ -423,7 +462,14 @@ describe('recipe validator', () => {
     it('successfully validate update: no validation errors', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['producedMenuItem', 'ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe', 'category', 'subCategory'],
+            relations: [
+                'producedMenuItem',
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+                'category',
+                'subCategory',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -453,7 +499,11 @@ describe('recipe validator', () => {
     it('fail validate update: name already exists', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -472,7 +522,11 @@ describe('recipe validator', () => {
     it('fail validate update: requires category if assigning sub-category', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -485,14 +539,20 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'subCategory',
+            ]),
         );
     });
 
     it('fail validate update: invalid category / subcategory combination', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -505,14 +565,20 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'subCategory',
+            ]),
         );
     });
 
     it('fail validate update: batch result quantity cannot be 0', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -524,14 +590,20 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['batchResultQuantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'batchResultQuantity',
+            ]),
         );
     });
 
     it('fail validate update: sales price cannot be 0', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -543,14 +615,20 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['salesPrice']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'salesPrice',
+            ]),
         );
     });
 
     it('fail validate update: duplicate ingredients', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -575,14 +653,22 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['ingredients']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['ingredients'],
+            ),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: missing reference for ingredient', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -599,17 +685,22 @@ describe('recipe validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [
-                { prop: 'ingredients', id: 'c1' },
-            ],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            [{ prop: 'ingredients', id: 'c1' }],
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: cannot provide both an inventory item and a recipe as an ingredient', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -629,14 +720,21 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientInventoryItem',
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: quantity cannot be 0', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -655,14 +753,20 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'quantity',
+            ]),
         );
     });
 
     it('fail validate update: recipeIngredient isIngredient is false', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[0].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -681,14 +785,20 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
+            createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                'ingredientRecipe',
+            ]),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: recipe cannot add itself as an ingredient', async () => {
         const recipeToUpdate = await recipeRepo.findOneOrFail({
             where: { id: recipes[1].id },
-            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: [
+                'ingredients',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
         });
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
@@ -708,7 +818,9 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
+            createValidationErrorPayload('INCONSISTENT_STATE', undefined, [
+                'ingredientRecipe',
+            ]),
         );
     });
 });

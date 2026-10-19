@@ -52,21 +52,30 @@ describe('RoleFeature Service', () => {
         const module: TestingModule = await getFeatureFlagsTestingModule({
             roleFeatureServiceClass: TestableRoleFeatureService,
         });
-        roleFeatureService = module.get(RoleFeatureService) as TestableRoleFeatureService;
+        roleFeatureService =
+            module.get<TestableRoleFeatureService>(RoleFeatureService);
         dataSource = module.get(DataSource);
         roleFeatureRepo = module.get(getRepositoryToken(RoleFeature));
         roleRepo = module.get(getRepositoryToken(Role));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        role = await roleRepo.save({ name: `${P}-role`, tenantId: tenant.id } as Role);
+        role = await roleRepo.save({
+            name: `${P}-role`,
+            tenantId: tenant.id,
+        } as Role);
         otherTenantRole = await roleRepo.save({
             name: `${P}-other-tenant-role`,
             tenantId: otherTenant.id,
@@ -102,7 +111,10 @@ describe('RoleFeature Service', () => {
                 feature: 'ORDER_MANAGEMENT',
             });
             await dataSource.transaction(async (manager) => {
-                roleFeature = await roleFeatureService.createEntityForTest(dto, manager);
+                roleFeature = await roleFeatureService.createEntityForTest(
+                    dto,
+                    manager,
+                );
             });
             expect(roleFeature.id).toBeDefined();
             expect(roleFeature.roleId).toEqual(role.id);
@@ -113,24 +125,34 @@ describe('RoleFeature Service', () => {
         it('updateEntity is a no-op (grants are added/removed, not edited)', async () => {
             const dto = plainToInstance(UpdateRoleFeatureDto, {});
             await dataSource.transaction(async (manager) => {
-                await roleFeatureService.updateEntityForTest(dto, roleFeature, manager);
+                await roleFeatureService.updateEntityForTest(
+                    dto,
+                    roleFeature,
+                    manager,
+                );
             });
-            const result = await roleFeatureRepo.findOneOrFail({ where: { id: roleFeature.id } });
+            const result = await roleFeatureRepo.findOneOrFail({
+                where: { id: roleFeature.id },
+            });
             expect(result.feature).toEqual('ORDER_MANAGEMENT');
             expect(result.roleId).toEqual(role.id);
         });
 
         it('should remove role feature', async () => {
-            const deleteResult = await roleFeatureService.remove(roleFeature.id);
-            expect(deleteResult).toBe(true);
-            await expect(roleFeatureService.findOne(roleFeature.id)).rejects.toThrow(
-                NotFoundException,
+            const deleteResult = await roleFeatureService.remove(
+                roleFeature.id,
             );
+            expect(deleteResult).toBe(true);
+            await expect(
+                roleFeatureService.findOne(roleFeature.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(roleFeatureService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(roleFeatureService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('tenant scoping', () => {
@@ -141,14 +163,14 @@ describe('RoleFeature Service', () => {
                     feature: 'INVENTORY_MANAGEMENT',
                 }),
             );
-            expect((created as RoleFeature).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await roleFeatureRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(roleFeatureService.findOne(otherTenantRoleFeature.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                roleFeatureService.findOne(otherTenantRoleFeature.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

@@ -24,7 +24,12 @@ export class OrderContainerItemChangeDetector extends ChangeDetectorBase<
         };
         const changes: ChangeDetectorChange[] = [];
 
-        if (!this.unchanged(existingDto.containedMenuItemId, dto.containedMenuItemId)) {
+        if (
+            !this.unchanged(
+                existingDto.containedMenuItemId,
+                dto.containedMenuItemId,
+            )
+        ) {
             patch.containedMenuItemId = dto.containedMenuItemId;
             changes.push({
                 op: 'reference',
@@ -34,7 +39,12 @@ export class OrderContainerItemChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(existingDto.containedItemSizeId, dto.containedItemSizeId)) {
+        if (
+            !this.unchanged(
+                existingDto.containedItemSizeId,
+                dto.containedItemSizeId,
+            )
+        ) {
             patch.containedItemSizeId = dto.containedItemSizeId;
             changes.push({
                 op: 'reference',

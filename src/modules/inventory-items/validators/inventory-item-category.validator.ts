@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
@@ -14,18 +13,22 @@ import {
 import { InventoryItemCategoryValidatorIdentity } from './identities/inventory-item-category.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemCategoryEntity, InventoryItemCategoryValidatorIdentity> {
+export class InventoryItemCategoryValidator extends ValidatorBase<
+    InventoryItemCategoryEntity,
+    InventoryItemCategoryValidatorIdentity
+> {
     constructor(
         @InjectRepository(InventoryItemCategory)
         private readonly repo: Repository<InventoryItemCategory>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'InventoryItemCategory', requestContextService, logger);
+        super(repo, 'InventoryItemCategory', requestContextService);
     }
 
-    protected async validateIdentity(identity: InventoryItemCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: InventoryItemCategoryValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -35,15 +38,21 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
                 'name',
                 errorMap,
                 id,
-                { tenantId: this.requestContextService.get<number>('tenantId') },
+                {
+                    tenantId:
+                        this.requestContextService.get<number>('tenantId'),
+                },
             );
         }
 
         return errorMap;
     }
-    public async resolveIdentity(dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto, id: number | string): Promise<InventoryItemCategoryValidatorIdentity> {
+    public async resolveIdentity(
+        dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto,
+        _id: number | string,
+    ): Promise<InventoryItemCategoryValidatorIdentity> {
         return {
             name: dto.name,
-        } as InventoryItemCategoryValidatorIdentity;
+        };
     }
 }

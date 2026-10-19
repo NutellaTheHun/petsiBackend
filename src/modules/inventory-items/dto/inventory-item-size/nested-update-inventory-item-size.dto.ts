@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
+import {
+    IsIn,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+} from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
@@ -28,7 +34,6 @@ export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
         example: 10,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly measureAmount: number;
 
@@ -39,6 +44,5 @@ export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
     })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
-    @Min(0)
     readonly cost?: number | null;
 }

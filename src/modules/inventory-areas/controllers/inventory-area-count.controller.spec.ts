@@ -18,7 +18,6 @@ import { InventoryItemVendor } from '../../inventory-items/entities/inventory-it
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
-import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
@@ -31,7 +30,6 @@ describe('inventory area count controller', () => {
     let testingUtil: InventoryAreaTestUtil;
     let testCtx: DatabaseTestContext;
     let controller: InventoryAreaCountController;
-    let countRepo: Repository<InventoryAreaCount>;
     let areaRepo: Repository<InventoryArea>;
     let categoryRepo: Repository<InventoryItemCategory>;
     let vendorRepo: Repository<InventoryItemVendor>;
@@ -53,16 +51,15 @@ describe('inventory area count controller', () => {
         controller = module.get<InventoryAreaCountController>(
             InventoryAreaCountController,
         );
-        countRepo = module.get(getRepositoryToken(InventoryAreaCount));
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
-        const requestContext = module.get(
+        const requestContext = module.get<TestRequestContextService>(
             RequestContextService,
-        ) as TestRequestContextService;
+        );
 
         const defaultLocation = await testingUtil.getDefaultLocation();
         requestContext.setContext({
@@ -116,7 +113,7 @@ describe('inventory area count controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [{ prop: 'countedInventoryItems', id: 'c1' }],
-                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, [
+                createValidationErrorPayload('OUT_OF_RANGE', undefined, [
                     'amount',
                 ]),
             );

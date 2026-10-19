@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
-import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
@@ -18,8 +17,10 @@ import { Recipe } from '../entities/recipe.entity';
 import { RecipeIngredientValidatorIdentity } from './identities/recipe-ingredient.validator.identity.interface';
 
 @Injectable()
-export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredientEntity, RecipeIngredientValidatorIdentity> {
-
+export class RecipeIngredientValidator extends NestedValidatorBase<
+    RecipeIngredientEntity,
+    RecipeIngredientValidatorIdentity
+> {
     constructor(
         @InjectRepository(RecipeIngredient)
         private readonly repo: Repository<RecipeIngredient>,
@@ -29,14 +30,15 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
 
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
-
-        logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
-        super(repo, 'RecipeIngredient', requestContextService, logger);
+        super(repo, 'RecipeIngredient', requestContextService);
     }
 
-    protected async validateIdentity(identity: RecipeIngredientValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(
+        identity: RecipeIngredientValidatorIdentity,
+        id: number | string,
+    ): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.ingredientInventoryItem !== undefined) {
@@ -55,9 +57,16 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
                 'ingredientRecipe',
                 errorMap,
             );
-            const ingredientRecipe = await this.recipeRepo.findOne({ where: { id: identity.ingredientRecipe } });
+            const ingredientRecipe = await this.recipeRepo.findOne({
+                where: { id: identity.ingredientRecipe },
+            });
             if (ingredientRecipe && !ingredientRecipe.isIngredient) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']);
+                errorMap.addError(
+                    'INVALID_REFERENCE',
+                    undefined,
+                    ['ingredientRecipe'],
+                    { value: identity.ingredientRecipe },
+                );
             }
         }
 
@@ -88,14 +97,25 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
         return errorMap;
     }
 
-    public async resolveIdentity(dto: CreateRecipeIngredientDto | UpdateRecipeIngredientDto | NestedCreateRecipeIngredientDto | NestedUpdateRecipeIngredientDto, id: number | string): Promise<RecipeIngredientValidatorIdentity> {
+    public async resolveIdentity(
+        dto:
+            | CreateRecipeIngredientDto
+            | UpdateRecipeIngredientDto
+            | NestedCreateRecipeIngredientDto
+            | NestedUpdateRecipeIngredientDto,
+        id: number | string,
+    ): Promise<RecipeIngredientValidatorIdentity> {
         let parentRecipeId: number | undefined;
         if (dto instanceof CreateRecipeIngredientDto) {
             parentRecipeId = dto.parentRecipeId;
         } else if (dto instanceof NestedCreateRecipeIngredientDto) {
             parentRecipeId = undefined;
-        } else { // If an update, we need to get the parent recipe id from the current ingredient
-            const currentIngredient = await this.repo.findOne({ where: { id: id as number }, relations: ['parentRecipe'] });
+        } else {
+            // If an update, we need to get the parent recipe id from the current ingredient
+            const currentIngredient = await this.repo.findOne({
+                where: { id: id as number },
+                relations: ['parentRecipe'],
+            });
             if (!currentIngredient) {
                 throw new Error('Ingredient not found');
             }
@@ -103,8 +123,14 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
         }
 
         return {
-            id: dto instanceof NestedUpdateRecipeIngredientDto ? dto.id : undefined,
-            createId: dto instanceof NestedCreateRecipeIngredientDto ? dto.createId : undefined,
+            id:
+                dto instanceof NestedUpdateRecipeIngredientDto
+                    ? dto.id
+                    : undefined,
+            createId:
+                dto instanceof NestedCreateRecipeIngredientDto
+                    ? dto.createId
+                    : undefined,
             ingredientInventoryItem: dto.ingredientInventoryItemId,
             ingredientRecipe: dto.ingredientRecipeId,
             quantity: dto.quantity,

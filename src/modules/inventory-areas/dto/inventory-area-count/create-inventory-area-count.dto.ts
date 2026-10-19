@@ -1,11 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-    IsArray,
-    IsNotEmpty,
-    IsNumber,
-    ValidateNested
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryArea } from '../../entities/inventory-area.entity';
 import { NestedCreateInventoryAreaItemDto } from '../inventory-area-item/nested-create-inventory-area-item.dto';

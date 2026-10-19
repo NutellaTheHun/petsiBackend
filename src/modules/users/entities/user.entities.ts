@@ -22,7 +22,10 @@ export type UserEntity = EntityBase<User, CreateUserDto, UpdateUserDto>;
 @Entity({ name: 'app_users' })
 @Unique(['tenantId', 'name'])
 export class User {
-    @ApiProperty({ example: 1, description: 'The unique identifier of the user' })
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the user',
+    })
     @PrimaryGeneratedColumn()
     id: number;
 

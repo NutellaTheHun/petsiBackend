@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
@@ -17,31 +16,33 @@ import { UserModule } from '../user.module';
 import { UserChangeDetector } from './change-detectors/user.change-detector';
 
 export async function getUserTestingModule(opts?: {
-  userServiceClass?: new (...args: any[]) => UserService;
-  userChangeDetectorClass?: new (...args: any[]) => UserChangeDetector;
+    userServiceClass?: new (...args: any[]) => UserService;
+    userChangeDetectorClass?: new (...args: any[]) => UserChangeDetector;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([User, Tenant]),
-      TypeOrmModule.forFeature([User, Tenant]),
-      UserModule,
-      TenantsModule,
-      AppLoggingModule,
-      RequestContextModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
-    ],
-    controllers: [UserController],
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(UserService)
-    .useClass(opts?.userServiceClass || UserService)
-    .overrideProvider(UserChangeDetector)
-    .useClass(opts?.userChangeDetectorClass || UserChangeDetector)
-    .compile();
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([User, Tenant]),
+            TypeOrmModule.forFeature([User, Tenant]),
+            UserModule,
+            TenantsModule,
+            RequestContextModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+        ],
+        controllers: [UserController],
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(UserService)
+        .useClass(opts?.userServiceClass || UserService)
+        .overrideProvider(UserChangeDetector)
+        .useClass(opts?.userChangeDetectorClass || UserChangeDetector)
+        .compile();
 }

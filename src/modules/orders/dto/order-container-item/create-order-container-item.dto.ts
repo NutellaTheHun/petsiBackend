@@ -32,7 +32,6 @@ export class CreateOrderContainerItemDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 
     @ApiProperty({
@@ -52,7 +51,8 @@ export class CreateOrderContainerItemDto {
      * independently re-derived from request context.
      */
     @ApiProperty({
-        description: "The parent Order's tenantId. Populated internally, not client-supplied.",
+        description:
+            "The parent Order's tenantId. Populated internally, not client-supplied.",
         example: 1,
     })
     @IsNumber()
@@ -61,7 +61,8 @@ export class CreateOrderContainerItemDto {
     readonly tenantId: number;
 
     @ApiProperty({
-        description: "The parent Order's locationId. Populated internally, not client-supplied.",
+        description:
+            "The parent Order's locationId. Populated internally, not client-supplied.",
         example: 1,
     })
     @IsNumber()

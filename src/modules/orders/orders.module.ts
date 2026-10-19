@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { MenuItemContainerItem } from '../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
@@ -54,14 +53,13 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
             RecurringOrderSchedule,
             MenuItem,
             MenuItemSize,
-            MenuItemContainerItem
+            MenuItemContainerItem,
         ]),
         MenuItemsModule,
         RevisionHistoryModule,
         TenantsModule,
         LocationsModule,
         CacheModule.register(),
-        AppLoggingModule,
         RequestContextModule,
     ],
     controllers: [
@@ -110,4 +108,4 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
         OrderTestingUtil,
     ],
 })
-export class OrdersModule { }
+export class OrdersModule {}

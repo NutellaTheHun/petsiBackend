@@ -1,14 +1,14 @@
-export function userExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(userExample.name);
-  return {
-    id: 1,
+export function userExample(fnSet: Set<string>, _shallow: boolean) {
+    fnSet.add(userExample.name);
+    return {
+        id: 1,
 
-    createdAt: new Date(),
+        createdAt: new Date(),
 
-    updatedAt: new Date(),
+        updatedAt: new Date(),
 
-    name: 'jim',
+        name: 'jim',
 
-    email: 'jim@email.com',
-  };
+        email: 'jim@email.com',
+    };
 }

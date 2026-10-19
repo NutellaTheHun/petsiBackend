@@ -5,7 +5,8 @@ import { MenuItemCategoryChangeDetector } from './menu-item-category.change-dete
 describe('MenuItemCategoryChangeDetector', () => {
     const detector = new MenuItemCategoryChangeDetector();
 
-    const baseEntity = (): MenuItemCategory => ({ id: 1, name: 'Drinks' } as MenuItemCategory);
+    const baseEntity = (): MenuItemCategory =>
+        ({ id: 1, name: 'Drinks' }) as MenuItemCategory;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

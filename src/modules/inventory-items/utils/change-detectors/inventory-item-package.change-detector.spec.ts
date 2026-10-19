@@ -4,7 +4,8 @@ import { InventoryItemPackageChangeDetector } from './inventory-item-package.cha
 describe('InventoryItemPackageChangeDetector', () => {
     const detector = new InventoryItemPackageChangeDetector();
 
-    const baseEntity = (): InventoryItemPackage => ({ id: 1, name: 'Case' } as InventoryItemPackage);
+    const baseEntity = (): InventoryItemPackage =>
+        ({ id: 1, name: 'Case' }) as InventoryItemPackage;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

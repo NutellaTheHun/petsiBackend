@@ -30,9 +30,14 @@ describe('ReportDefinitionService', () => {
         service = module.get(ReportDefinitionService);
         repo = module.get(getRepositoryToken(ReportDefinition));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        testContextService = module.get(RequestContextService) as TestRequestContextService;
+        testContextService = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -100,12 +105,16 @@ describe('ReportDefinitionService', () => {
 
         it('should remove the definition; subsequent findOne throws NotFoundException', async () => {
             await service.remove(definition.id);
-            await expect(service.findOne(definition.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(definition.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
     it('findOne throws NotFoundException for sentinel ID 9_999_999', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('findAll visibility filtering', () => {

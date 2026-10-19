@@ -48,16 +48,19 @@ describe('inventory area controller', () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
-        controller = module.get<InventoryAreaController>(InventoryAreaController);
+        controller = module.get<InventoryAreaController>(
+            InventoryAreaController,
+        );
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [location, otherLocation] } = await locationTestUtil.seedLocations(
-            P,
-            undefined,
-            2,
-        ));
+        ({
+            tenant,
+            locations: [location, otherLocation],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
         requestContext.setContext(staffAtLocationContext());
 
         ({ areas } = await testingUtil.seedAreas(P, tenant.id, location.id));
@@ -138,7 +141,9 @@ describe('inventory area controller', () => {
         it('findAll cache does not leak across location contexts within the same tenant', async () => {
             requestContext.setContext(staffAtLocationContext());
             const ownResult = await controller.findAll(undefined, 100);
-            expect(ownResult.items.find((a) => a.id === areas[0].id)).toBeDefined();
+            expect(
+                ownResult.items.find((a) => a.id === areas[0].id),
+            ).toBeDefined();
             expect(
                 ownResult.items.find((a) => a.id === otherLocationAreas[0].id),
             ).toBeUndefined();
@@ -149,9 +154,13 @@ describe('inventory area controller', () => {
                 locations: [{ locationId: otherLocation.id, roles: ['staff'] }],
             });
             const otherResult = await controller.findAll(undefined, 100);
-            expect(otherResult.items.find((a) => a.id === areas[0].id)).toBeUndefined();
             expect(
-                otherResult.items.find((a) => a.id === otherLocationAreas[0].id),
+                otherResult.items.find((a) => a.id === areas[0].id),
+            ).toBeUndefined();
+            expect(
+                otherResult.items.find(
+                    (a) => a.id === otherLocationAreas[0].id,
+                ),
             ).toBeDefined();
         });
 
@@ -174,7 +183,9 @@ describe('inventory area controller', () => {
 
             requestContext.setContext(adminContext);
             const afterCreate = await controller.findAll(undefined, 100);
-            expect(afterCreate.items.find((a) => a.id === created.id)).toBeDefined();
+            expect(
+                afterCreate.items.find((a) => a.id === created.id),
+            ).toBeDefined();
 
             requestContext.setContext(staffAtLocationContext());
             await controller.remove(created.id);

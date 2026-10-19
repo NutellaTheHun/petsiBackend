@@ -30,7 +30,7 @@ export type RevisionHistoryRetentionPolicy = {
 
 @Injectable()
 export class RevisionHistoryRetentionPolicyService {
-    constructor(private readonly configService: ConfigService) { }
+    constructor(private readonly configService: ConfigService) {}
 
     /**
      * Returns the effective retention policy for a given entityType using:
@@ -73,15 +73,18 @@ export class RevisionHistoryRetentionPolicyService {
             enabled,
             dryRun,
             batchLimit: Math.max(1, batchLimit),
-            maxRevisionsExcludingCreate: Math.max(0, maxRevisionsExcludingCreate),
+            maxRevisionsExcludingCreate: Math.max(
+                0,
+                maxRevisionsExcludingCreate,
+            ),
             minAgeDays: Math.max(0, minAgeDays),
         };
     }
 
     private getBool(key: string, defaultValue: boolean): boolean {
-        const raw = this.configService.get<string | boolean | number | undefined>(
-            key,
-        );
+        const raw = this.configService.get<
+            string | boolean | number | undefined
+        >(key);
         if (raw === undefined || raw === null) return defaultValue;
         if (typeof raw === 'boolean') return raw;
         if (typeof raw === 'number') return raw !== 0;
@@ -98,4 +101,3 @@ export class RevisionHistoryRetentionPolicyService {
         return Number.isFinite(n) ? Math.trunc(n) : defaultValue;
     }
 }
-

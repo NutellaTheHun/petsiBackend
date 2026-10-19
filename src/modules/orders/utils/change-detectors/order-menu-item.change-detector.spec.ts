@@ -7,7 +7,9 @@ import { OrderContainerItemChangeDetector } from './order-container-item.change-
 import { OrderMenuItemChangeDetector } from './order-menu-item.change-detector';
 
 describe('OrderMenuItemChangeDetector', () => {
-    const detector = new OrderMenuItemChangeDetector(new OrderContainerItemChangeDetector());
+    const detector = new OrderMenuItemChangeDetector(
+        new OrderContainerItemChangeDetector(),
+    );
 
     const containerRow = (): OrderContainerItem =>
         ({
@@ -15,7 +17,7 @@ describe('OrderMenuItemChangeDetector', () => {
             containedMenuItem: { id: 8 } as MenuItem,
             containedItemSize: { id: 9 } as MenuItemSize,
             quantity: 1,
-        } as OrderContainerItem);
+        }) as OrderContainerItem;
 
     const baseEntity = (): OrderMenuItem =>
         ({
@@ -24,7 +26,7 @@ describe('OrderMenuItemChangeDetector', () => {
             size: { id: 2 } as MenuItemSize,
             quantity: 3,
             containerOrderMenuItems: [containerRow()],
-        } as OrderMenuItem);
+        }) as OrderMenuItem;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -36,10 +38,17 @@ describe('OrderMenuItemChangeDetector', () => {
 
     it('detects root field changes without nested changes', () => {
         const entity = baseEntity();
-        const dto = orderMenuItemToNestedUpdateDto(entity, { quantity: 10, menuItemId: 99 });
+        const dto = orderMenuItemToNestedUpdateDto(entity, {
+            quantity: 10,
+            menuItemId: 99,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toMatchObject({ id: 100, quantity: 10, menuItemId: 99 });
+        expect(result.patch).toMatchObject({
+            id: 100,
+            quantity: 10,
+            menuItemId: 99,
+        });
         expect(result.patch.containerOrderMenuItems).toBeUndefined();
     });
 
@@ -53,7 +62,9 @@ describe('OrderMenuItemChangeDetector', () => {
             parentMenuItemIdCtx: 1,
             parentMenuItemSizeIdCtx: 2,
         };
-        const dto = orderMenuItemToNestedUpdateDto(entity, { containerOrderMenuItems: [createRow] });
+        const dto = orderMenuItemToNestedUpdateDto(entity, {
+            containerOrderMenuItems: [createRow],
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch.containerOrderMenuItems).toEqual([createRow]);
@@ -63,11 +74,18 @@ describe('OrderMenuItemChangeDetector', () => {
         const entity = baseEntity();
         const dto = orderMenuItemToNestedUpdateDto(entity, {
             containerOrderMenuItems: [
-                { id: 50, containedMenuItemId: 8, containedItemSizeId: 9, quantity: 7 },
+                {
+                    id: 50,
+                    containedMenuItemId: 8,
+                    containedItemSizeId: 9,
+                    quantity: 7,
+                },
             ],
         });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch.containerOrderMenuItems).toEqual([{ id: 50, quantity: 7 }]);
+        expect(result.patch.containerOrderMenuItems).toEqual([
+            { id: 50, quantity: 7 },
+        ]);
     });
 });

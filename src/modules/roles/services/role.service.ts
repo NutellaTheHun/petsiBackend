@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -17,11 +16,10 @@ export class RoleService extends TenantScopedServiceBase<RoleEntity> {
         @InjectRepository(Role)
         repo: Repository<Role>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: RoleValidator,
         private readonly roleChangeDetector: RoleChangeDetector,
     ) {
-        super(repo, 'RoleService', requestContextService, logger, validator);
+        super(repo, 'RoleService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -56,7 +54,9 @@ export class RoleService extends TenantScopedServiceBase<RoleEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Role, UpdateRoleDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Role, UpdateRoleDto>
+        | undefined {
         return this.roleChangeDetector;
     }
 }

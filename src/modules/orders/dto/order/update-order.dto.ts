@@ -1,17 +1,23 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
     IsDate,
+    IsIn,
     IsInt,
     IsNotEmpty,
     IsNumber,
     IsOptional,
     IsPositive,
     IsString,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
+import {
+    OCCURRENCE_STATES,
+    OCCURRENCE_TYPES,
+} from '../../utils/occurence-types';
+import { FULFILLMENT_TYPES } from '../../utils/fulfillment-types';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
@@ -35,21 +41,25 @@ export class UpdateOrderDto {
         example: '2025-06-08T20:26:45.883Z',
         type: 'string',
     })
+    @Type(() => Date)
     @IsDate()
     @IsNotEmpty()
     readonly fulfillmentDate: Date;
 
     @ApiProperty({
+        enum: Object.values(FULFILLMENT_TYPES),
         description: "Method of Order's dispersal.",
         example: 'delivery',
         type: 'string',
     })
     @IsString()
     @IsNotEmpty()
+    @IsIn(Object.values(FULFILLMENT_TYPES))
     readonly fulfillmentType: string;
 
     @ApiProperty({
-        description: 'Name of who is picking up the order or reciving the delivery',
+        description:
+            'Name of who is picking up the order or reciving the delivery',
         example: 'Jane Doe',
         type: 'string',
         nullable: true,
@@ -119,7 +129,8 @@ export class UpdateOrderDto {
     readonly isWeekly: boolean;
 
     @ApiProperty({
-        description: 'If is weekly, is the day of the week the order is fulfilled',
+        description:
+            'If is weekly, is the day of the week the order is fulfilled',
         example: 'sunday',
         type: 'string',
         nullable: true,
@@ -173,12 +184,12 @@ export class UpdateOrderDto {
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateOrderMenuItemDto, item)
-                : plainToInstance(NestedUpdateOrderMenuItemDto, item)
+                : plainToInstance(NestedUpdateOrderMenuItemDto, item),
         );
     })
     readonly orderedItems?: (
@@ -187,6 +198,7 @@ export class UpdateOrderDto {
     )[];
 
     @ApiProperty({
+        enum: Object.values(OCCURRENCE_TYPES),
         example: 'TEMPLATE',
         description: 'The type of the occurence',
         type: 'string',
@@ -194,9 +206,11 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
+    @IsIn(Object.values(OCCURRENCE_TYPES))
     readonly occurrenceType?: string | null;
 
     @ApiProperty({
+        enum: Object.values(OCCURRENCE_STATES),
         example: 'GENERATED',
         description: 'The state of the occurence',
         type: 'string',
@@ -204,6 +218,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
+    @IsIn(Object.values(OCCURRENCE_STATES))
     readonly occurrenceState?: string | null;
 
     @ApiProperty({
@@ -218,17 +233,26 @@ export class UpdateOrderDto {
             timezone: 'America/New_York',
         },
         description: 'The schedule of the recurring order',
-        type: () => [NestedCreateRecurringOrderScheduleDto, NestedUpdateRecurringOrderScheduleDto],
+        type: () => [
+            NestedCreateRecurringOrderScheduleDto,
+            NestedUpdateRecurringOrderScheduleDto,
+        ],
         nullable: true,
     })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (value == null) return value; // handles null AND undefined
 
         if (typeof value === 'object' && 'createId' in value) {
-            return plainToInstance(NestedCreateRecurringOrderScheduleDto, value);
+            return plainToInstance(
+                NestedCreateRecurringOrderScheduleDto,
+                value,
+            );
         }
 
         return plainToInstance(NestedUpdateRecurringOrderScheduleDto, value);
     })
-    readonly recurrenceSchedule?: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto | null;
+    readonly recurrenceSchedule?:
+        | NestedCreateRecurringOrderScheduleDto
+        | NestedUpdateRecurringOrderScheduleDto
+        | null;
 }

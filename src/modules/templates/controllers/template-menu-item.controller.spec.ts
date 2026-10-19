@@ -51,9 +51,14 @@ describe('template menu item controller', () => {
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         itemRepo = module.get(getRepositoryToken(MenuItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         ({
@@ -70,7 +75,11 @@ describe('template menu item controller', () => {
     afterAll(async () => {
         await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
         await templateRepo.delete(templates.map((t) => t.id));
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));

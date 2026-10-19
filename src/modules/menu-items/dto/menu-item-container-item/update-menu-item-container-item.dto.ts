@@ -15,7 +15,8 @@ export class UpdateMenuItemContainerItemDto {
     readonly containedMenuItemId: EntityId<MenuItem>;
 
     @ApiProperty({
-        description: 'Id of a MenuItemSize entity. The size of the contained item',
+        description:
+            'Id of a MenuItemSize entity. The size of the contained item',
         example: 2,
     })
     @IsNumber()
@@ -28,7 +29,6 @@ export class UpdateMenuItemContainerItemDto {
         example: 3,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 }

@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { Tenant } from '../tenants/entities/tenant.entity';
 import { TenantsModule } from '../tenants/tenants.module';
@@ -18,11 +17,16 @@ import { RoleValidator } from './validators/role.validator';
         TypeOrmModule.forFeature([Role, Tenant]),
         TenantsModule,
         CacheModule.register(),
-        AppLoggingModule,
         RequestContextModule,
     ],
-    controllers: [RoleController,],
-    providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil, RoleChangeDetector],
+    controllers: [RoleController],
+    providers: [
+        RoleService,
+        RoleBuilder,
+        RoleValidator,
+        RoleTestUtil,
+        RoleChangeDetector,
+    ],
     exports: [RoleService, RoleTestUtil, TypeOrmModule],
 })
-export class RoleModule { }
+export class RoleModule {}

@@ -3,23 +3,23 @@ import { inventoryItemExample } from '../inventory-items/inventory-item.example'
 import { recipeExample } from './recipe.example';
 
 export function recipeIngredientExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(recipeIngredientExample.name);
-  return {
-    id: 1,
+    fnSet.add(recipeIngredientExample.name);
+    return {
+        id: 1,
 
-    parentRecipe: handleSetHas(shallow, fnSet, recipeExample, true),
+        parentRecipe: handleSetHas(shallow, fnSet, recipeExample, true),
 
-    ingredientInventoryItem: handleShallow(
-      shallow,
-      fnSet,
-      inventoryItemExample,
-      false,
-    ),
+        ingredientInventoryItem: handleShallow(
+            shallow,
+            fnSet,
+            inventoryItemExample,
+            false,
+        ),
 
-    ingredientRecipe: null,
+        ingredientRecipe: null,
 
-    quantity: 2,
+        quantity: 2,
 
-    unit: 'oz',
-  };
+        unit: 'oz',
+    };
 }

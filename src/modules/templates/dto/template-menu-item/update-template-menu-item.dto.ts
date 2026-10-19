@@ -20,11 +20,11 @@ export class UpdateTemplateMenuItemDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly tablePosIndex: number;
 
     @ApiProperty({
-        description: 'Id of the MenuItem entity being displayed on the Template.',
+        description:
+            'Id of the MenuItem entity being displayed on the Template.',
         example: 1,
     })
     @IsNumber()

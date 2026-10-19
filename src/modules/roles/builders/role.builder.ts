@@ -1,32 +1,31 @@
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
 
 export class RoleBuilder extends BuilderBase<Role> {
-  constructor(requestContextService: RequestContextService, logger: AppLogger) {
-    super(Role, 'RoleBuilder', requestContextService, logger);
-  }
-
-  protected createEntity(dto: CreateRoleDto): void {
-    if (dto.name !== undefined) {
-      this.roleName(dto.name);
+    constructor(requestContextService: RequestContextService) {
+        super(Role, 'RoleBuilder', requestContextService);
     }
-  }
 
-  protected updateEntity(dto: UpdateRoleDto): void {
-    if (dto.name !== undefined) {
-      this.roleName(dto.name);
+    protected createEntity(dto: CreateRoleDto): void {
+        if (dto.name !== undefined) {
+            this.roleName(dto.name);
+        }
     }
-  }
 
-  public roleName(name: string): this {
-    return this.setPropByVal('name', name);
-  }
+    protected updateEntity(dto: UpdateRoleDto): void {
+        if (dto.name !== undefined) {
+            this.roleName(dto.name);
+        }
+    }
 
-  public tenantId(tenantId: number): this {
-    return this.setPropByVal('tenantId', tenantId);
-  }
+    public roleName(name: string): this {
+        return this.setPropByVal('name', name);
+    }
+
+    public tenantId(tenantId: number): this {
+        return this.setPropByVal('tenantId', tenantId);
+    }
 }

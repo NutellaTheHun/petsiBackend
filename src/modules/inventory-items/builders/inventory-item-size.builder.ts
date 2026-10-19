@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppUnit } from '../../../common/units';
-import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
@@ -27,13 +26,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
         private readonly sizeRepo: Repository<InventoryItemSize>,
 
         requestContextService: RequestContextService,
-        logger: AppLogger,
     ) {
         super(
             InventoryItemSize,
             'InventoryItemSizeBuilder',
             requestContextService,
-            logger,
         );
     }
 
@@ -160,7 +157,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
 
     public packageById(id: number): this {
         return this.setPropById(
-            async (id: number) => await this.packageRepo.findOne({ where: { id } }),
+            async (id: number) =>
+                await this.packageRepo.findOne({ where: { id } }),
             'package',
             id,
         );
@@ -177,7 +175,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
 
     public inventoryItemById(id: number): this {
         return this.setPropById(
-            async (id: number) => await this.itemRepo.findOne({ where: { id } }),
+            async (id: number) =>
+                await this.itemRepo.findOne({ where: { id } }),
             'inventoryItem',
             id,
         );
@@ -185,7 +184,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
 
     public inventoryItemByName(name: string): this {
         return this.setPropByName(
-            async (name: string) => await this.itemRepo.findOne({ where: { name } }),
+            async (name: string) =>
+                await this.itemRepo.findOne({ where: { name } }),
             'inventoryItem',
             name,
         );

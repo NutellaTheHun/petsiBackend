@@ -3,6 +3,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -13,7 +14,11 @@ import { Tenant } from '../../tenants/entities/tenant.entity';
 import { CreateLocationDto } from '../dto/create-location.dto';
 import { UpdateLocationDto } from '../dto/update-location.dto';
 
-export type LocationEntity = EntityBase<Location, CreateLocationDto, UpdateLocationDto>;
+export type LocationEntity = EntityBase<
+    Location,
+    CreateLocationDto,
+    UpdateLocationDto
+>;
 
 /**
  * A physical site belonging to a {@link Tenant}. Operational data (orders,
@@ -37,7 +42,18 @@ export class Location {
         type: () => Tenant,
     })
     @ManyToOne(() => Tenant, { onDelete: 'CASCADE', nullable: false })
+    @JoinColumn({ name: 'tenantId' })
     tenant: Tenant;
+
+    /**
+     * Scalar FK for `tenant`, read by `TenantScopedServiceBase` scoping.
+     */
+    @ApiProperty({
+        example: 1,
+        description: 'The Tenant this entity belongs to',
+    })
+    @Column()
+    tenantId: number;
 
     @ApiProperty({ example: 'Downtown', description: 'Name of the location' })
     @Column()

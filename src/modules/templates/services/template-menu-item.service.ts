@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
@@ -21,7 +20,6 @@ export class TemplateMenuItemService extends TenantScopedServiceBase<TemplateMen
         @InjectRepository(TemplateMenuItem)
         repo: Repository<TemplateMenuItem>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: TemplateMenuItemValidator,
 
         private readonly templateItemComposer: TemplateMenuItemComposer,
@@ -31,7 +29,6 @@ export class TemplateMenuItemService extends TenantScopedServiceBase<TemplateMen
             repo,
             'TemplateMenuItemService',
             requestContextService,
-            logger,
             validator,
         );
     }
@@ -50,7 +47,7 @@ export class TemplateMenuItemService extends TenantScopedServiceBase<TemplateMen
         manager: EntityManager,
         entity: TemplateMenuItem,
     ): Promise<void> {
-        await this.templateItemComposer.composeUpdate(dto, manager, entity)
+        await this.templateItemComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -79,9 +76,6 @@ export class TemplateMenuItemService extends TenantScopedServiceBase<TemplateMen
     protected getChangeDetector():
         | ChangeDetectorBase<TemplateMenuItem, UpdateTemplateMenuItemDto>
         | undefined {
-        return this.templateMenuItemChangeDetector as unknown as ChangeDetectorBase<
-            TemplateMenuItem,
-            UpdateTemplateMenuItemDto
-        >;
+        return this.templateMenuItemChangeDetector;
     }
 }

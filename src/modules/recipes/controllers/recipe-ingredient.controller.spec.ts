@@ -56,13 +56,25 @@ describe('recipe ingredient controller', () => {
         invVendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         invItemRepo = module.get(getRepositoryToken(InventoryItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, subCategories, recipes, invCategories, invVendors, invItems, ingredients } =
-            await testingUtil.seedIngredients(P, tenant.id));
+        ({
+            categories,
+            subCategories,
+            recipes,
+            invCategories,
+            invVendors,
+            invItems,
+            ingredients,
+        } = await testingUtil.seedIngredients(P, tenant.id));
     });
 
     afterAll(async () => {

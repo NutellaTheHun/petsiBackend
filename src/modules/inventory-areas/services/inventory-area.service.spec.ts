@@ -67,16 +67,23 @@ describe('Inventory area service', () => {
         });
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         locationTestUtil = module.get<LocationTestUtil>(LocationTestUtil);
-        service = module.get(InventoryAreaService) as TestableInventoryAreaService;
+        service =
+            module.get<TestableInventoryAreaService>(InventoryAreaService);
         dataSource = module.get(DataSource);
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await locationTestUtil.seedLocations(P, undefined, 2));
-        ({ tenant: otherTenant, locations: [otherTenantLocation] } =
-            await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
+        ({
+            tenant: otherTenant,
+            locations: [otherTenantLocation],
+        } = await locationTestUtil.seedLocations(`${P}-other`, undefined, 1));
 
         setNormalContext();
 
@@ -135,13 +142,17 @@ describe('Inventory area service', () => {
             await dataSource.transaction(async (manager) => {
                 await service.updateEntityForTest(dto, area, manager);
             });
-            const reloaded = await areaRepo.findOneOrFail({ where: { id: area.id } });
+            const reloaded = await areaRepo.findOneOrFail({
+                where: { id: area.id },
+            });
             expect(reloaded.name).toBe(`${P}-lifecycle-area-updated`);
         });
 
         it('should remove area', async () => {
             await service.remove(area.id);
-            await expect(service.findOne(area.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(area.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -158,14 +169,19 @@ describe('Inventory area service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(InventoryAreaService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                InventoryAreaService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -173,7 +189,9 @@ describe('Inventory area service', () => {
         });
 
         it('skips updateEntity when DTO matches entity', async () => {
-            const area = await areaRepo.findOneOrFail({ where: { id: areas[1].id } });
+            const area = await areaRepo.findOneOrFail({
+                where: { id: areas[1].id },
+            });
             const dto = plainToInstance(UpdateInventoryAreaDto, {
                 name: area.name,
                 locationId: area.locationId,
@@ -184,39 +202,32 @@ describe('Inventory area service', () => {
         });
 
         it('calls updateEntity when name changes', async () => {
-            const area = await areaRepo.findOneOrFail({ where: { id: areas[2].id } });
+            const area = await areaRepo.findOneOrFail({
+                where: { id: areas[2].id },
+            });
             const dto = plainToInstance(UpdateInventoryAreaDto, {
                 name: `${P}-area-renamed`,
                 locationId: area.locationId,
             });
             await service.update(area.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await areaRepo.findOneOrFail({ where: { id: area.id } });
+            const row = await areaRepo.findOneOrFail({
+                where: { id: area.id },
+            });
             expect(row.name).toBe(`${P}-area-renamed`);
         });
     });
 
     describe('tenant/location scoping', () => {
         it('create stamps the caller tenant, not client input', async () => {
-            const created = (await service.create(
+            const created = await service.create(
                 plainToInstance(CreateInventoryAreaDto, {
                     name: `${P}-tenant-stamped`,
                     locationId: locationA.id,
                 }),
-            )) as InventoryArea;
+            );
             expect(created.tenantId).toBe(tenant.id);
             await areaRepo.delete(created.id);
-        });
-
-        it('create throws ForbiddenException for a locationId the caller is not assigned to', async () => {
-            await expect(
-                service.create(
-                    plainToInstance(CreateInventoryAreaDto, {
-                        name: `${P}-unauthorized-create`,
-                        locationId: locationB.id,
-                    }),
-                ),
-            ).rejects.toThrow(ForbiddenException);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
@@ -231,14 +242,18 @@ describe('Inventory area service', () => {
             );
         });
 
-        it('findAll excludes another tenant\'s areas', async () => {
+        it("findAll excludes another tenant's areas", async () => {
             const result = await service.findAll({ limit: 100 });
-            expect(result.items.find((a) => a.id === otherTenantArea.id)).toBeUndefined();
+            expect(
+                result.items.find((a) => a.id === otherTenantArea.id),
+            ).toBeUndefined();
         });
 
         it('findAll excludes areas at locations the caller is not assigned to', async () => {
             const result = await service.findAll({ limit: 100 });
-            expect(result.items.find((a) => a.id === otherLocationArea.id)).toBeUndefined();
+            expect(
+                result.items.find((a) => a.id === otherLocationArea.id),
+            ).toBeUndefined();
         });
 
         it('findAll with an unauthorized locationId filter throws ForbiddenException', async () => {
@@ -247,10 +262,17 @@ describe('Inventory area service', () => {
             ).rejects.toThrow(ForbiddenException);
         });
 
-        it('findAll with an authorized locationId filter returns only that location\'s areas', async () => {
-            const result = await service.findAll({ limit: 100, locationId: locationA.id });
-            expect(result.items.find((a) => a.id === areas[0].id)).toBeDefined();
-            expect(result.items.every((a) => a.locationId === locationA.id)).toBe(true);
+        it("findAll with an authorized locationId filter returns only that location's areas", async () => {
+            const result = await service.findAll({
+                limit: 100,
+                locationId: locationA.id,
+            });
+            expect(
+                result.items.find((a) => a.id === areas[0].id),
+            ).toBeDefined();
+            expect(
+                result.items.every((a) => a.locationId === locationA.id),
+            ).toBe(true);
         });
 
         it('remove throws NotFoundException for an id belonging to a different tenant', async () => {

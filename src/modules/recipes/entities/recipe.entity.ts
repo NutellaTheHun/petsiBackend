@@ -17,7 +17,6 @@ import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/
 import { recipeIngredientExample } from '../../../common/swagger/examples/recipes/recipe-ingredient.example';
 import { recipeSubCategoryExample } from '../../../common/swagger/examples/recipes/recipe-sub-category.example';
 import { AppUnit } from '../../../common/units';
-import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
@@ -213,8 +212,12 @@ export class Recipe {
         type: () => RecipeIngredient,
         isArray: true,
     })
-    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, {
-        cascade: true,
-    })
+    @OneToMany(
+        () => RecipeIngredient,
+        (ingredient) => ingredient.parentRecipe,
+        {
+            cascade: true,
+        },
+    )
     ingredients: RecipeIngredient[];
 }

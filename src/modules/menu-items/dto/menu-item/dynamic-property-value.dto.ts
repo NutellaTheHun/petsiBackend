@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    IsString,
+} from 'class-validator';
 
 export class DynamicPropertyValueDto {
     @ApiProperty({ description: 'ID of the DynamicPropertyConfig', example: 1 })

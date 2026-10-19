@@ -34,12 +34,19 @@ describe('menu item category controller', () => {
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        controller = module.get<MenuItemCategoryController>(MenuItemCategoryController);
+        controller = module.get<MenuItemCategoryController>(
+            MenuItemCategoryController,
+        );
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         ({ categories } = await testingUtil.seedCategories(P, tenant.id));
@@ -71,16 +78,22 @@ describe('menu item category controller', () => {
             expectValidationErrorPayload(
                 err.errors,
                 [],
-                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
             );
         }
     });
 
     it('remove deletes created category then findOne fails', async () => {
         const created = await controller.create(
-            plainToInstance(CreateMenuItemCategoryDto, { name: `${P}-to-remove` }),
+            plainToInstance(CreateMenuItemCategoryDto, {
+                name: `${P}-to-remove`,
+            }),
         );
         await controller.remove(created.id);
-        await expect(controller.findOne(created.id)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

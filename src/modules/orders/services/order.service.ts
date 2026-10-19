@@ -11,7 +11,6 @@ import {
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
 import { RevisionHistoryService } from '../../revision-history/revision-history.service';
@@ -53,7 +52,6 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         @InjectRepository(Order)
         repo: Repository<Order>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: OrderValidator,
 
         private readonly orderMenuItemComposer: OrderMenuItemComposer,
@@ -64,7 +62,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         private readonly orderChangeDetector: OrderChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
     ) {
-        super(repo, 'OrderService', requestContextService, logger, validator);
+        super(repo, 'OrderService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -74,7 +72,8 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         const occurrenceType = dto.occurrenceType as OccurrenceType | null;
         const recurrenceDate =
             dto.recurrenceDate ??
-            (dto.recurrenceSchedule && occurrenceType === OCCURRENCE_TYPES.TEMPLATE
+            (dto.recurrenceSchedule &&
+            occurrenceType === OCCURRENCE_TYPES.TEMPLATE
                 ? dto.fulfillmentDate
                 : null);
 
@@ -196,30 +195,28 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             }
         }
 
-        if (dto.locationId !== undefined) {
-            entity.locationId = dto.locationId;
-        }
-
         if (dto.occurrenceType !== undefined) {
             entity.occurrenceType = dto.occurrenceType as OccurrenceType | null;
         }
 
         if (dto.occurrenceState !== undefined) {
-            entity.occurrenceState = dto.occurrenceState as OccurrenceState | null;
+            entity.occurrenceState =
+                dto.occurrenceState as OccurrenceState | null;
         }
 
         if (dto.orderedItems !== undefined) {
             const previous = [...(entity.orderedItems ?? [])];
-            const newItems = await this.orderMenuItemComposer.composeManyNestedEntity(
-                dto.orderedItems,
-                manager,
-                previous,
-                {
-                    parentOrderId: entity.id,
-                    tenantId: entity.tenantId,
-                    locationId: entity.locationId,
-                },
-            );
+            const newItems =
+                await this.orderMenuItemComposer.composeManyNestedEntity(
+                    dto.orderedItems,
+                    manager,
+                    previous,
+                    {
+                        parentOrderId: entity.id,
+                        tenantId: entity.tenantId,
+                        locationId: entity.locationId,
+                    },
+                );
             const newIds = new Set(newItems.map((x) => x.id));
             for (const old of previous) {
                 if (!newIds.has(old.id)) {
@@ -251,6 +248,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
                             tenantId: entity.tenantId,
                             locationId: entity.locationId,
                         },
+                        entity.recurrenceSchedule,
                     );
             }
         }
@@ -275,9 +273,13 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
      * Same side effects as after a successful update (e.g. regenerate recurring occurrences).
      */
     async runAfterOrderPersist(orderId: number): Promise<void> {
-        const entity = await this.entityRepo.findOne({ where: { id: orderId } });
+        const entity = await this.entityRepo.findOne({
+            where: { id: orderId },
+        });
         if (entity?.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
-            await this.orderRecurrenceService.handleTemplateOrderUpdate(orderId);
+            await this.orderRecurrenceService.handleTemplateOrderUpdate(
+                orderId,
+            );
         }
     }
 
@@ -298,7 +300,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         await this.revisionHistoryService.appendRevision(manager, {
             entityType: REVISION_ENTITY_TYPES.ORDER,
             entityId: full.id,
-            changeLog: changeLog as unknown as Record<string, unknown>,
+            changeLog: changeLog,
             payload: payload as unknown as Record<string, unknown>,
         });
 
@@ -336,7 +338,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         await this.revisionHistoryService.appendRevision(manager, {
             entityType: REVISION_ENTITY_TYPES.ORDER,
             entityId: full.id,
-            changeLog: changeLog as unknown as Record<string, unknown>,
+            changeLog: changeLog,
             payload: payload as unknown as Record<string, unknown>,
         });
     }
@@ -474,7 +476,9 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         }
         const payload = row.payload;
         if (!isOrderSnapshotV1(payload)) {
-            throw new BadRequestException('Unsupported or invalid order snapshot payload');
+            throw new BadRequestException(
+                'Unsupported or invalid order snapshot payload',
+            );
         }
 
         await this.entityRepo.manager.transaction(async (manager) => {
@@ -494,7 +498,10 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             }
             await this.applyOrderSnapshotV1(manager, order, payload);
             const actor = getRevisionActor(this.requestContextService);
-            const changeLog = buildRevertedChangeLog(targetRevisionNumber, actor);
+            const changeLog = buildRevertedChangeLog(
+                targetRevisionNumber,
+                actor,
+            );
             const full = await manager.findOne(Order, {
                 where: { id: orderId },
                 relations: this.getSnapshotRelations(),
@@ -505,7 +512,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             await this.revisionHistoryService.appendRevision(manager, {
                 entityType: REVISION_ENTITY_TYPES.ORDER,
                 entityId: orderId,
-                changeLog: changeLog as unknown as Record<string, unknown>,
+                changeLog: changeLog,
                 payload: orderToSnapshotV1(full) as unknown as Record<
                     string,
                     unknown
@@ -525,7 +532,9 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         return result;
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<Order, UpdateOrderDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<Order, UpdateOrderDto>
+        | undefined {
         return this.orderChangeDetector;
     }
 
@@ -585,10 +594,14 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         dateBy?: string,
     ): void {
         if (dateBy === 'createdAt' || dateBy === 'fulfillmentDate') {
-            query.andWhere(`DATE(entity.${dateBy}) >= :startDate`, { startDate });
+            query.andWhere(`DATE(entity.${dateBy}) >= :startDate`, {
+                startDate,
+            });
 
             if (endDate) {
-                query.andWhere(`DATE(entity.${dateBy}) <= :endDate`, { endDate });
+                query.andWhere(`DATE(entity.${dateBy}) <= :endDate`, {
+                    endDate,
+                });
             }
         }
     }

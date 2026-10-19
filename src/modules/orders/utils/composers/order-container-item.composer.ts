@@ -20,7 +20,7 @@ export class OrderContainerItemComposer extends ComposerBase<OrderContainerItemE
         dto: CreateOrderContainerItemDto,
         manager: EntityManager,
     ): Promise<OrderContainerItem> {
-        const result = await manager.create(OrderContainerItem, {
+        const result = manager.create(OrderContainerItem, {
             parentOrderMenuItem: { id: dto.parentOrderMenuItemId },
             containedMenuItem: { id: dto.containedMenuItemId },
             containedItemSize: { id: dto.containedItemSizeId },

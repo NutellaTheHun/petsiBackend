@@ -1,11 +1,11 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-export const TypeORMPostgresTestingModule = (entities: any[]) =>
+export const TypeORMPostgresTestingModule = (_entities: any[]) =>
     TypeOrmModule.forRootAsync({
         imports: [ConfigModule],
         inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => ({
+        useFactory: (configService: ConfigService) => ({
             type: 'postgres',
             host: configService.get<string>('DB_HOST'),
             port: configService.get<number>('DB_PORT'),
@@ -15,6 +15,5 @@ export const TypeORMPostgresTestingModule = (entities: any[]) =>
             autoLoadEntities: true,
             synchronize: true,
             //logging: ['query', 'error'],
-
         }),
     });

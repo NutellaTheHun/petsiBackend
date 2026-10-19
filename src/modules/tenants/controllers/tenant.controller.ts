@@ -31,7 +31,7 @@ import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateTenantDto } from '../dto/create-tenant.dto';
@@ -39,6 +39,15 @@ import { UpdateTenantDto } from '../dto/update-tenant.dto';
 import { Tenant, TenantEntity } from '../entities/tenant.entity';
 import { TenantService } from '../services/tenant.service';
 
+/**
+ * TODO(host-role): this controller must be guarded by a new host-level role,
+ * not `ROLE_ADMIN`. Tenants are the host's customers — managing them is a
+ * host/operator concern, and no user inside a tenant (tenant admins included)
+ * should reach these routes. Today `@Roles(ROLE_ADMIN)` over plain
+ * `ServiceBase` lets any tenant's admin list, update or delete every tenant.
+ * Host-side provisioning currently goes through `TenantProvisioningService`
+ * (`src/scripts/db/provisionTenant.ts`), not this controller.
+ */
 @ApiTags('Tenant')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_ADMIN)
@@ -48,7 +57,7 @@ export class TenantController extends ControllerBase<TenantEntity> {
     constructor(
         tenantService: TenantService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -63,7 +72,10 @@ export class TenantController extends ControllerBase<TenantEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Tenant' })
-    @ApiCreatedResponse({ description: 'Tenant successfully created', type: Tenant })
+    @ApiCreatedResponse({
+        description: 'Tenant successfully created',
+        type: Tenant,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateTenantDto })
     async create(@Body() dto: CreateTenantDto): Promise<Tenant> {
@@ -110,7 +122,12 @@ export class TenantController extends ControllerBase<TenantEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

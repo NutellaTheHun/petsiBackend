@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { RoleFeatureController } from './controllers/role-feature.controller';
 import { TenantFeatureController } from './controllers/tenant-feature.controller';
@@ -14,7 +13,6 @@ import { TenantFeatureService } from './services/tenant-feature.service';
     imports: [
         TypeOrmModule.forFeature([TenantFeature, RoleFeature]),
         CacheModule.register(),
-        AppLoggingModule,
         RequestContextModule,
     ],
     controllers: [RoleFeatureController, TenantFeatureController],

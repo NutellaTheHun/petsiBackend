@@ -8,7 +8,9 @@ import { InventoryAreaItemChangeDetector } from './inventory-area-item.change-de
 import { InventoryAreaCountChangeDetector } from './inventory-area-count.change-detector';
 
 describe('InventoryAreaCountChangeDetector', () => {
-    const detector = new InventoryAreaCountChangeDetector(new InventoryAreaItemChangeDetector());
+    const detector = new InventoryAreaCountChangeDetector(
+        new InventoryAreaItemChangeDetector(),
+    );
 
     const areaItem = (id: number): InventoryAreaItem =>
         ({
@@ -16,14 +18,14 @@ describe('InventoryAreaCountChangeDetector', () => {
             countedInventoryItem: { id: 100 } as InventoryItem,
             amount: 2,
             countedItemSize: { id: 200 } as InventoryItemSize,
-        } as InventoryAreaItem);
+        }) as InventoryAreaItem;
 
     const baseEntity = (): InventoryAreaCount =>
         ({
             id: 1,
             inventoryArea: { id: 50 } as InventoryArea,
             countedInventoryItems: [areaItem(10)],
-        } as InventoryAreaCount);
+        }) as InventoryAreaCount;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -35,7 +37,9 @@ describe('InventoryAreaCountChangeDetector', () => {
 
     it('detects inventoryAreaId change', () => {
         const entity = baseEntity();
-        const dto = inventoryAreaCountToUpdateDto(entity, { inventoryAreaId: 51 });
+        const dto = inventoryAreaCountToUpdateDto(entity, {
+            inventoryAreaId: 51,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch).toMatchObject({ inventoryAreaId: 51 });
@@ -49,7 +53,9 @@ describe('InventoryAreaCountChangeDetector', () => {
             amount: 1,
             countedItemSizeId: 400,
         };
-        const dto = inventoryAreaCountToUpdateDto(entity, { countedInventoryItems: [createRow] });
+        const dto = inventoryAreaCountToUpdateDto(entity, {
+            countedInventoryItems: [createRow],
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch.countedInventoryItems).toEqual([createRow]);
@@ -59,11 +65,18 @@ describe('InventoryAreaCountChangeDetector', () => {
         const entity = baseEntity();
         const dto = inventoryAreaCountToUpdateDto(entity, {
             countedInventoryItems: [
-                { id: 10, countedInventoryItemId: 100, amount: 99, countedItemSizeId: 200 },
+                {
+                    id: 10,
+                    countedInventoryItemId: 100,
+                    amount: 99,
+                    countedItemSizeId: 200,
+                },
             ],
         });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch.countedInventoryItems).toEqual([{ id: 10, amount: 99 }]);
+        expect(result.patch.countedInventoryItems).toEqual([
+            { id: 10, amount: 99 },
+        ]);
     });
 });

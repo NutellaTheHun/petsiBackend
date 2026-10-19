@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
@@ -21,41 +20,54 @@ import { TemplateMenuItemChangeDetector } from './change-detectors/template-menu
 import { TemplateChangeDetector } from './change-detectors/template.change-detector';
 
 export async function getTemplateTestingModule(opts?: {
-  templateServiceClass?: new (...args: any[]) => TemplateService;
-  templateMenuItemServiceClass?: new (
-    ...args: any[]
-  ) => TemplateMenuItemService;
-  templateChangeDetectorClass?: new (...args: any[]) => TemplateChangeDetector;
-  templateMenuItemChangeDetectorClass?: new (...args: any[]) => TemplateMenuItemChangeDetector;
+    templateServiceClass?: new (...args: any[]) => TemplateService;
+    templateMenuItemServiceClass?: new (
+        ...args: any[]
+    ) => TemplateMenuItemService;
+    templateChangeDetectorClass?: new (
+        ...args: any[]
+    ) => TemplateChangeDetector;
+    templateMenuItemChangeDetectorClass?: new (
+        ...args: any[]
+    ) => TemplateMenuItemChangeDetector;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([Template, TemplateMenuItem, MenuItem]),
-      TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
-      TemplatesModule,
-      MenuItemsModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
-      AppLoggingModule,
-      RequestContextModule,
-    ],
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                Template,
+                TemplateMenuItem,
+                MenuItem,
+            ]),
+            TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
+            TemplatesModule,
+            MenuItemsModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+            RequestContextModule,
+        ],
 
-    controllers: [TemplateController, TemplateMenuItemController],
+        controllers: [TemplateController, TemplateMenuItemController],
 
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(TemplateService)
-    .useClass(opts?.templateServiceClass || TemplateService)
-    .overrideProvider(TemplateMenuItemService)
-    .useClass(opts?.templateMenuItemServiceClass || TemplateMenuItemService)
-    .overrideProvider(TemplateChangeDetector)
-    .useClass(opts?.templateChangeDetectorClass || TemplateChangeDetector)
-    .overrideProvider(TemplateMenuItemChangeDetector)
-    .useClass(opts?.templateMenuItemChangeDetectorClass || TemplateMenuItemChangeDetector)
-    .compile();
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(TemplateService)
+        .useClass(opts?.templateServiceClass || TemplateService)
+        .overrideProvider(TemplateMenuItemService)
+        .useClass(opts?.templateMenuItemServiceClass || TemplateMenuItemService)
+        .overrideProvider(TemplateChangeDetector)
+        .useClass(opts?.templateChangeDetectorClass || TemplateChangeDetector)
+        .overrideProvider(TemplateMenuItemChangeDetector)
+        .useClass(
+            opts?.templateMenuItemChangeDetectorClass ||
+                TemplateMenuItemChangeDetector,
+        )
+        .compile();
 }

@@ -16,7 +16,7 @@ describe('MenuItemContainerItemChangeDetector', () => {
             containedMenuItem: { id: 10 } as MenuItem,
             containedItemSize: { id: 20 } as MenuItemSize,
             quantity: 2,
-        } as MenuItemContainerItem);
+        }) as MenuItemContainerItem;
 
     it('returns empty patch for UpdateDto when dto matches entity', () => {
         const entity = baseEntity();
@@ -36,9 +36,16 @@ describe('MenuItemContainerItemChangeDetector', () => {
 
     it('detects nested update changes', () => {
         const entity = baseEntity();
-        const dto = menuItemContainerItemToNestedUpdateDto(entity, { quantity: 5, containedMenuItemId: 11 });
+        const dto = menuItemContainerItemToNestedUpdateDto(entity, {
+            quantity: 5,
+            containedMenuItemId: 11,
+        });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ id: 1, quantity: 5, containedMenuItemId: 11 });
+        expect(result.patch).toEqual({
+            id: 1,
+            quantity: 5,
+            containedMenuItemId: 11,
+        });
     });
 });

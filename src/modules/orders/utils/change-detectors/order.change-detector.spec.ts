@@ -13,7 +13,8 @@ import { OrderContainerItemChangeDetector } from './order-container-item.change-
 import { RecurringOrderScheduleChangeDetector } from './recurring-order-schedule.change-detector';
 import { OrderChangeDetector } from './order.change-detector';
 
-const RRULE_WEEKLY_MO = 'DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO';
+const RRULE_WEEKLY_MO =
+    'DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO';
 
 describe('OrderChangeDetector', () => {
     const detector = new OrderChangeDetector(
@@ -29,7 +30,7 @@ describe('OrderChangeDetector', () => {
             quantity: 1,
             containerOrderMenuItems: [],
             parentOrder: {} as Order,
-        } as unknown as OrderMenuItem);
+        }) as unknown as OrderMenuItem;
 
     const baseOrder = (): Order =>
         ({
@@ -48,7 +49,7 @@ describe('OrderChangeDetector', () => {
             occurrenceState: undefined,
             orderedItems: [lineItem()],
             recurrenceSchedule: null,
-        } as unknown as Order);
+        }) as unknown as Order;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseOrder();
@@ -69,7 +70,9 @@ describe('OrderChangeDetector', () => {
     it('patches full orderedItems list when a line changes (authoritative)', () => {
         const entity = baseOrder();
         const li = lineItem();
-        const expectedLine = orderMenuItemToNestedUpdateDto(li, { quantity: 5 });
+        const expectedLine = orderMenuItemToNestedUpdateDto(li, {
+            quantity: 5,
+        });
         const dto: UpdateOrderDto = {
             ...orderToUpdateDto(entity),
             orderedItems: [expectedLine],
@@ -101,7 +104,9 @@ describe('OrderChangeDetector', () => {
             startDate: new Date('2012-02-01T09:30:00.000Z'),
         } as RecurringOrderSchedule;
         const entity = { ...baseOrder(), recurrenceSchedule: ros };
-        const nested = recurringOrderScheduleToNestedUpdateDto(ros, { frequency: 'MONTHLY' });
+        const nested = recurringOrderScheduleToNestedUpdateDto(ros, {
+            frequency: 'MONTHLY',
+        });
         const dto = orderToUpdateDto(entity, { recurrenceSchedule: nested });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);

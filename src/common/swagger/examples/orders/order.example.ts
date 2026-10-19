@@ -3,38 +3,40 @@ import { orderCategoryExample } from './order-category.example';
 import { orderMenuItemExample } from './order-menu-item.example';
 
 export function orderExample(fnSet: Set<string>, shallow: boolean) {
-  fnSet.add(orderExample.name);
-  return {
-    id: 1,
+    fnSet.add(orderExample.name);
+    return {
+        id: 1,
 
-    category: handleSetHas(shallow, fnSet, orderCategoryExample, false),
+        category: handleSetHas(shallow, fnSet, orderCategoryExample, false),
 
-    recipient: 'alberto',
+        recipient: 'alberto',
 
-    createdAt: new Date(),
+        createdAt: new Date(),
 
-    updatedAt: new Date(),
+        updatedAt: new Date(),
 
-    fulfillmentDate: new Date(),
+        fulfillmentDate: new Date(),
 
-    fulfilllmentType: 'delivery',
+        fulfilllmentType: 'delivery',
 
-    fulfillmentContactName: 'not alberto',
+        fulfillmentContactName: 'not alberto',
 
-    deliveryAddress: '123 main st',
+        deliveryAddress: '123 main st',
 
-    phoneNumber: '555-155-2194',
+        phoneNumber: '555-155-2194',
 
-    email: 'email@email.com',
+        email: 'email@email.com',
 
-    note: 'instructions',
+        note: 'instructions',
 
-    isFrozen: false,
+        isFrozen: false,
 
-    isWeekly: true,
+        isWeekly: true,
 
-    weeklyFulfillment: 'monday',
+        weeklyFulfillment: 'monday',
 
-    orderedItems: [handleSetHas(shallow, fnSet, orderMenuItemExample, false)],
-  };
+        orderedItems: [
+            handleSetHas(shallow, fnSet, orderMenuItemExample, false),
+        ],
+    };
 }

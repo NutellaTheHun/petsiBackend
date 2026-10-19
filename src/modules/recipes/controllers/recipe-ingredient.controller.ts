@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -28,7 +28,7 @@ import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
@@ -47,7 +47,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
     constructor(
         ingredientService: RecipeIngredientService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -69,7 +69,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRecipeIngredientDto })*/
     async create(
-        @Body() dto: CreateRecipeIngredientDto,
+        @Body() _dto: CreateRecipeIngredientDto,
     ): Promise<RecipeIngredient> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -91,8 +91,8 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
     })
     @ApiBody({ type: UpdateRecipeIngredientDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateRecipeIngredientDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateRecipeIngredientDto,
     ): Promise<RecipeIngredient> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);
@@ -135,7 +135,12 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
@@ -24,20 +23,13 @@ export class InventoryItemService extends TenantScopedServiceBase<InventoryItemE
         @InjectRepository(InventoryItem)
         repo: Repository<InventoryItem>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         @Inject(forwardRef(() => InventoryItemValidator))
         validator: InventoryItemValidator,
 
         private readonly itemSizeComposer: InventoryItemSizeComposer,
         private readonly inventoryItemChangeDetector: InventoryItemChangeDetector,
     ) {
-        super(
-            repo,
-            'InventoryItemService',
-            requestContextService,
-            logger,
-            validator,
-        );
+        super(repo, 'InventoryItemService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -54,12 +46,13 @@ export class InventoryItemService extends TenantScopedServiceBase<InventoryItemE
         const savedResult = await manager.save(result);
 
         if (dto.sizes?.length) {
-            savedResult.sizes = await this.itemSizeComposer.composeManyNestedEntity(
-                dto.sizes,
-                manager,
-                [],
-                { inventoryItemId: savedResult.id },
-            );
+            savedResult.sizes =
+                await this.itemSizeComposer.composeManyNestedEntity(
+                    dto.sizes,
+                    manager,
+                    [],
+                    { inventoryItemId: savedResult.id },
+                );
             await manager.save(savedResult);
         }
 

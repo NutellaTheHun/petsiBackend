@@ -7,17 +7,19 @@ import { RecipeSubCategoryChangeDetector } from './recipe-sub-category.change-de
 import { RecipeCategoryChangeDetector } from './recipe-category.change-detector';
 
 describe('RecipeCategoryChangeDetector', () => {
-    const detector = new RecipeCategoryChangeDetector(new RecipeSubCategoryChangeDetector());
+    const detector = new RecipeCategoryChangeDetector(
+        new RecipeSubCategoryChangeDetector(),
+    );
 
     const sub = (id: number, name: string): RecipeSubCategory =>
-        ({ id, name } as RecipeSubCategory);
+        ({ id, name }) as RecipeSubCategory;
 
     const baseEntity = (): RecipeCategory =>
         ({
             id: 1,
             name: 'Desserts',
             subCategories: [sub(10, 'Cakes')],
-        } as RecipeCategory);
+        }) as RecipeCategory;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -40,10 +42,16 @@ describe('RecipeCategoryChangeDetector', () => {
         const subEnt = sub(10, 'Cakes');
         const dto: UpdateRecipeCategoryDto = {
             ...recipeCategoryToUpdateDto(entity),
-            subCategories: [recipeSubCategoryToNestedUpdateDto(subEnt, { name: 'Layer cakes' })],
+            subCategories: [
+                recipeSubCategoryToNestedUpdateDto(subEnt, {
+                    name: 'Layer cakes',
+                }),
+            ],
         };
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch.subCategories).toEqual([{ id: 10, name: 'Layer cakes' }]);
+        expect(result.patch.subCategories).toEqual([
+            { id: 10, name: 'Layer cakes' },
+        ]);
     });
 });

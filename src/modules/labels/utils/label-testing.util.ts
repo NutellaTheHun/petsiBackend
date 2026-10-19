@@ -29,7 +29,7 @@ export class LabelTestingUtil {
 
         @InjectRepository(Tenant)
         private readonly tenantRepo: Repository<Tenant>,
-    ) { }
+    ) {}
 
     /**
      * LabelType/Label now require a tenantId (NOT NULL). Most label-module
@@ -40,7 +40,8 @@ export class LabelTestingUtil {
      * plumb a tenantId through. Tests that actually exercise tenant scoping
      * (label*.service.spec.ts) seed and pass their own explicit tenantId.
      */
-    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'label-testing-util-fixture-tenant';
+    private static readonly DEFAULT_TENANT_SUBDOMAIN =
+        'label-testing-util-fixture-tenant';
     private defaultTenantId?: number;
     public async getDefaultTenantId(): Promise<number> {
         if (this.defaultTenantId === undefined) {
@@ -60,7 +61,7 @@ export class LabelTestingUtil {
 
     // Label Types
     public async getTestLabelTypeEntities(
-        testContext: DatabaseTestContext,
+        _testContext: DatabaseTestContext,
     ): Promise<LabelType[]> {
         const names = getTestLabelTypeNames();
         const dimensions = [
@@ -97,11 +98,21 @@ export class LabelTestingUtil {
         }
         this.initLabelTypes = true;
 
-        testContext.addCleanupFunction(() => this.cleanupLabelTypeTestDatabase());
+        testContext.addCleanupFunction(() =>
+            this.cleanupLabelTypeTestDatabase(),
+        );
 
         const types = await this.getTestLabelTypeEntities(testContext);
         for (const type of types) {
-            if (await this.typeRepo.findOne({ where: { name: type.name, length: type.length, width: type.width } })) {
+            if (
+                await this.typeRepo.findOne({
+                    where: {
+                        name: type.name,
+                        length: type.length,
+                        width: type.width,
+                    },
+                })
+            ) {
                 continue;
             }
             await this.typeRepo.save(type);
@@ -161,7 +172,15 @@ export class LabelTestingUtil {
 
         const labels = await this.getTestLabelEntities(testContext);
         for (const label of labels) {
-            if (await this.labelRepo.findOne({ where: { menuItem: { id: label.menuItem.id }, imageUrl: label.imageUrl, labelType: { id: label.labelType.id } } })) {
+            if (
+                await this.labelRepo.findOne({
+                    where: {
+                        menuItem: { id: label.menuItem.id },
+                        imageUrl: label.imageUrl,
+                        labelType: { id: label.labelType.id },
+                    },
+                })
+            ) {
                 continue;
             }
             await this.labelRepo.save(label);
@@ -175,7 +194,10 @@ export class LabelTestingUtil {
     // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
     // These do NOT register cleanup — callers are responsible for deleting by ID.
 
-    public async seedLabelTypes(P: string = '', tenantId?: number): Promise<{ labelTypes: LabelType[] }> {
+    public async seedLabelTypes(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{ labelTypes: LabelType[] }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestLabelTypeNames();
         const dimensions = [
@@ -204,7 +226,10 @@ export class LabelTestingUtil {
      * Seeds label types and menu items (via MenuItemTestingUtil.seedItems), then
      * pairs each of the 7 test image urls with a round-robin menuItem/labelType.
      */
-    public async seedLabels(P: string = '', tenantId?: number): Promise<{
+    public async seedLabels(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{
         labelTypes: LabelType[];
         categories: MenuItemCategory[];
         sizes: MenuItemSize[];
@@ -215,8 +240,13 @@ export class LabelTestingUtil {
     }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const { labelTypes } = await this.seedLabelTypes(P, effectiveTenantId);
-        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
-            await this.menuItemTestUtil.seedItems(P);
+        const {
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+        } = await this.menuItemTestUtil.seedItems(P);
 
         const urls = getTestImageUrls();
         const labels: Label[] = [];
@@ -230,6 +260,14 @@ export class LabelTestingUtil {
             labels.push(await this.labelRepo.save(entity));
         }
 
-        return { labelTypes, categories, sizes, singleItems, fixedContainerItems, varContainerItems, labels };
+        return {
+            labelTypes,
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            labels,
+        };
     }
 }

@@ -32,6 +32,5 @@ export class UpdateOrderContainerItemDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 }

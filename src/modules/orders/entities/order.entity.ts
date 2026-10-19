@@ -8,7 +8,7 @@ import {
     OneToOne,
     PrimaryGeneratedColumn,
     Unique,
-    UpdateDateColumn
+    UpdateDateColumn,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { orderCategoryExample } from '../../../common/swagger/examples/orders/order-category.example';
@@ -16,7 +16,12 @@ import { orderMenuItemExample } from '../../../common/swagger/examples/orders/or
 import { recurringOrderScheduleExample } from '../../../common/swagger/examples/orders/recurring-order-schedule.example';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
-import { OCCURRENCE_STATES, OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
+import {
+    OCCURRENCE_STATES,
+    OCCURRENCE_TYPES,
+    OccurrenceState,
+    OccurrenceType,
+} from '../utils/occurence-types';
 import { OrderCategory } from './order-category.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
 import { RecurringOrderSchedule } from './recurring-order-schedule.entity';
@@ -203,7 +208,9 @@ export class Order {
         type: () => OrderMenuItem,
         isArray: true,
     })
-    @OneToMany(() => OrderMenuItem, (item) => item.parentOrder, { cascade: true })
+    @OneToMany(() => OrderMenuItem, (item) => item.parentOrder, {
+        cascade: true,
+    })
     orderedItems: OrderMenuItem[];
 
     @ApiProperty({
@@ -223,7 +230,12 @@ export class Order {
         description: 'The type of the occurence',
         type: 'string',
     })
-    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURRENCE_TYPES), default: null })
+    @Column({
+        nullable: true,
+        type: 'enum',
+        enum: Object.values(OCCURRENCE_TYPES),
+        default: null,
+    })
     occurrenceType?: OccurrenceType | null;
 
     @ApiProperty({
@@ -231,19 +243,26 @@ export class Order {
         description: 'The state of the occurence',
         type: 'string',
     })
-    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURRENCE_STATES), default: null })
+    @Column({
+        nullable: true,
+        type: 'enum',
+        enum: Object.values(OCCURRENCE_STATES),
+        default: null,
+    })
     occurrenceState?: OccurrenceState | null;
 
     @ApiProperty({
         example: '2025-01-01',
-        description: 'The original of the occurence, used to properly regenerated orders',
+        description:
+            'The original of the occurence, used to properly regenerated orders',
     })
     @Column({ type: 'timestamptz', nullable: true })
     recurrenceDate?: Date | null;
 
     @ApiProperty({
         example: 1,
-        description: 'The unique identifier of the template order that this occurence is based on',
+        description:
+            'The unique identifier of the template order that this occurence is based on',
         type: 'number',
         nullable: true,
     })

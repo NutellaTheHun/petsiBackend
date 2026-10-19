@@ -7,7 +7,7 @@ last_reviewed: 2026-08-02
 
 Manages `app_users` — the accounts used to log into the app (distinct from any customer-facing concept). A `User` belongs to exactly one `Tenant` (`tenantId`, denormalized scalar column, `src/modules/tenants`) and has a unique `name` (unique per-tenant), a hashed `password`, an optional `email`, and an `isTenantAdmin` flag that grants access to every current and future location under the tenant without a per-location assignment. Users no longer carry a `roles` relation directly — per-location role grants live in `UserLocation` (`src/modules/locations`), which is a separate module from this one. `UserController` is gated with `@Roles(ROLE_ADMIN)` at the class level (from `src/modules/roles`), so every route in this module requires an admin role — user management itself is an admin-only feature; this is a route guard only, not a data relationship.
 
-Follows the standard base-class stack: `UserService extends TenantScopedServiceBase` (not the plain `ServiceBase`), `UserValidator extends ValidatorBase`, `UserBuilder extends BuilderBase`, `UserController extends ControllerBase`, plus a `UserChangeDetector` for update diffing. `UserModule` imports `TenantsModule` and depends on `AppLoggingModule` / `RequestContextModule` like other domains.
+Follows the standard base-class stack: `UserService extends TenantScopedServiceBase` (not the plain `ServiceBase`), `UserValidator extends ValidatorBase`, `UserBuilder extends BuilderBase`, `UserController extends ControllerBase`, plus a `UserChangeDetector` for update diffing. `UserModule` imports `TenantsModule` and depends on `RequestContextModule` like other domains.
 
 ## Enforced Patterns
 

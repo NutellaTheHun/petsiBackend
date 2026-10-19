@@ -58,9 +58,14 @@ describe('menu item size service', () => {
         dataSource = module.get(DataSource);
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -91,27 +96,37 @@ describe('menu item size service', () => {
         let created: MenuItemSize;
 
         it('should create size', async () => {
-            const dto = plainToInstance(CreateMenuItemSizeDto, { name: `${P}-create-test` });
+            const dto = plainToInstance(CreateMenuItemSizeDto, {
+                name: `${P}-create-test`,
+            });
             await dataSource.transaction(async (manager) => {
                 created = await service.createEntityForTest(dto, manager);
             });
             expect(created.id).toBeDefined();
             expect(created.name).toBe(dto.name);
-            testCtx.addCleanupFunction(async () => { await sizeRepo.delete(created.id); });
+            testCtx.addCleanupFunction(async () => {
+                await sizeRepo.delete(created.id);
+            });
         });
 
         it('should update size', async () => {
-            const dto = plainToInstance(UpdateMenuItemSizeDto, { name: `${P}-create-updated` });
+            const dto = plainToInstance(UpdateMenuItemSizeDto, {
+                name: `${P}-create-updated`,
+            });
             await dataSource.transaction(async (manager) => {
                 await service.updateEntityForTest(dto, created, manager);
             });
-            const reloaded = await sizeRepo.findOneOrFail({ where: { id: created.id } });
+            const reloaded = await sizeRepo.findOneOrFail({
+                where: { id: created.id },
+            });
             expect(reloaded.name).toBe(`${P}-create-updated`);
         });
 
         it('should remove size', async () => {
             await service.remove(created.id);
-            await expect(service.findOne(created.id)).rejects.toThrow(NotFoundException);
+            await expect(service.findOne(created.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
@@ -122,14 +137,19 @@ describe('menu item size service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(service.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(service.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
         let spy: jest.SpyInstance;
 
         beforeEach(() => {
-            spy = jest.spyOn(MenuItemSizeService.prototype as any, 'updateEntity');
+            spy = jest.spyOn(
+                MenuItemSizeService.prototype as any,
+                'updateEntity',
+            );
         });
 
         afterEach(() => {
@@ -145,10 +165,14 @@ describe('menu item size service', () => {
 
         it('calls updateEntity when name changes', async () => {
             const size = sizes[1];
-            const dto = menuItemSizeToUpdateDto(size, { name: `${P}-size-renamed` });
+            const dto = menuItemSizeToUpdateDto(size, {
+                name: `${P}-size-renamed`,
+            });
             await service.update(size.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await sizeRepo.findOneOrFail({ where: { id: size.id } });
+            const row = await sizeRepo.findOneOrFail({
+                where: { id: size.id },
+            });
             expect(row.name).toBe(`${P}-size-renamed`);
         });
     });
@@ -160,7 +184,7 @@ describe('menu item size service', () => {
                     name: `${P}-tenant-stamped`,
                 }),
             );
-            expect((created as MenuItemSize).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await sizeRepo.delete(created.id);
         });
 

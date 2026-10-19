@@ -1,13 +1,12 @@
 import { BuilderBase } from '../../../common/base/builder.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTenantDto } from '../dto/create-tenant.dto';
 import { UpdateTenantDto } from '../dto/update-tenant.dto';
 import { Tenant } from '../entities/tenant.entity';
 
 export class TenantBuilder extends BuilderBase<Tenant> {
-    constructor(requestContextService: RequestContextService, logger: AppLogger) {
-        super(Tenant, 'TenantBuilder', requestContextService, logger);
+    constructor(requestContextService: RequestContextService) {
+        super(Tenant, 'TenantBuilder', requestContextService);
     }
 
     protected createEntity(dto: CreateTenantDto): void {

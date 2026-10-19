@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
@@ -21,7 +20,6 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
         @InjectRepository(RecipeIngredient)
         repo: Repository<RecipeIngredient>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: RecipeIngredientValidator,
 
         private readonly ingredientComposer: RecipeIngredientComposer,
@@ -31,7 +29,6 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
             repo,
             'RecipeIngredientService',
             requestContextService,
-            logger,
             validator,
         );
     }
@@ -50,7 +47,7 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
         manager: EntityManager,
         entity: RecipeIngredient,
     ): Promise<void> {
-        await this.ingredientComposer.composeUpdate(dto, manager, entity)
+        await this.ingredientComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -61,10 +58,16 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
     ): void {
         if (sortBy === 'ingredient') {
             query
-                .leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
+                .leftJoinAndSelect(
+                    'entity.ingredientInventoryItem',
+                    'inventoryItem',
+                )
                 .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
 
-            query.orderBy(`COALESCE(inventoryItem.name, recipe.name)`, sortOrder);
+            query.orderBy(
+                `COALESCE(inventoryItem.name, recipe.name)`,
+                sortOrder,
+            );
         }
     }
 
@@ -83,10 +86,7 @@ export class RecipeIngredientService extends TenantScopedServiceBase<RecipeIngre
     protected getChangeDetector():
         | ChangeDetectorBase<RecipeIngredient, UpdateRecipeIngredientDto>
         | undefined {
-        return this.ingredientChangeDetector as unknown as ChangeDetectorBase<
-            RecipeIngredient,
-            UpdateRecipeIngredientDto
-        >;
+        return this.ingredientChangeDetector;
     }
 
     protected getUpdateDiffRelations(): string[] {

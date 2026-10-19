@@ -1,10 +1,19 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { plainToInstance, Transform } from 'class-transformer';
+import {
+    IsArray,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    ValidateNested,
+} from 'class-validator';
 import { NestedCreateRecipeSubCategoryDto } from '../recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { NestedUpdateRecipeSubCategoryDto } from '../recipe-sub-category/nested-update-recipe-sub-category.dto';
 
-@ApiExtraModels(NestedCreateRecipeSubCategoryDto, NestedUpdateRecipeSubCategoryDto)
+@ApiExtraModels(
+    NestedCreateRecipeSubCategoryDto,
+    NestedUpdateRecipeSubCategoryDto,
+)
 export class UpdateRecipeCategoryDto {
     @ApiProperty({
         description: 'Name of the RecipeCategory entity.',
@@ -37,12 +46,12 @@ export class UpdateRecipeCategoryDto {
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateRecipeSubCategoryDto, item)
-                : plainToInstance(NestedUpdateRecipeSubCategoryDto, item)
+                : plainToInstance(NestedUpdateRecipeSubCategoryDto, item),
         );
     })
     readonly subCategories?: (

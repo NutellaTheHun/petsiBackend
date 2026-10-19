@@ -5,7 +5,8 @@ import { MenuItemSizeChangeDetector } from './menu-item-size.change-detector';
 describe('MenuItemSizeChangeDetector', () => {
     const detector = new MenuItemSizeChangeDetector();
 
-    const baseEntity = (): MenuItemSize => ({ id: 1, name: 'Large' } as MenuItemSize);
+    const baseEntity = (): MenuItemSize =>
+        ({ id: 1, name: 'Large' }) as MenuItemSize;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

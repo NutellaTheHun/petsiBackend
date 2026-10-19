@@ -31,7 +31,7 @@ import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -48,7 +48,7 @@ export class RoleController extends ControllerBase<RoleEntity> {
     constructor(
         rolesService: RoleService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -63,7 +63,10 @@ export class RoleController extends ControllerBase<RoleEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Role' })
-    @ApiCreatedResponse({ description: 'Role successfully created', type: Role })
+    @ApiCreatedResponse({
+        description: 'Role successfully created',
+        type: Role,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRoleDto })
     async create(@Body() dto: CreateRoleDto): Promise<Role> {
@@ -110,7 +113,12 @@ export class RoleController extends ControllerBase<RoleEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

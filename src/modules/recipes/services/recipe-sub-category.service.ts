@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
@@ -21,7 +20,6 @@ export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubC
         @InjectRepository(RecipeSubCategory)
         repo: Repository<RecipeSubCategory>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: RecipeSubCategoryValidator,
 
         private readonly subCategoryComposer: RecipeSubCategoryComposer,
@@ -31,7 +29,6 @@ export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubC
             repo,
             'RecipeSubCategoryService',
             requestContextService,
-            logger,
             validator,
         );
     }
@@ -50,7 +47,7 @@ export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubC
         manager: EntityManager,
         entity: RecipeSubCategory,
     ): Promise<void> {
-        await this.subCategoryComposer.composeUpdate(dto, manager, entity)
+        await this.subCategoryComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -79,9 +76,6 @@ export class RecipeSubCategoryService extends TenantScopedServiceBase<RecipeSubC
     protected getChangeDetector():
         | ChangeDetectorBase<RecipeSubCategory, UpdateRecipeSubCategoryDto>
         | undefined {
-        return this.subCategoryChangeDetector as unknown as ChangeDetectorBase<
-            RecipeSubCategory,
-            UpdateRecipeSubCategoryDto
-        >;
+        return this.subCategoryChangeDetector;
     }
 }

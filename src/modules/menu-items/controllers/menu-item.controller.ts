@@ -33,7 +33,7 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
@@ -46,7 +46,10 @@ import { RevisionHistoryService } from '../../revision-history/revision-history.
 
 @ApiTags('Menu Item')
 @ApiBearerAuth('access-token')
-@RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT, FEATURE_REGISTRY.RECIPE_MANAGEMENT)
+@RequiresFeature(
+    FEATURE_REGISTRY.ORDER_MANAGEMENT,
+    FEATURE_REGISTRY.RECIPE_MANAGEMENT,
+)
 @Controller('menu-items')
 @ApiExtraModels(MenuItem, RevisionHistoryListItemDto, RevisionHistoryDetailDto)
 export class MenuItemController extends ControllerBase<MenuItemEntity> {
@@ -54,7 +57,7 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
         private readonly menuItemService: MenuItemService,
         private readonly revisionHistoryService: RevisionHistoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -97,7 +100,9 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
 
     @Get(':id/revisions')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Lists revision history for a menu item (metadata only)' })
+    @ApiOperation({
+        summary: 'Lists revision history for a menu item (metadata only)',
+    })
     @ApiOkResponse({ type: [RevisionHistoryListItemDto] })
     async listMenuItemRevisions(
         @Param('id', ParseIntPipe) id: number,
@@ -172,7 +177,12 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
@@ -22,43 +21,47 @@ import { LabelTypeChangeDetector } from './change-detectors/label-type.change-de
 import { LabelChangeDetector } from './change-detectors/label.change-detector';
 
 export async function getLabelsTestingModule(opts?: {
-  labelTypeServiceClass?: new (...args: any[]) => LabelTypeService;
-  labelServiceClass?: new (...args: any[]) => LabelService;
-  labelTypeChangeDetectorClass?: new (...args: any[]) => LabelTypeChangeDetector;
-  labelChangeDetectorClass?: new (...args: any[]) => LabelChangeDetector;
+    labelTypeServiceClass?: new (...args: any[]) => LabelTypeService;
+    labelServiceClass?: new (...args: any[]) => LabelService;
+    labelTypeChangeDetectorClass?: new (
+        ...args: any[]
+    ) => LabelTypeChangeDetector;
+    labelChangeDetectorClass?: new (...args: any[]) => LabelChangeDetector;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
 
-      TypeORMPostgresTestingModule([Label, LabelType, MenuItem]),
-      TypeOrmModule.forFeature([Label, LabelType, MenuItem]),
+            TypeORMPostgresTestingModule([Label, LabelType, MenuItem]),
+            TypeOrmModule.forFeature([Label, LabelType, MenuItem]),
 
-      LabelsModule,
-      MenuItemsModule,
-      TenantsModule,
+            LabelsModule,
+            MenuItemsModule,
+            TenantsModule,
 
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
-      AppLoggingModule,
-      RequestContextModule,
-    ],
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+            RequestContextModule,
+        ],
 
-    controllers: [LabelController, LabelTypeController],
+        controllers: [LabelController, LabelTypeController],
 
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(LabelTypeService)
-    .useClass(opts?.labelTypeServiceClass || LabelTypeService)
-    .overrideProvider(LabelService)
-    .useClass(opts?.labelServiceClass || LabelService)
-    .overrideProvider(LabelTypeChangeDetector)
-    .useClass(opts?.labelTypeChangeDetectorClass || LabelTypeChangeDetector)
-    .overrideProvider(LabelChangeDetector)
-    .useClass(opts?.labelChangeDetectorClass || LabelChangeDetector)
-    .compile();
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(LabelTypeService)
+        .useClass(opts?.labelTypeServiceClass || LabelTypeService)
+        .overrideProvider(LabelService)
+        .useClass(opts?.labelServiceClass || LabelService)
+        .overrideProvider(LabelTypeChangeDetector)
+        .useClass(opts?.labelTypeChangeDetectorClass || LabelTypeChangeDetector)
+        .overrideProvider(LabelChangeDetector)
+        .useClass(opts?.labelChangeDetectorClass || LabelChangeDetector)
+        .compile();
 }

@@ -25,7 +25,10 @@ describe('TenantFeature Service', () => {
         tenantFeatureRepo = module.get(getRepositoryToken(TenantFeature));
         tenantRepo = module.get(getRepositoryToken(Tenant));
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -54,17 +57,25 @@ describe('TenantFeature Service', () => {
     });
 
     it('returns the enabled features scoped to the requested tenant', async () => {
-        const result = await tenantFeatureService.findEnabledFeatures(tenant.id);
-        expect(result.sort()).toEqual(['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT'].sort());
+        const result = await tenantFeatureService.findEnabledFeatures(
+            tenant.id,
+        );
+        expect(result.sort()).toEqual(
+            ['ORDER_MANAGEMENT', 'RECIPE_MANAGEMENT'].sort(),
+        );
     });
 
-    it('does not include another tenant\'s enabled features', async () => {
-        const result = await tenantFeatureService.findEnabledFeatures(tenant.id);
+    it("does not include another tenant's enabled features", async () => {
+        const result = await tenantFeatureService.findEnabledFeatures(
+            tenant.id,
+        );
         expect(result).not.toContain('LABEL_PRINTING');
     });
 
     it('returns an empty array for a tenant with no enabled features', async () => {
-        const result = await tenantFeatureService.findEnabledFeatures(emptyTenant.id);
+        const result = await tenantFeatureService.findEnabledFeatures(
+            emptyTenant.id,
+        );
         expect(result).toEqual([]);
     });
 });

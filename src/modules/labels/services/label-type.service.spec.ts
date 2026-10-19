@@ -52,13 +52,18 @@ describe('Label type Service', () => {
         });
 
         testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
-        typeService = module.get(LabelTypeService) as TestableLabelTypeService;
+        typeService = module.get<TestableLabelTypeService>(LabelTypeService);
         dataSource = module.get(DataSource);
         typeRepo = module.get(getRepositoryToken(LabelType));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -75,7 +80,10 @@ describe('Label type Service', () => {
     });
 
     afterAll(async () => {
-        await typeRepo.delete([...labelTypes.map((t) => t.id), otherTenantLabelType.id]);
+        await typeRepo.delete([
+            ...labelTypes.map((t) => t.id),
+            otherTenantLabelType.id,
+        ]);
         await tenantRepo.delete([tenant.id, otherTenant.id]);
     });
 
@@ -117,7 +125,9 @@ describe('Label type Service', () => {
                 await typeService.updateEntityForTest(dto, type, manager);
             });
 
-            const reloaded = await typeRepo.findOneOrFail({ where: { id: type.id } });
+            const reloaded = await typeRepo.findOneOrFail({
+                where: { id: type.id },
+            });
             expect(reloaded.name).toBe(dto.name);
             expect(reloaded.width).toBe(dto.width);
         });
@@ -154,7 +164,9 @@ describe('Label type Service', () => {
         });
 
         it('skips updateEntity when DTO matches entity', async () => {
-            const type = await typeRepo.findOneOrFail({ where: { id: labelTypes[1].id } });
+            const type = await typeRepo.findOneOrFail({
+                where: { id: labelTypes[1].id },
+            });
             const dto = plainToInstance(UpdateLabelTypeDto, {
                 name: type.name,
                 length: type.length,
@@ -166,7 +178,9 @@ describe('Label type Service', () => {
         });
 
         it('calls updateEntity when name changes', async () => {
-            const type = await typeRepo.findOneOrFail({ where: { id: labelTypes[2].id } });
+            const type = await typeRepo.findOneOrFail({
+                where: { id: labelTypes[2].id },
+            });
             const dto = plainToInstance(UpdateLabelTypeDto, {
                 name: `${P}-type-renamed`,
                 length: type.length,
@@ -174,7 +188,9 @@ describe('Label type Service', () => {
             });
             await typeService.update(type.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await typeRepo.findOneOrFail({ where: { id: type.id } });
+            const row = await typeRepo.findOneOrFail({
+                where: { id: type.id },
+            });
             expect(row.name).toBe(`${P}-type-renamed`);
         });
     });
@@ -188,14 +204,14 @@ describe('Label type Service', () => {
                     width: 100,
                 }),
             );
-            expect((created as LabelType).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await typeRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(typeService.findOne(otherTenantLabelType.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                typeService.findOne(otherTenantLabelType.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });

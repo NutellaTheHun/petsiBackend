@@ -52,13 +52,18 @@ describe('User Service', () => {
             userServiceClass: TestableUserService,
         });
         dataSource = module.get(DataSource);
-        usersService = module.get(UserService) as TestableUserService;
+        usersService = module.get<TestableUserService>(UserService);
         userTestingUtil = module.get<UserTestUtil>(UserTestUtil);
         userRepo = module.get(getRepositoryToken(User));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -101,11 +106,13 @@ describe('User Service', () => {
             expect(user.id).toBeDefined();
             expect(user.email).toEqual(dto.email);
             expect(user.tenantId).toEqual(tenant.id);
-            expect((user as any).password).toBeUndefined();
+            expect((user as { password?: unknown }).password).toBeUndefined();
         });
 
         it('should update user', async () => {
-            const loaded = await userRepo.findOneOrFail({ where: { id: user.id } });
+            const loaded = await userRepo.findOneOrFail({
+                where: { id: user.id },
+            });
             const dto = plainToInstance(UpdateUserDto, {
                 name: `${P}-user-updated`,
                 email: `${P}-user-updated@example.com`,
@@ -115,7 +122,9 @@ describe('User Service', () => {
                 await usersService.updateEntityForTest(dto, loaded, manager);
             });
 
-            const result = await userRepo.findOneOrFail({ where: { id: user.id } });
+            const result = await userRepo.findOneOrFail({
+                where: { id: user.id },
+            });
             expect(result.name).toEqual(dto.name);
             expect(result.email).toEqual(dto.email);
         });
@@ -123,16 +132,23 @@ describe('User Service', () => {
         it('should remove user', async () => {
             const deleteResult = await usersService.remove(user.id);
             expect(deleteResult).toBe(true);
-            await expect(usersService.findOne(user.id)).rejects.toThrow(NotFoundException);
+            await expect(usersService.findOne(user.id)).rejects.toThrow(
+                NotFoundException,
+            );
         });
     });
 
     it('should find seeded user in findAll search results', async () => {
-        const result = await usersService.findAll({ search: `${P}-user`, limit: 100 });
+        const result = await usersService.findAll({
+            search: `${P}-user`,
+            limit: 100,
+        });
         const found = result.items.find((u) => u.id === users[0].id);
         expect(found).toBeDefined();
         expect(
-            result.items.every((u) => u.name.toLowerCase().includes(P.toLowerCase())),
+            result.items.every((u) =>
+                u.name.toLowerCase().includes(P.toLowerCase()),
+            ),
         ).toBe(true);
     });
 
@@ -142,7 +158,9 @@ describe('User Service', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(usersService.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(usersService.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
     describe('change detector on update', () => {
@@ -157,7 +175,9 @@ describe('User Service', () => {
         });
 
         it('skips updateEntity when DTO matches current user', async () => {
-            const user = await userRepo.findOneOrFail({ where: { id: users[2].id } });
+            const user = await userRepo.findOneOrFail({
+                where: { id: users[2].id },
+            });
             const dto = userToUpdateDto(user, { password: undefined });
             const result = await usersService.update(user.id, dto);
             expect(result.name).toEqual(user.name);
@@ -165,12 +185,19 @@ describe('User Service', () => {
         });
 
         it('calls updateEntity when name changes', async () => {
-            const user = await userRepo.findOneOrFail({ where: { id: users[3].id } });
+            const user = await userRepo.findOneOrFail({
+                where: { id: users[3].id },
+            });
             const newName = `${P}-user-renamed`;
-            const dto = userToUpdateDto(user, { name: newName, password: undefined });
+            const dto = userToUpdateDto(user, {
+                name: newName,
+                password: undefined,
+            });
             await usersService.update(user.id, dto);
             expect(spy).toHaveBeenCalled();
-            const row = await userRepo.findOneOrFail({ where: { id: user.id } });
+            const row = await userRepo.findOneOrFail({
+                where: { id: user.id },
+            });
             expect(row.name).toEqual(newName);
         });
     });
@@ -184,19 +211,21 @@ describe('User Service', () => {
                     email: `${P}-tenant-stamped@example.com`,
                 }),
             );
-            expect((created as User).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await userRepo.delete(created.id);
         });
 
         it('findOne throws NotFoundException for an id belonging to a different tenant', async () => {
-            await expect(usersService.findOne(otherTenantUser.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                usersService.findOne(otherTenantUser.id),
+            ).rejects.toThrow(NotFoundException);
         });
 
-        it('findAll excludes another tenant\'s users', async () => {
+        it("findAll excludes another tenant's users", async () => {
             const result = await usersService.findAll({ limit: 100 });
-            expect(result.items.find((u) => u.id === otherTenantUser.id)).toBeUndefined();
+            expect(
+                result.items.find((u) => u.id === otherTenantUser.id),
+            ).toBeUndefined();
         });
     });
 });

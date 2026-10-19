@@ -1,4 +1,7 @@
-import { ValidationErrorCode } from "./validation-error-codes";
+import {
+    VALIDATION_ERROR_CODE_LOGGED,
+    ValidationErrorCode,
+} from './validation-error-codes';
 
 /**
  * Response object to be returned to the client. A translated version of ValidationErrorMap.
@@ -12,14 +15,43 @@ export type ValidationErrorResponse = {
 /**
  * Actual error information to be returned to the client. Must contain an error code and fields must be atleast a size of 1.
  */
-export type ValidationErrorPayload = { errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[] };
+export type ValidationErrorPayload = {
+    errorCode: ValidationErrorCode;
+    ids?: (string | number)[];
+    fields?: string[];
+};
 
-export function createValidationErrorPayload(errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[]): ValidationErrorPayload {
+export function createValidationErrorPayload(
+    errorCode: ValidationErrorCode,
+    ids?: (string | number)[],
+    fields?: string[],
+): ValidationErrorPayload {
     if (fields && fields.length === 0) {
-        throw new Error("Fields cannot be empty");
+        throw new Error('Fields cannot be empty');
     }
     return { errorCode, ids, fields };
 }
+
+/**
+ * Log-only context attached to an error, e.g. the identifier a reference check looked up.
+ * Never part of the client response; only `GlobalHttpExceptionFilter` reads it.
+ */
+export type ValidationLogContext = { value: string | number };
+
+/** An error as stored in the map: the client payload plus optional log-only context. */
+export type StoredValidationError = ValidationErrorPayload & {
+    logContext?: ValidationLogContext;
+};
+
+/** One logged (anomalous) error, flattened with its path in the tree. */
+export type LoggedValidationError = {
+    /** Nested `prop[id]` segments joined by `.`; empty for errors on the root entity. */
+    path: string;
+    code: ValidationErrorCode;
+    fields?: string[];
+    ids?: (string | number)[];
+    value?: string | number;
+};
 
 export class ValidationErrorMap {
     /**
@@ -33,20 +65,43 @@ export class ValidationErrorMap {
     /**
      * Actual errors resulting from validation, contains error code, ids associated with error, and fields associated with error.
      */
-    errors?: ValidationErrorPayload[];
+    errors?: StoredValidationError[];
 
-    constructor(id?: string | number, errs?: ValidationErrorPayload[]) {
+    constructor(id?: string | number, errs?: StoredValidationError[]) {
         this.id = id;
         this.errors = errs;
     }
 
+    /**
+     * Adds a child map under `field`. A child with the same id as one already under
+     * `field` is merged into it, so each nested entity appears once in the tree.
+     */
     public addChild(field: string, child: ValidationErrorMap) {
         if (!this.children) {
             this.children = new Map();
         }
         const list = this.children.get(field) ?? [];
-        list.push(child);
+        const existing =
+            child.id !== undefined
+                ? list.find((c) => c.id === child.id)
+                : undefined;
+        if (existing) {
+            existing.merge(child);
+        } else {
+            list.push(child);
+        }
         this.children.set(field, list);
+    }
+
+    private merge(other: ValidationErrorMap) {
+        if (other.errors?.length) {
+            this.errors = [...(this.errors ?? []), ...other.errors];
+        }
+        for (const [field, children] of other.children?.entries() ?? []) {
+            for (const child of children) {
+                this.addChild(field, child);
+            }
+        }
     }
 
     public addChildren(field: string, children: ValidationErrorMap[]) {
@@ -58,8 +113,20 @@ export class ValidationErrorMap {
         this.children.set(field, list);
     }
 
-    public addError(errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[]) {
-        const newError = createValidationErrorPayload(errorCode, ids, fields);
+    public addError(
+        errorCode: ValidationErrorCode,
+        ids?: (string | number)[],
+        fields?: string[],
+        logContext?: ValidationLogContext,
+    ) {
+        const newError: StoredValidationError = createValidationErrorPayload(
+            errorCode,
+            ids,
+            fields,
+        );
+        if (logContext) {
+            newError.logContext = logContext;
+        }
         if (this.errors) {
             this.errors.push(newError);
         } else {
@@ -74,7 +141,7 @@ export class ValidationErrorMap {
     }
 
     /**
-     * 
+     *
      * @returns ValidationErrorResponse object containing id, errs, and errors. A object more suitable for returning to the client.
      */
     public buildResponse(): ValidationErrorResponse {
@@ -85,7 +152,10 @@ export class ValidationErrorMap {
         }
 
         if (this.errors) {
-            result.errorPayload = this.errors;
+            // log-only context never reaches the client
+            result.errorPayload = this.errors.map(
+                ({ errorCode, ids, fields }) => ({ errorCode, ids, fields }),
+            );
         }
 
         if (this.children && this.children.size > 0) {
@@ -100,8 +170,40 @@ export class ValidationErrorMap {
 
         return result;
     }
-}
 
+    /**
+     * Flattens the tree into the errors whose code is classified as logged
+     * (see `VALIDATION_ERROR_CODE_LOGGED`), with their log-only context.
+     * @param path path of this map within the root tree, used when recursing
+     */
+    public collectLoggedErrors(path = ''): LoggedValidationError[] {
+        const result: LoggedValidationError[] = [];
+
+        for (const err of this.errors ?? []) {
+            if (!VALIDATION_ERROR_CODE_LOGGED[err.errorCode]) continue;
+            result.push({
+                path,
+                code: err.errorCode,
+                fields: err.fields,
+                ids: err.ids,
+                value: err.logContext?.value,
+            });
+        }
+
+        for (const [field, children] of this.children?.entries() ?? []) {
+            for (const child of children) {
+                const segment = `${field}[${child.id}]`;
+                result.push(
+                    ...child.collectLoggedErrors(
+                        path ? `${path}.${segment}` : segment,
+                    ),
+                );
+            }
+        }
+
+        return result;
+    }
+}
 
 // Helper functions to make testing easier
 
@@ -158,7 +260,7 @@ export function expectValidationErrorCode(
 ) {
     const errors = findValidationErrors(root, path);
     expect(errors).toBeTruthy();
-    expect(errors!.some(e => e.errorCode === errorCode)).toBe(true);
+    expect(errors!.some((e) => e.errorCode === errorCode)).toBe(true);
 }
 
 export function expectValidationErrorSize(
@@ -167,10 +269,11 @@ export function expectValidationErrorSize(
 ) {
     const result = getValidationErrorSize(root);
     if (result !== size) {
-        console.log(`Validation error size mismatch: Error Tree: ${JSON.stringify(root)}`);
+        console.log(
+            `Validation error size mismatch: Error Tree: ${JSON.stringify(root)}`,
+        );
     }
     expect(result).toBe(size);
-
 }
 
 function getValidationErrorSize(root: ValidationErrorResponse | null): number {

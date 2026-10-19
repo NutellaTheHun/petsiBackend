@@ -1,29 +1,31 @@
+// convert-units uses `export =`; without esModuleInterop a default import would be undefined at runtime.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import convert = require('convert-units');
 import type { AppUnit } from './constants';
 
 export class UnitConversionError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'UnitConversionError';
-  }
+    constructor(message: string) {
+        super(message);
+        this.name = 'UnitConversionError';
+    }
 }
 
 export function convertUnit(value: number, from: AppUnit, to: AppUnit): number {
-  if (from === 'ea' && to === 'ea') {
-    return value;
-  }
+    if (from === 'ea' && to === 'ea') {
+        return value;
+    }
 
-  if (from === 'ea' || to === 'ea') {
-    throw new UnitConversionError(
-      `Cannot convert between 'ea' and '${from === 'ea' ? to : from}'`,
-    );
-  }
+    if (from === 'ea' || to === 'ea') {
+        throw new UnitConversionError(
+            `Cannot convert between 'ea' and '${from === 'ea' ? to : from}'`,
+        );
+    }
 
-  try {
-    return convert(value).from(from).to(to);
-  } catch (err) {
-    throw new UnitConversionError(
-      `Cannot convert from '${from}' to '${to}': ${(err as Error).message}`,
-    );
-  }
+    try {
+        return convert(value).from(from).to(to);
+    } catch (err) {
+        throw new UnitConversionError(
+            `Cannot convert from '${from}' to '${to}': ${(err as Error).message}`,
+        );
+    }
 }

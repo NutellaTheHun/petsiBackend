@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import {
+    IsIn,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+} from 'class-validator';
 import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
@@ -32,16 +38,17 @@ export class NestedCreateRecipeIngredientDto extends NestedCreateDto {
     readonly ingredientRecipeId?: EntityId<Recipe> | null;
 
     @ApiProperty({
-        description: 'The unit amount of the unit of measure of the InventoryItem',
+        description:
+            'The unit amount of the unit of measure of the InventoryItem',
         example: 4,
     })
     @IsNumber()
-    @IsPositive()
     @IsNotEmpty()
     readonly quantity: number;
 
     @ApiProperty({
-        description: 'Unit symbol for the ingredient quantity (e.g. "kg", "cup", "ea").',
+        description:
+            'Unit symbol for the ingredient quantity (e.g. "kg", "cup", "ea").',
         example: 'oz',
     })
     @IsIn(Object.values(UNITS))

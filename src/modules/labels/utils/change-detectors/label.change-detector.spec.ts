@@ -11,7 +11,7 @@ describe('LabelChangeDetector', () => {
             imageUrl: 'https://example.com/a.png',
             menuItem: { id: 10 },
             labelType: { id: 20 },
-        } as Label);
+        }) as Label;
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();

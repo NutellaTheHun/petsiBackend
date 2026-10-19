@@ -9,8 +9,14 @@ import { UpdateTenantDto } from '../../dto/update-tenant.dto';
 import { Tenant } from '../../entities/tenant.entity';
 
 @Injectable()
-export class TenantChangeDetector extends ChangeDetectorBase<Tenant, UpdateTenantDto> {
-    detect(entity: Tenant, dto: UpdateTenantDto): ChangeDetectionResult<UpdateTenantDto> {
+export class TenantChangeDetector extends ChangeDetectorBase<
+    Tenant,
+    UpdateTenantDto
+> {
+    detect(
+        entity: Tenant,
+        dto: UpdateTenantDto,
+    ): ChangeDetectionResult<UpdateTenantDto> {
         const patch: MutablePartial<UpdateTenantDto> = {};
         const changes: ChangeDetectorChange[] = [];
 

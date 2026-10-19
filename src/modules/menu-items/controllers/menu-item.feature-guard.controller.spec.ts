@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, INestApplication, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+    CanActivate,
+    ExecutionContext,
+    INestApplication,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
@@ -11,6 +17,7 @@ import { RoleGuard } from '../../roles/guards/role.guard';
 import { FeatureGuard } from '../../feature-flags/guards/feature.guard';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
+import { AppRequest, JwtPayload } from '../../auth/utils/jwt-payload';
 
 const TEST_JWT_SECRET = 'menu-item-feature-guard-test-secret';
 const P = `t${Date.now()}`;
@@ -20,11 +27,13 @@ class TestAuthGuard implements CanActivate {
     constructor(private readonly jwtService: JwtService) {}
 
     canActivate(context: ExecutionContext): boolean {
-        const req = context.switchToHttp().getRequest();
+        const req = context.switchToHttp().getRequest<AppRequest>();
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) throw new UnauthorizedException();
         try {
-            const payload = this.jwtService.verify(token, { secret: TEST_JWT_SECRET });
+            const payload = this.jwtService.verify<JwtPayload>(token, {
+                secret: TEST_JWT_SECRET,
+            });
             req.user = payload;
             return true;
         } catch {
@@ -43,9 +52,14 @@ describe('menu item controller (feature guard enforcement)', () => {
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
         jwtService = new JwtService({ secret: TEST_JWT_SECRET });
@@ -89,6 +103,6 @@ describe('menu item controller (feature guard enforcement)', () => {
             .get('/menu-items')
             .set('Authorization', `Bearer ${token(['RECIPE_MANAGEMENT'])}`)
             .expect(200);
-        expect(res.body.items).toBeDefined();
+        expect((res.body as { items: unknown[] }).items).toBeDefined();
     });
 });

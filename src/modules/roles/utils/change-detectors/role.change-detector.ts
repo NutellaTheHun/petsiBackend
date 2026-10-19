@@ -9,8 +9,14 @@ import { UpdateRoleDto } from '../../dto/update-role.dto';
 import { Role } from '../../entities/role.entity';
 
 @Injectable()
-export class RoleChangeDetector extends ChangeDetectorBase<Role, UpdateRoleDto> {
-    detect(entity: Role, dto: UpdateRoleDto): ChangeDetectionResult<UpdateRoleDto> {
+export class RoleChangeDetector extends ChangeDetectorBase<
+    Role,
+    UpdateRoleDto
+> {
+    detect(
+        entity: Role,
+        dto: UpdateRoleDto,
+    ): ChangeDetectionResult<UpdateRoleDto> {
         const patch: MutablePartial<UpdateRoleDto> = {};
         const changes: ChangeDetectorChange[] = [];
 

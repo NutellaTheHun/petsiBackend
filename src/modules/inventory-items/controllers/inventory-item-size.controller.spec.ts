@@ -39,8 +39,12 @@ describe('Inventory Item Size Controller', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
-        testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
-        controller = module.get<InventoryItemSizeController>(InventoryItemSizeController);
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        controller = module.get<InventoryItemSizeController>(
+            InventoryItemSizeController,
+        );
 
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
@@ -48,15 +52,18 @@ describe('Inventory Item Size Controller', () => {
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, vendors, packages, items, sizes } = await testingUtil.seedSizes(
-            P,
-            tenant.id,
-        ));
+        ({ categories, vendors, packages, items, sizes } =
+            await testingUtil.seedSizes(P, tenant.id));
     });
 
     afterAll(async () => {

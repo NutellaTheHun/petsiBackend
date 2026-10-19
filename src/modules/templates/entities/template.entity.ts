@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+    Column,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    Unique,
+} from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { templateMenuItemExample } from '../../../common/swagger/examples/templates/template-menu-item.example';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -41,7 +47,10 @@ export class Template {
     /**
      * Example: "Summer Pies", "Spring Pastries"
      */
-    @ApiProperty({ example: 'Spring Pies', description: 'Name of the template' })
+    @ApiProperty({
+        example: 'Spring Pies',
+        description: 'Name of the template',
+    })
     @Column()
     name: string;
 

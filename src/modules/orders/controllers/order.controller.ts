@@ -30,10 +30,11 @@ import {
 import { Cache } from 'cache-manager';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { ControllerBase } from '../../../common/base/controller.base';
+import { LocationScope } from '../../../common/decorators/LocationScope';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { OrderResponseDto } from '../dto/order/order-response.dto';
@@ -56,7 +57,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         private readonly orderService: OrderService,
         private readonly revisionHistoryService: RevisionHistoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -73,6 +74,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
      */
     @Post()
     @HttpCode(HttpStatus.CREATED)
+    @LocationScope('body', 'locationId')
     @ApiOperation({ summary: 'Creates a Order' })
     @ApiCreatedResponse({
         description: 'Order successfully created',
@@ -80,30 +82,39 @@ export class OrderController extends ControllerBase<OrderEntity> {
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateOrderDto })
-    async createOrderResponse(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {
+    async createOrderResponse(
+        @Body() dto: CreateOrderDto,
+    ): Promise<OrderResponseDto> {
         const result = await super.create(dto);
         return orderToResponseDto(result);
     }
-
-
 
     /**
      * While majority of endpoints return the entity, this endpoint returns a response DTO. Due to the RecurringOrderSchedule entity DTO mapping not being direct to the object.
      */
     @Put(':id')
     @ApiOperation({ summary: 'Updates a Order' })
-    @ApiOkResponse({ description: 'Order successfully updated', type: OrderResponseDto })
+    @ApiOkResponse({
+        description: 'Order successfully updated',
+        type: OrderResponseDto,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'Order to update not found.' })
     @ApiBody({ type: UpdateOrderDto })
-    async updateOrderResponse(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrderDto): Promise<OrderResponseDto> {
+    async updateOrderResponse(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateOrderDto,
+    ): Promise<OrderResponseDto> {
         const result = await super.update(id, dto);
         return orderToResponseDto(result);
     }
 
     @Get(':id/revisions')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Lists revision history for an order (metadata only, no payload)' })
+    @ApiOperation({
+        summary:
+            'Lists revision history for an order (metadata only, no payload)',
+    })
     @ApiOkResponse({ type: [RevisionHistoryListItemDto] })
     async listOrderRevisions(
         @Param('id', ParseIntPipe) id: number,
@@ -144,7 +155,10 @@ export class OrderController extends ControllerBase<OrderEntity> {
         @Param('id', ParseIntPipe) id: number,
         @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
     ): Promise<OrderResponseDto> {
-        const result = await this.orderService.revertToRevision(id, revisionNumber);
+        const result = await this.orderService.revertToRevision(
+            id,
+            revisionNumber,
+        );
         await invalidateFindAllCache('OrderService', this.cacheManager);
         return orderToResponseDto(result);
     }
@@ -179,7 +193,12 @@ export class OrderController extends ControllerBase<OrderEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -257,11 +276,10 @@ export class OrderController extends ControllerBase<OrderEntity> {
             endDate,
         );
         return {
-            items: result.items.map(item => orderToResponseDto(item)),
+            items: result.items.map((item) => orderToResponseDto(item)),
             nextCursor: result.nextCursor,
-        } as PaginatedResult<OrderResponseDto>;
+        };
     }
-
 
     /**
      * While majority of endpoints return the entity, this endpoint returns a response DTO. Due to the RecurringOrderSchedule entity DTO mapping not being direct to the object.
@@ -271,11 +289,12 @@ export class OrderController extends ControllerBase<OrderEntity> {
     @ApiOperation({ summary: 'Retrieves one Order' })
     @ApiOkResponse({ description: 'Order found', type: OrderResponseDto })
     @ApiNotFoundResponse({ description: 'Order not found' })
-    async findOneOrderResponse(@Param('id', ParseIntPipe) id: number): Promise<OrderResponseDto> {
+    async findOneOrderResponse(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<OrderResponseDto> {
         const result = await super.findOne(id);
         return orderToResponseDto(result);
     }
-
 
     /**  ---------------------------- Unused Service Base Methods, but kept for reference ---------------------------- */
 
@@ -287,8 +306,8 @@ export class OrderController extends ControllerBase<OrderEntity> {
     }
 
     /**
-    * Not used, but kept for reference, this endpoint returns the entity, which doesn't satisfy clients.
-    */
+     * Not used, but kept for reference, this endpoint returns the entity, which doesn't satisfy clients.
+     */
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,
@@ -323,7 +342,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         return super.update(id, dto);
     }
 
-    // Not used, but kept for reference, 
+    // Not used, but kept for reference,
     async create(@Body() dto: CreateOrderDto): Promise<Order> {
         return super.create(dto);
     }

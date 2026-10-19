@@ -3,13 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { Role } from '../../roles/entities/role.entity';
 import { User } from '../../users/entities/user.entities';
 import { CreateUserLocationDto } from '../dto/create-user-location.dto';
 import { UpdateUserLocationDto } from '../dto/update-user-location.dto';
-import { UserLocation, UserLocationEntity } from '../entities/user-location.entity';
+import {
+    UserLocation,
+    UserLocationEntity,
+} from '../entities/user-location.entity';
 import { UserLocationChangeDetector } from '../utils/change-detectors/user-location.change-detector';
 import { UserLocationValidator } from '../validators/user-location.validator';
 
@@ -19,11 +21,10 @@ export class UserLocationService extends LocationScopedServiceBase<UserLocationE
         @InjectRepository(UserLocation)
         repo: Repository<UserLocation>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: UserLocationValidator,
         private readonly userLocationChangeDetector: UserLocationChangeDetector,
     ) {
-        super(repo, 'UserLocationService', requestContextService, logger, validator);
+        super(repo, 'UserLocationService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -44,9 +45,6 @@ export class UserLocationService extends LocationScopedServiceBase<UserLocationE
         manager: EntityManager,
         entity: UserLocation,
     ): Promise<void> {
-        if (dto.locationId !== undefined) {
-            entity.locationId = dto.locationId;
-        }
         if (dto.roleIds !== undefined) {
             entity.roles = dto.roleIds.map((id) => ({ id }) as Role);
         }
@@ -58,11 +56,15 @@ export class UserLocationService extends LocationScopedServiceBase<UserLocationE
         filters: Record<string, string[]>,
     ): void {
         if (filters.user && filters.user.length > 0) {
-            query.andWhere('entity.user IN (:...users)', { users: filters.user });
+            query.andWhere('entity.user IN (:...users)', {
+                users: filters.user,
+            });
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<UserLocation, UpdateUserLocationDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<UserLocation, UpdateUserLocationDto>
+        | undefined {
         return this.userLocationChangeDetector;
     }
 

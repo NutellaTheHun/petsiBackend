@@ -31,7 +31,7 @@ import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
@@ -51,10 +51,16 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
     constructor(
         service: DynamicPropertyConfigService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
-        super(service, cacheManager, 'DynamicPropertyConfigController', requestContextService, logger);
+        super(
+            service,
+            cacheManager,
+            'DynamicPropertyConfigController',
+            requestContextService,
+            logger,
+        );
     }
 
     @Post()
@@ -63,7 +69,9 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
     @ApiCreatedResponse({ type: DynamicPropertyConfig })
     @ApiBadRequestResponse({ description: 'Validation error' })
     @ApiBody({ type: CreateDynamicPropertyConfigDto })
-    async create(@Body() dto: CreateDynamicPropertyConfigDto): Promise<DynamicPropertyConfig> {
+    async create(
+        @Body() dto: CreateDynamicPropertyConfigDto,
+    ): Promise<DynamicPropertyConfig> {
         return super.create(dto);
     }
 
@@ -96,7 +104,10 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
         schema: {
             type: 'object',
             properties: {
-                items: { type: 'array', items: { $ref: getSchemaPath(DynamicPropertyConfig) } },
+                items: {
+                    type: 'array',
+                    items: { $ref: getSchemaPath(DynamicPropertyConfig) },
+                },
                 nextCursor: { type: 'string' },
             },
         },
@@ -120,7 +131,9 @@ export class DynamicPropertyConfigController extends ControllerBase<DynamicPrope
     @ApiOperation({ summary: 'Retrieves one DynamicPropertyConfig' })
     @ApiOkResponse({ type: DynamicPropertyConfig })
     @ApiNotFoundResponse({ description: 'DynamicPropertyConfig not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<DynamicPropertyConfig> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<DynamicPropertyConfig> {
         return super.findOne(id);
     }
 }

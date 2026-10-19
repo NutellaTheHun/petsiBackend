@@ -66,9 +66,9 @@ describe('Template menu item service', () => {
             templateMenuItemServiceClass: TestableTemplateMenuItemService,
         });
         testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-        templateItemService = module.get(
+        templateItemService = module.get<TestableTemplateMenuItemService>(
             TemplateMenuItemService,
-        ) as TestableTemplateMenuItemService;
+        );
         dataSource = module.get(DataSource);
 
         templateRepo = module.get(getRepositoryToken(Template));
@@ -77,9 +77,14 @@ describe('Template menu item service', () => {
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         itemRepo = module.get(getRepositoryToken(MenuItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -111,7 +116,11 @@ describe('Template menu item service', () => {
             otherTenantTemplateItem.id,
         ]);
         await templateRepo.delete(templates.map((t) => t.id));
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
@@ -137,10 +146,8 @@ describe('Template menu item service', () => {
                 parentTemplateId: templates[0].id,
             });
             await dataSource.transaction(async (manager) => {
-                templateMenuItem = await templateItemService.createEntityForTest(
-                    dto,
-                    manager,
-                );
+                templateMenuItem =
+                    await templateItemService.createEntityForTest(dto, manager);
             });
             expect(templateMenuItem.id).toBeDefined();
             expect(templateMenuItem.displayName).toBe(dto.displayName);
@@ -178,7 +185,9 @@ describe('Template menu item service', () => {
 
     it('should find seeded template menu item in findAll results', async () => {
         const result = await templateItemService.findAll({ limit: 100 });
-        const found = result.items.find((i) => i.id === templateMenuItems[0].id);
+        const found = result.items.find(
+            (i) => i.id === templateMenuItems[0].id,
+        );
         expect(found).toBeDefined();
     });
 
@@ -198,16 +207,18 @@ describe('Template menu item service', () => {
         );
         expect(
             result.items.every(
-                (i) => i.parentTemplate?.id === templates[0].id || !i.parentTemplate,
+                (i) =>
+                    i.parentTemplate?.id === templates[0].id ||
+                    !i.parentTemplate,
             ),
         ).toBe(true);
     });
 
     it('should find one template menu item with relations', async () => {
-        const result = await templateItemService.findOne(templateMenuItems[1].id, [
-            'parentTemplate',
-            'menuItem',
-        ]);
+        const result = await templateItemService.findOne(
+            templateMenuItems[1].id,
+            ['parentTemplate', 'menuItem'],
+        );
         expect(result.id).toBe(templateMenuItems[1].id);
         expect(result.parentTemplate).toBeDefined();
         expect(result.menuItem).toBeDefined();
@@ -228,7 +239,7 @@ describe('Template menu item service', () => {
                 parentTemplateId: templates[0].id,
             });
             const created = await templateItemService.create(dto);
-            expect((created as TemplateMenuItem).tenantId).toBe(tenant.id);
+            expect(created.tenantId).toBe(tenant.id);
             await templateItemRepo.delete(created.id);
         });
 

@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 
 export type ReportVisibility = 'management' | 'staff';
 export type JsonReportParamType = 'date' | 'dateRange';
@@ -63,7 +69,10 @@ export interface JsonTextReportSection extends BaseJsonReportSection {
     content: string;
 }
 
-export type JsonReportSection = JsonTableReportSection | JsonMetricReportSection | JsonTextReportSection;
+export type JsonReportSection =
+    | JsonTableReportSection
+    | JsonMetricReportSection
+    | JsonTextReportSection;
 
 @Entity('report_definitions')
 export class ReportDefinition {

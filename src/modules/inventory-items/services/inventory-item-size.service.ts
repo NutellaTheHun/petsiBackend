@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
@@ -21,7 +20,6 @@ export class InventoryItemSizeService extends TenantScopedServiceBase<InventoryI
         @InjectRepository(InventoryItemSize)
         repo: Repository<InventoryItemSize>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         @Inject(forwardRef(() => InventoryItemSizeValidator))
         validator: InventoryItemSizeValidator,
 
@@ -32,7 +30,6 @@ export class InventoryItemSizeService extends TenantScopedServiceBase<InventoryI
             repo,
             'InventoryItemSizeService',
             requestContextService,
-            logger,
             validator,
         );
     }
@@ -51,7 +48,7 @@ export class InventoryItemSizeService extends TenantScopedServiceBase<InventoryI
         manager: EntityManager,
         entity: InventoryItemSize,
     ): Promise<void> {
-        await this.itemSizeComposer.composeUpdate(dto, manager, entity)
+        await this.itemSizeComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
     }
 
@@ -68,9 +65,6 @@ export class InventoryItemSizeService extends TenantScopedServiceBase<InventoryI
     protected getChangeDetector():
         | ChangeDetectorBase<InventoryItemSize, UpdateInventoryItemSizeDto>
         | undefined {
-        return this.itemSizeChangeDetector as unknown as ChangeDetectorBase<
-            InventoryItemSize,
-            UpdateInventoryItemSizeDto
-        >;
+        return this.itemSizeChangeDetector;
     }
 }

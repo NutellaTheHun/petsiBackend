@@ -15,7 +15,7 @@ describe('TemplateMenuItemChangeDetector', () => {
             displayName: 'Item A',
             tablePosIndex: 0,
             menuItem: { id: 10 } as MenuItem,
-        } as TemplateMenuItem);
+        }) as TemplateMenuItem;
 
     it('returns empty patch for UpdateDto when dto matches entity', () => {
         const entity = baseEntity();

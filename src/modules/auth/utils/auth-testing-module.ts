@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { RoleFeature } from '../../feature-flags/entities/role-feature.entity';
 import { TenantFeature } from '../../feature-flags/entities/tenant-feature.entity';
 import { FeatureFlagsModule } from '../../feature-flags/feature-flags.module';
@@ -25,58 +24,60 @@ import { AuthController } from '../controllers/auth.controller';
 import { AuthService } from '../services/auth.service';
 
 export async function getAuthTestingModule(): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
 
-      TypeORMPostgresTestingModule([
-        User,
-        Role,
-        UserLocation,
-        Location,
-        Tenant,
-        TenantFeature,
-        RoleFeature,
-      ]),
-      TypeOrmModule.forFeature([
-        User,
-        Role,
-        UserLocation,
-        Location,
-        Tenant,
-        TenantFeature,
-        RoleFeature,
-      ]),
+            TypeORMPostgresTestingModule([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+                TenantFeature,
+                RoleFeature,
+            ]),
+            TypeOrmModule.forFeature([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+                TenantFeature,
+                RoleFeature,
+            ]),
 
-      JwtModule.registerAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => ({
-          global: true,
-          secret: configService.get<string>('JWT_SECRET'),
-          signOptions: { expiresIn: '60s' },
-        }),
-      }),
+            JwtModule.registerAsync({
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => ({
+                    global: true,
+                    secret: configService.get<string>('JWT_SECRET'),
+                    signOptions: { expiresIn: '60s' },
+                }),
+            }),
 
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
 
-      AuthModule,
-      AppLoggingModule,
-      RequestContextModule,
-      UserModule,
-      RoleModule,
-      LocationsModule,
-      TenantsModule,
-      FeatureFlagsModule,
-    ],
+            AuthModule,
+            RequestContextModule,
+            UserModule,
+            RoleModule,
+            LocationsModule,
+            TenantsModule,
+            FeatureFlagsModule,
+        ],
 
-    controllers: [AuthController],
+        controllers: [AuthController],
 
-    providers: [AuthService],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .compile();
+        providers: [AuthService],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile();
 }

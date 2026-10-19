@@ -18,334 +18,356 @@ import { User } from '../users/entities/user.entities';
 
 @Injectable()
 export class SeedService {
-  constructor(
-    private readonly configService: ConfigService,
+    constructor(
+        private readonly configService: ConfigService,
 
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-    @InjectRepository(Role)
-    private readonly roleRepo: Repository<Role>,
-    @InjectRepository(Tenant)
-    private readonly tenantRepo: Repository<Tenant>,
-    @InjectRepository(Location)
-    private readonly locationRepo: Repository<Location>,
-    @InjectRepository(UserLocation)
-    private readonly userLocationRepo: Repository<UserLocation>,
+        @InjectRepository(User)
+        private readonly userRepo: Repository<User>,
+        @InjectRepository(Role)
+        private readonly roleRepo: Repository<Role>,
+        @InjectRepository(Tenant)
+        private readonly tenantRepo: Repository<Tenant>,
+        @InjectRepository(Location)
+        private readonly locationRepo: Repository<Location>,
+        @InjectRepository(UserLocation)
+        private readonly userLocationRepo: Repository<UserLocation>,
 
-    private readonly inventoryAreaTestUtil: InventoryAreaTestUtil,
-    private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
-    private readonly labelTestUtil: LabelTestingUtil,
-    private readonly menuItemTestUtil: MenuItemTestingUtil,
-    private readonly orderTestUtil: OrderTestingUtil,
-    private readonly recipeTestUtil: RecipeTestUtil,
-    private readonly templateTestUtil: TemplateTestingUtil,
-  ) {}
+        private readonly inventoryAreaTestUtil: InventoryAreaTestUtil,
+        private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
+        private readonly labelTestUtil: LabelTestingUtil,
+        private readonly menuItemTestUtil: MenuItemTestingUtil,
+        private readonly orderTestUtil: OrderTestingUtil,
+        private readonly recipeTestUtil: RecipeTestUtil,
+        private readonly templateTestUtil: TemplateTestingUtil,
+    ) {}
 
-  /**
-   * `Role`/`User` now require a tenantId (NOT NULL), and role assignment
-   * moved from a direct `User.roles` relation onto `UserLocation`. Seed data
-   * doesn't care about tenant/location scoping itself — it only needs a
-   * valid tenant+location to satisfy those columns and to attach the
-   * seeded admin/manager/staff accounts' roles — so this lazily provisions
-   * (or reuses, by fixed subdomain, across the whole seed run) one shared
-   * fixture Tenant+Location.
-   */
-  private static readonly SEED_TENANT_SUBDOMAIN = 'seed-service-fixture-tenant';
-  private seedFixtureLocation?: { tenant: Tenant; location: Location };
-  public async getSeedFixtureLocation(): Promise<{ tenant: Tenant; location: Location }> {
-    if (!this.seedFixtureLocation) {
-      let tenant = await this.tenantRepo.findOne({
-        where: { subdomain: SeedService.SEED_TENANT_SUBDOMAIN },
-      });
-      if (!tenant) {
-        tenant = await this.tenantRepo.save({
-          name: 'Seed Service Fixture Tenant',
-          subdomain: SeedService.SEED_TENANT_SUBDOMAIN,
+    /**
+     * `Role`/`User` now require a tenantId (NOT NULL), and role assignment
+     * moved from a direct `User.roles` relation onto `UserLocation`. Seed data
+     * doesn't care about tenant/location scoping itself — it only needs a
+     * valid tenant+location to satisfy those columns and to attach the
+     * seeded admin/manager/staff accounts' roles — so this lazily provisions
+     * (or reuses, by fixed subdomain, across the whole seed run) one shared
+     * fixture Tenant+Location.
+     */
+    private static readonly SEED_TENANT_SUBDOMAIN =
+        'seed-service-fixture-tenant';
+    private seedFixtureLocation?: { tenant: Tenant; location: Location };
+    public async getSeedFixtureLocation(): Promise<{
+        tenant: Tenant;
+        location: Location;
+    }> {
+        if (!this.seedFixtureLocation) {
+            let tenant = await this.tenantRepo.findOne({
+                where: { subdomain: SeedService.SEED_TENANT_SUBDOMAIN },
+            });
+            if (!tenant) {
+                tenant = await this.tenantRepo.save({
+                    name: 'Seed Service Fixture Tenant',
+                    subdomain: SeedService.SEED_TENANT_SUBDOMAIN,
+                });
+            }
+
+            let location = await this.locationRepo.findOne({
+                where: { tenant: { id: tenant.id }, name: 'fixture-location' },
+                relations: ['tenant'],
+            });
+            if (!location) {
+                location = await this.locationRepo.save({
+                    tenant,
+                    name: 'fixture-location',
+                });
+                location.tenant = tenant;
+            }
+            this.seedFixtureLocation = { tenant, location };
+        }
+        return this.seedFixtureLocation;
+    }
+
+    private async ensureUserLocation(
+        tenantId: number,
+        locationId: number,
+        user: User,
+        roleNames: string[],
+    ): Promise<void> {
+        const existing = await this.userLocationRepo.findOne({
+            where: { tenantId, locationId, user: { id: user.id } },
         });
-      }
+        if (existing) {
+            return;
+        }
 
-      let location = await this.locationRepo.findOne({
-        where: { tenant: { id: tenant.id }, name: 'fixture-location' },
-        relations: ['tenant'],
-      });
-      if (!location) {
-        location = await this.locationRepo.save({ tenant, name: 'fixture-location' });
-        location.tenant = tenant;
-      }
-      this.seedFixtureLocation = { tenant, location };
-    }
-    return this.seedFixtureLocation;
-  }
-
-  private async ensureUserLocation(
-    tenantId: number,
-    locationId: number,
-    user: User,
-    roleNames: string[],
-  ): Promise<void> {
-    const existing = await this.userLocationRepo.findOne({
-      where: { tenantId, locationId, user: { id: user.id } },
-    });
-    if (existing) {
-      return;
+        const roles = await this.roleRepo.find({
+            where: { tenantId, name: In(roleNames) },
+        });
+        await this.userLocationRepo.save({ tenantId, locationId, user, roles });
     }
 
-    const roles = await this.roleRepo.find({ where: { tenantId, name: In(roleNames) } });
-    await this.userLocationRepo.save({ tenantId, locationId, user, roles });
-  }
+    async seedTestDb(inputCtx?: DatabaseTestContext) {
+        const ctx = inputCtx ? inputCtx : new DatabaseTestContext();
+        //const ctx: DatabaseTestContext = new DatabaseTestContext();
 
-  async seedTestDb(inputCtx?: DatabaseTestContext) {
-    let ctx = inputCtx ? inputCtx : new DatabaseTestContext();
-    //const ctx: DatabaseTestContext = new DatabaseTestContext();
+        await this.seedInventoryAreaModuleTestDb(ctx);
+        await this.seedInventoryItemModuleTestDb(ctx);
+        await this.seedLabelModuleTestDb(ctx);
+        await this.seedMenuItemModuleTestDb(ctx);
+        await this.seedOrdersModuleTestDb(ctx);
+        await this.seedRecipeModuleTestDb(ctx);
+        await this.seedTemplateModuleTestDb(ctx);
+        await this.seedRoleModuleTestDb(ctx);
+        await this.seedUserModuleTestDb(ctx);
+    }
 
-    await this.seedInventoryAreaModuleTestDb(ctx);
-    await this.seedInventoryItemModuleTestDb(ctx);
-    await this.seedLabelModuleTestDb(ctx);
-    await this.seedMenuItemModuleTestDb(ctx);
-    await this.seedOrdersModuleTestDb(ctx);
-    await this.seedRecipeModuleTestDb(ctx);
-    await this.seedTemplateModuleTestDb(ctx);
-    await this.seedRoleModuleTestDb(ctx);
-    await this.seedUserModuleTestDb(ctx);
-  }
+    // InventoryArea
 
-  // InventoryArea
+    private async seedInventoryAreaModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedInventoryAreaTestDb(ctx);
+        await this.seedInventoryAreaCountTestDb(ctx);
+        await this.seedInventoryAreaItemTestDb(ctx);
+    }
 
-  private async seedInventoryAreaModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedInventoryAreaTestDb(ctx);
-    await this.seedInventoryAreaCountTestDb(ctx);
-    await this.seedInventoryAreaItemTestDb(ctx);
-  }
+    private async seedInventoryAreaTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryAreaTestUtil.initInventoryAreaTestDatabase(ctx);
+    }
 
-  private async seedInventoryAreaTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryAreaTestUtil.initInventoryAreaTestDatabase(ctx);
-  }
+    private async seedInventoryAreaCountTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryAreaTestUtil.initInventoryAreaCountTestDatabase(
+            ctx,
+        );
+    }
 
-  private async seedInventoryAreaCountTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryAreaTestUtil.initInventoryAreaCountTestDatabase(ctx);
-  }
+    private async seedInventoryAreaItemTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryAreaTestUtil.initInventoryAreaItemCountTestDatabase(
+            ctx,
+        );
+    }
 
-  private async seedInventoryAreaItemTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryAreaTestUtil.initInventoryAreaItemCountTestDatabase(
-      ctx,
-    );
-  }
+    // Inventory item
 
-  // Inventory item
+    private async seedInventoryItemModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedInventoryItemCategoryTestDb(ctx);
+        await this.seedInventoryItemPackageTestDb(ctx);
+        await this.seedInventoryItemVendorTestDb(ctx);
+        await this.seedInventoryItemTestDb(ctx);
+        await this.seedInventoryItemSizeTestDb(ctx);
+    }
 
-  private async seedInventoryItemModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedInventoryItemCategoryTestDb(ctx);
-    await this.seedInventoryItemPackageTestDb(ctx);
-    await this.seedInventoryItemVendorTestDb(ctx);
-    await this.seedInventoryItemTestDb(ctx);
-    await this.seedInventoryItemSizeTestDb(ctx);
-  }
+    private async seedInventoryItemCategoryTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryItemTestUtil.initInventoryItemCategoryTestDatabase(
+            ctx,
+        );
+    }
 
-  private async seedInventoryItemCategoryTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryItemTestUtil.initInventoryItemCategoryTestDatabase(ctx);
-  }
+    private async seedInventoryItemPackageTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryItemTestUtil.initInventoryItemPackageTestDatabase(
+            ctx,
+        );
+    }
 
-  private async seedInventoryItemPackageTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryItemTestUtil.initInventoryItemPackageTestDatabase(ctx);
-  }
+    private async seedInventoryItemSizeTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryItemTestUtil.initInventoryItemSizeTestDatabase(ctx);
+    }
 
-  private async seedInventoryItemSizeTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryItemTestUtil.initInventoryItemSizeTestDatabase(ctx);
-  }
+    private async seedInventoryItemVendorTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryItemTestUtil.initInventoryItemVendorTestDatabase(
+            ctx,
+        );
+    }
 
-  private async seedInventoryItemVendorTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryItemTestUtil.initInventoryItemVendorTestDatabase(ctx);
-  }
+    private async seedInventoryItemTestDb(ctx: DatabaseTestContext) {
+        await this.inventoryItemTestUtil.initInventoryItemTestDatabase(ctx);
+    }
 
-  private async seedInventoryItemTestDb(ctx: DatabaseTestContext) {
-    await this.inventoryItemTestUtil.initInventoryItemTestDatabase(ctx);
-  }
+    // Label
 
-  // Label
+    private async seedLabelModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedLabelTypeTestDb(ctx);
+        await this.seedLabelTestDb(ctx);
+    }
 
-  private async seedLabelModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedLabelTypeTestDb(ctx);
-    await this.seedLabelTestDb(ctx);
-  }
+    private async seedLabelTestDb(ctx: DatabaseTestContext) {
+        await this.labelTestUtil.initLabelTestDatabase(ctx);
+    }
 
-  private async seedLabelTestDb(ctx: DatabaseTestContext) {
-    await this.labelTestUtil.initLabelTestDatabase(ctx);
-  }
+    private async seedLabelTypeTestDb(ctx: DatabaseTestContext) {
+        await this.labelTestUtil.initLabelTypeTestDatabase(ctx);
+    }
 
-  private async seedLabelTypeTestDb(ctx: DatabaseTestContext) {
-    await this.labelTestUtil.initLabelTypeTestDatabase(ctx);
-  }
+    // MenuItem
 
-  // MenuItem
+    private async seedMenuItemModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedMenuItemCategoryTestDb(ctx);
+        await this.seedMenuItemSizeTestDb(ctx);
+        await this.seedMenuItemTestDb(ctx);
+        await this.seedMenuItemContainersTestDb(ctx);
+    }
 
-  private async seedMenuItemModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedMenuItemCategoryTestDb(ctx);
-    await this.seedMenuItemSizeTestDb(ctx);
-    await this.seedMenuItemTestDb(ctx);
-    await this.seedMenuItemContainersTestDb(ctx);
-  }
+    private async seedMenuItemCategoryTestDb(ctx: DatabaseTestContext) {
+        await this.menuItemTestUtil.initMenuItemCategoryTestDatabase(ctx);
+    }
 
-  private async seedMenuItemCategoryTestDb(ctx: DatabaseTestContext) {
-    await this.menuItemTestUtil.initMenuItemCategoryTestDatabase(ctx);
-  }
+    //private async seedMenuItemContainerOptionsTestDb(ctx: DatabaseTestContext) {}
+    //private async seedMenuItemContainerRulesTestDb(ctx: DatabaseTestContext) {}
+    private async seedMenuItemContainersTestDb(ctx: DatabaseTestContext) {
+        await this.menuItemTestUtil.initMenuItemContainerItemTestDatabase(ctx);
+    }
 
-  //private async seedMenuItemContainerOptionsTestDb(ctx: DatabaseTestContext) {}
-  //private async seedMenuItemContainerRulesTestDb(ctx: DatabaseTestContext) {}
-  private async seedMenuItemContainersTestDb(ctx: DatabaseTestContext) {
-    await this.menuItemTestUtil.initMenuItemContainerItemTestDatabase(ctx);
-  }
+    private async seedMenuItemSizeTestDb(ctx: DatabaseTestContext) {
+        await this.menuItemTestUtil.initMenuItemSizeTestDatabase(ctx);
+    }
 
-  private async seedMenuItemSizeTestDb(ctx: DatabaseTestContext) {
-    await this.menuItemTestUtil.initMenuItemSizeTestDatabase(ctx);
-  }
+    private async seedMenuItemTestDb(ctx: DatabaseTestContext) {
+        await this.menuItemTestUtil.initMenuItemTestDatabase(ctx);
+    }
 
-  private async seedMenuItemTestDb(ctx: DatabaseTestContext) {
-    await this.menuItemTestUtil.initMenuItemTestDatabase(ctx);
-  }
+    // Orders
 
-  // Orders
+    private async seedOrdersModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedOrderCategoryTestDb(ctx);
+        await this.seedOrderTestDb(ctx);
+        await this.seedOrderMenuItemTestDb(ctx);
+    }
 
-  private async seedOrdersModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedOrderCategoryTestDb(ctx);
-    await this.seedOrderTestDb(ctx);
-    await this.seedOrderMenuItemTestDb(ctx);
-  }
+    private async seedOrderCategoryTestDb(ctx: DatabaseTestContext) {
+        await this.orderTestUtil.initOrderCategoryTestDatabase(ctx);
+    }
 
-  private async seedOrderCategoryTestDb(ctx: DatabaseTestContext) {
-    await this.orderTestUtil.initOrderCategoryTestDatabase(ctx);
-  }
-
-  /*private async seedOrderContainerItemTestDb(ctx: DatabaseTestContext) {
+    /*private async seedOrderContainerItemTestDb(ctx: DatabaseTestContext) {
     
   }*/
 
-  private async seedOrderMenuItemTestDb(ctx: DatabaseTestContext) {
-    await this.orderTestUtil.initOrderMenuItemTestDatabase(ctx);
-  }
-
-  private async seedOrderTestDb(ctx: DatabaseTestContext) {
-    await this.orderTestUtil.initOrderTestDatabase(ctx);
-  }
-
-  // Recipe
-  private async seedRecipeModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedRecipeCategoryTestDb(ctx);
-    await this.seedRecipeIngredientTestDb(ctx);
-    await this.seedRecipeSubCategoryTestDb(ctx);
-    await this.seedRecipeTestDb(ctx);
-  }
-
-  private async seedRecipeTestDb(ctx: DatabaseTestContext) {
-    await this.recipeTestUtil.initRecipeTestingDatabase(ctx);
-  }
-
-  private async seedRecipeCategoryTestDb(ctx: DatabaseTestContext) {
-    await this.recipeTestUtil.initRecipeCategoryTestingDatabase(ctx);
-  }
-
-  private async seedRecipeIngredientTestDb(ctx: DatabaseTestContext) {
-    await this.recipeTestUtil.initRecipeIngredientTestingDatabase(ctx);
-  }
-
-  private async seedRecipeSubCategoryTestDb(ctx: DatabaseTestContext) {
-    await this.recipeTestUtil.initRecipeSubCategoryTestingDatabase(ctx);
-  }
-
-  // Template
-
-  private async seedTemplateModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedTemplateTestDb(ctx);
-    await this.seedTemplateMenuItemTestDb(ctx);
-  }
-
-  private async seedTemplateTestDb(ctx: DatabaseTestContext) {
-    await this.templateTestUtil.initTemplateTestDatabase(ctx);
-  }
-
-  private async seedTemplateMenuItemTestDb(ctx: DatabaseTestContext) {
-    await this.templateTestUtil.initTemplateMenuItemTestDatabase(ctx);
-  }
-
-  // Role
-  private async seedRoleModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedRoleTestDb(ctx);
-  }
-
-  private async seedRoleTestDb(ctx: DatabaseTestContext) {
-    const { tenant } = await this.getSeedFixtureLocation();
-    const roles = ['admin', 'manager', 'staff'];
-    for (const role of roles) {
-      const roleExists = await this.roleRepo.findOne({
-        where: { name: role, tenantId: tenant.id },
-      });
-      if (!roleExists) {
-        await this.roleRepo.save({ name: role, tenantId: tenant.id });
-      }
+    private async seedOrderMenuItemTestDb(ctx: DatabaseTestContext) {
+        await this.orderTestUtil.initOrderMenuItemTestDatabase(ctx);
     }
-  }
 
-  // User
-  /**
-   * Calls seed Roles function before seeding users (is dependent on roles)
-   */
-  private async seedUserModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedUserTestDb(ctx);
-  }
-
-  /**
-   * Calls seed Roles function before seeding users (is dependent on roles)
-   */
-  private async seedUserTestDb(ctx: DatabaseTestContext) {
-    await this.seedRoleTestDb(ctx);
-    const { tenant, location } = await this.getSeedFixtureLocation();
-
-    // Seed Admin account
-    let adminUser = await this.userRepo.findOne({
-      where: { name: 'admin', tenantId: tenant.id },
-    });
-    if (!adminUser) {
-      const pwrd = this.configService.get<string>('seed_admin_pwrd') || 'error';
-      if (!pwrd) {
-        throw new Error();
-      }
-
-      adminUser = await this.userRepo.save({
-        name: 'admin',
-        password: pwrd,
-        tenantId: tenant.id,
-        isTenantAdmin: true,
-      });
+    private async seedOrderTestDb(ctx: DatabaseTestContext) {
+        await this.orderTestUtil.initOrderTestDatabase(ctx);
     }
-    await this.ensureUserLocation(tenant.id, location.id, adminUser, [
-      'admin',
-      'manager',
-      'staff',
-    ]);
 
-    //Seed Manager account
-    let managerUser = await this.userRepo.findOne({
-      where: { name: 'manager', tenantId: tenant.id },
-    });
-    if (!managerUser) {
-      managerUser = await this.userRepo.save({
-        name: 'manager',
-        password: 'manager',
-        tenantId: tenant.id,
-      });
+    // Recipe
+    private async seedRecipeModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedRecipeCategoryTestDb(ctx);
+        await this.seedRecipeIngredientTestDb(ctx);
+        await this.seedRecipeSubCategoryTestDb(ctx);
+        await this.seedRecipeTestDb(ctx);
     }
-    await this.ensureUserLocation(tenant.id, location.id, managerUser, ['manager']);
 
-    //Seed Staff account
-    let staffUser = await this.userRepo.findOne({
-      where: { name: 'staff', tenantId: tenant.id },
-    });
-    if (!staffUser) {
-      staffUser = await this.userRepo.save({
-        name: 'staff',
-        password: 'staff',
-        tenantId: tenant.id,
-      });
+    private async seedRecipeTestDb(ctx: DatabaseTestContext) {
+        await this.recipeTestUtil.initRecipeTestingDatabase(ctx);
     }
-    await this.ensureUserLocation(tenant.id, location.id, staffUser, ['staff']);
-  }
+
+    private async seedRecipeCategoryTestDb(ctx: DatabaseTestContext) {
+        await this.recipeTestUtil.initRecipeCategoryTestingDatabase(ctx);
+    }
+
+    private async seedRecipeIngredientTestDb(ctx: DatabaseTestContext) {
+        await this.recipeTestUtil.initRecipeIngredientTestingDatabase(ctx);
+    }
+
+    private async seedRecipeSubCategoryTestDb(ctx: DatabaseTestContext) {
+        await this.recipeTestUtil.initRecipeSubCategoryTestingDatabase(ctx);
+    }
+
+    // Template
+
+    private async seedTemplateModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedTemplateTestDb(ctx);
+        await this.seedTemplateMenuItemTestDb(ctx);
+    }
+
+    private async seedTemplateTestDb(ctx: DatabaseTestContext) {
+        await this.templateTestUtil.initTemplateTestDatabase(ctx);
+    }
+
+    private async seedTemplateMenuItemTestDb(ctx: DatabaseTestContext) {
+        await this.templateTestUtil.initTemplateMenuItemTestDatabase(ctx);
+    }
+
+    // Role
+    private async seedRoleModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedRoleTestDb(ctx);
+    }
+
+    private async seedRoleTestDb(_ctx: DatabaseTestContext) {
+        const { tenant } = await this.getSeedFixtureLocation();
+        const roles = ['admin', 'manager', 'staff'];
+        for (const role of roles) {
+            const roleExists = await this.roleRepo.findOne({
+                where: { name: role, tenantId: tenant.id },
+            });
+            if (!roleExists) {
+                await this.roleRepo.save({ name: role, tenantId: tenant.id });
+            }
+        }
+    }
+
+    // User
+    /**
+     * Calls seed Roles function before seeding users (is dependent on roles)
+     */
+    private async seedUserModuleTestDb(ctx: DatabaseTestContext) {
+        await this.seedUserTestDb(ctx);
+    }
+
+    /**
+     * Calls seed Roles function before seeding users (is dependent on roles)
+     */
+    private async seedUserTestDb(ctx: DatabaseTestContext) {
+        await this.seedRoleTestDb(ctx);
+        const { tenant, location } = await this.getSeedFixtureLocation();
+
+        // Seed Admin account
+        let adminUser = await this.userRepo.findOne({
+            where: { name: 'admin', tenantId: tenant.id },
+        });
+        if (!adminUser) {
+            const pwrd =
+                this.configService.get<string>('seed_admin_pwrd') || 'error';
+            if (!pwrd) {
+                throw new Error();
+            }
+
+            adminUser = await this.userRepo.save({
+                name: 'admin',
+                password: pwrd,
+                tenantId: tenant.id,
+                isTenantAdmin: true,
+            });
+        }
+        await this.ensureUserLocation(tenant.id, location.id, adminUser, [
+            'admin',
+            'manager',
+            'staff',
+        ]);
+
+        //Seed Manager account
+        let managerUser = await this.userRepo.findOne({
+            where: { name: 'manager', tenantId: tenant.id },
+        });
+        if (!managerUser) {
+            managerUser = await this.userRepo.save({
+                name: 'manager',
+                password: 'manager',
+                tenantId: tenant.id,
+            });
+        }
+        await this.ensureUserLocation(tenant.id, location.id, managerUser, [
+            'manager',
+        ]);
+
+        //Seed Staff account
+        let staffUser = await this.userRepo.findOne({
+            where: { name: 'staff', tenantId: tenant.id },
+        });
+        if (!staffUser) {
+            staffUser = await this.userRepo.save({
+                name: 'staff',
+                password: 'staff',
+                tenantId: tenant.id,
+            });
+        }
+        await this.ensureUserLocation(tenant.id, location.id, staffUser, [
+            'staff',
+        ]);
+    }
 }

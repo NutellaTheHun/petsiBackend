@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsInt, IsNotEmpty, IsOptional, IsPositive } from 'class-validator';
+import {
+    IsArray,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+    IsPositive,
+} from 'class-validator';
 import { EntityId } from '../../../common/types';
 import { Role } from '../../roles/entities/role.entity';
 import { User } from '../../users/entities/user.entities';

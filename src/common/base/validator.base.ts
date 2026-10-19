@@ -1,12 +1,10 @@
 import { Repository } from 'typeorm';
-import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { ValidatorHelper } from '../validation/validatator-helper';
 import {
     ValidationErrorMap,
     ValidationErrorResponse,
 } from '../validation/validation-error';
-import { ValidationExceptionHandler } from '../validation/validation-exception.handler';
 import { EntityBase } from './entity.base';
 import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 
@@ -14,31 +12,36 @@ export abstract class ValidatorBase<
     T extends EntityBase<any, any, any>,
     I extends ValidatorIdentityBaseInterface,
 > {
-    protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto'], I>;
-    private exceptionHandler: ValidationExceptionHandler;
+    protected helper: ValidatorHelper<T['__Entity'], I>;
 
     constructor(
         private readonly entityRepo: Repository<T['__Entity']>,
         private readonly validationPrefix: string,
         protected readonly requestContextService: RequestContextService,
-        private readonly logger: AppLogger,
     ) {
-        this.exceptionHandler = new ValidationExceptionHandler(logger);
-        this.helper = new ValidatorHelper<
-            T['__Entity'],
-            T['__CDto'] | T['__UDto'],
-            I
-        >();
+        this.helper = new ValidatorHelper<T['__Entity'], I>();
     }
 
     public async validateDto(
         dto: T['__CDto'] | T['__UDto'],
         id: number | string,
     ): Promise<ValidationErrorResponse | null> {
+        const result = await this.validate(dto, id);
+        return result ? this.getValidateResponse(result) : null;
+    }
+
+    /**
+     * Same as `validateDto`, but returns the error map itself (with log-only context)
+     * so `ServiceBase` can hand it to `ValidationException`. Null when there are no errors.
+     */
+    public async validate(
+        dto: T['__CDto'] | T['__UDto'],
+        id: number | string,
+    ): Promise<ValidationErrorMap | null> {
         const resolvedIdentity = await this.resolveIdentity(dto, id);
 
         const result = await this.validateIdentity(resolvedIdentity, id);
-        return this.getValidateResponse(result);
+        return result.isEmpty() ? null : result;
     }
 
     protected abstract validateIdentity(
@@ -46,7 +49,11 @@ export abstract class ValidatorBase<
         id?: number | string,
     ): Promise<ValidationErrorMap>;
 
-    public async validateNestedIdentity(field: string, nestedIdentity: I, rootErrorMap: ValidationErrorMap, /*id: number | string*/): Promise<void> {
+    public async validateNestedIdentity(
+        field: string,
+        nestedIdentity: I,
+        rootErrorMap: ValidationErrorMap /*id: number | string*/,
+    ): Promise<void> {
         const id = nestedIdentity.id ?? nestedIdentity.createId;
         if (!id) {
             throw new Error('Nested identity id is required');

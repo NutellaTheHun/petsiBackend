@@ -35,7 +35,9 @@ describe('RoleController', () => {
         testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
         controller = module.get(RoleController);
         roleRepo = module.get(getRepositoryToken(Role));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
         ({ tenantId, roles } = await testingUtil.seedRoles(P));
         requestContext.setContext({ tenantId });
@@ -74,7 +76,9 @@ describe('RoleController', () => {
 
     it('remove deletes a created role then findOne fails', async () => {
         const created = await controller.create(
-            plainToInstance(CreateRoleDto, { name: `${P}-controller-role-remove` }),
+            plainToInstance(CreateRoleDto, {
+                name: `${P}-controller-role-remove`,
+            }),
         );
         await controller.remove(created.id);
         await expect(controller.findOne(created.id)).rejects.toThrow(

@@ -1,7 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { InventoryItemSize } from '../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../inventory-items/entities/inventory-item.entity';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
@@ -30,52 +29,51 @@ import { InventoryAreaItemValidator } from './validators/inventory-area-item.val
 import { InventoryAreaValidator } from './validators/inventory-area.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      InventoryArea,
-      InventoryAreaCount,
-      InventoryAreaItem,
-      InventoryItem,
-      InventoryItemSize,
-    ]),
-    InventoryItemsModule,
-    TenantsModule,
-    LocationsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [
-    InventoryAreaController,
-    InventoryAreaCountController,
-    InventoryAreaItemController,
-  ],
-  providers: [
-    InventoryAreaService,
-    InventoryAreaCountService,
-    InventoryAreaItemService,
+    imports: [
+        TypeOrmModule.forFeature([
+            InventoryArea,
+            InventoryAreaCount,
+            InventoryAreaItem,
+            InventoryItem,
+            InventoryItemSize,
+        ]),
+        InventoryItemsModule,
+        TenantsModule,
+        LocationsModule,
+        CacheModule.register(),
+        RequestContextModule,
+    ],
+    controllers: [
+        InventoryAreaController,
+        InventoryAreaCountController,
+        InventoryAreaItemController,
+    ],
+    providers: [
+        InventoryAreaService,
+        InventoryAreaCountService,
+        InventoryAreaItemService,
 
-    InventoryAreaBuilder,
-    InventoryAreaCountBuilder,
-    InventoryAreaItemBuilder,
+        InventoryAreaBuilder,
+        InventoryAreaCountBuilder,
+        InventoryAreaItemBuilder,
 
-    InventoryAreaValidator,
-    InventoryAreaCountValidator,
-    InventoryAreaItemValidator,
+        InventoryAreaValidator,
+        InventoryAreaCountValidator,
+        InventoryAreaItemValidator,
 
-    InventoryAreaItemComposer,
-    InventoryAreaChangeDetector,
-    InventoryAreaItemChangeDetector,
-    InventoryAreaCountChangeDetector,
+        InventoryAreaItemComposer,
+        InventoryAreaChangeDetector,
+        InventoryAreaItemChangeDetector,
+        InventoryAreaCountChangeDetector,
 
-    InventoryAreaTestUtil,
-  ],
-  exports: [
-    InventoryAreaService,
-    InventoryAreaCountService,
-    InventoryAreaItemService,
+        InventoryAreaTestUtil,
+    ],
+    exports: [
+        InventoryAreaService,
+        InventoryAreaCountService,
+        InventoryAreaItemService,
 
-    InventoryAreaTestUtil,
-  ],
+        InventoryAreaTestUtil,
+    ],
 })
 export class InventoryAreasModule {}

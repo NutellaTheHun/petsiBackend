@@ -140,18 +140,6 @@
             }
           },
           {
-            "name": "filters",
-            "required": false,
-            "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **role** (e.g., `role=5`)",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "relations",
             "required": false,
             "in": "query",
@@ -314,6 +302,527 @@
         "summary": "Retrieves one User",
         "tags": [
           "User"
+        ]
+      }
+    },
+    "/tenants": {
+      "post": {
+        "operationId": "TenantController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tenant successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tenant"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Tenant",
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "get": {
+        "operationId": "TenantController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n                - name\n\n                - subdomain",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Tenant"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Tenants",
+        "tags": [
+          "Tenant"
+        ]
+      }
+    },
+    "/tenants/{id}": {
+      "put": {
+        "operationId": "TenantController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tenant successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tenant"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          },
+          "404": {
+            "description": "Tenant to update not found."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Updates a Tenant",
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "delete": {
+        "operationId": "TenantController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tenant successfully removed"
+          },
+          "404": {
+            "description": "Tenant not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a Tenant",
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "get": {
+        "operationId": "TenantController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tenant"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tenant not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves one Tenant",
+        "tags": [
+          "Tenant"
+        ]
+      }
+    },
+    "/role-features": {
+      "post": {
+        "operationId": "RoleFeatureController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleFeatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "RoleFeature successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleFeature"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Grants a Feature to a Role",
+        "tags": [
+          "RoleFeature"
+        ]
+      },
+      "get": {
+        "operationId": "RoleFeatureController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RoleFeature"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of RoleFeatures",
+        "tags": [
+          "RoleFeature"
+        ]
+      }
+    },
+    "/role-features/{id}": {
+      "put": {
+        "operationId": "RoleFeatureController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleFeatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RoleFeature unchanged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleFeature"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RoleFeature to update not found."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "No-op: RoleFeature grants are added/removed, never edited in place",
+        "tags": [
+          "RoleFeature"
+        ]
+      },
+      "delete": {
+        "operationId": "RoleFeatureController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "RoleFeature successfully removed"
+          },
+          "404": {
+            "description": "RoleFeature not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Revokes a Feature grant from a Role",
+        "tags": [
+          "RoleFeature"
+        ]
+      },
+      "get": {
+        "operationId": "RoleFeatureController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RoleFeature found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleFeature"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RoleFeature not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves one RoleFeature",
+        "tags": [
+          "RoleFeature"
+        ]
+      }
+    },
+    "/tenant-features": {
+      "get": {
+        "operationId": "TenantFeatureController_findEnabled",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The tenant's enabled features",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller is not a tenant admin"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves the caller's tenant's enabled features (tenant-admin only)",
+        "tags": [
+          "TenantFeature"
         ]
       }
     },
@@ -560,6 +1069,513 @@
         "summary": "Retrieves one Role",
         "tags": [
           "Role"
+        ]
+      }
+    },
+    "/locations": {
+      "post": {
+        "operationId": "LocationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Location successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Location",
+        "tags": [
+          "Location"
+        ]
+      },
+      "get": {
+        "operationId": "LocationController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n                - name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Location"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Locations",
+        "tags": [
+          "Location"
+        ]
+      }
+    },
+    "/locations/{id}": {
+      "put": {
+        "operationId": "LocationController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          },
+          "404": {
+            "description": "Location to update not found."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Updates a Location",
+        "tags": [
+          "Location"
+        ]
+      },
+      "delete": {
+        "operationId": "LocationController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Location successfully removed"
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a Location",
+        "tags": [
+          "Location"
+        ]
+      },
+      "get": {
+        "operationId": "LocationController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves one Location",
+        "tags": [
+          "Location"
+        ]
+      }
+    },
+    "/user-locations": {
+      "post": {
+        "operationId": "UserLocationController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "UserLocation successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLocation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          },
+          "403": {
+            "description": "Caller is not authorized for the target location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Assigns a User to a Location with a set of Roles",
+        "tags": [
+          "UserLocation"
+        ]
+      },
+      "get": {
+        "operationId": "UserLocationController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **user** (e.g., `user=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserLocation"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of UserLocation assignments",
+        "tags": [
+          "UserLocation"
+        ]
+      }
+    },
+    "/user-locations/{id}": {
+      "put": {
+        "operationId": "UserLocationController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "UserLocation successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLocation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          },
+          "403": {
+            "description": "Caller is not authorized for the target location"
+          },
+          "404": {
+            "description": "UserLocation to update not found."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Updates a UserLocation assignment",
+        "tags": [
+          "UserLocation"
+        ]
+      },
+      "delete": {
+        "operationId": "UserLocationController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "UserLocation successfully removed"
+          },
+          "404": {
+            "description": "UserLocation not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a UserLocation assignment",
+        "tags": [
+          "UserLocation"
+        ]
+      },
+      "get": {
+        "operationId": "UserLocationController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UserLocation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLocation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "UserLocation not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves one UserLocation assignment",
+        "tags": [
+          "UserLocation"
         ]
       }
     },
@@ -6559,6 +7575,472 @@
           "Template Menu Item"
         ]
       }
+    },
+    "/reports/definitions": {
+      "post": {
+        "operationId": "ReportDefinitionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportDefinitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      },
+      "get": {
+        "operationId": "ReportDefinitionController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/definitions/{id}": {
+      "get": {
+        "operationId": "ReportDefinitionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      },
+      "put": {
+        "operationId": "ReportDefinitionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReportDefinitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      },
+      "delete": {
+        "operationId": "ReportDefinitionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/definitions/{id}/execute": {
+      "post": {
+        "operationId": "ReportDefinitionController_execute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/reports/schema": {
+      "get": {
+        "operationId": "ReportSchemaController_getSchema",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Reports"
+        ]
+      }
+    },
+    "/settings": {
+      "post": {
+        "operationId": "SettingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Setting successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Setting"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Setting (tenant default if locationId is omitted, location override otherwise)",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "get": {
+        "operationId": "SettingsController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n          - name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Setting"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Settings (raw rows)",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/settings/{id}": {
+      "put": {
+        "operationId": "SettingsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Setting successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Setting"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          },
+          "404": {
+            "description": "Setting to update not found."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Updates a Setting's value",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "delete": {
+        "operationId": "SettingsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Setting successfully removed"
+          },
+          "404": {
+            "description": "Setting not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a Setting (a removed location override falls back to the tenant default)",
+        "tags": [
+          "Settings"
+        ]
+      },
+      "get": {
+        "operationId": "SettingsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Setting found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Setting"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Setting not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves one Setting",
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
+    "/settings/effective": {
+      "get": {
+        "operationId": "SettingsController_getEffective",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Effective settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EffectiveSettingDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Returns the effective settings (tenant defaults with location overrides applied) for one location in a single call",
+        "tags": [
+          "Settings"
+        ]
+      }
     }
   },
   "info": {
@@ -6612,11 +8094,23 @@
             "items": {
               "type": "string"
             }
+          },
+          "features": {
+            "description": "for frontend rendering, not for any authentication reasons",
+            "example": [
+              "ORDER_MANAGEMENT",
+              "RECIPE_MANAGEMENT"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "access_token",
-          "roles"
+          "roles",
+          "features"
         ]
       },
       "User": {
@@ -6626,6 +8120,16 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the user"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "isTenantAdmin": {
+            "type": "boolean",
+            "example": false,
+            "description": "Grants access to every current and future location under the tenant without a per-location UserLocation assignment"
           },
           "createdAt": {
             "format": "date-time",
@@ -6655,71 +8159,17 @@
             "description": "Email address",
             "format": "email",
             "nullable": true
-          },
-          "roles": {
-            "example": [
-              {
-                "id": 1,
-                "name": "staff",
-                "users": [
-                  {}
-                ]
-              }
-            ],
-            "description": "list of roles the user possess to determine feature access",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Role"
-            }
           }
         },
         "required": [
           "id",
+          "tenantId",
+          "isTenantAdmin",
           "createdAt",
           "updatedAt",
           "name",
           "password",
-          "email",
-          "roles"
-        ]
-      },
-      "Role": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "example": 1,
-            "description": "The unique identifier of the entity"
-          },
-          "name": {
-            "type": "string",
-            "example": "Staff",
-            "description": "Name of the role"
-          },
-          "users": {
-            "example": [
-              {
-                "id": 1,
-                "createdAt": "2026-07-03T17:41:01.431Z",
-                "updatedAt": "2026-07-03T17:41:01.431Z",
-                "name": "jim",
-                "email": "jim@email.com",
-                "roles": [
-                  {}
-                ]
-              }
-            ],
-            "description": "List of users who possess this role",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/User"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "users"
+          "email"
         ]
       },
       "CreateUserDto": {
@@ -6741,16 +8191,10 @@
             "example": "jjsmithy@email.com",
             "format": "email"
           },
-          "roleIds": {
-            "description": "Id of roles the user has.",
-            "example": [
-              1,
-              2
-            ],
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+          "isTenantAdmin": {
+            "type": "boolean",
+            "description": "Grants access to every location under the tenant without a per-location UserLocation assignment. Defaults to false.",
+            "example": false
           }
         },
         "required": [
@@ -6777,23 +8221,254 @@
             "example": "jjsmithy@email.com",
             "format": "email"
           },
-          "roleIds": {
-            "description": "Id of roles the user has.",
-            "example": [
-              1,
-              2
-            ],
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+          "isTenantAdmin": {
+            "type": "boolean",
+            "description": "Grants access to every location under the tenant without a per-location UserLocation assignment.",
+            "example": false
           }
         },
         "required": [
           "name",
           "password",
-          "email",
-          "roleIds"
+          "email"
+        ]
+      },
+      "Tenant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the entity"
+          },
+          "name": {
+            "type": "string",
+            "example": "Petsi Pies",
+            "description": "Name of the tenant"
+          },
+          "subdomain": {
+            "type": "string",
+            "description": "Unique subdomain the tenant is resolved from (e.g. tenant1.app.com).",
+            "example": "petsi"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-06-06T19:22:07.102Z",
+            "description": "Date the tenant was created"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-06-06T19:22:07.102Z",
+            "description": "Date the tenant was last modified"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subdomain",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the Tenant entity.",
+            "example": "Petsi Pies"
+          },
+          "subdomain": {
+            "type": "string",
+            "description": "Unique subdomain the Tenant is resolved from (e.g. tenant1.app.com).",
+            "example": "petsi"
+          }
+        },
+        "required": [
+          "name",
+          "subdomain"
+        ]
+      },
+      "UpdateTenantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the Tenant entity.",
+            "example": "Petsi Pies"
+          },
+          "subdomain": {
+            "type": "string",
+            "description": "Unique subdomain the Tenant is resolved from (e.g. tenant1.app.com).",
+            "example": "petsi"
+          }
+        },
+        "required": [
+          "name",
+          "subdomain"
+        ]
+      },
+      "RoleFeature": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "roleId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Role this feature is granted to"
+          },
+          "feature": {
+            "type": "string",
+            "example": "RECIPE_MANAGEMENT",
+            "description": "The granted feature"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "roleId",
+          "feature"
+        ]
+      },
+      "CreateRoleFeatureDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "number",
+            "example": 1,
+            "description": "Id of the Role this feature is granted to"
+          },
+          "feature": {
+            "type": "string",
+            "example": "RECIPE_MANAGEMENT",
+            "description": "Feature to grant. Must be a name registered in the Feature registry.",
+            "enum": [
+              "ORDER_MANAGEMENT",
+              "INVENTORY_MANAGEMENT",
+              "RECIPE_MANAGEMENT",
+              "LABEL_PRINTING"
+            ]
+          }
+        },
+        "required": [
+          "roleId",
+          "feature"
+        ]
+      },
+      "UpdateRoleFeatureDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "name": {
+            "type": "string",
+            "example": "Staff",
+            "description": "Name of the role"
+          },
+          "userLocations": {
+            "example": [
+              {
+                "id": 1,
+                "locationId": 1,
+                "user": {},
+                "roles": [
+                  {}
+                ]
+              }
+            ],
+            "description": "List of location assignments where a user holds this role",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLocation"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "name",
+          "userLocations"
+        ]
+      },
+      "UserLocation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this assignment grants access to"
+          },
+          "user": {
+            "example": {
+              "id": 1,
+              "createdAt": "2026-10-16T23:36:06.115Z",
+              "updatedAt": "2026-10-16T23:36:06.115Z",
+              "name": "jim",
+              "email": "jim@email.com"
+            },
+            "description": "The user this assignment is for",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ]
+          },
+          "roles": {
+            "example": [
+              {
+                "id": 1,
+                "name": "staff",
+                "userLocations": [
+                  {}
+                ]
+              }
+            ],
+            "description": "Roles the user holds at this location",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "locationId",
+          "user",
+          "roles"
         ]
       },
       "CreateRoleDto": {
@@ -6822,6 +8497,197 @@
           "name"
         ]
       },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the entity"
+          },
+          "tenant": {
+            "example": {
+              "id": 1,
+              "name": "Petsi Pies",
+              "subdomain": "petsi"
+            },
+            "description": "The Tenant this location belongs to",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Tenant"
+              }
+            ]
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "name": {
+            "type": "string",
+            "example": "Downtown",
+            "description": "Name of the location"
+          },
+          "address": {
+            "type": "string",
+            "description": "Street address of the location.",
+            "example": "1 Broken Dreams Blvd",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Contact phone number for the location.",
+            "example": "555-420-6969",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact email for the location.",
+            "example": "downtown@petsi.com",
+            "nullable": true,
+            "format": "email"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-06-06T19:22:07.102Z",
+            "description": "Date the location was created"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-06-06T19:22:07.102Z",
+            "description": "Date the location was last modified"
+          }
+        },
+        "required": [
+          "id",
+          "tenant",
+          "tenantId",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateLocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the Location entity.",
+            "example": "Downtown"
+          },
+          "address": {
+            "type": "string",
+            "description": "Street address of the location.",
+            "example": "1 Broken Dreams Blvd",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Contact phone number for the location.",
+            "example": "555-420-6969",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact email for the location.",
+            "example": "downtown@petsi.com",
+            "nullable": true,
+            "format": "email"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateLocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the Location entity.",
+            "example": "Downtown"
+          },
+          "address": {
+            "type": "string",
+            "description": "Street address of the location.",
+            "example": "1 Broken Dreams Blvd",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Contact phone number for the location.",
+            "example": "555-420-6969",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact email for the location.",
+            "example": "downtown@petsi.com",
+            "nullable": true,
+            "format": "email"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateUserLocationDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "Id of the User being assigned to the location.",
+            "example": 1
+          },
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location the user is being assigned to.",
+            "example": 1
+          },
+          "roleIds": {
+            "description": "Ids of the roles the user holds at this location.",
+            "example": [
+              1,
+              2
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "userId",
+          "locationId"
+        ]
+      },
+      "UpdateUserLocationDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location the user is assigned to.",
+            "example": 1
+          },
+          "roleIds": {
+            "description": "Ids of the roles the user holds at this location.",
+            "example": [
+              1,
+              2
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "locationId",
+          "roleIds"
+        ]
+      },
       "InventoryArea": {
         "type": "object",
         "properties": {
@@ -6829,6 +8695,16 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
           },
           "name": {
             "type": "string",
@@ -6838,7 +8714,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2026-07-03T17:41:01.692Z",
+              "countDate": "2026-10-16T23:36:06.253Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -6853,6 +8729,8 @@
         },
         "required": [
           "id",
+          "tenantId",
+          "locationId",
           "name",
           "inventoryCounts"
         ]
@@ -6864,6 +8742,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "name": {
             "type": "string",
@@ -6891,6 +8774,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "inventoryItems"
         ]
@@ -6902,6 +8786,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "name": {
             "type": "string",
@@ -6929,6 +8818,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "inventoryItems"
         ]
@@ -6941,6 +8831,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "Box",
@@ -6949,6 +8844,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name"
         ]
       },
@@ -6959,6 +8855,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "inventoryItem": {
             "example": {
@@ -7008,6 +8909,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "inventoryItem",
           "package",
           "unit",
@@ -7022,6 +8924,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "name": {
             "type": "string",
@@ -7083,6 +8990,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "category",
           "vendor",
@@ -7096,6 +9004,16 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
           },
           "countedInventoryItem": {
             "example": {
@@ -7141,7 +9059,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2026-07-03T17:41:01.691Z",
+              "countDate": "2026-10-16T23:36:06.252Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -7157,6 +9075,8 @@
         },
         "required": [
           "id",
+          "tenantId",
+          "locationId",
           "countedInventoryItem",
           "amount",
           "countedItemSize",
@@ -7170,6 +9090,16 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
           },
           "countDate": {
             "format": "date-time",
@@ -7229,6 +9159,8 @@
         },
         "required": [
           "id",
+          "tenantId",
+          "locationId",
           "countDate",
           "inventoryArea",
           "countedInventoryItems"
@@ -7241,10 +9173,16 @@
             "type": "string",
             "description": "Name of the inventory area.",
             "example": "Dry Storage"
+          },
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location this area belongs to.",
+            "example": 1
           }
         },
         "required": [
-          "name"
+          "name",
+          "locationId"
         ]
       },
       "UpdateInventoryAreaDto": {
@@ -7254,10 +9192,16 @@
             "type": "string",
             "description": "Name of the inventory area.",
             "example": "Dry Storage"
+          },
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location this area belongs to.",
+            "example": 1
           }
         },
         "required": [
-          "name"
+          "name",
+          "locationId"
         ]
       },
       "NestedCreateInventoryItemSizeDto": {
@@ -7486,6 +9430,14 @@
           "parentInventoryCountId": {
             "type": "number",
             "description": "TODO"
+          },
+          "tenantId": {
+            "type": "number",
+            "description": "The parent InventoryAreaCount's tenantId. Populated internally, not client-supplied."
+          },
+          "locationId": {
+            "type": "number",
+            "description": "The parent InventoryAreaCount's locationId. Populated internally, not client-supplied."
           }
         },
         "required": [
@@ -7821,6 +9773,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "Pastry",
@@ -7830,8 +9787,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-07-03T17:41:01.653Z",
-                "updatedAt": "2026-07-03T17:41:01.653Z",
+                "createdAt": "2026-10-16T23:36:06.169Z",
+                "updatedAt": "2026-10-16T23:36:06.169Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -7856,6 +9813,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "menuItems"
         ]
@@ -7868,6 +9826,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "medium",
@@ -7876,6 +9839,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name"
         ]
       },
@@ -7886,6 +9850,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "createdAt": {
             "format": "date-time",
@@ -7943,6 +9912,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "createdAt",
           "updatedAt",
           "name",
@@ -7958,6 +9928,11 @@
             "type": "number",
             "description": "The unique identifier of the entity",
             "example": 1
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "name": {
             "type": "string",
@@ -7977,6 +9952,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "length",
           "width"
@@ -7990,6 +9966,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "imageUrl": {
             "type": "string",
             "description": "URL path to the stored image file",
@@ -7998,8 +9979,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.741Z",
-              "updatedAt": "2026-07-03T17:41:01.741Z",
+              "createdAt": "2026-10-16T23:36:06.323Z",
+              "updatedAt": "2026-10-16T23:36:06.323Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8038,6 +10019,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "imageUrl",
           "menuItem",
           "labelType"
@@ -8655,11 +10637,16 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.653Z",
-              "updatedAt": "2026-07-03T17:41:01.653Z",
+              "createdAt": "2026-10-16T23:36:06.169Z",
+              "updatedAt": "2026-10-16T23:36:06.169Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8701,8 +10688,8 @@
           "parentMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.653Z",
-              "updatedAt": "2026-07-03T17:41:01.653Z",
+              "createdAt": "2026-10-16T23:36:06.169Z",
+              "updatedAt": "2026-10-16T23:36:06.169Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8739,6 +10726,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "containedMenuItem",
           "containedItemSize",
           "quantity",
@@ -8815,6 +10803,11 @@
             "type": "number",
             "example": 1
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "holderEntityType": {
             "type": "string",
             "enum": [
@@ -8861,6 +10854,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "holderEntityType",
           "holderCategory",
           "propertyName",
@@ -8949,11 +10943,21 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
+          },
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.712Z",
-              "updatedAt": "2026-07-03T17:41:01.712Z",
+              "createdAt": "2026-10-16T23:36:06.281Z",
+              "updatedAt": "2026-10-16T23:36:06.281Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8998,8 +11002,8 @@
               "parentOrder": {},
               "menuItem": {
                 "id": 1,
-                "createdAt": "2026-07-03T17:41:01.713Z",
-                "updatedAt": "2026-07-03T17:41:01.713Z",
+                "createdAt": "2026-10-16T23:36:06.281Z",
+                "updatedAt": "2026-10-16T23:36:06.281Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -9033,6 +11037,8 @@
         },
         "required": [
           "id",
+          "tenantId",
+          "locationId",
           "containedMenuItem",
           "containedItemSize",
           "quantity",
@@ -9047,11 +11053,21 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
+          },
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.713Z",
-              "updatedAt": "2026-07-03T17:41:01.713Z",
+              "createdAt": "2026-10-16T23:36:06.282Z",
+              "updatedAt": "2026-10-16T23:36:06.282Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -9097,8 +11113,8 @@
                 "parentOrderMenuItem": {},
                 "containedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-07-03T17:41:01.713Z",
-                  "updatedAt": "2026-07-03T17:41:01.713Z",
+                  "createdAt": "2026-10-16T23:36:06.282Z",
+                  "updatedAt": "2026-10-16T23:36:06.282Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -9131,9 +11147,9 @@
               "id": 1,
               "category": {},
               "recipient": "alberto",
-              "createdAt": "2026-07-03T17:41:01.713Z",
-              "updatedAt": "2026-07-03T17:41:01.713Z",
-              "fulfillmentDate": "2026-07-03T17:41:01.713Z",
+              "createdAt": "2026-10-16T23:36:06.282Z",
+              "updatedAt": "2026-10-16T23:36:06.282Z",
+              "fulfillmentDate": "2026-10-16T23:36:06.282Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -9157,6 +11173,8 @@
         },
         "required": [
           "id",
+          "tenantId",
+          "locationId",
           "menuItem",
           "size",
           "quantity",
@@ -9166,6 +11184,16 @@
       "RecurringOrderSchedule": {
         "type": "object",
         "properties": {
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
+          },
           "order": {
             "example": 1,
             "description": "The unique identifier of the order that this schedule is for",
@@ -9199,6 +11227,8 @@
           }
         },
         "required": [
+          "tenantId",
+          "locationId",
           "order",
           "rrule",
           "startDate",
@@ -9213,6 +11243,16 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Location this entity belongs to"
           },
           "createdAt": {
             "format": "date-time",
@@ -9300,8 +11340,8 @@
                 "parentOrder": {},
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-07-03T17:41:01.714Z",
-                  "updatedAt": "2026-07-03T17:41:01.714Z",
+                  "createdAt": "2026-10-16T23:36:06.283Z",
+                  "updatedAt": "2026-10-16T23:36:06.283Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -9327,8 +11367,8 @@
                     "parentOrderMenuItem": {},
                     "containedMenuItem": {
                       "id": 1,
-                      "createdAt": "2026-07-03T17:41:01.714Z",
-                      "updatedAt": "2026-07-03T17:41:01.714Z",
+                      "createdAt": "2026-10-16T23:36:06.283Z",
+                      "updatedAt": "2026-10-16T23:36:06.283Z",
                       "type": "container",
                       "name": "Classic Apple",
                       "category": {},
@@ -9363,8 +11403,8 @@
               "id": 1,
               "order": {},
               "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
-              "startDate": "2026-07-03T17:41:01.714Z",
-              "endDate": "2026-07-03T17:41:01.714Z"
+              "startDate": "2026-10-16T23:36:06.283Z",
+              "endDate": "2026-10-16T23:36:06.283Z"
             },
             "description": "The schedule of the recurring order",
             "nullable": true,
@@ -9398,6 +11438,8 @@
         },
         "required": [
           "id",
+          "tenantId",
+          "locationId",
           "createdAt",
           "updatedAt",
           "recipient",
@@ -9425,6 +11467,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "wholesale",
@@ -9436,9 +11483,9 @@
                 "id": 1,
                 "category": {},
                 "recipient": "alberto",
-                "createdAt": "2026-07-03T17:41:01.714Z",
-                "updatedAt": "2026-07-03T17:41:01.714Z",
-                "fulfillmentDate": "2026-07-03T17:41:01.714Z",
+                "createdAt": "2026-10-16T23:36:06.284Z",
+                "updatedAt": "2026-10-16T23:36:06.284Z",
+                "fulfillmentDate": "2026-10-16T23:36:06.284Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9462,6 +11509,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "orders"
         ]
@@ -9695,6 +11743,11 @@
             "example": 1,
             "description": "Id of OrderType entity."
           },
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location this order belongs to.",
+            "example": 1
+          },
           "orderedItems": {
             "description": "An array of CreateOrderMenuItemDtos.",
             "example": [
@@ -9775,6 +11828,7 @@
           "isWeekly",
           "weeklyFulfillment",
           "categoryId",
+          "locationId",
           "orderedItems",
           "templateOrderId",
           "occurrenceType",
@@ -10169,6 +12223,11 @@
             "description": "Id of OrderType entity.",
             "example": 1
           },
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location this order belongs to.",
+            "example": 1
+          },
           "orderedItems": {
             "type": "array",
             "description": "When present, replaces all line items for this order (authoritative). Omit to leave lines unchanged.",
@@ -10247,6 +12306,7 @@
           "isWeekly",
           "weeklyFulfillment",
           "categoryId",
+          "locationId",
           "occurrenceType",
           "occurrenceState",
           "recurrenceSchedule"
@@ -10324,13 +12384,25 @@
             "type": "number",
             "description": "Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.",
             "example": 1
+          },
+          "tenantId": {
+            "type": "number",
+            "description": "The parent Order's tenantId. Populated internally, not client-supplied.",
+            "example": 1
+          },
+          "locationId": {
+            "type": "number",
+            "description": "The parent Order's locationId. Populated internally, not client-supplied.",
+            "example": 1
           }
         },
         "required": [
           "menuItemId",
           "sizeId",
           "quantity",
-          "parentOrderId"
+          "parentOrderId",
+          "tenantId",
+          "locationId"
         ]
       },
       "UpdateOrderMenuItemDto": {
@@ -10412,13 +12484,25 @@
             "type": "number",
             "description": "Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.",
             "example": 1
+          },
+          "tenantId": {
+            "type": "number",
+            "description": "The parent Order's tenantId. Populated internally, not client-supplied.",
+            "example": 1
+          },
+          "locationId": {
+            "type": "number",
+            "description": "The parent Order's locationId. Populated internally, not client-supplied.",
+            "example": 1
           }
         },
         "required": [
           "containedMenuItemId",
           "containedItemSizeId",
           "quantity",
-          "parentOrderMenuItemId"
+          "parentOrderMenuItemId",
+          "tenantId",
+          "locationId"
         ]
       },
       "UpdateOrderContainerItemDto": {
@@ -10453,6 +12537,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "ingredientInventoryItem": {
             "example": {
@@ -10498,8 +12587,8 @@
               "name": "Classic Apple Pie",
               "producedMenuItem": {
                 "id": 1,
-                "createdAt": "2026-07-03T17:41:01.791Z",
-                "updatedAt": "2026-07-03T17:41:01.791Z",
+                "createdAt": "2026-10-16T23:36:06.393Z",
+                "updatedAt": "2026-10-16T23:36:06.393Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -10536,6 +12625,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "ingredientInventoryItem",
           "ingredientRecipe",
           "quantity",
@@ -10551,6 +12641,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "Apple Mix",
@@ -10559,8 +12654,8 @@
           "producedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.791Z",
-              "updatedAt": "2026-07-03T17:41:01.791Z",
+              "createdAt": "2026-10-16T23:36:06.393Z",
+              "updatedAt": "2026-10-16T23:36:06.393Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10685,6 +12780,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "producedMenuItem",
           "batchResultQuantity",
@@ -10706,6 +12802,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "Savory Pie",
@@ -10718,8 +12819,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-07-03T17:41:01.791Z",
-                  "updatedAt": "2026-07-03T17:41:01.791Z",
+                  "createdAt": "2026-10-16T23:36:06.394Z",
+                  "updatedAt": "2026-10-16T23:36:06.394Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10774,6 +12875,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "recipes",
           "parentCategory"
@@ -10786,6 +12888,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "name": {
             "type": "string",
@@ -10816,8 +12923,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-07-03T17:41:01.792Z",
-                  "updatedAt": "2026-07-03T17:41:01.792Z",
+                  "createdAt": "2026-10-16T23:36:06.395Z",
+                  "updatedAt": "2026-10-16T23:36:06.395Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10854,6 +12961,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "subCategories",
           "recipes"
@@ -11332,6 +13440,11 @@
             "example": 1,
             "description": "The unique identifier of the entity"
           },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
           "name": {
             "type": "string",
             "example": "Spring Pies",
@@ -11344,8 +13457,8 @@
                 "displayName": "CLAPPLE",
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-07-03T17:41:01.818Z",
-                  "updatedAt": "2026-07-03T17:41:01.818Z",
+                  "createdAt": "2026-10-16T23:36:06.428Z",
+                  "updatedAt": "2026-10-16T23:36:06.428Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -11373,6 +13486,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "name",
           "templateMenuItems"
         ]
@@ -11384,6 +13498,11 @@
             "type": "number",
             "example": 1,
             "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
           },
           "displayName": {
             "type": "string",
@@ -11398,8 +13517,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-07-03T17:41:01.818Z",
-              "updatedAt": "2026-07-03T17:41:01.818Z",
+              "createdAt": "2026-10-16T23:36:06.428Z",
+              "updatedAt": "2026-10-16T23:36:06.428Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -11440,6 +13559,7 @@
         },
         "required": [
           "id",
+          "tenantId",
           "displayName",
           "tablePosIndex",
           "menuItem",
@@ -11626,6 +13746,306 @@
           "displayName",
           "tablePosIndex",
           "menuItemId"
+        ]
+      },
+      "CreateReportDefinitionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateReportDefinitionDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ExecuteReportDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "Setting": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the entity"
+          },
+          "tenantId": {
+            "type": "number",
+            "example": 1,
+            "description": "The Tenant this entity belongs to"
+          },
+          "locationId": {
+            "type": "object",
+            "example": 1,
+            "description": "The Location this setting overrides, or null for the tenant-wide default",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "example": "taxRate",
+            "description": "The setting key"
+          },
+          "valueType": {
+            "type": "string",
+            "enum": [
+              "string",
+              "number",
+              "boolean",
+              "json"
+            ],
+            "description": "The declared type of `value`"
+          },
+          "value": {
+            "type": "string",
+            "example": "0.08",
+            "description": "The raw stored value, serialized per valueType"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "locationId",
+          "name",
+          "valueType",
+          "value",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateSettingDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "number",
+            "description": "Id of the Location this setting overrides. Omit to write the tenant-wide default.",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Setting key. Must be a name registered in the backend SettingKey registry.",
+            "example": "taxRate"
+          },
+          "value": {
+            "type": "object",
+            "description": "Value for the setting. Its type must match the SettingKey registry's declared valueType for `name` (string, number, boolean, or a JSON object/array).",
+            "example": 0.08
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      },
+      "UpdateSettingDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "object",
+            "description": "New value for the setting. Its type must match the SettingKey registry's declared valueType for this setting's `name`.",
+            "example": 0.0825
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "EffectiveSettingDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "taxRate"
+          },
+          "valueType": {
+            "type": "string",
+            "enum": [
+              "string",
+              "number",
+              "boolean",
+              "json"
+            ]
+          },
+          "value": {
+            "type": "object",
+            "example": 0.08
+          },
+          "isOverridden": {
+            "type": "boolean",
+            "description": "True if this value comes from a location-specific override rather than the tenant default.",
+            "example": false
+          }
+        },
+        "required": [
+          "name",
+          "valueType",
+          "value",
+          "isOverridden"
+        ]
+      },
+      "ErrorResponseCode": {
+        "type": "string",
+        "enum": [
+          "VALIDATION_ERROR",
+          "INVALID_REQUEST",
+          "ALREADY_EXISTS",
+          "REFERENCE_CONFLICT",
+          "INTERNAL_ERROR",
+          "REFERENCE_NOT_FOUND"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "path": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ErrorResponseCode"
+              }
+            ]
+          },
+          "details": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ValidationErrorDetailsDto"
+              },
+              {
+                "$ref": "#/components/schemas/InvalidRequestDetailsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "statusCode",
+          "timestamp",
+          "path",
+          "requestId",
+          "message"
+        ]
+      },
+      "ValidationErrorCode": {
+        "type": "string",
+        "enum": [
+          "REFERENCE_NOT_FOUND",
+          "INVALID_REFERENCE",
+          "INCONSISTENT_STATE",
+          "IMMUTABLE_FIELD",
+          "DUPLICATE_ITEMS",
+          "ALREADY_EXISTS",
+          "MISSING_PROPERTY",
+          "OUT_OF_RANGE",
+          "CONFLICTING_VALUES"
+        ]
+      },
+      "ValidationErrorPayloadDto": {
+        "type": "object",
+        "properties": {
+          "errorCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ValidationErrorCode"
+              }
+            ]
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "errorCode"
+        ]
+      },
+      "ValidationErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "errorPayload": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorPayloadDto"
+            }
+          },
+          "nestedErrors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ValidationErrorResponseDto"
+              }
+            }
+          }
+        }
+      },
+      "ValidationErrorDetailsDto": {
+        "type": "object",
+        "properties": {
+          "validationErrors": {
+            "$ref": "#/components/schemas/ValidationErrorResponseDto"
+          }
+        },
+        "required": [
+          "validationErrors"
+        ]
+      },
+      "InvalidRequestDetailsDto": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "fields"
         ]
       }
     }

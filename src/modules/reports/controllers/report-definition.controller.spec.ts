@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, INestApplication, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+    CanActivate,
+    ExecutionContext,
+    INestApplication,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -12,6 +18,8 @@ import { ReportDefinitionController } from './report-definition.controller';
 import { ReportDefinitionService } from '../services/report-definition.service';
 import { ReportExecutionService } from '../services/report-execution.service';
 import { ReportSchemaController } from './report-schema.controller';
+import { AppRequest, JwtPayload } from '../../auth/utils/jwt-payload';
+import { ReportSchemaDto } from '../dto/report-schema.dto';
 
 const TEST_JWT_SECRET = 'report-ctrl-test-secret';
 
@@ -20,11 +28,13 @@ class TestAuthGuard implements CanActivate {
     constructor(private readonly jwtService: JwtService) {}
 
     canActivate(context: ExecutionContext): boolean {
-        const req = context.switchToHttp().getRequest();
+        const req = context.switchToHttp().getRequest<AppRequest>();
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) throw new UnauthorizedException();
         try {
-            const payload = this.jwtService.verify(token, { secret: TEST_JWT_SECRET });
+            const payload = this.jwtService.verify<JwtPayload>(token, {
+                secret: TEST_JWT_SECRET,
+            });
             req.user = payload;
             return true;
         } catch {
@@ -42,11 +52,19 @@ const mockService = {
 };
 
 const mockExecutionService = {
-    execute: jest.fn().mockResolvedValue({ reportId: 1, name: 'Test', generatedAt: new Date(), params: {}, sections: [] }),
+    execute: jest.fn().mockResolvedValue({
+        reportId: 1,
+        name: 'Test',
+        generatedAt: new Date(),
+        params: {},
+        sections: [],
+    }),
 };
 
 const mockSchemaService = {
-    getSchema: jest.fn().mockReturnValue({ entities: { orders: { label: 'Orders', fields: {} } } }),
+    getSchema: jest.fn().mockReturnValue({
+        entities: { orders: { label: 'Orders', fields: {} } },
+    }),
 };
 
 describe('ReportDefinitionController (role enforcement)', () => {
@@ -59,9 +77,15 @@ describe('ReportDefinitionController (role enforcement)', () => {
             controllers: [ReportDefinitionController, ReportSchemaController],
             providers: [
                 { provide: ReportDefinitionService, useValue: mockService },
-                { provide: ReportExecutionService, useValue: mockExecutionService },
+                {
+                    provide: ReportExecutionService,
+                    useValue: mockExecutionService,
+                },
                 { provide: ReportSchemaService, useValue: mockSchemaService },
-                { provide: RequestContextService, useClass: TestRequestContextService },
+                {
+                    provide: RequestContextService,
+                    useClass: TestRequestContextService,
+                },
                 TestAuthGuard,
                 { provide: APP_GUARD, useClass: TestAuthGuard },
                 { provide: APP_GUARD, useClass: RoleGuard },
@@ -81,14 +105,26 @@ describe('ReportDefinitionController (role enforcement)', () => {
 
     function token(roles: string[]): string {
         return jwtService.sign(
-            { sub: 1, tenantId: 1, isTenantAdmin: false, locations: [{ locationId: 1, roles }] },
+            {
+                sub: 1,
+                tenantId: 1,
+                isTenantAdmin: false,
+                locations: [{ locationId: 1, roles }],
+            },
             { secret: TEST_JWT_SECRET },
         );
     }
 
     it('POST /reports/definitions returns 403 for staff JWT', async () => {
-        mockService.create.mockResolvedValue({ id: 1, name: 'test', visibility: 'management' });
-        const dto: CreateReportDefinitionDto = { name: 'Test', visibility: 'management' };
+        mockService.create.mockResolvedValue({
+            id: 1,
+            name: 'test',
+            visibility: 'management',
+        });
+        const dto: CreateReportDefinitionDto = {
+            name: 'Test',
+            visibility: 'management',
+        };
         await request(app.getHttpServer())
             .post('/reports/definitions')
             .set('Authorization', `Bearer ${token(['staff'])}`)
@@ -112,8 +148,18 @@ describe('ReportDefinitionController (role enforcement)', () => {
     });
 
     it('POST /reports/definitions returns 201 for manager JWT', async () => {
-        mockService.create.mockResolvedValue({ id: 2, name: 'Manager Report', visibility: 'management', showHeader: true, params: [], sections: [] });
-        const dto: CreateReportDefinitionDto = { name: 'Manager Report', visibility: 'management' };
+        mockService.create.mockResolvedValue({
+            id: 2,
+            name: 'Manager Report',
+            visibility: 'management',
+            showHeader: true,
+            params: [],
+            sections: [],
+        });
+        const dto: CreateReportDefinitionDto = {
+            name: 'Manager Report',
+            visibility: 'management',
+        };
         await request(app.getHttpServer())
             .post('/reports/definitions')
             .set('Authorization', `Bearer ${token(['manager'])}`)
@@ -133,13 +179,17 @@ describe('ReportDefinitionController (role enforcement)', () => {
             .get('/reports/schema')
             .set('Authorization', `Bearer ${token(['manager'])}`)
             .expect(200);
-        expect(res.body.entities).toBeDefined();
-        expect(Object.keys(res.body.entities).length).toBeGreaterThan(0);
+        expect((res.body as ReportSchemaDto).entities).toBeDefined();
+        expect(
+            Object.keys((res.body as ReportSchemaDto).entities).length,
+        ).toBeGreaterThan(0);
     });
 
     it('POST /reports/definitions/:id/execute returns 403 for staff JWT when service throws ForbiddenException', async () => {
         const { ForbiddenException } = await import('@nestjs/common');
-        mockExecutionService.execute.mockRejectedValueOnce(new ForbiddenException());
+        mockExecutionService.execute.mockRejectedValueOnce(
+            new ForbiddenException(),
+        );
         await request(app.getHttpServer())
             .post('/reports/definitions/1/execute')
             .set('Authorization', `Bearer ${token(['staff'])}`)

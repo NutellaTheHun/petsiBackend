@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { Location } from '../../locations/entities/location.entity';
 import { UserLocation } from '../../locations/entities/user-location.entity';
 import { LocationsModule } from '../../locations/locations.module';
@@ -22,33 +21,47 @@ import { RoleService } from '../services/role.service';
 import { RoleChangeDetector } from './change-detectors/role.change-detector';
 
 export async function getRoleTestingModule(opts?: {
-  roleServiceClass?: new (...args: any[]) => RoleService;
-  roleChangeDetectorClass?: new (...args: any[]) => RoleChangeDetector;
+    roleServiceClass?: new (...args: any[]) => RoleService;
+    roleChangeDetectorClass?: new (...args: any[]) => RoleChangeDetector;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([User, Role, UserLocation, Location, Tenant]),
-      TypeOrmModule.forFeature([User, Role, UserLocation, Location, Tenant]),
-      UserModule,
-      RoleModule,
-      LocationsModule,
-      TenantsModule,
-      AppLoggingModule,
-      RequestContextModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
-    ],
-    controllers: [RoleController],
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(RoleService)
-    .useClass(opts?.roleServiceClass || RoleService)
-    .overrideProvider(RoleChangeDetector)
-    .useClass(opts?.roleChangeDetectorClass || RoleChangeDetector)
-    .compile();
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+            ]),
+            TypeOrmModule.forFeature([
+                User,
+                Role,
+                UserLocation,
+                Location,
+                Tenant,
+            ]),
+            UserModule,
+            RoleModule,
+            LocationsModule,
+            TenantsModule,
+            RequestContextModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
+            }),
+        ],
+        controllers: [RoleController],
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(RoleService)
+        .useClass(opts?.roleServiceClass || RoleService)
+        .overrideProvider(RoleChangeDetector)
+        .useClass(opts?.roleChangeDetectorClass || RoleChangeDetector)
+        .compile();
 }

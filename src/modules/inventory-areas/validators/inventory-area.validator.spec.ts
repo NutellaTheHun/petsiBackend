@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { Location } from '../../locations/entities/location.entity';
@@ -40,10 +44,14 @@ describe('inventory area validator', () => {
         validator = module.get<InventoryAreaValidator>(InventoryAreaValidator);
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        ({ tenant, locations: [locationA, locationB] } =
-            await locationTestUtil.seedLocations(P, undefined, 2));
+        ({
+            tenant,
+            locations: [locationA, locationB],
+        } = await locationTestUtil.seedLocations(P, undefined, 2));
         requestContext.setContext({ tenantId: tenant.id });
 
         ({ areas } = await testingUtil.seedAreas(P, tenant.id, locationA.id));
@@ -63,20 +71,26 @@ describe('inventory area validator', () => {
     });
 
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
-            name: `${P}-new-area`,
-            locationId: locationA.id,
-        });
+        const dto: CreateInventoryAreaDto = plainToInstance(
+            CreateInventoryAreaDto,
+            {
+                name: `${P}-new-area`,
+                locationId: locationA.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
-            name: areas[0].name,
-            locationId: locationA.id,
-        });
+        const dto: CreateInventoryAreaDto = plainToInstance(
+            CreateInventoryAreaDto,
+            {
+                name: areas[0].name,
+                locationId: locationA.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
@@ -88,30 +102,39 @@ describe('inventory area validator', () => {
     });
 
     it('allows the same name at a different location', async () => {
-        const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
-            name: areas[0].name,
-            locationId: locationB.id,
-        });
+        const dto: CreateInventoryAreaDto = plainToInstance(
+            CreateInventoryAreaDto,
+            {
+                name: areas[0].name,
+                locationId: locationB.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('successfully validate update: no validation errors', async () => {
-        const dto: UpdateInventoryAreaDto = plainToInstance(UpdateInventoryAreaDto, {
-            name: `${P}-updated-area`,
-            locationId: locationA.id,
-        });
+        const dto: UpdateInventoryAreaDto = plainToInstance(
+            UpdateInventoryAreaDto,
+            {
+                name: `${P}-updated-area`,
+                locationId: locationA.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, areas[0].id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const dto: UpdateInventoryAreaDto = plainToInstance(UpdateInventoryAreaDto, {
-            name: areas[1].name,
-            locationId: locationA.id,
-        });
+        const dto: UpdateInventoryAreaDto = plainToInstance(
+            UpdateInventoryAreaDto,
+            {
+                name: areas[1].name,
+                locationId: locationA.id,
+            },
+        );
 
         const errors = await validator.validateDto(dto, areas[0].id);
         expectValidationErrorSize(errors, 1);

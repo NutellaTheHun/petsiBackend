@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -35,9 +39,14 @@ describe('order category validator', () => {
         validator = module.get<OrderCategoryValidator>(OrderCategoryValidator);
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         otherTenant = await tenantRepo.save({
             name: `${P}-other-tenant`,
             subdomain: `${P}-other-subdomain`,
@@ -62,18 +71,24 @@ describe('order category validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateOrderCategoryDto = plainToInstance(CreateOrderCategoryDto, {
-            name: `${P}-new-category`,
-        });
+        const dto: CreateOrderCategoryDto = plainToInstance(
+            CreateOrderCategoryDto,
+            {
+                name: `${P}-new-category`,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateOrderCategoryDto = plainToInstance(CreateOrderCategoryDto, {
-            name: categories[0].name,
-        });
+        const dto: CreateOrderCategoryDto = plainToInstance(
+            CreateOrderCategoryDto,
+            {
+                name: categories[0].name,
+            },
+        );
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
@@ -87,9 +102,12 @@ describe('order category validator', () => {
     it('allows create with a name already used by a different tenant', async () => {
         requestContext.setContext({ tenantId: otherTenant.id });
         try {
-            const dto: CreateOrderCategoryDto = plainToInstance(CreateOrderCategoryDto, {
-                name: categories[0].name,
-            });
+            const dto: CreateOrderCategoryDto = plainToInstance(
+                CreateOrderCategoryDto,
+                {
+                    name: categories[0].name,
+                },
+            );
             const errors = await validator.validateDto(dto, 'root');
             expect(errors).toBeNull();
         } finally {
@@ -99,9 +117,12 @@ describe('order category validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const dto: UpdateOrderCategoryDto = plainToInstance(UpdateOrderCategoryDto, {
-            name: `${P}-updated-category`,
-        });
+        const dto: UpdateOrderCategoryDto = plainToInstance(
+            UpdateOrderCategoryDto,
+            {
+                name: `${P}-updated-category`,
+            },
+        );
 
         const errors = await validator.validateDto(dto, categories[0].id);
         expect(errors).toBeNull();
@@ -111,9 +132,12 @@ describe('order category validator', () => {
         const categoryToUpdate = categories[0];
         const existingCategory = categories[1];
 
-        const dto: UpdateOrderCategoryDto = plainToInstance(UpdateOrderCategoryDto, {
-            name: existingCategory.name,
-        });
+        const dto: UpdateOrderCategoryDto = plainToInstance(
+            UpdateOrderCategoryDto,
+            {
+                name: existingCategory.name,
+            },
+        );
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expectValidationErrorSize(errors, 1);

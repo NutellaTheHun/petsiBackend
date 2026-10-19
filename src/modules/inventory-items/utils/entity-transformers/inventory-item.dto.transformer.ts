@@ -1,11 +1,19 @@
-import { plainToInstance } from "class-transformer";
-import { UpdateInventoryItemDto } from "../../dto/inventory-item/update-inventory-item.dto";
-import { InventoryItem } from "../../entities/inventory-item.entity";
-import { inventoryItemSizeToNestedUpdateDto } from "./inventory-item-size.dto.transformer";
+import { plainToInstance } from 'class-transformer';
+import { UpdateInventoryItemDto } from '../../dto/inventory-item/update-inventory-item.dto';
+import { InventoryItem } from '../../entities/inventory-item.entity';
+import { inventoryItemSizeToNestedUpdateDto } from './inventory-item-size.dto.transformer';
 
-export function inventoryItemToUpdateDto(inventoryItem: InventoryItem, merge: Partial<UpdateInventoryItemDto> = {}): UpdateInventoryItemDto {
-    const existingSizes = inventoryItem.sizes.map(size => inventoryItemSizeToNestedUpdateDto(size)) ?? [];
-    const mergedSizes = merge.sizes ? [...merge.sizes, ...existingSizes] : existingSizes;
+export function inventoryItemToUpdateDto(
+    inventoryItem: InventoryItem,
+    merge: Partial<UpdateInventoryItemDto> = {},
+): UpdateInventoryItemDto {
+    const existingSizes =
+        inventoryItem.sizes.map((size) =>
+            inventoryItemSizeToNestedUpdateDto(size),
+        ) ?? [];
+    const mergedSizes = merge.sizes
+        ? [...merge.sizes, ...existingSizes]
+        : existingSizes;
 
     return plainToInstance(UpdateInventoryItemDto, {
         name: inventoryItem.name,

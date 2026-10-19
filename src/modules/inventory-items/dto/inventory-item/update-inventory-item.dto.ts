@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -7,7 +7,7 @@ import {
     IsOptional,
     IsPositive,
     IsString,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryItemCategory } from '../../entities/inventory-item-category.entity';
@@ -15,7 +15,10 @@ import { InventoryItemVendor } from '../../entities/inventory-item-vendor.entity
 import { NestedCreateInventoryItemSizeDto } from '../inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../inventory-item-size/nested-update-inventory-item-size.dto';
 
-@ApiExtraModels(NestedCreateInventoryItemSizeDto, NestedUpdateInventoryItemSizeDto)
+@ApiExtraModels(
+    NestedCreateInventoryItemSizeDto,
+    NestedUpdateInventoryItemSizeDto,
+)
 export class UpdateInventoryItemDto {
     @ApiProperty({
         description: 'Name of InventoryItem entity.',
@@ -76,12 +79,12 @@ export class UpdateInventoryItemDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateInventoryItemSizeDto, item)
-                : plainToInstance(NestedUpdateInventoryItemSizeDto, item)
+                : plainToInstance(NestedUpdateInventoryItemSizeDto, item),
         );
     })
     readonly sizes: (

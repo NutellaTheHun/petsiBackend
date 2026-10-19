@@ -26,7 +26,10 @@ type NestedRecurrenceScheduleDto =
     | null;
 
 @Injectable()
-export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDto> {
+export class OrderChangeDetector extends ChangeDetectorBase<
+    Order,
+    UpdateOrderDto
+> {
     constructor(
         private readonly orderMenuItemChangeDetector: OrderMenuItemChangeDetector,
         private readonly recurringOrderScheduleChangeDetector: RecurringOrderScheduleChangeDetector,
@@ -34,7 +37,10 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         super();
     }
 
-    public detect(entity: Order, dto: UpdateOrderDto): ChangeDetectionResult<UpdateOrderDto> {
+    public detect(
+        entity: Order,
+        dto: UpdateOrderDto,
+    ): ChangeDetectionResult<UpdateOrderDto> {
         const patch: MutablePartial<UpdateOrderDto> = {};
         const changes: ChangeDetectorChange[] = [];
 
@@ -68,7 +74,12 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
             });
         }
 
-        if (!this.unchanged(entity.fulfillmentContactName, dto.fulfillmentContactName)) {
+        if (
+            !this.unchanged(
+                entity.fulfillmentContactName,
+                dto.fulfillmentContactName,
+            )
+        ) {
             patch.fulfillmentContactName = dto.fulfillmentContactName;
             changes.push({
                 op: 'scalar',
@@ -138,17 +149,12 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
             });
         }
 
-        if (!this.unchanged(entity.locationId, dto.locationId)) {
-            patch.locationId = dto.locationId;
-            changes.push({
-                op: 'reference',
-                path: 'locationId',
-                previousValue: entity.locationId,
-                nextValue: dto.locationId,
-            });
-        }
-
-        if (!this.unchanged(entity.occurrenceType ?? null, dto.occurrenceType ?? null)) {
+        if (
+            !this.unchanged(
+                entity.occurrenceType ?? null,
+                dto.occurrenceType ?? null,
+            )
+        ) {
             patch.occurrenceType = dto.occurrenceType;
             changes.push({
                 op: 'scalar',
@@ -158,7 +164,12 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
             });
         }
 
-        if (!this.unchanged(entity.occurrenceState ?? null, dto.occurrenceState ?? null)) {
+        if (
+            !this.unchanged(
+                entity.occurrenceState ?? null,
+                dto.occurrenceState ?? null,
+            )
+        ) {
             patch.occurrenceState = dto.occurrenceState;
             changes.push({
                 op: 'scalar',
@@ -177,7 +188,8 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
             changes.push({
                 op: 'aggregate',
                 path: 'orderedItems',
-                previousValue: entity.orderedItems?.map((item) => item.id) ?? [],
+                previousValue:
+                    entity.orderedItems?.map((item) => item.id) ?? [],
                 nextValue: orderedItemsPatch,
             });
         }

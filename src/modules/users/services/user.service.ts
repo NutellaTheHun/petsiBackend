@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { TenantScopedServiceBase } from '../../../common/base/tenant-scoped-service.base';
-import { AppLogger } from '../../app-logging/app-logger';
 import { hashPassword } from '../../auth/utils/hash';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -18,11 +17,10 @@ export class UserService extends TenantScopedServiceBase<UserEntity> {
         @InjectRepository(User)
         userRepo: Repository<User>,
         requestContextService: RequestContextService,
-        logger: AppLogger,
         validator: UserValidator,
         private readonly userChangeDetector: UserChangeDetector,
     ) {
-        super(userRepo, 'UserService', requestContextService, logger, validator);
+        super(userRepo, 'UserService', requestContextService, validator);
     }
 
     protected async createEntity(
@@ -75,7 +73,10 @@ export class UserService extends TenantScopedServiceBase<UserEntity> {
         await manager.save(entity);
     }
 
-    protected applySearch(query: SelectQueryBuilder<User>, search: string): void {
+    protected applySearch(
+        query: SelectQueryBuilder<User>,
+        search: string,
+    ): void {
         query.andWhere('(LOWER(entity.name) LIKE :search)', {
             search: `%${search.toLowerCase()}%`,
         });
@@ -91,7 +92,9 @@ export class UserService extends TenantScopedServiceBase<UserEntity> {
         }
     }
 
-    protected getChangeDetector(): ChangeDetectorBase<User, UpdateUserDto> | undefined {
+    protected getChangeDetector():
+        | ChangeDetectorBase<User, UpdateUserDto>
+        | undefined {
         return this.userChangeDetector;
     }
 }

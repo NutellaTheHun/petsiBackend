@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -28,7 +28,7 @@ import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
@@ -47,7 +47,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     constructor(
         itemCountService: InventoryAreaItemService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -71,7 +71,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     })
     @ApiBody({ type: CreateInventoryAreaItemDto })*/
     async create(
-        @Body() dto: CreateInventoryAreaItemDto,
+        @Body() _dto: CreateInventoryAreaItemDto,
     ): Promise<InventoryAreaItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -98,8 +98,8 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     })
     @ApiBody({ type: UpdateInventoryAreaItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateInventoryAreaItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateInventoryAreaItemDto,
     ): Promise<InventoryAreaItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);
@@ -148,7 +148,12 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -16,6 +16,8 @@ npm run clearTestDb   # wipe the test PostgreSQL database
 npm run generate:types  # generate OpenAPI types into ../petsi-frontend/src/api-types.ts
 ```
 
+`npm run lint` rewrites files repo-wide. The repo is lint-clean (0 errors), so keep it that way: fix new errors with real types rather than `eslint-disable` or `as any`.
+
 To run a single test file:
 
 ```bash
@@ -43,9 +45,17 @@ See `src/common/base/CLAUDE.md`.
 
 Every domain entity's `ServiceBase` can wire up a `ChangeDetectorBase` to diff an incoming update DTO against the current entity; when a detector is present, `update` short-circuits to a no-op if nothing changed, and only the changed-field patch reaches `updateEntity`. Domains that track history persist a versioned snapshot + change log from that diff via `RevisionHistoryService`. Revision-history internals and pruning-cron details: see `src/modules/revision-history/CLAUDE.md`.
 
+### Validation layers
+
+DTO decorators check only presence, type, dropdown membership and id format, and a failure there is a 400 `INVALID_REQUEST` (a frontend bug, logged). Rules about user-entered values belong in the domain validator and come back as a 400 `VALIDATION_ERROR` tree. See `src/common/validation/CLAUDE.md` → "Division between DTO and business validator" before adding a check.
+
 ### Database configuration
 
 `selectTypeOrmModule()` picks the config by `NODE_ENV`: non-`production` uses `TypeORMPostgresTesting`, which reads `DB_TEST_DATABASE` and sets `synchronize: true`. Production uses `TypeORMPostgresProd` (no synchronize).
+
+### Logging
+
+There is no application logger wrapper. Logs come from exactly three places: the pino-http access line (`LoggerModule.forRoot` in `AppModule`), `GlobalHttpExceptionFilter` (the only component that logs errors — see `src/common/exceptions/CLAUDE.md`), and `ControllerBase`'s debug-level cache events. `setupApp` installs nestjs-pino as Nest's app logger. Outside `NODE_ENV=production` output goes through `pino-pretty`; production writes plain JSON lines. Inject nestjs-pino's `PinoLogger` if a component genuinely needs to log.
 
 ### Testing
 
@@ -119,6 +129,9 @@ category = await seedCategory(categoryRepo, P);
 // afterAll
 await categoryRepo.delete(category.id);
 ```
+
+#### HTTP tests
+For assertions on status, body, headers or logged output, build the app with `createHttpTestApp(await get<Domain>TestingModule())` from `src/test/http-test-app.ts`. It applies the production `setupApp` and injects a `RecordingLogger` into the exception filter (`logger.logs`). Use `beforeInit` to add global guards.
 
 #### What to test and what to skip
 

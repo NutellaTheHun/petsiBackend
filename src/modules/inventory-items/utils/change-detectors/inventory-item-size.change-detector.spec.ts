@@ -1,6 +1,5 @@
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../entities/inventory-item-size.entity';
-import { AppUnit } from '../../../../common/units';
 import {
     inventoryItemSizeToNestedUpdateDto,
     inventoryItemSizeToUpdateDto,
@@ -14,10 +13,10 @@ describe('InventoryItemSizeChangeDetector', () => {
         ({
             id: 1,
             package: { id: 10 } as InventoryItemPackage,
-            unit: 'lb' as AppUnit,
+            unit: 'lb',
             measureAmount: 5,
             cost: '12.50',
-        } as InventoryItemSize);
+        }) as InventoryItemSize;
 
     it('returns empty patch for UpdateDto when dto matches entity', () => {
         const entity = baseEntity();

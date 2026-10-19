@@ -1,14 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Req,
+} from '@nestjs/common';
+import {
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Request } from 'express';
+import { AppRequest } from '../utils/jwt-payload';
 import { Public } from '../../../common/decorators/PublicLogin';
-import { AppLogger } from '../../app-logging/app-logger';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { SignInDto } from '../dto/sign-in.dto';
 import { AuthService } from '../services/auth.service';
@@ -16,42 +21,33 @@ import { AuthService } from '../services/auth.service';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly requestContextService: RequestContextService,
-    private readonly logger: AppLogger,
-  ) {}
+    constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({ summary: 'Sign in and receive a JWT token and user roles.' })
-  @ApiOkResponse({ description: 'Sign in successful.', type: AuthResponseDto })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials.' })
-  @HttpCode(HttpStatus.OK)
-  @Post('login')
-  @Public()
-  async signIn(
-    @Body() signInDto: SignInDto,
-    @Req() req: Request,
-  ): Promise<AuthResponseDto> {
-    const requestId = this.requestContextService.getRequestId();
+    @ApiOperation({
+        summary: 'Sign in and receive a JWT token and user roles.',
+    })
+    @ApiOkResponse({
+        description: 'Sign in successful.',
+        type: AuthResponseDto,
+    })
+    @ApiUnauthorizedResponse({ description: 'Invalid credentials.' })
+    @HttpCode(HttpStatus.OK)
+    @Post('login')
+    @Public()
+    async signIn(
+        @Body() signInDto: SignInDto,
+        @Req() req: AppRequest,
+    ): Promise<AuthResponseDto> {
+        // Resolved by TenantResolutionMiddleware before this handler runs,
+        // for every route including this @Public() one.
+        const tenantId = req.tenant.id;
 
-    this.logger.logAction('Authentication', requestId, 'SIGN IN', 'REQUEST', {
-      requestId,
-    });
+        const result = await this.authService.signIn(
+            signInDto.username,
+            signInDto.password,
+            tenantId,
+        );
 
-    // Resolved by TenantResolutionMiddleware before this handler runs,
-    // for every route including this @Public() one.
-    const tenantId = req['tenant']?.id;
-
-    const result = await this.authService.signIn(
-      signInDto.username,
-      signInDto.password,
-      tenantId,
-    );
-
-    this.logger.logAction('Authentication', requestId, 'SIGN IN', 'SUCCESS', {
-      requestId,
-    });
-
-    return result;
-  }
+        return result;
+    }
 }

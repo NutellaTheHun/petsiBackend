@@ -1,8 +1,11 @@
-import { ValidatorIdentityBaseInterface } from "../../../../common/base/validator-identity.base.interface";
-import { OrderMenuItemValidatorIdentity } from "./order-menu-item.validator.identity.interface";
-import { RecurringOrderScheduleValidatorIdentity } from "./recurring-order-schedule.identity.interface";
+import { ValidatorIdentityBaseInterface } from '../../../../common/base/validator-identity.base.interface';
+import { OrderMenuItemValidatorIdentity } from './order-menu-item.validator.identity.interface';
+import { RecurringOrderScheduleValidatorIdentity } from './recurring-order-schedule.identity.interface';
 
 export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
+    readonly locationId?: number;
+    /** Stored locationId on update; undefined on create. */
+    readonly existingLocationId?: number;
     readonly recipient: string;
     readonly fulfillmentDate: Date;
     readonly fulfillmentType: string;

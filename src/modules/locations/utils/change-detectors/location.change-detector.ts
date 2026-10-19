@@ -9,21 +9,16 @@ import { UpdateLocationDto } from '../../dto/update-location.dto';
 import { Location } from '../../entities/location.entity';
 
 @Injectable()
-export class LocationChangeDetector extends ChangeDetectorBase<Location, UpdateLocationDto> {
-    detect(entity: Location, dto: UpdateLocationDto): ChangeDetectionResult<UpdateLocationDto> {
+export class LocationChangeDetector extends ChangeDetectorBase<
+    Location,
+    UpdateLocationDto
+> {
+    detect(
+        entity: Location,
+        dto: UpdateLocationDto,
+    ): ChangeDetectionResult<UpdateLocationDto> {
         const patch: MutablePartial<UpdateLocationDto> = {};
         const changes: ChangeDetectorChange[] = [];
-
-        const existingTenantId = entity.tenant?.id;
-        if (!this.unchanged(existingTenantId, dto.tenantId)) {
-            patch.tenantId = dto.tenantId;
-            changes.push({
-                op: 'reference',
-                path: 'tenantId',
-                previousValue: existingTenantId,
-                nextValue: dto.tenantId,
-            });
-        }
 
         if (!this.unchanged(entity.name, dto.name)) {
             patch.name = dto.name;

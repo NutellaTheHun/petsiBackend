@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -38,7 +37,9 @@ export async function getOrdersTestingModule(opts?: {
     orderContainerItemServiceClass?: new (
         ...args: any[]
     ) => OrderContainerItemService;
-    orderRecurrenceServiceClass?: new (...args: any[]) => OrderRecurrenceService;
+    orderRecurrenceServiceClass?: new (
+        ...args: any[]
+    ) => OrderRecurrenceService;
     mockRevisionHistory?: boolean;
 }): Promise<TestingModule> {
     const mockRevisionHistory = opts?.mockRevisionHistory ?? true;
@@ -73,9 +74,11 @@ export async function getOrdersTestingModule(opts?: {
             ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
-                pinoHttp: { transport: { target: 'pino-pretty' } },
+                pinoHttp: {
+                    level: 'warn',
+                    transport: { target: 'pino-pretty' },
+                },
             }),
-            AppLoggingModule,
             RequestContextModule,
         ],
 
@@ -99,7 +102,9 @@ export async function getOrdersTestingModule(opts?: {
         .overrideProvider(OrderService)
         .useClass(opts?.orderServiceClass || OrderService)
         .overrideProvider(OrderContainerItemService)
-        .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
+        .useClass(
+            opts?.orderContainerItemServiceClass || OrderContainerItemService,
+        )
         .overrideProvider(OrderRecurrenceService)
         .useClass(opts?.orderRecurrenceServiceClass || OrderRecurrenceService);
 

@@ -38,19 +38,34 @@ describe('menu item container item controller', () => {
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        controller = module.get<MenuItemContainerItemController>(MenuItemContainerItemController);
-        containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        controller = module.get<MenuItemContainerItemController>(
+            MenuItemContainerItemController,
+        );
+        containerItemRepo = module.get(
+            getRepositoryToken(MenuItemContainerItem),
+        );
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        requestContext = module.get(RequestContextService) as TestRequestContextService;
+        requestContext = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ categories, singleItems, fixedContainerItems, varContainerItems, sizes, containerLines } =
-            await testingUtil.seedContainerLines(P, tenant.id));
+        ({
+            categories,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+            sizes,
+            containerLines,
+        } = await testingUtil.seedContainerLines(P, tenant.id));
     });
 
     afterAll(async () => {
@@ -80,6 +95,8 @@ describe('menu item container item controller', () => {
     });
 
     it('findOne throws NotFoundException for nonexistent id', async () => {
-        await expect(controller.findOne(9_999_999)).rejects.toThrow(NotFoundException);
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -28,7 +28,7 @@ import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
@@ -47,7 +47,7 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
     constructor(
         sizeService: InventoryItemSizeService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -69,7 +69,7 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateInventoryItemSizeDto })*/
     async create(
-        @Body() dto: CreateInventoryItemSizeDto,
+        @Body() _dto: CreateInventoryItemSizeDto,
     ): Promise<InventoryItemSize> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -92,8 +92,8 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
     })
     @ApiBody({ type: UpdateMenuItemSizeDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateInventoryItemSizeDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateInventoryItemSizeDto,
     ): Promise<InventoryItemSize> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);
@@ -115,7 +115,10 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
         const result = await super.remove(id);
 
         await invalidateFindAllCache('InventoryItemService', this.cacheManager);
-        await invalidateFindAllCache('InventoryAreaItemService', this.cacheManager);
+        await invalidateFindAllCache(
+            'InventoryAreaItemService',
+            this.cacheManager,
+        );
 
         return result;
     }
@@ -138,7 +141,12 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

@@ -8,8 +8,10 @@ import { User } from '../users/entities/user.entities';
 import { TenantProvisioningService } from './tenant-provisioning.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tenant, Location, Role, User, TenantFeature])],
-  providers: [TenantProvisioningService],
-  exports: [TenantProvisioningService],
+    imports: [
+        TypeOrmModule.forFeature([Tenant, Location, Role, User, TenantFeature]),
+    ],
+    providers: [TenantProvisioningService],
+    exports: [TenantProvisioningService],
 })
 export class TenantProvisioningModule {}

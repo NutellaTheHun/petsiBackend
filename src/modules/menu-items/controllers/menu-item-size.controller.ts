@@ -32,7 +32,7 @@ import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
@@ -44,14 +44,17 @@ import { MenuItemSizeService } from '../services/menu-item-size.service';
 
 @ApiTags('Menu Item Size')
 @ApiBearerAuth('access-token')
-@RequiresFeature(FEATURE_REGISTRY.ORDER_MANAGEMENT, FEATURE_REGISTRY.RECIPE_MANAGEMENT)
+@RequiresFeature(
+    FEATURE_REGISTRY.ORDER_MANAGEMENT,
+    FEATURE_REGISTRY.RECIPE_MANAGEMENT,
+)
 @Controller('menu-item-sizes')
 @ApiExtraModels(MenuItemSize)
 export class MenuItemSizeController extends ControllerBase<MenuItemSizeEntity> {
     constructor(
         sizeService: MenuItemSizeService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -95,7 +98,9 @@ export class MenuItemSizeController extends ControllerBase<MenuItemSizeEntity> {
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Menu Item Size' })
-    @ApiNoContentResponse({ description: 'Menu Item Size successfully removed' })
+    @ApiNoContentResponse({
+        description: 'Menu Item Size successfully removed',
+    })
     @ApiNotFoundResponse({ description: 'Menu Item Size not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return super.remove(id);
@@ -119,7 +124,12 @@ export class MenuItemSizeController extends ControllerBase<MenuItemSizeEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -166,7 +176,9 @@ export class MenuItemSizeController extends ControllerBase<MenuItemSizeEntity> {
     @ApiOperation({ summary: 'Retrieves one Menu Item Size' })
     @ApiOkResponse({ description: 'Menu Item Size found', type: MenuItemSize })
     @ApiNotFoundResponse({ description: 'Menu Item Size not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<MenuItemSize> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<MenuItemSize> {
         return super.findOne(id);
     }
 }

@@ -33,6 +33,5 @@ export class NestedUpdateOrderContainerItemDto extends NestedUpdateDto {
     })
     @IsNumber()
     @IsNotEmpty()
-    @IsPositive()
     readonly quantity: number;
 }

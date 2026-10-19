@@ -1,39 +1,38 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
+import { resolveRequestId } from './request-id';
 
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {
-  constructor(private readonly requestContext: RequestContextService) {}
+    constructor(private readonly requestContext: RequestContextService) {}
 
-  use(req: Request, res: Response, next: NextFunction): void {
-    const rawRequestId = req.headers['x-request-id'];
-    const requestId = (Array.isArray(rawRequestId) ? rawRequestId[0] : rawRequestId) || randomUUID();
-    req['requestId'] = requestId;
+    use(req: Request, res: Response, next: NextFunction): void {
+        // Already resolved by setupApp's middleware; reading it here keeps one id per request
+        const requestId = resolveRequestId(req);
 
-    this.requestContext.run(
-      () => {
-        // ensure context is cleaned up
-        res.on('finish', () => {
-          this.clearRequestContext();
-        });
-        res.on('close', () => {
-          this.clearRequestContext();
-        });
+        this.requestContext.run(
+            () => {
+                // ensure context is cleaned up
+                res.on('finish', () => {
+                    this.clearRequestContext();
+                });
+                res.on('close', () => {
+                    this.clearRequestContext();
+                });
 
-        try {
-          next();
-        } catch (error) {
-          this.clearRequestContext();
-          throw error;
-        }
-      },
-      { requestId },
-    );
-  }
+                try {
+                    next();
+                } catch (error) {
+                    this.clearRequestContext();
+                    throw error;
+                }
+            },
+            { requestId },
+        );
+    }
 
-  private clearRequestContext() {
-    this.requestContext.run(() => {}, {});
-  }
+    private clearRequestContext() {
+        this.requestContext.run(() => {}, {});
+    }
 }

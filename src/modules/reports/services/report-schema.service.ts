@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { EntitySchemaDto, FieldSchemaDto, ReportSchemaDto } from '../dto/report-schema.dto';
+import {
+    EntitySchemaDto,
+    FieldSchemaDto,
+    ReportSchemaDto,
+} from '../dto/report-schema.dto';
 import { FIELD_REGISTRY } from '../registries';
 
 @Injectable()
@@ -10,7 +14,9 @@ export class ReportSchemaService {
         for (const [entityKey, entityEntry] of Object.entries(FIELD_REGISTRY)) {
             const fields: Record<string, FieldSchemaDto> = {};
 
-            for (const [fieldKey, fieldEntry] of Object.entries(entityEntry.fields)) {
+            for (const [fieldKey, fieldEntry] of Object.entries(
+                entityEntry.fields,
+            )) {
                 const fieldSchema: FieldSchemaDto = {
                     label: fieldEntry.label,
                     dataType: fieldEntry.dataType,

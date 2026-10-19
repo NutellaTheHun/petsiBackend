@@ -33,7 +33,7 @@ import { LocationScope } from '../../../common/decorators/LocationScope';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
@@ -52,7 +52,7 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
     constructor(
         areaService: InventoryAreaService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -79,7 +79,6 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
     }
 
     @Put(':id')
-    @LocationScope('body', 'locationId')
     @ApiOperation({ summary: 'Updates a Inventory Area' })
     @ApiOkResponse({
         description: 'Inventory Area successfully updated',
@@ -98,7 +97,9 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Inventory Area' })
-    @ApiNoContentResponse({ description: 'Inventory Area successfully removed' })
+    @ApiNoContentResponse({
+        description: 'Inventory Area successfully removed',
+    })
     @ApiNotFoundResponse({ description: 'Inventory Area not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return super.remove(id);
@@ -122,7 +123,12 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -169,7 +175,9 @@ export class InventoryAreaController extends ControllerBase<InventoryAreaEntity>
     @ApiOperation({ summary: 'Retrieves one Inventory Area' })
     @ApiOkResponse({ description: 'Inventory Area found', type: InventoryArea })
     @ApiNotFoundResponse({ description: 'Inventory Area not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<InventoryArea> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<InventoryArea> {
         return super.findOne(id);
     }
 }

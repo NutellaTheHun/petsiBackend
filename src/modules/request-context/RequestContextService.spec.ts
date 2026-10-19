@@ -21,7 +21,9 @@ describe('RequestContextService (via TenantsModule testing wiring)', () => {
 
         expect(contextService.get<number>('tenantId')).toEqual(5);
         expect(contextService.get<boolean>('isTenantAdmin')).toEqual(true);
-        expect(contextService.get<typeof locations>('locations')).toEqual(locations);
+        expect(contextService.get<typeof locations>('locations')).toEqual(
+            locations,
+        );
     });
 
     it('does not disturb existing userId/roles keys', () => {

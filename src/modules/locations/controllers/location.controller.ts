@@ -31,7 +31,7 @@ import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateLocationDto } from '../dto/create-location.dto';
@@ -48,7 +48,7 @@ export class LocationController extends ControllerBase<LocationEntity> {
     constructor(
         locationService: LocationService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -63,7 +63,10 @@ export class LocationController extends ControllerBase<LocationEntity> {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Location' })
-    @ApiCreatedResponse({ description: 'Location successfully created', type: Location })
+    @ApiCreatedResponse({
+        description: 'Location successfully created',
+        type: Location,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateLocationDto })
     async create(@Body() dto: CreateLocationDto): Promise<Location> {
@@ -72,7 +75,10 @@ export class LocationController extends ControllerBase<LocationEntity> {
 
     @Put(':id')
     @ApiOperation({ summary: 'Updates a Location' })
-    @ApiOkResponse({ description: 'Location successfully updated', type: Location })
+    @ApiOkResponse({
+        description: 'Location successfully updated',
+        type: Location,
+    })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'Location to update not found.' })
     @ApiBody({ type: UpdateLocationDto })
@@ -110,7 +116,12 @@ export class LocationController extends ControllerBase<LocationEntity> {
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -127,13 +138,6 @@ export class LocationController extends ControllerBase<LocationEntity> {
         description: 'Sort order: ASC or DESC',
     })
     @ApiQuery({ name: 'search', required: false, type: String })
-    @ApiQuery({
-        name: 'filters',
-        required: false,
-        isArray: true,
-        type: String,
-        description: 'Filter by tenant id, e.g. filters=tenant=1',
-    })
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,

@@ -1,16 +1,19 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
     IsOptional,
     IsString,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 import { NestedCreateTemplateMenuItemDto } from '../template-menu-item/nested-create-template-menu-item.dto';
 import { NestedUpdateTemplateMenuItemDto } from '../template-menu-item/nested-update-template-menu-item.dto';
 
-@ApiExtraModels(NestedCreateTemplateMenuItemDto, NestedUpdateTemplateMenuItemDto)
+@ApiExtraModels(
+    NestedCreateTemplateMenuItemDto,
+    NestedUpdateTemplateMenuItemDto,
+)
 export class UpdateTemplateDto {
     @ApiProperty({
         description: 'Name of the Template entity.',
@@ -45,12 +48,12 @@ export class UpdateTemplateDto {
     @IsArray()
     @IsOptional()
     @ValidateNested({ each: true })
-    @Transform(({ value }: TransformFnParams) => {
+    @Transform(({ value }: { value: unknown }) => {
         if (!Array.isArray(value)) return value;
-        return value.map((item: any) =>
+        return value.map((item: Record<string, unknown>) =>
             'createId' in item && item.createId !== undefined
                 ? plainToInstance(NestedCreateTemplateMenuItemDto, item)
-                : plainToInstance(NestedUpdateTemplateMenuItemDto, item)
+                : plainToInstance(NestedUpdateTemplateMenuItemDto, item),
         );
     })
     readonly templateMenuItems?: (

@@ -2,7 +2,11 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -63,7 +67,11 @@ describe('template validator', () => {
     afterAll(async () => {
         await templateItemRepo.delete(templateMenuItems.map((t) => t.id));
         await templateRepo.delete(templates.map((t) => t.id));
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         await itemRepo.delete(allItems.map((i) => i.id));
         await sizeRepo.delete(sizes.map((s) => s.id));
         await categoryRepo.delete(categories.map((c) => c.id));
@@ -140,7 +148,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -168,7 +180,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -190,7 +206,9 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'templateMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'tablePosIndex',
+            ]),
         );
     });
 
@@ -208,7 +226,8 @@ describe('template validator', () => {
                     id: templateToUpdate.templateMenuItems[0].id,
                     tablePosIndex: 500,
                     displayName: `${P}-updated-item`,
-                    menuItemId: templateToUpdate.templateMenuItems[0].menuItem.id,
+                    menuItemId:
+                        templateToUpdate.templateMenuItems[0].menuItem.id,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
@@ -262,7 +281,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -290,7 +313,11 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
+            createValidationErrorPayload(
+                'DUPLICATE_ITEMS',
+                ['c1', 'c2'],
+                ['templateMenuItems'],
+            ),
         );
     });
 
@@ -312,7 +339,75 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'templateMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
+            createValidationErrorPayload('OUT_OF_RANGE', undefined, [
+                'tablePosIndex',
+            ]),
         );
+    });
+
+    describe('nested id ownership', () => {
+        const loadTemplate = (id: number) =>
+            templateRepo.findOneOrFail({
+                where: { id },
+                relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+            });
+
+        it('fail validate update: nested template menu item id does not exist', async () => {
+            const templateToUpdate = await loadTemplate(templates[0].id);
+
+            const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
+                templateMenuItems: [
+                    plainToInstance(NestedUpdateTemplateMenuItemDto, {
+                        id: 9_999_999,
+                        tablePosIndex: 600,
+                        displayName: `${P}-missing-item`,
+                        menuItemId: singleItems[3].id,
+                    }),
+                ],
+            });
+
+            const errors = await validator.validateDto(
+                dto,
+                templateToUpdate.id,
+            );
+            expectValidationErrorSize(errors, 1);
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'templateMenuItems', id: 9_999_999 }],
+                createValidationErrorPayload('REFERENCE_NOT_FOUND', undefined, [
+                    'id',
+                ]),
+            );
+        });
+
+        it('fail validate update: nested template menu item id belongs to another template', async () => {
+            const templateToUpdate = await loadTemplate(templates[0].id);
+            const other = await loadTemplate(templates[1].id);
+            const foreign = other.templateMenuItems[0];
+
+            const dto: UpdateTemplateDto = plainToInstance(UpdateTemplateDto, {
+                templateMenuItems: [
+                    plainToInstance(NestedUpdateTemplateMenuItemDto, {
+                        id: foreign.id,
+                        tablePosIndex: 601,
+                        displayName: foreign.displayName,
+                        menuItemId: foreign.menuItem.id,
+                    }),
+                ],
+            });
+
+            const errors = await validator.validateDto(
+                dto,
+                templateToUpdate.id,
+            );
+            expectValidationErrorSize(errors, 1);
+            expectValidationErrorPayload(
+                errors,
+                [{ prop: 'templateMenuItems', id: foreign.id }],
+                createValidationErrorPayload('INVALID_REFERENCE', undefined, [
+                    'id',
+                ]),
+            );
+        });
     });
 });

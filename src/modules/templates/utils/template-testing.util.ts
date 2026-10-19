@@ -29,14 +29,17 @@ export class TemplateTestingUtil {
         private readonly tenantRepo: Repository<Tenant>,
 
         private readonly menuItemTestUtil: MenuItemTestingUtil,
-    ) { }
+    ) {}
 
-    private static readonly DEFAULT_TENANT_SUBDOMAIN = 'template-testing-util-fixture-tenant';
+    private static readonly DEFAULT_TENANT_SUBDOMAIN =
+        'template-testing-util-fixture-tenant';
     private defaultTenantId?: number;
     public async getDefaultTenantId(): Promise<number> {
         if (this.defaultTenantId === undefined) {
             const existing = await this.tenantRepo.findOne({
-                where: { subdomain: TemplateTestingUtil.DEFAULT_TENANT_SUBDOMAIN },
+                where: {
+                    subdomain: TemplateTestingUtil.DEFAULT_TENANT_SUBDOMAIN,
+                },
             });
             const tenant =
                 existing ??
@@ -75,7 +78,9 @@ export class TemplateTestingUtil {
         }
         this.initTemplates = true;
 
-        testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
+        testContext.addCleanupFunction(() =>
+            this.cleanupTemplateTestDatabase(),
+        );
         const templates = await this.getTemplateEntities(testContext, tenantId);
         for (const template of templates) {
             const exists = await this.templateRepo.findOne({
@@ -96,7 +101,10 @@ export class TemplateTestingUtil {
         tenantId?: number,
     ): Promise<TemplateMenuItem[]> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
-        await this.menuItemTestUtil.initMenuItemTestDatabase(testContext, effectiveTenantId);
+        await this.menuItemTestUtil.initMenuItemTestDatabase(
+            testContext,
+            effectiveTenantId,
+        );
         await this.initTemplateTestDatabase(testContext, effectiveTenantId);
 
         const items = await this.menuItemRepo.find();
@@ -139,10 +147,16 @@ export class TemplateTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupTemplateMenuItemTestDatabase(),
         );
-        const templateItems = await this.getTemplateMenuItemEntities(testContext, tenantId);
+        const templateItems = await this.getTemplateMenuItemEntities(
+            testContext,
+            tenantId,
+        );
         for (const templateItem of templateItems) {
             const exists = await this.templateItemRepo.findOne({
-                where: { menuItem: { id: templateItem.menuItem.id }, parentTemplate: { id: templateItem.parentTemplate.id } },
+                where: {
+                    menuItem: { id: templateItem.menuItem.id },
+                    parentTemplate: { id: templateItem.parentTemplate.id },
+                },
             });
             if (!exists) {
                 await this.templateItemRepo.save(templateItem);
@@ -157,7 +171,10 @@ export class TemplateTestingUtil {
     // ─── Atomic-prefix seed methods ──────────────────────────────────────────────
     // These do NOT register cleanup — callers are responsible for deleting by ID.
 
-    public async seedTemplates(P: string = '', tenantId?: number): Promise<{ templates: Template[] }> {
+    public async seedTemplates(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{ templates: Template[] }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const names = getTestTemplateNames();
         const templates: Template[] = [];
@@ -179,7 +196,10 @@ export class TemplateTestingUtil {
      * 3 template menu item rows per seeded template, round-robin over the combined
      * single/fixed-container/variable-container menu items.
      */
-    public async seedTemplateMenuItems(P: string = '', tenantId?: number): Promise<{
+    public async seedTemplateMenuItems(
+        P: string = '',
+        tenantId?: number,
+    ): Promise<{
         templates: Template[];
         categories: MenuItemCategory[];
         sizes: MenuItemSize[];
@@ -190,10 +210,19 @@ export class TemplateTestingUtil {
     }> {
         const effectiveTenantId = tenantId ?? (await this.getDefaultTenantId());
         const { templates } = await this.seedTemplates(P, effectiveTenantId);
-        const { categories, sizes, singleItems, fixedContainerItems, varContainerItems } =
-            await this.menuItemTestUtil.seedItems(P, effectiveTenantId);
+        const {
+            categories,
+            sizes,
+            singleItems,
+            fixedContainerItems,
+            varContainerItems,
+        } = await this.menuItemTestUtil.seedItems(P, effectiveTenantId);
 
-        const allItems = [...singleItems, ...fixedContainerItems, ...varContainerItems];
+        const allItems = [
+            ...singleItems,
+            ...fixedContainerItems,
+            ...varContainerItems,
+        ];
         const templateMenuItems: TemplateMenuItem[] = [];
         let idx = 0;
         for (const template of templates) {
@@ -206,7 +235,9 @@ export class TemplateTestingUtil {
                     parentTemplate: template,
                     tenantId: effectiveTenantId,
                 } as TemplateMenuItem;
-                templateMenuItems.push(await this.templateItemRepo.save(entity));
+                templateMenuItems.push(
+                    await this.templateItemRepo.save(entity),
+                );
                 idx++;
             }
         }

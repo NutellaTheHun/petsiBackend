@@ -86,7 +86,10 @@ export class MenuItem {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ApiProperty({ example: 'Class Apple Pie', description: 'Name of the item' })
+    @ApiProperty({
+        example: 'Class Apple Pie',
+        description: 'Name of the item',
+    })
     @Column()
     name: string;
 
@@ -160,7 +163,9 @@ export class MenuItem {
     @Column({ type: 'integer', nullable: true })
     variableMaxAmount: number | null = null;
 
-    @OneToMany(() => MenuItemDynamicPropertyValue, (dpv) => dpv.menuItem, { eager: true })
+    @OneToMany(() => MenuItemDynamicPropertyValue, (dpv) => dpv.menuItem, {
+        eager: true,
+    })
     dynamicPropertyValues: MenuItemDynamicPropertyValue[];
 
     dynamicProperties: DynamicPropertyResponseItem[] = [];

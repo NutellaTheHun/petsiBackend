@@ -9,7 +9,7 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -20,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -28,7 +28,7 @@ import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
@@ -47,7 +47,7 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     constructor(
         subCategoryService: RecipeSubCategoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -69,7 +69,7 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateRecipeSubCategoryDto })*/
     async create(
-        @Body() dto: CreateRecipeSubCategoryDto,
+        @Body() _dto: CreateRecipeSubCategoryDto,
     ): Promise<RecipeSubCategory> {
         throw new Error('Endpoint not available');
         /*const result = await super.create(dto);
@@ -91,8 +91,8 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     })
     @ApiBody({ type: UpdateRecipeSubCategoryDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateRecipeSubCategoryDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateRecipeSubCategoryDto,
     ): Promise<RecipeSubCategory> {
         throw new Error('Endpoint not available');
         /*const result = super.update(id, dto);
@@ -112,7 +112,10 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         const result = await super.remove(id);
 
-        await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
+        await invalidateFindAllCache(
+            'RecipeCategoryService',
+            this.cacheManager,
+        );
 
         return result;
     }
@@ -135,7 +138,12 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({

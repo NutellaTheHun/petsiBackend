@@ -1,5 +1,5 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
-import { QueryFailedError } from "typeorm";
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 
 export function queryFailedBadRequest(queryError: QueryFailedError) {
     return new HttpException(
@@ -8,7 +8,7 @@ export function queryFailedBadRequest(queryError: QueryFailedError) {
             error: queryError.message,
             details: queryError.message,
         },
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
     );
 }
 
@@ -18,8 +18,6 @@ export function unexpectedErrorInteralServerError(message: string) {
             status: HttpStatus.INTERNAL_SERVER_ERROR,
             error: message,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
     );
 }
-
-

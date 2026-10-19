@@ -1,21 +1,28 @@
 import { ForbiddenException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { AppHttpException } from '../../../common/exceptions/app-http-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
 import { Tenant } from '../../tenants/entities/tenant.entity';
-import { ReportDefinition, ReportVisibility } from '../entities/report-definition.entity';
+import {
+    ReportDefinition,
+    ReportVisibility,
+} from '../entities/report-definition.entity';
 import { getReportsExecutionTestingModule } from '../reports-testing.module';
+import {
+    MetricSectionResultDto,
+    ReportResultDto,
+    TableSectionResultDto,
+} from '../dto/report-result.dto';
 import { ReportExecutionService } from './report-execution.service';
 
 const P = `t${Date.now()}`;
@@ -25,6 +32,38 @@ const DATE_2 = new Date('2025-01-16T00:00:00.000Z');
 // No FK constraint on Order/OrderMenuItem/OrderContainerItem.locationId —
 // a real Location row isn't needed to satisfy the NOT NULL column.
 const FIXTURE_LOCATION_ID = 1;
+
+type ReportRow = Record<string, unknown>;
+
+function tableSection(
+    result: ReportResultDto,
+    index = 0,
+): TableSectionResultDto {
+    const section = result.sections[index];
+    if (section.type !== 'table')
+        throw new Error(`expected a table section, got ${section.type}`);
+    return section;
+}
+
+function metricSection(
+    result: ReportResultDto,
+    index = 0,
+): MetricSectionResultDto {
+    const section = result.sections[index];
+    if (section.type !== 'metric')
+        throw new Error(`expected a metric section, got ${section.type}`);
+    return section;
+}
+
+function findOrFail<T>(items: T[], predicate: (item: T) => boolean): T {
+    const found = items.find(predicate);
+    if (found === undefined) throw new Error('expected a matching item');
+    return found;
+}
+
+function childrenOf(row: ReportRow): ReportRow[] {
+    return row.children as ReportRow[];
+}
 
 describe('ReportExecutionService', () => {
     let module: TestingModule;
@@ -49,7 +88,6 @@ describe('ReportExecutionService', () => {
     let orderFrozen: Order;
     let orderMenuItemAlice: OrderMenuItem;
     let orderMenuItemBob: OrderMenuItem;
-    let orderContainerItemRepo: Repository<OrderContainerItem>;
 
     beforeAll(async () => {
         module = await getReportsExecutionTestingModule();
@@ -60,11 +98,15 @@ describe('ReportExecutionService', () => {
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         menuItemSizeRepo = module.get(getRepositoryToken(MenuItemSize));
         menuItemCategoryRepo = module.get(getRepositoryToken(MenuItemCategory));
-        orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        testContextService = module.get(RequestContextService) as TestRequestContextService;
+        testContextService = module.get<TestRequestContextService>(
+            RequestContextService,
+        );
 
-        tenant = await tenantRepo.save({ name: `${P}-tenant`, subdomain: `${P}-subdomain` });
+        tenant = await tenantRepo.save({
+            name: `${P}-tenant`,
+            subdomain: `${P}-subdomain`,
+        });
         // Order/OrderMenuItem/OrderContainerItem are location-bound (NOT
         // NULL locationId) but ReportExecutionService queries them
         // unscoped (see reports/CLAUDE.md) — no real Location row is
@@ -75,10 +117,22 @@ describe('ReportExecutionService', () => {
             locations: [],
         });
 
-        menuItemCategory = await menuItemCategoryRepo.save({ name: `${P}-pie`, tenantId: tenant.id } as MenuItemCategory);
-        menuItemSize = await menuItemSizeRepo.save({ name: `${P}-regular`, tenantId: tenant.id } as MenuItemSize);
-        menuItem = await menuItemRepo.save({ name: `${P}-apple-pie`, tenantId: tenant.id } as MenuItem);
-        menuItem2 = await menuItemRepo.save({ name: `${P}-cherry-pie`, tenantId: tenant.id } as MenuItem);
+        menuItemCategory = await menuItemCategoryRepo.save({
+            name: `${P}-pie`,
+            tenantId: tenant.id,
+        } as MenuItemCategory);
+        menuItemSize = await menuItemSizeRepo.save({
+            name: `${P}-regular`,
+            tenantId: tenant.id,
+        } as MenuItemSize);
+        menuItem = await menuItemRepo.save({
+            name: `${P}-apple-pie`,
+            tenantId: tenant.id,
+        } as MenuItem);
+        menuItem2 = await menuItemRepo.save({
+            name: `${P}-cherry-pie`,
+            tenantId: tenant.id,
+        } as MenuItem);
 
         orderAlice = await orderRepo.save({
             recipient: `${P}-alice`,
@@ -126,7 +180,10 @@ describe('ReportExecutionService', () => {
     });
 
     afterAll(async () => {
-        await orderMenuItemRepo.delete([orderMenuItemAlice.id, orderMenuItemBob.id]);
+        await orderMenuItemRepo.delete([
+            orderMenuItemAlice.id,
+            orderMenuItemBob.id,
+        ]);
         await orderRepo.delete([orderAlice.id, orderBob.id, orderFrozen.id]);
         await menuItemRepo.delete([menuItem.id, menuItem2.id]);
         await menuItemSizeRepo.delete(menuItemSize.id);
@@ -154,7 +211,9 @@ describe('ReportExecutionService', () => {
             sections,
             tenantId: tenant.id,
         });
-        testCtx.addCleanupFunction(async () => { await definitionRepo.delete(defn.id); });
+        testCtx.addCleanupFunction(async () => {
+            await definitionRepo.delete(defn.id);
+        });
         return defn;
     }
 
@@ -166,7 +225,10 @@ describe('ReportExecutionService', () => {
                     order: 1,
                     title: 'All Orders',
                     entity: 'orders',
-                    columns: [{ fieldKey: 'recipient' }, { fieldKey: 'fulfillmentType' }],
+                    columns: [
+                        { fieldKey: 'recipient' },
+                        { fieldKey: 'fulfillmentType' },
+                    ],
                     filters: [],
                 },
             ]);
@@ -177,15 +239,23 @@ describe('ReportExecutionService', () => {
             expect(result.name).toBe(defn.name);
             expect(result.sections).toHaveLength(1);
 
-            const section = result.sections[0] as any;
+            const section = tableSection(result);
             expect(section.type).toBe('table');
             expect(section.title).toBe('All Orders');
             expect(section.columns).toEqual([
-                { key: 'recipient', label: 'Recipient Name', dataType: 'string' },
-                { key: 'fulfillmentType', label: 'Fulfillment Type', dataType: 'enum' },
+                {
+                    key: 'recipient',
+                    label: 'Recipient Name',
+                    dataType: 'string',
+                },
+                {
+                    key: 'fulfillmentType',
+                    label: 'Fulfillment Type',
+                    dataType: 'enum',
+                },
             ]);
 
-            const recipients = section.rows.map((r: any) => r.recipient);
+            const recipients = section.rows.map((r) => r.recipient);
             expect(recipients).toContain(`${P}-alice`);
             expect(recipients).toContain(`${P}-bob`);
             expect(recipients).not.toContain(`${P}-frozen`);
@@ -212,8 +282,8 @@ describe('ReportExecutionService', () => {
 
             const result = await service.execute(defn.id, { date: DATE_1 });
 
-            const section = result.sections[0] as any;
-            const recipients = section.rows.map((r: any) => r.recipient);
+            const section = tableSection(result);
+            const recipients = section.rows.map((r) => r.recipient);
             expect(recipients).toContain(`${P}-alice`);
             expect(recipients).not.toContain(`${P}-bob`);
             expect(recipients).not.toContain(`${P}-frozen`);
@@ -240,8 +310,8 @@ describe('ReportExecutionService', () => {
 
             const result = await service.execute(defn.id, {});
 
-            const section = result.sections[0] as any;
-            const recipients = section.rows.map((r: any) => r.recipient);
+            const section = tableSection(result);
+            const recipients = section.rows.map((r) => r.recipient);
             expect(recipients).toContain(`${P}-alice`);
             expect(recipients).not.toContain(`${P}-bob`);
             expect(recipients).not.toContain(`${P}-frozen`);
@@ -261,8 +331,8 @@ describe('ReportExecutionService', () => {
 
             const result = await service.execute(defn.id, {});
 
-            const section = result.sections[0] as any;
-            const recipients = section.rows.map((r: any) => r.recipient);
+            const section = tableSection(result);
+            const recipients = section.rows.map((r) => r.recipient);
             expect(recipients).not.toContain(`${P}-frozen`);
         });
 
@@ -278,7 +348,9 @@ describe('ReportExecutionService', () => {
                 },
             ]);
 
-            await expect(service.execute(defn.id, {})).rejects.toThrow(AppHttpException);
+            await expect(service.execute(defn.id, {})).rejects.toThrow(
+                AppHttpException,
+            );
         });
     });
 
@@ -301,14 +373,17 @@ describe('ReportExecutionService', () => {
 
             const result = await service.execute(defn.id, {});
 
-            const section = result.sections[0] as any;
+            const section = tableSection(result);
             expect(section.type).toBe('table');
             expect(section.columns).toEqual([
                 { key: 'itemName', label: 'Item Name', dataType: 'string' },
                 { key: 'sizeName', label: 'Size', dataType: 'string' },
                 { key: 'quantity', label: 'Quantity', dataType: 'number' },
             ]);
-            const row = section.rows.find((r: any) => r.itemName === `${P}-apple-pie`);
+            const row = findOrFail(
+                section.rows,
+                (r) => r.itemName === `${P}-apple-pie`,
+            );
             expect(row).toBeDefined();
             expect(row.sizeName).toBe(`${P}-regular`);
             expect(Number(row.quantity)).toBe(2);
@@ -326,22 +401,38 @@ describe('ReportExecutionService', () => {
                     columns: [{ fieldKey: 'itemName' }],
                     filters: [],
                     groupBy: ['itemName'],
-                    aggregates: [{ fieldKey: 'quantity', fn: 'sum', label: 'totalQty' }],
+                    aggregates: [
+                        { fieldKey: 'quantity', fn: 'sum', label: 'totalQty' },
+                    ],
                 },
             ]);
 
             const result = await service.execute(defn.id, {});
-            const section = result.sections[0] as any;
+            const section = tableSection(result);
 
             expect(section.type).toBe('table');
-            expect(section.columns).toContainEqual({ key: 'itemName', label: 'Item Name', dataType: 'string' });
-            expect(section.columns).toContainEqual({ key: 'totalQty', label: 'totalQty', dataType: 'number' });
+            expect(section.columns).toContainEqual({
+                key: 'itemName',
+                label: 'Item Name',
+                dataType: 'string',
+            });
+            expect(section.columns).toContainEqual({
+                key: 'totalQty',
+                label: 'totalQty',
+                dataType: 'number',
+            });
 
-            const appleRow = section.rows.find((r: any) => r.itemName === `${P}-apple-pie`);
+            const appleRow = findOrFail(
+                section.rows,
+                (r) => r.itemName === `${P}-apple-pie`,
+            );
             expect(appleRow).toBeDefined();
             expect(Number(appleRow.totalQty)).toBe(2);
 
-            const cherryRow = section.rows.find((r: any) => r.itemName === `${P}-cherry-pie`);
+            const cherryRow = findOrFail(
+                section.rows,
+                (r) => r.itemName === `${P}-cherry-pie`,
+            );
             expect(cherryRow).toBeDefined();
             expect(Number(cherryRow.totalQty)).toBe(3);
         });
@@ -353,18 +444,33 @@ describe('ReportExecutionService', () => {
                     order: 1,
                     title: 'Grouped Items',
                     entity: 'orderMenuItems',
-                    columns: [{ fieldKey: 'itemName' }, { fieldKey: 'sizeName' }],
+                    columns: [
+                        { fieldKey: 'itemName' },
+                        { fieldKey: 'sizeName' },
+                    ],
                     filters: [],
                     groupBy: ['itemName', 'sizeName'],
-                    aggregates: [{ fieldKey: 'quantity', fn: 'count', label: 'itemCount' }],
+                    aggregates: [
+                        {
+                            fieldKey: 'quantity',
+                            fn: 'count',
+                            label: 'itemCount',
+                        },
+                    ],
                 },
             ]);
 
             const result = await service.execute(defn.id, {});
-            const section = result.sections[0] as any;
+            const section = tableSection(result);
 
-            const appleRow = section.rows.find((r: any) => r.itemName === `${P}-apple-pie`);
-            const cherryRow = section.rows.find((r: any) => r.itemName === `${P}-cherry-pie`);
+            const appleRow = findOrFail(
+                section.rows,
+                (r) => r.itemName === `${P}-apple-pie`,
+            );
+            const cherryRow = findOrFail(
+                section.rows,
+                (r) => r.itemName === `${P}-cherry-pie`,
+            );
             expect(appleRow).toBeDefined();
             expect(cherryRow).toBeDefined();
             expect(Number(appleRow.itemCount)).toBe(1);
@@ -383,24 +489,38 @@ describe('ReportExecutionService', () => {
                     columns: [],
                     filters: [],
                     aggregates: [
-                        { fieldKey: 'quantity', fn: 'sum', label: 'Total Quantity' },
-                        { fieldKey: 'quantity', fn: 'count', label: 'Item Count' },
+                        {
+                            fieldKey: 'quantity',
+                            fn: 'sum',
+                            label: 'Total Quantity',
+                        },
+                        {
+                            fieldKey: 'quantity',
+                            fn: 'count',
+                            label: 'Item Count',
+                        },
                     ],
                 },
             ]);
 
             const result = await service.execute(defn.id, {});
-            const section = result.sections[0] as any;
+            const section = metricSection(result);
 
             expect(section.type).toBe('metric');
             expect(section.title).toBe('Summary');
             expect(section.metrics).toHaveLength(2);
 
-            const totalQtyMetric = section.metrics.find((m: any) => m.label === 'Total Quantity');
+            const totalQtyMetric = findOrFail(
+                section.metrics,
+                (m) => m.label === 'Total Quantity',
+            );
             expect(totalQtyMetric).toBeDefined();
             expect(Number(totalQtyMetric.value)).toBe(5); // 2 (alice) + 3 (bob)
 
-            const itemCountMetric = section.metrics.find((m: any) => m.label === 'Item Count');
+            const itemCountMetric = findOrFail(
+                section.metrics,
+                (m) => m.label === 'Item Count',
+            );
             expect(itemCountMetric).toBeDefined();
             expect(Number(itemCountMetric.value)).toBe(2);
         });
@@ -421,15 +541,20 @@ describe('ReportExecutionService', () => {
                             value: `${P}-apple-pie`,
                         },
                     ],
-                    aggregates: [{ fieldKey: 'quantity', fn: 'sum', label: 'totalQty' }],
+                    aggregates: [
+                        { fieldKey: 'quantity', fn: 'sum', label: 'totalQty' },
+                    ],
                 },
             ]);
 
             const result = await service.execute(defn.id, {});
-            const section = result.sections[0] as any;
+            const section = metricSection(result);
 
             expect(section.type).toBe('metric');
-            const metric = section.metrics.find((m: any) => m.label === 'totalQty');
+            const metric = findOrFail(
+                section.metrics,
+                (m) => m.label === 'totalQty',
+            );
             expect(metric).toBeDefined();
             expect(Number(metric.value)).toBe(2);
         });
@@ -450,15 +575,22 @@ describe('ReportExecutionService', () => {
                             paramName: 'item',
                         },
                     ],
-                    aggregates: [{ fieldKey: 'quantity', fn: 'sum', label: 'totalQty' }],
+                    aggregates: [
+                        { fieldKey: 'quantity', fn: 'sum', label: 'totalQty' },
+                    ],
                 },
             ]);
 
-            const result = await service.execute(defn.id, { item: `${P}-cherry-pie` });
-            const section = result.sections[0] as any;
+            const result = await service.execute(defn.id, {
+                item: `${P}-cherry-pie`,
+            });
+            const section = metricSection(result);
 
             expect(section.type).toBe('metric');
-            const metric = section.metrics.find((m: any) => m.label === 'totalQty');
+            const metric = findOrFail(
+                section.metrics,
+                (m) => m.label === 'totalQty',
+            );
             expect(Number(metric.value)).toBe(3);
         });
     });
@@ -492,7 +624,9 @@ describe('ReportExecutionService', () => {
             );
 
             testContextService.run(() => {}, { roles: [ROLE_STAFF] });
-            await expect(service.execute(defn.id, {})).rejects.toThrow(ForbiddenException);
+            await expect(service.execute(defn.id, {})).rejects.toThrow(
+                ForbiddenException,
+            );
             testContextService.run(() => {}, { roles: [ROLE_MANAGER] });
         });
     });
@@ -507,7 +641,9 @@ describe('ReportExecutionService', () => {
                 tenantId: tenant.id,
                 locationId: FIXTURE_LOCATION_ID,
             });
-            testCtx.addCleanupFunction(async () => { await orderRepo.delete(containerOrder.id); });
+            testCtx.addCleanupFunction(async () => {
+                await orderRepo.delete(containerOrder.id);
+            });
 
             const containerOrderMenuItem = await orderMenuItemRepo.save({
                 menuItem,
@@ -517,11 +653,25 @@ describe('ReportExecutionService', () => {
                 tenantId: tenant.id,
                 locationId: FIXTURE_LOCATION_ID,
                 containerOrderMenuItems: [
-                    { containedMenuItem: menuItem, containedItemSize: menuItemSize, quantity: 2, tenantId: tenant.id, locationId: FIXTURE_LOCATION_ID },
-                    { containedMenuItem: menuItem2, containedItemSize: menuItemSize, quantity: 3, tenantId: tenant.id, locationId: FIXTURE_LOCATION_ID },
+                    {
+                        containedMenuItem: menuItem,
+                        containedItemSize: menuItemSize,
+                        quantity: 2,
+                        tenantId: tenant.id,
+                        locationId: FIXTURE_LOCATION_ID,
+                    },
+                    {
+                        containedMenuItem: menuItem2,
+                        containedItemSize: menuItemSize,
+                        quantity: 3,
+                        tenantId: tenant.id,
+                        locationId: FIXTURE_LOCATION_ID,
+                    },
                 ],
-            } as any);
-            testCtx.addCleanupFunction(async () => { await orderMenuItemRepo.delete(containerOrderMenuItem.id); });
+            } as DeepPartial<OrderMenuItem>);
+            testCtx.addCleanupFunction(async () => {
+                await orderMenuItemRepo.delete(containerOrderMenuItem.id);
+            });
 
             const defn = await createDefinition([
                 {
@@ -540,20 +690,28 @@ describe('ReportExecutionService', () => {
             ]);
 
             const result = await service.execute(defn.id, {});
-            const section = result.sections[0] as any;
+            const section = tableSection(result);
 
-            const containerRow = section.rows.find(
-                (r: any) => r.itemName === `${P}-apple-pie` && Number(r.quantity) === 1,
+            const containerRow = findOrFail(
+                section.rows,
+                (r) =>
+                    r.itemName === `${P}-apple-pie` && Number(r.quantity) === 1,
             );
             expect(containerRow).toBeDefined();
-            expect(containerRow.children).toHaveLength(2);
+            expect(childrenOf(containerRow)).toHaveLength(2);
 
-            const childWithQty2 = containerRow.children.find((c: any) => Number(c.quantity) === 2);
+            const childWithQty2 = findOrFail(
+                childrenOf(containerRow),
+                (c) => Number(c.quantity) === 2,
+            );
             expect(childWithQty2).toBeDefined();
             expect(childWithQty2.itemName).toBe(`${P}-apple-pie`);
             expect(childWithQty2.sizeName).toBe(`${P}-regular`);
 
-            const childWithQty3 = containerRow.children.find((c: any) => Number(c.quantity) === 3);
+            const childWithQty3 = findOrFail(
+                childrenOf(containerRow),
+                (c) => Number(c.quantity) === 3,
+            );
             expect(childWithQty3).toBeDefined();
             expect(childWithQty3.itemName).toBe(`${P}-cherry-pie`);
             expect(childWithQty3.sizeName).toBe(`${P}-regular`);
@@ -575,7 +733,7 @@ describe('ReportExecutionService', () => {
             ]);
 
             const result = await service.execute(defn.id, {});
-            const section = result.sections[0] as any;
+            const section = tableSection(result);
 
             // All seeded rows (alice + bob) have no container sub-items
             for (const row of section.rows) {

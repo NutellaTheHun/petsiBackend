@@ -2,33 +2,30 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
     Body,
     Controller,
-    Delete,
     Get,
     HttpCode,
     HttpStatus,
     Inject,
     Param,
     ParseIntPipe,
-    Query
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiExtraModels,
-    ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath
+    getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
-import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PinoLogger } from 'nestjs-pino';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
@@ -47,7 +44,7 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
     constructor(
         orderItemService: OrderMenuItemService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        logger: AppLogger,
+        logger: PinoLogger,
         requestContextService: RequestContextService,
     ) {
         super(
@@ -68,7 +65,7 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateOrderMenuItemDto })*/
-    async create(@Body() dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
+    async create(@Body() _dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
         throw new Error('Endpoint not available');
         /* const result = await super.create(dto);
  
@@ -87,8 +84,8 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
     @ApiNotFoundResponse({ description: 'Order Menu Item to update not found.' })
     @ApiBody({ type: UpdateOrderMenuItemDto })*/
     async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateOrderMenuItemDto,
+        @Param('id', ParseIntPipe) _id: number,
+        @Body() _dto: UpdateOrderMenuItemDto,
     ): Promise<OrderMenuItem> {
         throw new Error('Endpoint not available');
         /*const result = await super.update(id, dto);
@@ -132,7 +129,12 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
             },
         },
     })
-    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({
+        name: 'relations',
+        required: false,
+        isArray: true,
+        type: String,
+    })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'offset', required: false, type: String })
     @ApiQuery({
@@ -186,9 +188,14 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrieves one Order Menu Item' })
-    @ApiOkResponse({ description: 'Order Menu Item found', type: OrderMenuItem })
+    @ApiOkResponse({
+        description: 'Order Menu Item found',
+        type: OrderMenuItem,
+    })
     @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderMenuItem> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<OrderMenuItem> {
         return super.findOne(id);
     }
 }
