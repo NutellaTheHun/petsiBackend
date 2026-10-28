@@ -61,7 +61,7 @@ Every Square call for a tenant first loads its `SquareConnection` and refuses to
 
 Tenants control which Square data flows into Petsi. The link tables *are* that control layer. Every Square object we've seen gets a row, whether it's mapped, unmapped or disabled, because the UI needs to list things that have no Petsi entity yet. Columns on `Location`/`MenuItem` can't represent "seen in Square, not mapped, disabled". A link table also keeps Square ids out of `Order`'s revision-history snapshot (`OrderSnapshotV1`), which a new column on `Order` would force into the snapshot.
 
-All link tables are `TenantScopedServiceBase` entities with `@Unique(['tenantId', '<squareId column>'])`. **Syncs refresh Square-side fields only; they never overwrite a tenant's choices** (`enabled`, mappings, modes). Auto-match is exact (trim + lowercase + collapse whitespace), only on new unmapped rows, only when there's exactly one candidate. No fuzzy matching. Catalog mapping is **tenant-wide**: ignore `present_at_location_ids`.
+All link tables are tenant-scoped (a `tenantId` column) with `@Unique(['tenantId', '<squareId column>'])`. **Syncs refresh Square-side fields only; they never overwrite a tenant's choices** (`enabled`, mappings, modes). Auto-match is exact (trim + lowercase + collapse whitespace), only on new unmapped rows, only when there's exactly one candidate. No fuzzy matching. Catalog mapping is **tenant-wide**: ignore `present_at_location_ids`.
 
 FKs from link tables to Petsi entities (`locationId`, `menuItemId`, `menuItemSizeId`, `defaultOrderCategoryId`) are nullable with `onDelete: 'SET NULL'`: deleting a Petsi entity unmaps the link, and future lines for it become unresolved.
 

@@ -12,6 +12,7 @@ import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareClientFactory } from '../client/square-client.factory';
 import { SquareConnection } from '../entities/square-connection.entity';
+import { SquareLocationLink } from '../entities/square-location-link.entity';
 import { SquareOAuthState } from '../entities/square-oauth-state.entity';
 import { SquareOAuthStateService } from '../services/square-oauth-state.service';
 import { SquareTokenCryptoService } from '../services/square-token-crypto.service';
@@ -28,6 +29,7 @@ describe('square OAuth connect flow (HTTP)', () => {
     let app: INestApplication;
     let fake: FakeSquareClientFactory;
     let connectionRepo: Repository<SquareConnection>;
+    let linkRepo: Repository<SquareLocationLink>;
     let stateRepo: Repository<SquareOAuthState>;
     let categoryRepo: Repository<OrderCategory>;
     let tenantRepo: Repository<Tenant>;
@@ -46,6 +48,7 @@ describe('square OAuth connect flow (HTTP)', () => {
         const module: TestingModule = await getSquareTestingModule();
         fake = module.get(SquareClientFactory);
         connectionRepo = module.get(getRepositoryToken(SquareConnection));
+        linkRepo = module.get(getRepositoryToken(SquareLocationLink));
         stateRepo = module.get(getRepositoryToken(SquareOAuthState));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
@@ -79,6 +82,9 @@ describe('square OAuth connect flow (HTTP)', () => {
         testCtx.addCleanupFunction(async () => {
             await connectionRepo.delete({ tenantId: tenant.id });
         });
+        testCtx.addCleanupFunction(async () => {
+            await linkRepo.delete({ tenantId: tenant.id });
+        });
     });
 
     afterEach(async () => {
@@ -110,10 +116,30 @@ describe('square OAuth connect flow (HTTP)', () => {
             (): Promise<Square.RevokeTokenResponse> =>
                 Promise.resolve({ success: true }),
         );
+        const listLocations = jest.fn(
+            (): Promise<Square.ListLocationsResponse> =>
+                Promise.resolve({
+                    locations: [
+                        {
+                            id: `${P}-sq-loc-1`,
+                            name: `${P} Kiosk`,
+                            status: 'ACTIVE',
+                            timezone: 'America/New_York',
+                        },
+                        {
+                            id: `${P}-sq-loc-2`,
+                            name: `${P} Truck`,
+                            status: 'INACTIVE',
+                            timezone: 'America/New_York',
+                        },
+                    ],
+                }),
+        );
         fake.appApi.oAuth.obtainToken = obtainToken;
         fake.appApi.oAuth.revokeToken = revokeToken;
         fake.tenantApi.merchants.get = getMerchant;
-        return { obtainToken, getMerchant, revokeToken };
+        fake.tenantApi.locations.list = listLocations;
+        return { obtainToken, getMerchant, revokeToken, listLocations };
     }
 
     async function startState(): Promise<string> {
@@ -202,8 +228,40 @@ describe('square OAuth connect flow (HTTP)', () => {
             expect(connection?.accessTokenExpiresAt?.toISOString()).toBe(
                 '2026-11-27T00:00:00.000Z',
             );
-            // The merchant profile was fetched with the new token
-            expect(fake.tenantAccessTokens).toEqual([`${P}-access`]);
+            // The merchant profile and the location sync used the new token
+            expect(fake.tenantAccessTokens).toEqual([
+                `${P}-access`,
+                `${P}-access`,
+            ]);
+        });
+
+        it('creates one disabled, unmapped location link per Square location', async () => {
+            const { listLocations } = stubSquare();
+            const state = await startState();
+
+            currentUser = undefined;
+            expectOutcome(await callback({ code: 'c', state }), 'connected');
+
+            expect(listLocations).toHaveBeenCalledTimes(1);
+            const links = await linkRepo.find({
+                where: { tenantId: tenant.id },
+                order: { squareLocationId: 'ASC' },
+            });
+            expect(links).toEqual([
+                expect.objectContaining({
+                    squareLocationId: `${P}-sq-loc-1`,
+                    squareName: `${P} Kiosk`,
+                    squareStatus: 'ACTIVE',
+                    enabled: false,
+                    locationId: null,
+                }),
+                expect.objectContaining({
+                    squareLocationId: `${P}-sq-loc-2`,
+                    squareStatus: 'INACTIVE',
+                    enabled: false,
+                    locationId: null,
+                }),
+            ]);
         });
 
         it('rejects a replayed state', async () => {
