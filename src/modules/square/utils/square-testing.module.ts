@@ -16,11 +16,24 @@ import { SquareModule } from '../square.module';
 import { FakeSquareClientFactory } from './fake-square-client.factory';
 import { SQUARE_CONFIG_KEYS } from './square-config';
 
-/** A fresh key per module, so specs never depend on a configured secret. */
+/** Non-secret Square config values specs can assert against. */
+export const SQUARE_TEST_CONFIG = {
+    applicationId: 'sandbox-sq0idb-test-app',
+    oauthRedirectUrl: 'http://localhost:3000/square/oauth/callback',
+    settingsUrl: 'http://localhost:5173/settings/square',
+} as const;
+
+/** Fresh secrets per module, so specs never depend on a configured secret. */
 function testSquareConfig() {
     return {
         [SQUARE_CONFIG_KEYS.TOKEN_ENCRYPTION_KEY]:
             randomBytes(32).toString('base64'),
+        [SQUARE_CONFIG_KEYS.APPLICATION_ID]: SQUARE_TEST_CONFIG.applicationId,
+        [SQUARE_CONFIG_KEYS.APPLICATION_SECRET]:
+            randomBytes(32).toString('base64'),
+        [SQUARE_CONFIG_KEYS.OAUTH_REDIRECT_URL]:
+            SQUARE_TEST_CONFIG.oauthRedirectUrl,
+        [SQUARE_CONFIG_KEYS.SETTINGS_URL]: SQUARE_TEST_CONFIG.settingsUrl,
     };
 }
 

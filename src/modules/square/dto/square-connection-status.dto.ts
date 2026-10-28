@@ -26,4 +26,13 @@ export class SquareConnectionStatusDto {
         description: 'The Square business name, or null when not connected',
     })
     businessName: string | null;
+
+    @ApiProperty({
+        type: Number,
+        nullable: true,
+        example: 3,
+        description:
+            'The order category stamped on orders imported from Square, or null',
+    })
+    defaultOrderCategoryId: number | null;
 }

@@ -71,6 +71,7 @@ describe('square connection controller (status + access)', () => {
         expect(res.body).toEqual({
             status: 'not_connected',
             businessName: null,
+            defaultOrderCategoryId: null,
         });
     });
 
@@ -87,29 +88,63 @@ describe('square connection controller (status + access)', () => {
         expect(res.body).toEqual({
             status: 'needs_reauth',
             businessName: `${P}-business`,
+            defaultOrderCategoryId: null,
         });
         expect(res.text).not.toMatch(/token/i);
     });
 
-    it('rejects a tenant without SQUARE_INTEGRATION with 403', async () => {
-        currentUser = { ...tenantAdmin(), features: ['ORDER_MANAGEMENT'] };
-        const res = await getStatus();
-        expect(res.status).toBe(403);
+    // Every tenant-admin route: start, disconnect, default category, status
+    const adminRoutes = [
+        ['GET /square/connection', () => getStatus()],
+        [
+            'POST /square/connection/authorize',
+            () =>
+                request(app.getHttpServer()).post(
+                    '/square/connection/authorize',
+                ),
+        ],
+        [
+            'DELETE /square/connection',
+            () => request(app.getHttpServer()).delete('/square/connection'),
+        ],
+        [
+            'PATCH /square/connection/default-category',
+            () =>
+                request(app.getHttpServer())
+                    .patch('/square/connection/default-category')
+                    .send({ orderCategoryId: null }),
+        ],
+    ] as const;
+
+    describe.each(adminRoutes)('%s', (_route, send) => {
+        it('rejects a tenant without SQUARE_INTEGRATION with 403', async () => {
+            currentUser = { ...tenantAdmin(), features: ['ORDER_MANAGEMENT'] };
+            const res = await send();
+            expect(res.status).toBe(403);
+        });
+
+        it('rejects a location admin who is not a tenant admin with 403', async () => {
+            currentUser = {
+                tenantId: tenant.id,
+                isTenantAdmin: false,
+                locations: [{ locationId: location.id, roles: ['admin'] }],
+            };
+            const res = await send();
+            expect(res.status).toBe(403);
+        });
+
+        it('rejects an unauthenticated request with 401', async () => {
+            currentUser = undefined;
+            const res = await send();
+            expect(res.status).toBe(401);
+        });
     });
 
-    it('rejects a location admin who is not a tenant admin with 403', async () => {
-        currentUser = {
-            tenantId: tenant.id,
-            isTenantAdmin: false,
-            locations: [{ locationId: location.id, roles: ['admin'] }],
-        };
-        const res = await getStatus();
-        expect(res.status).toBe(403);
-    });
-
-    it('rejects an unauthenticated request with 401', async () => {
+    it('lets the OAuth callback through without a user or the feature', async () => {
         currentUser = undefined;
-        const res = await getStatus();
-        expect(res.status).toBe(401);
+        const res = await request(app.getHttpServer()).get(
+            '/square/oauth/callback',
+        );
+        expect(res.status).toBe(302);
     });
 });
