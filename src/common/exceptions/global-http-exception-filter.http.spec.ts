@@ -47,7 +47,8 @@ describe('error envelope + request id (HTTP)', () => {
         });
         requestContext.setContext({ tenantId: tenant.id });
 
-        ({ app, logger } = await createHttpTestApp(module));
+        // Exercises the error envelope, not access control
+        ({ app, logger } = await createHttpTestApp(module, { guards: false }));
     });
 
     afterAll(async () => {
@@ -158,7 +159,8 @@ describe('database and server error mapping (HTTP)', () => {
             name: `${P}-taken`,
         });
 
-        ({ app, logger } = await createHttpTestApp(module));
+        // Exercises the error envelope, not access control
+        ({ app, logger } = await createHttpTestApp(module, { guards: false }));
     });
 
     afterAll(async () => {
@@ -411,7 +413,8 @@ describe('business validation logging (HTTP)', () => {
                 sizes: [size],
             });
 
-        ({ app, logger } = await createHttpTestApp(module));
+        // Exercises the error envelope, not access control
+        ({ app, logger } = await createHttpTestApp(module, { guards: false }));
     });
 
     afterAll(async () => {

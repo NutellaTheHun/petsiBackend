@@ -5,14 +5,9 @@ import * as request from 'supertest';
 import { Repository } from 'typeorm';
 import { createHttpTestApp } from '../../../test/http-test-app';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import {
-    TestUser,
-    useTestUserAndRoleGuards,
-} from '../../../test/test-user-guard';
+import { TestUser } from '../../../test/test-user-guard';
 import { Location } from '../../locations/entities/location.entity';
 import { LocationTestUtil } from '../../locations/utils/location-test.util';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
@@ -41,9 +36,6 @@ describe('inventory area controller (location scope enforcement)', () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        const requestContext = module.get<TestRequestContextService>(
-            RequestContextService,
-        );
 
         ({
             tenant,
@@ -51,10 +43,7 @@ describe('inventory area controller (location scope enforcement)', () => {
         } = await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
 
         ({ app } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(
-                () => currentUser,
-                requestContext,
-            ),
+            user: () => currentUser,
         }));
     });
 

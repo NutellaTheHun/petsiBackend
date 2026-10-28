@@ -5,14 +5,9 @@ import * as request from 'supertest';
 import { Repository } from 'typeorm';
 import { createHttpTestApp } from '../../../test/http-test-app';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import {
-    TestUser,
-    useTestUserAndRoleGuards,
-} from '../../../test/test-user-guard';
+import { TestUser } from '../../../test/test-user-guard';
 import { Location } from '../../locations/entities/location.entity';
 import { LocationTestUtil } from '../../locations/utils/location-test.util';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { Setting } from '../entities/setting.entity';
 import { getSettingsTestingModule } from '../utils/settings-testing.module';
@@ -46,9 +41,6 @@ describe('settings controller (role guard enforcement)', () => {
         const module: TestingModule = await getSettingsTestingModule();
         settingRepo = module.get(getRepositoryToken(Setting));
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        const requestContext = module.get<TestRequestContextService>(
-            RequestContextService,
-        );
 
         ({
             tenant,
@@ -56,10 +48,7 @@ describe('settings controller (role guard enforcement)', () => {
         } = await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
 
         ({ app } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(
-                () => currentUser,
-                requestContext,
-            ),
+            user: () => currentUser,
         }));
     });
 

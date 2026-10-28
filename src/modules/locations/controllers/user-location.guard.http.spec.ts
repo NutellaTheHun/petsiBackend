@@ -4,12 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import * as request from 'supertest';
 import { Repository } from 'typeorm';
 import { createHttpTestApp } from '../../../test/http-test-app';
-import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import {
-    TestUser,
-    useTestUserAndRoleGuards,
-} from '../../../test/test-user-guard';
-import { RequestContextService } from '../../request-context/RequestContextService';
+import { TestUser } from '../../../test/test-user-guard';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { Location } from '../entities/location.entity';
 import { LocationTestUtil } from '../utils/location-test.util';
@@ -34,9 +29,6 @@ describe('user location controller (location scope enforcement)', () => {
     beforeAll(async () => {
         const module: TestingModule = await getLocationsTestingModule();
         tenantRepo = module.get(getRepositoryToken(Tenant));
-        const requestContext = module.get<TestRequestContextService>(
-            RequestContextService,
-        );
 
         ({
             tenant,
@@ -44,10 +36,7 @@ describe('user location controller (location scope enforcement)', () => {
         } = await module.get(LocationTestUtil).seedLocations(P, undefined, 2));
 
         ({ app } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(
-                () => currentUser,
-                requestContext,
-            ),
+            user: () => currentUser,
         }));
     });
 

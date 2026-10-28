@@ -1,27 +1,21 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import {
-    ThrottlerGuard,
-    ThrottlerModule,
-    ThrottlerModuleOptions,
-} from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { globalGuardProviders, throttlerOptions } from './app.setup';
 import { ExceptionsModule } from './common/exceptions/exceptions.module';
 import { pinoHttpRequestIdOptions } from './common/middleware/request-id';
 import { RequestIdMiddleware } from './common/middleware/RequestIdMiddleware';
 import { TenantResolutionMiddleware } from './common/middleware/TenantResolutionMiddleware';
 import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { DynamicPropertiesModule } from './modules/dynamic-properties/dynamic-properties.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
-import { FeatureGuard } from './modules/feature-flags/guards/feature.guard';
 import { InventoryAreasModule } from './modules/inventory-areas/inventory-areas.module';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
 import { LabelsModule } from './modules/labels/labels.module';
@@ -31,7 +25,6 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { RequestContextModule } from './modules/request-context/request-context.module';
-import { RoleGuard } from './modules/roles/guards/role.guard';
 import { RoleModule } from './modules/roles/role.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { SettingsModule } from './modules/settings/settings.module';
@@ -53,18 +46,8 @@ import { UserModule } from './modules/users/user.module';
 
         ThrottlerModule.forRootAsync({
             imports: [ConfigModule],
-            useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
-                throttlers: [
-                    {
-                        ttl: config.get('THROTTLE_TTL') || 60000,
-                        //limit: config.get('THROTTLE_LIMIT') || 500,
-                        limit:
-                            config.get('NODE_ENV') === 'development'
-                                ? 999999
-                                : 500,
-                    },
-                ],
-            }),
+            useFactory: (config: ConfigService) =>
+                throttlerOptions((key) => config.get<string>(key)),
             inject: [ConfigService],
         }),
 
@@ -111,25 +94,7 @@ import { UserModule } from './modules/users/user.module';
 
     controllers: [AppController],
 
-    providers: [
-        AppService,
-        {
-            provide: APP_GUARD,
-            useClass: AuthGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: RoleGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: FeatureGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: ThrottlerGuard,
-        },
-    ],
+    providers: [AppService, ...globalGuardProviders()],
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
