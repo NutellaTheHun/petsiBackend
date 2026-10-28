@@ -163,6 +163,7 @@ The guards run by default. `opts.user` omitted means unauthenticated (401 except
 - Global guards (`AuthGuard` (JWT), `RoleGuard`, `FeatureGuard`, `ThrottlerGuard`) are listed once in `GLOBAL_GUARDS` (`src/app.setup.ts`) and registered as `APP_GUARD`s in `AppModule`.
 - Use `@PublicLogin()` on routes that should skip JWT verification.
 - Use `@Roles(...roles)` on routes/controllers that require specific roles.
+- `@Roles(ROLE_ADMIN)` passes an admin at *any* location. For tenant-admin-only routes use `@UseGuards(TenantAdminGuard)` (`src/modules/square/guards/tenant-admin.guard.ts`, checks `isTenantAdmin === true`). Move it to `src/common/` if a second module needs it.
 
 ### Caching
 

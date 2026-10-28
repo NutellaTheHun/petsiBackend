@@ -25,6 +25,10 @@ export const ERROR_RESPONSE_CODES = [
     'REFERENCE_CONFLICT',
     'INTERNAL_ERROR',
     'REFERENCE_NOT_FOUND',
+    // Square integration (src/modules/square/client/square-error-boundary.ts)
+    'SQUARE_NOT_CONNECTED',
+    'SQUARE_REAUTH_REQUIRED',
+    'SQUARE_NOT_FOUND',
 ] as const;
 
 export type ErrorResponseCode = (typeof ERROR_RESPONSE_CODES)[number];

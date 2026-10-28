@@ -28,6 +28,7 @@ import { RequestContextModule } from './modules/request-context/request-context.
 import { RoleModule } from './modules/roles/role.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SquareModule } from './modules/square/square.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { TenantProvisioningModule } from './modules/tenant-provisioning/tenant-provisioning.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
@@ -90,6 +91,7 @@ import { UserModule } from './modules/users/user.module';
         TenantProvisioningModule,
         SettingsModule,
         FeatureFlagsModule,
+        SquareModule,
     ],
 
     controllers: [AppController],

@@ -5358,7 +5358,7 @@
             "name": "filters",
             "required": false,
             "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **orderCategory** (e.g., `orderCategory=5`) \n\n          - **isFrozen** (e.g., `isFrozen=true`) \n\n          - **fulfillmentType** (e.g., `fulfillmentType=pickup`)",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **orderCategory** (e.g., `orderCategory=5`) \n\n          - **isFrozen** (e.g., `isFrozen=true`) \n\n          - **status** (e.g., `status=CANCELLED`; defaults to `status=ACTIVE` when omitted) \n\n          - **fulfillmentType** (e.g., `fulfillmentType=pickup`)",
             "schema": {
               "type": "array",
               "items": {
@@ -8041,6 +8041,36 @@
           "Settings"
         ]
       }
+    },
+    "/square/connection": {
+      "get": {
+        "operationId": "SquareConnectionController_getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareConnectionStatusDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Returns the tenant's Square connection status (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
     }
   },
   "info": {
@@ -8357,7 +8387,8 @@
               "ORDER_MANAGEMENT",
               "INVENTORY_MANAGEMENT",
               "RECIPE_MANAGEMENT",
-              "LABEL_PRINTING"
+              "LABEL_PRINTING",
+              "SQUARE_INTEGRATION"
             ]
           }
         },
@@ -8434,8 +8465,8 @@
           "user": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.115Z",
-              "updatedAt": "2026-10-16T23:36:06.115Z",
+              "createdAt": "2026-10-28T21:53:15.848Z",
+              "updatedAt": "2026-10-28T21:53:15.848Z",
               "name": "jim",
               "email": "jim@email.com"
             },
@@ -8714,7 +8745,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2026-10-16T23:36:06.253Z",
+              "countDate": "2026-10-28T21:53:16.073Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -9059,7 +9090,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2026-10-16T23:36:06.252Z",
+              "countDate": "2026-10-28T21:53:16.072Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -9787,8 +9818,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-10-16T23:36:06.169Z",
-                "updatedAt": "2026-10-16T23:36:06.169Z",
+                "createdAt": "2026-10-28T21:53:15.996Z",
+                "updatedAt": "2026-10-28T21:53:15.996Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -9979,8 +10010,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.323Z",
-              "updatedAt": "2026-10-16T23:36:06.323Z",
+              "createdAt": "2026-10-28T21:53:16.136Z",
+              "updatedAt": "2026-10-28T21:53:16.136Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10463,8 +10494,12 @@
           },
           "type": {
             "type": "string",
-            "description": "Can be single, fixed_container, or variable_container",
-            "example": "fixed_container",
+            "enum": [
+              "single",
+              "container"
+            ],
+            "description": "Either single or container",
+            "example": "single",
             "nullable": true
           },
           "categoryId": {
@@ -10558,8 +10593,12 @@
           },
           "type": {
             "type": "string",
-            "description": "Can be single, fixed_container, or variable_container",
-            "example": "fixed_container"
+            "enum": [
+              "single",
+              "container"
+            ],
+            "description": "Either single or container",
+            "example": "single"
           },
           "categoryId": {
             "type": "number",
@@ -10645,8 +10684,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.169Z",
-              "updatedAt": "2026-10-16T23:36:06.169Z",
+              "createdAt": "2026-10-28T21:53:15.995Z",
+              "updatedAt": "2026-10-28T21:53:15.995Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10688,8 +10727,8 @@
           "parentMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.169Z",
-              "updatedAt": "2026-10-16T23:36:06.169Z",
+              "createdAt": "2026-10-28T21:53:15.995Z",
+              "updatedAt": "2026-10-28T21:53:15.995Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10956,8 +10995,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.281Z",
-              "updatedAt": "2026-10-16T23:36:06.281Z",
+              "createdAt": "2026-10-28T21:53:16.095Z",
+              "updatedAt": "2026-10-28T21:53:16.095Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -11002,8 +11041,8 @@
               "parentOrder": {},
               "menuItem": {
                 "id": 1,
-                "createdAt": "2026-10-16T23:36:06.281Z",
-                "updatedAt": "2026-10-16T23:36:06.281Z",
+                "createdAt": "2026-10-28T21:53:16.096Z",
+                "updatedAt": "2026-10-28T21:53:16.096Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -11066,8 +11105,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.282Z",
-              "updatedAt": "2026-10-16T23:36:06.282Z",
+              "createdAt": "2026-10-28T21:53:16.096Z",
+              "updatedAt": "2026-10-28T21:53:16.096Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -11113,8 +11152,8 @@
                 "parentOrderMenuItem": {},
                 "containedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.282Z",
-                  "updatedAt": "2026-10-16T23:36:06.282Z",
+                  "createdAt": "2026-10-28T21:53:16.096Z",
+                  "updatedAt": "2026-10-28T21:53:16.096Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -11147,9 +11186,9 @@
               "id": 1,
               "category": {},
               "recipient": "alberto",
-              "createdAt": "2026-10-16T23:36:06.282Z",
-              "updatedAt": "2026-10-16T23:36:06.282Z",
-              "fulfillmentDate": "2026-10-16T23:36:06.282Z",
+              "createdAt": "2026-10-28T21:53:16.096Z",
+              "updatedAt": "2026-10-28T21:53:16.096Z",
+              "fulfillmentDate": "2026-10-28T21:53:16.096Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -11157,6 +11196,7 @@
               "email": "email@email.com",
               "note": "instructions",
               "isFrozen": false,
+              "status": "ACTIVE",
               "isWeekly": true,
               "weeklyFulfillment": "monday",
               "orderedItems": [
@@ -11318,6 +11358,15 @@
             "example": true,
             "description": "A flag to 'pause' or 'freeze' an order, not included in DB queries for services like aggregates for Reports."
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists."
+          },
           "category": {
             "example": {
               "id": 1,
@@ -11340,8 +11389,8 @@
                 "parentOrder": {},
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.283Z",
-                  "updatedAt": "2026-10-16T23:36:06.283Z",
+                  "createdAt": "2026-10-28T21:53:16.097Z",
+                  "updatedAt": "2026-10-28T21:53:16.097Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -11367,8 +11416,8 @@
                     "parentOrderMenuItem": {},
                     "containedMenuItem": {
                       "id": 1,
-                      "createdAt": "2026-10-16T23:36:06.283Z",
-                      "updatedAt": "2026-10-16T23:36:06.283Z",
+                      "createdAt": "2026-10-28T21:53:16.097Z",
+                      "updatedAt": "2026-10-28T21:53:16.097Z",
                       "type": "container",
                       "name": "Classic Apple",
                       "category": {},
@@ -11403,8 +11452,8 @@
               "id": 1,
               "order": {},
               "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
-              "startDate": "2026-10-16T23:36:06.283Z",
-              "endDate": "2026-10-16T23:36:06.283Z"
+              "startDate": "2026-10-28T21:53:16.097Z",
+              "endDate": "2026-10-28T21:53:16.097Z"
             },
             "description": "The schedule of the recurring order",
             "nullable": true,
@@ -11450,6 +11499,7 @@
           "phoneNumber",
           "email",
           "isFrozen",
+          "status",
           "category",
           "orderedItems",
           "recurrenceSchedule",
@@ -11483,9 +11533,9 @@
                 "id": 1,
                 "category": {},
                 "recipient": "alberto",
-                "createdAt": "2026-10-16T23:36:06.284Z",
-                "updatedAt": "2026-10-16T23:36:06.284Z",
-                "fulfillmentDate": "2026-10-16T23:36:06.284Z",
+                "createdAt": "2026-10-28T21:53:16.098Z",
+                "updatedAt": "2026-10-28T21:53:16.098Z",
+                "fulfillmentDate": "2026-10-28T21:53:16.098Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -11493,6 +11543,7 @@
                 "email": "email@email.com",
                 "note": "instructions",
                 "isFrozen": false,
+                "status": "ACTIVE",
                 "isWeekly": true,
                 "weeklyFulfillment": "monday",
                 "orderedItems": [
@@ -11605,6 +11656,12 @@
         "properties": {
           "frequency": {
             "type": "string",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "YEARLY"
+            ],
             "description": "The frequency of the schedule",
             "example": "WEEKLY"
           },
@@ -11656,6 +11713,11 @@
           },
           "timezone": {
             "type": "string",
+            "enum": [
+              "America/New_York",
+              "Europe/London",
+              "Asia/Tokyo"
+            ],
             "description": "The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York",
             "example": "America/New_York",
             "nullable": true
@@ -11688,6 +11750,10 @@
           },
           "fulfillmentType": {
             "type": "string",
+            "enum": [
+              "pickup",
+              "delivery"
+            ],
             "description": "Method of Order's dispersal.",
             "example": "delivery"
           },
@@ -11785,15 +11851,33 @@
           },
           "occurrenceType": {
             "type": "string",
+            "enum": [
+              "TEMPLATE",
+              "OCCURRENCE"
+            ],
             "example": "TEMPLATE",
             "description": "The type of the occurence",
             "nullable": true
           },
           "occurrenceState": {
             "type": "string",
+            "enum": [
+              "GENERATED",
+              "MODIFIED",
+              "CANCELLED"
+            ],
             "example": "GENERATED",
             "description": "The state of the occurence",
             "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists. Defaults to ACTIVE."
           },
           "recurrenceDate": {
             "type": "object",
@@ -12016,6 +12100,15 @@
             "description": "The state of the occurence",
             "nullable": true
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists."
+          },
           "recurrenceSchedule": {
             "example": {
               "frequency": "WEEKLY",
@@ -12066,6 +12159,7 @@
           "orderedItems",
           "occurrenceType",
           "occurrenceState",
+          "status",
           "recurrenceSchedule",
           "createdAt",
           "updatedAt"
@@ -12168,6 +12262,10 @@
           },
           "fulfillmentType": {
             "type": "string",
+            "enum": [
+              "pickup",
+              "delivery"
+            ],
             "description": "Method of Order's dispersal.",
             "example": "delivery"
           },
@@ -12258,15 +12356,33 @@
           },
           "occurrenceType": {
             "type": "string",
+            "enum": [
+              "TEMPLATE",
+              "OCCURRENCE"
+            ],
             "example": "TEMPLATE",
             "description": "The type of the occurence",
             "nullable": true
           },
           "occurrenceState": {
             "type": "string",
+            "enum": [
+              "GENERATED",
+              "MODIFIED",
+              "CANCELLED"
+            ],
             "example": "GENERATED",
             "description": "The state of the occurence",
             "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists. Defaults to ACTIVE."
           },
           "recurrenceSchedule": {
             "example": {
@@ -12587,8 +12703,8 @@
               "name": "Classic Apple Pie",
               "producedMenuItem": {
                 "id": 1,
-                "createdAt": "2026-10-16T23:36:06.393Z",
-                "updatedAt": "2026-10-16T23:36:06.393Z",
+                "createdAt": "2026-10-28T21:53:16.202Z",
+                "updatedAt": "2026-10-28T21:53:16.202Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -12654,8 +12770,8 @@
           "producedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.393Z",
-              "updatedAt": "2026-10-16T23:36:06.393Z",
+              "createdAt": "2026-10-28T21:53:16.202Z",
+              "updatedAt": "2026-10-28T21:53:16.202Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -12819,8 +12935,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.394Z",
-                  "updatedAt": "2026-10-16T23:36:06.394Z",
+                  "createdAt": "2026-10-28T21:53:16.203Z",
+                  "updatedAt": "2026-10-28T21:53:16.203Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -12923,8 +13039,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.395Z",
-                  "updatedAt": "2026-10-16T23:36:06.395Z",
+                  "createdAt": "2026-10-28T21:53:16.204Z",
+                  "updatedAt": "2026-10-28T21:53:16.204Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -13457,8 +13573,8 @@
                 "displayName": "CLAPPLE",
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.428Z",
-                  "updatedAt": "2026-10-16T23:36:06.428Z",
+                  "createdAt": "2026-10-28T21:53:16.235Z",
+                  "updatedAt": "2026-10-28T21:53:16.235Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -13517,8 +13633,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.428Z",
-              "updatedAt": "2026-10-16T23:36:06.428Z",
+              "createdAt": "2026-10-28T21:53:16.235Z",
+              "updatedAt": "2026-10-28T21:53:16.235Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -13829,6 +13945,11 @@
           },
           "name": {
             "type": "string",
+            "enum": [
+              "defaultTimezone",
+              "taxRate",
+              "orderNumberPrefix"
+            ],
             "description": "Setting key. Must be a name registered in the backend SettingKey registry.",
             "example": "taxRate"
           },
@@ -13889,6 +14010,40 @@
           "isOverridden"
         ]
       },
+      "SquareConnectionStatus": {
+        "type": "string",
+        "enum": [
+          "not_connected",
+          "connected",
+          "needs_reauth",
+          "disconnected"
+        ],
+        "description": "'not_connected' when the tenant has never connected"
+      },
+      "SquareConnectionStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "example": "connected",
+            "description": "'not_connected' when the tenant has never connected",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SquareConnectionStatus"
+              }
+            ]
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Petsi's Pies",
+            "description": "The Square business name, or null when not connected"
+          }
+        },
+        "required": [
+          "status",
+          "businessName"
+        ]
+      },
       "ErrorResponseCode": {
         "type": "string",
         "enum": [
@@ -13897,7 +14052,10 @@
           "ALREADY_EXISTS",
           "REFERENCE_CONFLICT",
           "INTERNAL_ERROR",
-          "REFERENCE_NOT_FOUND"
+          "REFERENCE_NOT_FOUND",
+          "SQUARE_NOT_CONNECTED",
+          "SQUARE_REAUTH_REQUIRED",
+          "SQUARE_NOT_FOUND"
         ]
       },
       "ErrorResponseDto": {
