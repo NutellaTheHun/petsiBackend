@@ -14,6 +14,7 @@ import { SquareOAuthStateService } from './services/square-oauth-state.service';
 import { SquareOAuthService } from './services/square-oauth.service';
 import { SquarePostConnectService } from './services/square-post-connect.service';
 import { SquareTokenCryptoService } from './services/square-token-crypto.service';
+import { SquareTokenRefreshService } from './services/square-token-refresh.service';
 import { SquareTestUtil } from './utils/square-test.util';
 
 @Module({
@@ -31,6 +32,7 @@ import { SquareTestUtil } from './utils/square-test.util';
     providers: [
         SquareClientFactory,
         SquareTokenCryptoService,
+        SquareTokenRefreshService,
         SquareConnectionService,
         SquareOAuthStateService,
         SquareOAuthService,

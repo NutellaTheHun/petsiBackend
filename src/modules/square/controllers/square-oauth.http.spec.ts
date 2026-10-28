@@ -448,6 +448,31 @@ describe('square OAuth connect flow (HTTP)', () => {
             );
         });
 
+        it('reports needs_reauth, and reconnecting sets it back to connected with new tokens', async () => {
+            const stale = await squareTestUtil.seedConnection(P, tenant.id, {
+                merchantId,
+                status: 'needs_reauth',
+            });
+            stubSquare();
+
+            const status = await request(app.getHttpServer()).get(
+                '/square/connection',
+            );
+            expect(status.status).toBe(200);
+            expect(status.body).toMatchObject({ status: 'needs_reauth' });
+
+            expectOutcome(
+                await callback({ code: 'c', state: await startState() }),
+                'connected',
+            );
+            const reconnected = await findConnection();
+            expect(reconnected?.id).toBe(stale.id);
+            expect(reconnected?.status).toBe('connected');
+            expect(
+                tokenCrypto.decrypt(reconnected?.accessToken as string),
+            ).toBe(`${P}-access`);
+        });
+
         it('does not call Square when already disconnected', async () => {
             await squareTestUtil.seedConnection(P, tenant.id, {
                 status: 'disconnected',

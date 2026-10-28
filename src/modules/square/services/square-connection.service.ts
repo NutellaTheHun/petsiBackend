@@ -6,6 +6,7 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { SquareTenantApi } from '../client/square-api';
 import { SquareClientFactory } from '../client/square-client.factory';
 import {
     SquareNotConnectedException,
@@ -40,6 +41,46 @@ export class SquareConnectionService {
 
     async findByMerchant(merchantId: string): Promise<SquareConnection | null> {
         return this.connectionRepo.findOne({ where: { merchantId } });
+    }
+
+    /**
+     * Runs one tenant Square call through the error boundary. Every tenant
+     * call goes through here, so a Square 401 marks the connection
+     * `needs_reauth` before the `SquareReauthRequiredException` is rethrown.
+     */
+    async callTenant<T>(
+        connection: SquareConnection,
+        call: (api: SquareTenantApi) => Promise<T>,
+    ): Promise<T> {
+        try {
+            return await callSquare(() =>
+                call(this.clientFactory.forConnection(connection)),
+            );
+        } catch (err) {
+            if (err instanceof SquareReauthRequiredException) {
+                await this.markNeedsReauth(connection);
+            }
+            throw err;
+        }
+    }
+
+    /**
+     * Sets `needs_reauth` on `connection` and its row. Only a `connected` row
+     * flips, so a concurrent disconnect isn't undone. An unsaved connection
+     * (the OAuth callback's) has no row to update.
+     */
+    async markNeedsReauth(connection: SquareConnection): Promise<void> {
+        if (connection.status !== 'connected') {
+            return;
+        }
+        connection.status = 'needs_reauth';
+        if (connection.id == null) {
+            return;
+        }
+        await this.connectionRepo.update(
+            { id: connection.id, status: 'connected' },
+            { status: 'needs_reauth' },
+        );
     }
 
     async getStatusForCurrentTenant(): Promise<SquareConnectionStatusDto> {

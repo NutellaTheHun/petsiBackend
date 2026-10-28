@@ -149,10 +149,9 @@ export class SquareOAuthService {
                 await this.findDefaultCategoryId(tenantId);
         }
 
-        const { merchant } = await callSquare(() =>
-            this.clientFactory
-                .forConnection(connection)
-                .merchants.get({ merchantId: 'me' }),
+        const { merchant } = await this.connectionService.callTenant(
+            connection,
+            (api) => api.merchants.get({ merchantId: 'me' }),
         );
         connection.businessName = merchant?.businessName ?? null;
 
