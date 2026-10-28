@@ -21,7 +21,7 @@ The `FIELD_REGISTRY` (`registries/index.ts`) is the single source of truth mappi
 
 **Join deduplication via `addedJoinAliases` set.** Both `processTableSection` and `processMetricSection` track which join aliases have already been added and skip re-adding them. When adding a new field to a registry entry, always declare all required joins in `FieldRegistryEntry.joins`; the execution service will merge them automatically.
 
-**Frozen orders are silently excluded at execution time.** `processTableSection` and `processMetricSection` both apply `isFrozen = false` unconditionally when the entity is `'orders'`. This is an implicit business rule, not a filter the caller controls.
+**Frozen and cancelled orders are always excluded when a report runs.** `processTableSection` and `processMetricSection` both always add `isFrozen = false` and `status = 'ACTIVE'` when the section's entity is `'orders'`. The caller can't turn this off. `orderMenuItems` sections do not filter on the parent order's frozen or cancelled state.
 
 **Visibility is enforced at execution, not just at list time.** `ReportExecutionService.execute` checks `definition.visibility === 'management'` and throws `ForbiddenException` for staff users, even if they somehow obtained the definition ID. Both enforcement points (findAll and execute) read roles from `RequestContextService`.
 

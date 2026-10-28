@@ -15,6 +15,7 @@ import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { OccurrenceState, OccurrenceType } from '../utils/occurence-types';
+import { OrderStatus } from '../utils/order-statuses';
 import { OrderMenuItemBuilder } from './order-menu-item.builder';
 import { RecurringOrderScheduleBuilder } from './recurring-order-schedule.builder';
 
@@ -56,6 +57,9 @@ export class OrderBuilder extends BuilderBase<Order> {
         }
         if (dto.isFrozen !== undefined) {
             this.isFrozen(dto.isFrozen);
+        }
+        if (dto.status !== undefined) {
+            this.status(dto.status as OrderStatus);
         }
         if (dto.note !== undefined) {
             this.note(dto.note);
@@ -107,6 +111,9 @@ export class OrderBuilder extends BuilderBase<Order> {
         }
         if (dto.isFrozen !== undefined) {
             this.isFrozen(dto.isFrozen);
+        }
+        if (dto.status !== undefined) {
+            this.status(dto.status as OrderStatus);
         }
         if (dto.note !== undefined) {
             this.note(dto.note);
@@ -197,6 +204,10 @@ export class OrderBuilder extends BuilderBase<Order> {
 
     public isFrozen(val: boolean): this {
         return this.setPropByVal('isFrozen', val);
+    }
+
+    public status(val: OrderStatus): this {
+        return this.setPropByVal('status', val);
     }
 
     public orderedItemsById(ids: number[]): this {

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { OrderMenuItem } from '../../entities/order-menu-item.entity';
+import { ORDER_STATUSES } from '../../utils/order-statuses';
 import { RecurringOrderScheduleResponseDto } from '../recurring-order-schedule/recurring-order-schedule-response.dto';
 
 export class OrderResponseDto {
@@ -130,6 +131,15 @@ export class OrderResponseDto {
         nullable: true,
     })
     readonly occurrenceState?: string | null;
+
+    @ApiProperty({
+        enum: Object.values(ORDER_STATUSES),
+        example: 'ACTIVE',
+        description:
+            'The status of the order. Cancelled orders are not included in reports or default order lists.',
+        type: 'string',
+    })
+    readonly status: string;
 
     @ApiProperty({
         example: {

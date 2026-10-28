@@ -22,6 +22,7 @@ import {
     OccurrenceState,
     OccurrenceType,
 } from '../utils/occurence-types';
+import { ORDER_STATUSES, OrderStatus } from '../utils/order-statuses';
 import { OrderCategory } from './order-category.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
 import { RecurringOrderSchedule } from './recurring-order-schedule.entity';
@@ -185,6 +186,25 @@ export class Order {
     })
     @Column({ default: false })
     isFrozen: boolean = false;
+
+    /**
+     * General order status, separate from the recurrence-only occurrenceState.
+     * A cancelled order, like a frozen one, is left out of reports and
+     * default order lists.
+     */
+    @ApiProperty({
+        enum: Object.values(ORDER_STATUSES),
+        example: 'ACTIVE',
+        description:
+            'The status of the order. Cancelled orders are not included in reports or default order lists.',
+        type: 'string',
+    })
+    @Column({
+        type: 'enum',
+        enum: Object.values(ORDER_STATUSES),
+        default: ORDER_STATUSES.ACTIVE,
+    })
+    status: OrderStatus = ORDER_STATUSES.ACTIVE;
 
     /**
      * The category of order

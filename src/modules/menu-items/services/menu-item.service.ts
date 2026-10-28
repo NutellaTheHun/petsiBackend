@@ -40,6 +40,7 @@ import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
 import { MenuItemChangeDetector } from '../utils/change-detectors/menu-item.change-detector';
+import { ORDER_STATUSES } from '../../orders/utils/order-statuses';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import {
     isMenuItemSnapshotV1,
@@ -255,6 +256,7 @@ export class MenuItemService extends TenantScopedServiceBase<MenuItemEntity> {
                 menuItem: { id },
                 parentOrder: {
                     isFrozen: false,
+                    status: ORDER_STATUSES.ACTIVE,
                     fulfillmentDate: MoreThanOrEqual(new Date()),
                 },
             },

@@ -139,6 +139,16 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
+        if (!this.unchanged(entity.status, dto.status)) {
+            patch.status = dto.status;
+            changes.push({
+                op: 'scalar',
+                path: 'status',
+                previousValue: entity.status,
+                nextValue: dto.status,
+            });
+        }
+
         if (!this.unchanged(entity.category?.id, dto.categoryId)) {
             patch.categoryId = dto.categoryId;
             changes.push({

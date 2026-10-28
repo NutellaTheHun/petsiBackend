@@ -25,6 +25,7 @@ import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
@@ -41,6 +42,7 @@ import {
     OccurrenceState,
     OccurrenceType,
 } from '../utils/occurence-types';
+import { ORDER_STATUSES, OrderStatus } from '../utils/order-statuses';
 import { OrderValidator } from '../validators/order.validator';
 import { OrderRecurrenceService } from './order-recurrence.service';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -93,6 +95,9 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             email: dto.email ?? null,
             note: dto.note ?? null,
             isFrozen: dto.isFrozen ?? false,
+            status:
+                (dto.status as OrderStatus | undefined) ??
+                ORDER_STATUSES.ACTIVE,
             occurrenceType,
             occurrenceState: dto.occurrenceState as OccurrenceState | null,
             recurrenceDate,
@@ -180,6 +185,10 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
 
         if (dto.isFrozen !== undefined) {
             entity.isFrozen = dto.isFrozen;
+        }
+
+        if (dto.status !== undefined) {
+            entity.status = dto.status as OrderStatus;
         }
 
         if (dto.categoryId !== undefined) {
@@ -364,6 +373,8 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         order.email = snap.email;
         order.note = snap.note;
         order.isFrozen = snap.isFrozen;
+        order.status =
+            (snap.status as OrderStatus | undefined) ?? ORDER_STATUSES.ACTIVE;
 
         if (snap.categoryId != null) {
             const exists = await manager.findOne(OrderCategory, {
@@ -551,6 +562,25 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         ];
     }
 
+    /**
+     * Cancelled orders are left out of the default list: unless the caller
+     * filters on `status` explicitly, only `ACTIVE` orders are returned.
+     */
+    async findAll(
+        options?: Parameters<
+            LocationScopedServiceBase<OrderEntity>['findAll']
+        >[0],
+    ): Promise<PaginatedResult<Order>> {
+        const filters = options?.filters ?? [];
+        const hasStatusFilter = filters.some((f) => f.startsWith('status='));
+        return super.findAll({
+            ...options,
+            filters: hasStatusFilter
+                ? filters
+                : [...filters, `status=${ORDER_STATUSES.ACTIVE}`],
+        });
+    }
+
     protected applySearch(
         query: SelectQueryBuilder<Order>,
         search: string,
@@ -577,6 +607,12 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         if (filters.isFrozen && filters.isFrozen.length > 0) {
             query.andWhere('entity.isFrozen IN (:...isFrozen)', {
                 isFrozen: filters.isFrozen,
+            });
+        }
+
+        if (filters.status && filters.status.length > 0) {
+            query.andWhere('entity.status IN (:...status)', {
+                status: filters.status,
             });
         }
 

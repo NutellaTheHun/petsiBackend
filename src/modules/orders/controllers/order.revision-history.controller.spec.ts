@@ -17,6 +17,7 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
+import { ORDER_STATUSES } from '../utils/order-statuses';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderController } from './order.controller';
@@ -165,6 +166,60 @@ describe('order revision history (controller)', () => {
         const afterRevert = await rhs.listRevisions('order', created.id);
         expect(afterRevert[0].revisionNumber).toEqual(3);
         expect(afterRevert[0].changeLog.kind).toEqual('reverted');
+    });
+
+    it('records status in the snapshot and restores it on revert', async () => {
+        const rhs = module.get(RevisionHistoryService);
+        const mi = singleItems[0];
+
+        const dto = plainToInstance(CreateOrderDto, {
+            recipient: `${P}-revision-status-order`,
+            fulfillmentDate: new Date('2026-02-01'),
+            fulfillmentType: 'pickup',
+            categoryId: categories[0].id,
+            locationId: fixtureLocationId,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+        });
+        const created = await controller.createOrderResponse(dto);
+        createdOrderIds.push(created.id);
+        expect(created.status).toEqual(ORDER_STATUSES.ACTIVE);
+
+        const row = await orderRepo.findOneOrFail({
+            where: { id: created.id },
+            relations: [
+                'recurrenceSchedule',
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.size',
+                'category',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
+            ],
+        });
+        await controller.updateOrderResponse(
+            created.id,
+            orderToUpdateDto(row, { status: ORDER_STATUSES.CANCELLED }),
+        );
+
+        const v1 = await rhs.getRevisionRow('order', created.id, 1);
+        const v2 = await rhs.getRevisionRow('order', created.id, 2);
+        expect(v1?.payload.status).toEqual(ORDER_STATUSES.ACTIVE);
+        expect(v2?.payload.status).toEqual(ORDER_STATUSES.CANCELLED);
+
+        const reverted = await controller.revertOrder(created.id, 1);
+        expect(reverted.status).toEqual(ORDER_STATUSES.ACTIVE);
+        const reloaded = await orderRepo.findOneOrFail({
+            where: { id: created.id },
+        });
+        expect(reloaded.status).toEqual(ORDER_STATUSES.ACTIVE);
     });
 
     it('serves changeLog and payload in detail endpoint', async () => {

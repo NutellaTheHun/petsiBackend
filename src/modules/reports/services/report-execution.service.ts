@@ -10,6 +10,7 @@ import { AppHttpException } from '../../../common/exceptions/app-http-exception'
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { ORDER_STATUSES } from '../../orders/utils/order-statuses';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import {
@@ -186,6 +187,9 @@ export class ReportExecutionService {
         if (section.entity === 'orders') {
             qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, {
                 isFrozen: false,
+            });
+            qb.andWhere(`${entityConfig.alias}.status = :orderStatus`, {
+                orderStatus: ORDER_STATUSES.ACTIVE,
             });
         }
 
@@ -380,6 +384,9 @@ export class ReportExecutionService {
         if (section.entity === 'orders') {
             qb.andWhere(`${entityConfig.alias}.isFrozen = :isFrozen`, {
                 isFrozen: false,
+            });
+            qb.andWhere(`${entityConfig.alias}.status = :orderStatus`, {
+                orderStatus: ORDER_STATUSES.ACTIVE,
             });
         }
 

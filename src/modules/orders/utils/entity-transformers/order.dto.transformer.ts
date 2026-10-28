@@ -36,6 +36,7 @@ export function orderToUpdateDto(
         email: order.email ?? undefined,
         note: order.note ?? undefined,
         isFrozen: order.isFrozen ?? undefined,
+        status: order.status ?? undefined,
         categoryId: order.category?.id ?? null,
         locationId: order.locationId,
         occurrenceType: order.occurrenceType ?? undefined,

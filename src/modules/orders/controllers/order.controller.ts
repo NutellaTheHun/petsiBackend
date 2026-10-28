@@ -215,6 +215,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         description: `Filterable fields. Use format: field=value. Available filters:\n
           - **orderCategory** (e.g., \`orderCategory=5\`) \n
           - **isFrozen** (e.g., \`isFrozen=true\`) \n
+          - **status** (e.g., \`status=CANCELLED\`; defaults to \`status=ACTIVE\` when omitted) \n
           - **fulfillmentType** (e.g., \`fulfillmentType=pickup\`)`,
     })
     @ApiQuery({
