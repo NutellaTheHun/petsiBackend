@@ -79,9 +79,14 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
                 ? dto.fulfillmentDate
                 : null);
 
-        const categoryRow = await manager.findOne(OrderCategory, {
-            where: { id: dto.categoryId },
-        });
+        // A null id in `where` matches any row, so an absent category is
+        // checked before the lookup (system writers may create without one).
+        const categoryRow =
+            dto.categoryId != null
+                ? await manager.findOne(OrderCategory, {
+                      where: { id: dto.categoryId },
+                  })
+                : null;
         const result = manager.create(Order, {
             category: categoryRow
                 ? manager.create(OrderCategory, { id: dto.categoryId })
@@ -226,13 +231,19 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
                         locationId: entity.locationId,
                     },
                 );
-            const newIds = new Set(newItems.map((x) => x.id));
-            for (const old of previous) {
-                if (!newIds.has(old.id)) {
-                    await manager.remove(old);
-                }
+            // The composer returns every existing child too, so the kept ones
+            // are those the DTO still names; the rest are removed. Filter
+            // before removing: `manager.remove` clears the removed entity's id.
+            const keptIds = new Set(
+                dto.orderedItems.flatMap((item) =>
+                    'createId' in item ? [] : [item.id],
+                ),
+            );
+            const removed = previous.filter((x) => !keptIds.has(x.id));
+            entity.orderedItems = newItems.filter((x) => !removed.includes(x));
+            for (const old of removed) {
+                await manager.remove(old);
             }
-            entity.orderedItems = newItems;
         }
 
         if (dto.recurrenceSchedule !== undefined) {

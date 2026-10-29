@@ -57,7 +57,8 @@ export class OrderValidator extends ValidatorBase<
             errorMap,
         );
 
-        if (identity.categoryId !== undefined) {
+        // null clears the category (or creates without one): nothing to look up
+        if (identity.categoryId != null) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.orderCategoryRepo,

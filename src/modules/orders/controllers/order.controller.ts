@@ -40,6 +40,7 @@ import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { OrderResponseDto } from '../dto/order/order-response.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { OrderSquareStatusService } from '../services/order-square-status.service';
 import { OrderService } from '../services/order.service';
 import { orderToResponseDto } from '../utils/entity-transformers/order.dto.transformer';
 import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
@@ -56,6 +57,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
     constructor(
         private readonly orderService: OrderService,
         private readonly revisionHistoryService: RevisionHistoryService,
+        private readonly orderSquareStatusService: OrderSquareStatusService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: PinoLogger,
         requestContextService: RequestContextService,
@@ -86,7 +88,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         @Body() dto: CreateOrderDto,
     ): Promise<OrderResponseDto> {
         const result = await super.create(dto);
-        return orderToResponseDto(result);
+        return this.toResponse(result);
     }
 
     /**
@@ -106,7 +108,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         @Body() dto: UpdateOrderDto,
     ): Promise<OrderResponseDto> {
         const result = await super.update(id, dto);
-        return orderToResponseDto(result);
+        return this.toResponse(result);
     }
 
     @Get(':id/revisions')
@@ -160,7 +162,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
             revisionNumber,
         );
         await invalidateFindAllCache('OrderService', this.cacheManager);
-        return orderToResponseDto(result);
+        return this.toResponse(result);
     }
 
     @Delete(':id')
@@ -277,7 +279,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
             endDate,
         );
         return {
-            items: result.items.map((item) => orderToResponseDto(item)),
+            items: await this.toResponses(result.items),
             nextCursor: result.nextCursor,
         };
     }
@@ -294,7 +296,23 @@ export class OrderController extends ControllerBase<OrderEntity> {
         @Param('id', ParseIntPipe) id: number,
     ): Promise<OrderResponseDto> {
         const result = await super.findOne(id);
-        return orderToResponseDto(result);
+        return this.toResponse(result);
+    }
+
+    private async toResponse(order: Order): Promise<OrderResponseDto> {
+        return orderToResponseDto(
+            order,
+            await this.orderSquareStatusService.forOrder(order.id),
+        );
+    }
+
+    private async toResponses(orders: Order[]): Promise<OrderResponseDto[]> {
+        const square = await this.orderSquareStatusService.forOrders(
+            orders.map((order) => order.id),
+        );
+        return orders.map((order) =>
+            orderToResponseDto(order, square.get(order.id)),
+        );
     }
 
     /**  ---------------------------- Unused Service Base Methods, but kept for reference ---------------------------- */

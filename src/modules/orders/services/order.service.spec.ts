@@ -325,6 +325,56 @@ describe('order service', () => {
         expect(updated?.quantity).toEqual(newQuantity);
     });
 
+    it('update removes ordered items left out of orderedItems', async () => {
+        const [kept, dropped] = singleItems;
+        const created = await orderService.create(
+            plainToInstance(CreateOrderDto, {
+                recipient: `${P}-remove-line`,
+                fulfillmentDate: new Date('2026-02-01'),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                locationId: fixtureLocationId,
+                orderedItems: [kept, dropped].map((item, i) =>
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: `r${i}`,
+                        menuItemId: item.id,
+                        sizeId: item.sizes[0].id,
+                        quantity: 1,
+                    }),
+                ),
+            }),
+        );
+        testCtx.addCleanupFunction(async () => {
+            await orderRepo.delete(created.id);
+        });
+        const order = await orderRepo.findOneOrFail({
+            where: { id: created.id },
+            relations: ['orderedItems', 'orderedItems.menuItem'],
+        });
+        const keptLine = order.orderedItems.find(
+            (line) => line.menuItem.id === kept.id,
+        )!;
+
+        await orderService.update(
+            created.id,
+            plainToInstance(UpdateOrderDto, {
+                orderedItems: [
+                    {
+                        id: keptLine.id,
+                        menuItemId: kept.id,
+                        sizeId: kept.sizes[0].id,
+                        quantity: 1,
+                    },
+                ],
+            }),
+        );
+
+        const remaining = await orderMenuItemRepo.find({
+            where: { parentOrder: { id: created.id } },
+        });
+        expect(remaining.map((line) => line.id)).toEqual([keptLine.id]);
+    });
+
     it('promotes OCCURRENCE GENERATED to MODIFIED on update', async () => {
         const category = categories[0];
         const menuItem = singleItems[0];

@@ -6,6 +6,8 @@ import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { LocationsModule } from '../locations/locations.module';
 import { OrderCategory } from '../orders/entities/order-category.entity';
+import { Order } from '../orders/entities/order.entity';
+import { OrdersModule } from '../orders/orders.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { SquareClientFactory } from './client/square-client.factory';
 import { SquareCatalogController } from './controllers/square-catalog.controller';
@@ -18,7 +20,9 @@ import { SquareItemHint } from './entities/square-item-hint.entity';
 import { SquareLocationLink } from './entities/square-location-link.entity';
 import { SquareModifierLink } from './entities/square-modifier-link.entity';
 import { SquareOAuthState } from './entities/square-oauth-state.entity';
+import { SquareOrderLink } from './entities/square-order-link.entity';
 import { SquareSizeAlias } from './entities/square-size-alias.entity';
+import { SquareUnresolvedLine } from './entities/square-unresolved-line.entity';
 import { SquareVariationLink } from './entities/square-variation-link.entity';
 import { TenantAdminGuard } from './guards/tenant-admin.guard';
 import { SquareCatalogDerivationService } from './services/square-catalog-derivation.service';
@@ -33,6 +37,7 @@ import { SquareLocationSyncService } from './services/square-location-sync.servi
 import { SquareModifierPropagationService } from './services/square-modifier-propagation.service';
 import { SquareOAuthStateService } from './services/square-oauth-state.service';
 import { SquareOAuthService } from './services/square-oauth.service';
+import { SquareOrderIngestService } from './services/square-order-ingest.service';
 import { SquarePostConnectService } from './services/square-post-connect.service';
 import { SquareTokenCryptoService } from './services/square-token-crypto.service';
 import { SquareTokenRefreshService } from './services/square-token-refresh.service';
@@ -51,6 +56,9 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
             SquareSizeAlias,
             SquareVariationLink,
             SquareModifierLink,
+            SquareOrderLink,
+            SquareUnresolvedLine,
+            Order,
             MenuItem,
             MenuItemSize,
             OrderCategory,
@@ -62,6 +70,8 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         // LocationService, and the cache its controller reads (see
         // SquareLocationLinkService.createLocationForCurrentTenant)
         LocationsModule,
+        // OrderService: ingest writes orders through it as a system writer
+        OrdersModule,
     ],
     controllers: [
         SquareConnectionController,
@@ -88,6 +98,7 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         SquareVariationLinkValidator,
         SquareModifierLinkValidator,
         SquareModifierPropagationService,
+        SquareOrderIngestService,
         TenantAdminGuard,
         SquareTestUtil,
     ],
@@ -98,6 +109,7 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         SquareLocationSyncService,
         SquareCatalogSyncService,
         SquareCatalogDerivationService,
+        SquareOrderIngestService,
         SquareTestUtil,
         TypeOrmModule,
     ],

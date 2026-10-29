@@ -34,3 +34,7 @@ Key relationships:
 ## Gotchas
 
 2026-10-16 — `@IsDate()` on a DTO field without `@Type(() => Date)` rejects every JSON request (it receives a string), so order create/update never reached the validator over HTTP — every `@IsDate()` field needs `@Type(() => Date)`. The recurring-schedule `startDate`/`endDate` fields combine `@IsDate` and `@IsDateString` and are still affected.
+
+2026-10-29 — `OrderService.updateEntity` never removed order items left out of `orderedItems` (`composeManyNestedEntity` returns every existing child, and `manager.remove` clears the removed entity's id, so the cascade re-inserted it) — work out which items are removed before calling `manager.remove`.
+
+2026-10-29 — `where: { id: null }` matches any row in TypeORM 0.3, so a null `categoryId` passed the existence check and the lookup — check for null before querying.

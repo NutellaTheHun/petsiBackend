@@ -32,6 +32,25 @@ export class RequestContextService {
         });
     }
 
+    /**
+     * Runs `fn` in a child context with `context` layered over the current
+     * one, for system writers (e.g. Square ingest) that call request-scoped
+     * services outside a request, or as someone other than the caller. A key
+     * set to `undefined` hides the outer value.
+     */
+    runWithContext<T>(
+        context: RequestContextValues,
+        fn: () => Promise<T>,
+    ): Promise<T> {
+        const ns = getRequestNamespace();
+        return ns.runPromise(() => {
+            for (const key in context) {
+                ns.set(key, (context as Record<string, unknown>)[key]);
+            }
+            return fn();
+        });
+    }
+
     get<T = any>(key: string): T | undefined {
         return getRequestNamespace().get(key) as T | undefined;
     }
