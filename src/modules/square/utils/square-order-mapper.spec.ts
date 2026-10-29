@@ -4,6 +4,7 @@ import {
     joinAddress,
     mapSquareOrder,
     parseSquareQuantity,
+    SquareAdHocMapping,
     SquareOrderContainerDefinition,
     SquareOrderMappingInput,
     SquareOrderModifierMapping,
@@ -654,6 +655,56 @@ describe('mapSquareOrder', () => {
                     { modifiers, containers },
                 );
                 expect(reasons(result)).toEqual([['box', 'container_invalid']]);
+            });
+        });
+
+        describe('ad-hoc mappings', () => {
+            const planAdHoc = (
+                adHocMappings: Record<string, SquareAdHocMapping>,
+            ) => {
+                const result = mapSquareOrder({
+                    ...input(
+                        pickupOrder({
+                            lineItems: [{ uid: 'custom', quantity: '2' }],
+                        }),
+                        variations,
+                        { modifiers, containers },
+                    ),
+                    adHocMappings: new Map(Object.entries(adHocMappings)),
+                });
+                if (result.kind !== 'plan') {
+                    throw new Error('expected a plan');
+                }
+                return result.plan;
+            };
+
+            it("places an ad-hoc line with staff's mapping, by line uid", () => {
+                expect(
+                    planAdHoc({ custom: { menuItemId: 1, menuItemSizeId: 10 } })
+                        .lines,
+                ).toEqual([
+                    {
+                        squareLineUid: 'custom',
+                        menuItemId: 1,
+                        menuItemSizeId: 10,
+                        quantity: 2,
+                        containerItems: [],
+                    },
+                ]);
+            });
+
+            it('expands a fixed container it is mapped to', () => {
+                const [platterLine] = planAdHoc({
+                    custom: { menuItemId: 7, menuItemSizeId: 70 },
+                }).lines;
+                expect(platterLine.containerItems).toHaveLength(2);
+            });
+
+            it('leaves it unresolved without a mapping for its uid', () => {
+                const result = planAdHoc({
+                    other: { menuItemId: 1, menuItemSizeId: 10 },
+                });
+                expect(reasons(result)).toEqual([['custom', 'ad_hoc']]);
             });
         });
     });

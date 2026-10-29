@@ -45,6 +45,7 @@ import {
 import { ORDER_STATUSES, OrderStatus } from '../utils/order-statuses';
 import { OrderValidator } from '../validators/order.validator';
 import { OrderRecurrenceService } from './order-recurrence.service';
+import { OrderWriteHooks } from './order-write-hooks.service';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 
@@ -63,6 +64,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         private readonly orderRecurrenceService: OrderRecurrenceService,
         private readonly orderChangeDetector: OrderChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
+        private readonly orderWriteHooks: OrderWriteHooks,
     ) {
         super(repo, 'OrderService', requestContextService, validator);
     }
@@ -339,6 +341,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             detectionResult?: ChangeDetectionResult<UpdateOrderDto>;
         },
     ): Promise<void> {
+        await this.orderWriteHooks.runInTransaction(manager, entity);
         if (!ctx.detectionResult?.hasChanges) {
             return;
         }
@@ -361,6 +364,18 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             changeLog: changeLog,
             payload: payload as unknown as Record<string, unknown>,
         });
+    }
+
+    /** Unfreezing an order lets other modules act on it (e.g. Square line conversion). */
+    protected async afterUpdateCommitted(
+        entity: Order,
+        ctx: {
+            detectionResult?: ChangeDetectionResult<UpdateOrderDto>;
+        },
+    ): Promise<void> {
+        if (ctx.detectionResult?.patch.isFrozen === false) {
+            await this.orderWriteHooks.emitUnfrozen(entity);
+        }
     }
 
     private getSnapshotRelations(): string[] {

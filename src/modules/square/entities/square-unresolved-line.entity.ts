@@ -8,6 +8,8 @@ import {
     Unique,
     UpdateDateColumn,
 } from 'typeorm';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 
 export const SQUARE_UNRESOLVED_LINE_REASONS = [
@@ -91,6 +93,25 @@ export class SquareUnresolvedLine {
 
     @Column({ type: 'varchar', nullable: true })
     note: string | null;
+
+    /**
+     * The menu item and size staff mapped an ad-hoc line to (both set or
+     * both null). Kept after conversion so later Square updates of the order
+     * place the line the same way.
+     */
+    @Column({ type: 'int', nullable: true })
+    adHocMenuItemId: number | null;
+
+    @ManyToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'adHocMenuItemId' })
+    adHocMenuItem?: MenuItem | null;
+
+    @Column({ type: 'int', nullable: true })
+    adHocMenuItemSizeId: number | null;
+
+    @ManyToOne(() => MenuItemSize, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'adHocMenuItemSizeId' })
+    adHocMenuItemSize?: MenuItemSize | null;
 
     @Column({
         type: 'enum',

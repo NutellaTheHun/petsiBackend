@@ -31,6 +31,7 @@ import { OrderMenuItemService } from './services/order-menu-item.service';
 import { OrderRecurrenceService } from './services/order-recurrence.service';
 import { OrderService } from './services/order.service';
 import { OrderSquareStatusService } from './services/order-square-status.service';
+import { OrderWriteHooks } from './services/order-write-hooks.service';
 import { RecurringOrderScheduleService } from './services/recurring-order-schedule.service';
 import { OrderContainerItemComposer } from './utils/composers/order-container-item.composer';
 import { OrderMenuItemComposer } from './utils/composers/order-menu-item.composer';
@@ -83,6 +84,7 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
 
         OrderRecurrenceService,
         OrderSquareStatusService,
+        OrderWriteHooks,
 
         OrderBuilder,
         OrderCategoryBuilder,
@@ -109,6 +111,7 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
     exports: [
         OrderService,
         OrderSquareStatusService,
+        OrderWriteHooks,
         OrderCategoryService,
         OrderMenuItemService,
         OrderContainerItemService,

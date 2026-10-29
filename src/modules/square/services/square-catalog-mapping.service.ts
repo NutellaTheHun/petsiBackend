@@ -159,7 +159,14 @@ export class SquareCatalogMappingService {
         const updated = await this.variationRepo.findOneByOrFail({
             id: link.id,
         });
-        if (link.menuItemId == null && updated.menuItemId != null) {
+        if (!updated.enabled) {
+            // Future lines are skipped; waiting ones are dismissed
+            await this.lineConversion.dismissPendingForVariation(
+                updated.tenantId,
+                updated.squareVariationId,
+            );
+        } else {
+            // Any change (mapping, size, mode) can place waiting lines
             await this.lineConversion.convertForVariationLinks(
                 updated.tenantId,
                 [updated.id],
@@ -256,6 +263,12 @@ export class SquareCatalogMappingService {
             { id: link.id },
             { enabled, mappingSource: 'manual', reviewedAt: new Date() },
         );
+        if (!enabled) {
+            // A disabled modifier no longer blocks its lines
+            await this.lineConversion.convertForModifierLinks(link.tenantId, [
+                link.id,
+            ]);
+        }
         return toModifierDto(
             await this.modifierRepo.findOneByOrFail({ id: link.id }),
         );

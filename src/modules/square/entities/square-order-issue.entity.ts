@@ -41,6 +41,11 @@ export type SquareOrderIssueStatus =
 export interface SquareOrderIssueDetail {
     /** The order validator's client-facing tree (`validation_failed`). */
     validationErrors?: ValidationErrorResponse;
+    /**
+     * Set when `OrderService` rejected converting these pending lines into
+     * the existing order (not a Square update): retrying converts them again.
+     */
+    unresolvedLineIds?: number[];
 }
 
 /**

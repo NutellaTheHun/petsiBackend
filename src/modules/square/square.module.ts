@@ -17,6 +17,8 @@ import { SquareLocationLinkController } from './controllers/square-location-link
 import { SquareOrderIssueController } from './controllers/square-order-issue.controller';
 import { SquareOAuthCallbackController } from './controllers/square-oauth-callback.controller';
 import { SquareWebhookController } from './controllers/square-webhook.controller';
+import { SquareAttentionController } from './controllers/square-attention.controller';
+import { SquareUnresolvedLineController } from './controllers/square-unresolved-line.controller';
 import { SquareCategoryLink } from './entities/square-category-link.entity';
 import { SquareConnection } from './entities/square-connection.entity';
 import { SquareItemHint } from './entities/square-item-hint.entity';
@@ -48,6 +50,8 @@ import { SquarePostConnectService } from './services/square-post-connect.service
 import { SquareTokenCryptoService } from './services/square-token-crypto.service';
 import { SquareTokenRefreshService } from './services/square-token-refresh.service';
 import { SquareWebhookService } from './services/square-webhook.service';
+import { SquareAttentionService } from './services/square-attention.service';
+import { SquareUnresolvedLineService } from './services/square-unresolved-line.service';
 import { SquareTestUtil } from './utils/square-test.util';
 import { SquareModifierLinkValidator } from './validators/square-modifier-link.validator';
 import { SquareVariationLinkValidator } from './validators/square-variation-link.validator';
@@ -91,6 +95,8 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         SquareCatalogController,
         SquareWebhookController,
         SquareOrderIssueController,
+        SquareUnresolvedLineController,
+        SquareAttentionController,
     ],
     providers: [
         SquareClientFactory,
@@ -114,6 +120,8 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         SquareOrderIngestService,
         SquareOrderIssueService,
         SquareWebhookService,
+        SquareUnresolvedLineService,
+        SquareAttentionService,
         TenantAdminGuard,
         SquareTestUtil,
     ],

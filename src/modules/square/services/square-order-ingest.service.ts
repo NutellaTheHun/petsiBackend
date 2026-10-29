@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Square } from 'square';
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, In, IsNull, Not, Repository } from 'typeorm';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderContainerItemDto } from '../../orders/dto/order-container-item/nested-create-order-container-item.dto';
@@ -43,6 +43,7 @@ import {
     SquareOrderPlan,
     SquareOrderSkipReason,
     SquareOrderVariationMapping,
+    SquareAdHocMapping,
 } from '../utils/square-order-mapper';
 
 export type SquareIngestSkipReason =
@@ -61,7 +62,7 @@ export type SquareIngestResult =
           issueId: number;
       };
 
-const ORDER_LINE_RELATIONS = [
+export const ORDER_LINE_RELATIONS = [
     'orderedItems',
     'orderedItems.menuItem',
     'orderedItems.size',
@@ -70,7 +71,7 @@ const ORDER_LINE_RELATIONS = [
     'orderedItems.containerOrderMenuItems.containedItemSize',
 ];
 
-function lineKey(menuItemId: number, sizeId: number | null | undefined) {
+export function lineKey(menuItemId: number, sizeId: number | null | undefined) {
     return `${menuItemId}:${sizeId ?? ''}`;
 }
 
@@ -95,6 +96,53 @@ function containerItemCreateDtos(
 /** Unique per order: a Square line can plan one item per menu item and size. */
 function lineCreateId(line: PlannedSquareLine): string {
     return `${line.squareLineUid}/${lineKey(line.menuItemId, line.menuItemSizeId)}`;
+}
+
+/** A nested create DTO for a planned line, with its container contents. */
+export function squareLineCreateDto(
+    line: PlannedSquareLine,
+): NestedCreateOrderMenuItemDto {
+    const createId = lineCreateId(line);
+    return plainToInstance(NestedCreateOrderMenuItemDto, {
+        createId,
+        menuItemId: line.menuItemId,
+        sizeId: line.menuItemSizeId,
+        quantity: line.quantity,
+        containerOrderMenuItems: containerItemCreateDtos(
+            createId,
+            line,
+            line.containerItems,
+        ),
+    });
+}
+
+/** Staff's ad-hoc mappings on unresolved rows, by line uid. */
+export function adHocMappingsOf(
+    rows: SquareUnresolvedLine[],
+): Map<string, SquareAdHocMapping> {
+    const result = new Map<string, SquareAdHocMapping>();
+    for (const row of rows) {
+        if (row.adHocMenuItemId != null && row.adHocMenuItemSizeId != null) {
+            result.set(row.squareLineUid, {
+                menuItemId: row.adHocMenuItemId,
+                menuItemSizeId: row.adHocMenuItemSizeId,
+            });
+        }
+    }
+    return result;
+}
+
+/** The menu item ids a set of mappings points at, for `loadContainers`. */
+export function mappedMenuItemIds(
+    mappings: Iterable<{ menuItemId: number | null }>,
+): number[] {
+    return [
+        ...new Set(
+            [...mappings]
+                .map((m) => m.menuItemId)
+                .filter((id): id is number => id != null),
+        ),
+    ];
 }
 
 /**
@@ -128,6 +176,8 @@ export class SquareOrderIngestService {
         private readonly menuItemRepo: Repository<MenuItem>,
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
+        @InjectRepository(SquareUnresolvedLine)
+        private readonly unresolvedLineRepo: Repository<SquareUnresolvedLine>,
         private readonly orderService: OrderService,
         private readonly requestContext: RequestContextService,
     ) {}
@@ -181,13 +231,21 @@ export class SquareOrderIngestService {
         const locationId = locationLink.locationId;
 
         const variations = await this.loadVariations(tenantId, squareOrder);
+        const adHocMappings = await this.loadAdHocMappings(
+            tenantId,
+            squareOrder.id!,
+        );
         let mapping: SquareOrderMapping;
         try {
             mapping = mapSquareOrder({
                 order: squareOrder,
                 variations,
                 modifiers: await this.loadModifiers(tenantId, squareOrder),
-                containers: await this.loadContainers(tenantId, variations),
+                containers: await this.loadContainers(tenantId, [
+                    ...mappedMenuItemIds(variations.values()),
+                    ...mappedMenuItemIds(adHocMappings.values()),
+                ]),
+                adHocMappings,
                 timezone: locationLink.timezone,
             });
         } catch (err) {
@@ -390,18 +448,32 @@ export class SquareOrderIngestService {
         return new Map(links.map((link) => [link.squareModifierId, link]));
     }
 
-    /** The definitions of the container menu items the variations map to. */
-    private async loadContainers(
+    /** Staff's mappings of this order's ad-hoc lines, by line uid. */
+    private async loadAdHocMappings(
         tenantId: number,
-        variations: ReadonlyMap<string, SquareOrderVariationMapping>,
+        squareOrderId: string,
+    ): Promise<Map<string, SquareAdHocMapping>> {
+        const rows = await this.unresolvedLineRepo.find({
+            where: {
+                tenantId,
+                squareOrderId,
+                adHocMenuItemId: Not(IsNull()),
+                adHocMenuItemSizeId: Not(IsNull()),
+                status: Not('dismissed'),
+            },
+        });
+        return adHocMappingsOf(rows);
+    }
+
+    /**
+     * The definitions of the container menu items among `menuItemIds`;
+     * the others are left out.
+     */
+    async loadContainers(
+        tenantId: number,
+        menuItemIds: number[],
     ): Promise<Map<number, SquareOrderContainerDefinition>> {
-        const ids = [
-            ...new Set(
-                [...variations.values()]
-                    .map((link) => link.menuItemId)
-                    .filter((id): id is number => id != null),
-            ),
-        ];
+        const ids = [...new Set(menuItemIds)];
         if (!ids.length) {
             return new Map();
         }
@@ -447,7 +519,7 @@ export class SquareOrderIngestService {
             categoryId: connection.defaultOrderCategoryId,
             isFrozen: false,
             locationId,
-            orderedItems: plan.lines.map((line) => this.createItemDto(line)),
+            orderedItems: plan.lines.map((line) => squareLineCreateDto(line)),
         });
         const created = await this.orderService.create(dto);
         return {
@@ -518,7 +590,7 @@ export class SquareOrderIngestService {
                           line,
                       ),
                   })
-                : this.createItemDto(line);
+                : squareLineCreateDto(line);
         });
 
         const dto = plainToInstance(UpdateOrderDto, {
@@ -540,23 +612,6 @@ export class SquareOrderIngestService {
                 new Set(staffItems.map((item) => item.id)),
             ),
         };
-    }
-
-    private createItemDto(
-        line: PlannedSquareLine,
-    ): NestedCreateOrderMenuItemDto {
-        const createId = lineCreateId(line);
-        return plainToInstance(NestedCreateOrderMenuItemDto, {
-            createId,
-            menuItemId: line.menuItemId,
-            sizeId: line.menuItemSizeId,
-            quantity: line.quantity,
-            containerOrderMenuItems: containerItemCreateDtos(
-                createId,
-                line,
-                line.containerItems,
-            ),
-        });
     }
 
     /**

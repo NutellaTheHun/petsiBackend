@@ -12,6 +12,7 @@ import {
     SquareOrderIssueStatus,
 } from '../entities/square-order-issue.entity';
 import { SquareConnectionService } from './square-connection.service';
+import { SquareLineConversionService } from './square-line-conversion.service';
 import { SquareLocationImportService } from './square-location-import.service';
 import { SquareOrderIngestService } from './square-order-ingest.service';
 
@@ -29,6 +30,7 @@ export class SquareOrderIssueService {
         private readonly importService: SquareLocationImportService,
         private readonly connectionService: SquareConnectionService,
         private readonly ingest: SquareOrderIngestService,
+        private readonly lineConversion: SquareLineConversionService,
         private readonly requestContextService: RequestContextService,
     ) {}
 
@@ -44,9 +46,10 @@ export class SquareOrderIssueService {
     }
 
     /**
-     * Re-fetches the order from Square and ingests it as the caller. Success
-     * resolves the issue; another rejection keeps it open with the new
-     * attempt's detail. Only open, retryable issues can be retried.
+     * Re-fetches the order from Square and ingests it as the caller (or, for
+     * a rejected pending-line conversion, converts the order's lines again).
+     * Success resolves the issue; another rejection keeps it open with the
+     * new attempt's detail. Only open, retryable issues can be retried.
      */
     async retryForCurrentTenant(
         locationId: number,
@@ -61,6 +64,16 @@ export class SquareOrderIssueService {
         }
         if (!errorMap.isEmpty()) {
             throw new ValidationException(errorMap);
+        }
+
+        // A rejected conversion of pending lines: nothing to fetch from Square
+        if (issue.detail?.unresolvedLineIds && issue.orderId != null) {
+            await this.lineConversion.convertForOrders(issue.tenantId, [
+                issue.orderId,
+            ]);
+            return toDto(
+                await this.issueRepo.findOneByOrFail({ id: issue.id }),
+            );
         }
 
         const connection = await this.importService.requireConnection(

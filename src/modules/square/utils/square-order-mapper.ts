@@ -36,12 +36,27 @@ export interface SquareOrderContainerDefinition {
     items: SquareContainerDefinitionItem[];
 }
 
-export interface SquareOrderMappingInput {
-    order: Square.Order;
+/** The menu item and size staff chose for one ad-hoc line. */
+export interface SquareAdHocMapping {
+    menuItemId: number;
+    menuItemSizeId: number;
+}
+
+/** The mappings one line is placed with. */
+export interface SquareLineMappingInput {
     variations: ReadonlyMap<string, SquareOrderVariationMapping>;
     modifiers: ReadonlyMap<string, SquareOrderModifierMapping>;
     /** Container menu items by menu item id; other items are absent. */
     containers: ReadonlyMap<number, SquareOrderContainerDefinition>;
+    /**
+     * Staff's mapping for ad-hoc lines (no catalog id), by line uid. An
+     * ad-hoc line without one is unresolved.
+     */
+    adHocMappings?: ReadonlyMap<string, SquareAdHocMapping>;
+}
+
+export interface SquareOrderMappingInput extends SquareLineMappingInput {
+    order: Square.Order;
     /** The location link's IANA timezone; null if Square sent none. */
     timezone: string | null;
 }
@@ -175,7 +190,7 @@ export function mapSquareOrder(
             continue;
         }
 
-        const placement = placeLine(lineItem, quantity, input);
+        const placement = placeSquareLine(lineItem, uid, quantity, input);
         if (placement.kind === 'skip') {
             continue;
         }
@@ -193,12 +208,7 @@ export function mapSquareOrder(
             );
             continue;
         }
-        lines.push(
-            ...placement.items.map((item) => ({
-                squareLineUid: uid,
-                ...item,
-            })),
-        );
+        lines.push(...placement.items);
     }
 
     if (!errors.isEmpty() || !fields) {
@@ -221,19 +231,51 @@ export function mapSquareOrder(
 
 type PlacedItem = Omit<PlannedSquareLine, 'squareLineUid'>;
 
-type LinePlacement =
+type ItemPlacement =
     | { kind: 'skip' }
     | { kind: 'invalid_modifier_quantity' }
     | { kind: 'unresolved'; reason: SquareUnresolvedLineReason }
     | { kind: 'placed'; items: PlacedItem[] };
 
+export type SquareLinePlacement =
+    | Exclude<ItemPlacement, { kind: 'placed' }>
+    | { kind: 'placed'; items: PlannedSquareLine[] };
+
+/**
+ * Where one Square line goes: skipped (disabled variation), unresolved, or
+ * the Petsi order items it plans. Ingest uses it for every line of an order;
+ * pending-line conversion for a line rebuilt from its unresolved row.
+ */
+export function placeSquareLine(
+    lineItem: Square.OrderLineItem,
+    uid: string,
+    quantity: number,
+    input: SquareLineMappingInput,
+): SquareLinePlacement {
+    const placement = placeLine(lineItem, uid, quantity, input);
+    if (placement.kind !== 'placed') {
+        return placement;
+    }
+    return {
+        kind: 'placed',
+        items: placement.items.map((item) => ({
+            squareLineUid: uid,
+            ...item,
+        })),
+    };
+}
+
 function placeLine(
     lineItem: Square.OrderLineItem,
+    uid: string,
     quantity: number,
-    input: SquareOrderMappingInput,
-): LinePlacement {
+    input: SquareLineMappingInput,
+): ItemPlacement {
     if (!lineItem.catalogObjectId) {
-        return { kind: 'unresolved', reason: 'ad_hoc' };
+        const adHoc = input.adHocMappings?.get(uid);
+        return adHoc
+            ? placeSingle(adHoc, quantity, input.containers)
+            : { kind: 'unresolved', reason: 'ad_hoc' };
     }
     const link = input.variations.get(lineItem.catalogObjectId);
     if (link && !link.enabled) {
@@ -262,6 +304,20 @@ function placeLine(
             input.modifiers,
         );
     }
+    return placeSingle(
+        { menuItemId: link.menuItemId, menuItemSizeId: link.menuItemSizeId },
+        quantity,
+        input.containers,
+    );
+}
+
+/** One order item, quantity = line quantity (`modifierMode = none`). */
+function placeSingle(
+    mapping: SquareAdHocMapping,
+    quantity: number,
+    containers: ReadonlyMap<number, SquareOrderContainerDefinition>,
+): ItemPlacement {
+    const container = containers.get(mapping.menuItemId);
     // A variable box without chosen contents would be a wrong box
     if (container && container.variableMaxAmount != null) {
         return { kind: 'unresolved', reason: 'container_invalid' };
@@ -270,13 +326,12 @@ function placeLine(
         kind: 'placed',
         items: [
             {
-                menuItemId: link.menuItemId,
-                menuItemSizeId: link.menuItemSizeId,
+                ...mapping,
                 quantity,
                 // Neither the order composers nor the validator fill a fixed
                 // container, and an empty one passes validation.
                 containerItems: container
-                    ? fixedContents(container, link.menuItemSizeId)
+                    ? fixedContents(container, mapping.menuItemSizeId)
                     : [],
             },
         ],
@@ -288,7 +343,7 @@ function placeModifierItems(
     lineItem: Square.OrderLineItem,
     quantity: number,
     modifiers: ReadonlyMap<string, SquareOrderModifierMapping>,
-): LinePlacement {
+): ItemPlacement {
     const chosen = resolveModifierItems(lineItem, modifiers);
     if (chosen.kind !== 'resolved') {
         return chosen;
@@ -320,7 +375,7 @@ function placeContainerContents(
     box: { menuItemId: number; menuItemSizeId: number },
     container: SquareOrderContainerDefinition | undefined,
     modifiers: ReadonlyMap<string, SquareOrderModifierMapping>,
-): LinePlacement {
+): ItemPlacement {
     const chosen = resolveModifierItems(lineItem, modifiers);
     if (chosen.kind !== 'resolved') {
         return chosen;

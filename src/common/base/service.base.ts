@@ -117,6 +117,7 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
                 throw DatabaseError.fromTypeOrmError(err);
             }
         });
+        await this.afterUpdateCommitted(toUpdate, { detectionResult });
         const resultEntity = await this.entityRepo.findOne({
             where: { id: toUpdate.id as number } as unknown as FindOptionsWhere<
                 TEntity['__Entity']
@@ -447,6 +448,19 @@ export abstract class ServiceBase<TEntity extends EntityBase<any, any, any>> {
      */
     protected async afterUpdateInTransaction(
         _manager: EntityManager,
+        _entity: TEntity['__Entity'],
+        _ctx: {
+            detectionResult?: ChangeDetectionResult<TEntity['__UDto']>;
+        },
+    ): Promise<void> {
+        return;
+    }
+
+    /**
+     * Optional hook after the update transaction has committed, for side
+     * effects that need their own transaction. Not run on a no-op update.
+     */
+    protected async afterUpdateCommitted(
         _entity: TEntity['__Entity'],
         _ctx: {
             detectionResult?: ChangeDetectionResult<TEntity['__UDto']>;
