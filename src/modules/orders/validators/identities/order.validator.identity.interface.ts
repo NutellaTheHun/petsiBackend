@@ -1,6 +1,7 @@
 import { ValidatorIdentityBaseInterface } from '../../../../common/base/validator-identity.base.interface';
 import { OrderMenuItemValidatorIdentity } from './order-menu-item.validator.identity.interface';
 import { RecurringOrderScheduleValidatorIdentity } from './recurring-order-schedule.identity.interface';
+import { SquareOwnershipViolations } from '../../utils/square-ownership';
 
 export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly locationId?: number;
@@ -22,4 +23,6 @@ export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly occurrenceState?: string | null;
     readonly recurrenceDate?: Date | null;
     readonly templateOrderId?: number | null;
+    /** Staff changes to a Square-linked order's Square-owned data (update only). */
+    readonly squareOwnershipViolations?: SquareOwnershipViolations;
 }

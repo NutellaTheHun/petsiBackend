@@ -1,7 +1,13 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Square } from 'square';
 import { Repository } from 'typeorm';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { Location } from '../../locations/entities/location.entity';
@@ -13,6 +19,9 @@ import { OrderController } from '../../orders/controllers/order.controller';
 import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { OrderService } from '../../orders/services/order.service';
+import { OrderMenuItemService } from '../../orders/services/order-menu-item.service';
+import { UpdateOrderDto } from '../../orders/dto/order/update-order.dto';
+import { orderMenuItemToNestedUpdateDto } from '../../orders/utils/entity-transformers/order-menu-item.dto.transformer';
 import { orderToUpdateDto } from '../../orders/utils/entity-transformers/order.dto.transformer';
 import { NestedCreateOrderMenuItemDto } from '../../orders/dto/order-menu-item/nested-create-order-menu-item.dto';
 import { plainToInstance } from 'class-transformer';
@@ -28,6 +37,7 @@ import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity'
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import { SquareTestUtil } from '../utils/square-test.util';
 import { getSquareTestingModule } from '../utils/square-testing.module';
+import { SquareOrderDetachService } from './square-order-detach.service';
 import { SquareOrderIngestService } from './square-order-ingest.service';
 
 const P = `t${Date.now()}`;
@@ -86,6 +96,8 @@ describe('SquareOrderIngestService', () => {
     let module: TestingModule;
     let ingestService: SquareOrderIngestService;
     let orderService: OrderService;
+    let orderMenuItemService: OrderMenuItemService;
+    let detachService: SquareOrderDetachService;
     let orderController: OrderController;
     let requestContext: TestRequestContextService;
     let orderRepo: Repository<Order>;
@@ -154,6 +166,8 @@ describe('SquareOrderIngestService', () => {
         module = await getSquareTestingModule();
         ingestService = module.get(SquareOrderIngestService);
         orderService = module.get(OrderService);
+        orderMenuItemService = module.get(OrderMenuItemService);
+        detachService = module.get(SquareOrderDetachService);
         orderController = module.get(OrderController);
         requestContext = module.get(RequestContextService);
         orderRepo = module.get(getRepositoryToken(Order));
@@ -625,6 +639,253 @@ describe('SquareOrderIngestService', () => {
                     l.status,
                 ]),
             ).toEqual([['l-new', 'resolved']]);
+        });
+    });
+
+    describe('ownership and detach', () => {
+        const squareOrderId = `${P}-owned`;
+        let orderId: number;
+
+        // These tests share one order; cleanup runs at the end of the chain.
+        beforeEach(() => {
+            testCtx = new DatabaseTestContext();
+        });
+
+        afterAll(async () => {
+            await unresolvedRepo.delete({ tenantId: tenant.id });
+            await orderLinkRepo.delete({ tenantId: tenant.id });
+            await orderRepo.delete({ tenantId: tenant.id });
+        });
+
+        const pieItemOf = (order: Order) =>
+            order.orderedItems.find(
+                (item) => item.menuItem.id === applePie.id,
+            )!;
+
+        /** The staff update's validation error tree. */
+        const rejectedUpdate = async (dto: UpdateOrderDto) => {
+            const err: unknown = await asStaff(() =>
+                orderService.update(orderId, dto),
+            ).catch((e: unknown) => e);
+            expect(err).toBeInstanceOf(ValidationException);
+            return (err as ValidationException).errors;
+        };
+
+        it('imports the order', async () => {
+            const result = await ingestService.ingest(
+                connection,
+                squareOrder({
+                    id: squareOrderId,
+                    version: 1,
+                    lineItems: [
+                        line('l-pie', VAR_PIE, '2'),
+                        line('l-new', VAR_UNMAPPED, '1'),
+                    ],
+                }),
+            );
+            if (result.outcome !== 'created') throw new Error(result.outcome);
+            orderId = result.orderId;
+        });
+
+        it('rejects staff edits to Square-owned fields and lines', async () => {
+            const before = await loadOrder(orderId);
+            const pie = pieItemOf(before);
+
+            expectValidationErrorPayload(
+                await rejectedUpdate(
+                    orderToUpdateDto(before, {
+                        recipient: 'Someone Else',
+                        phoneNumber: '555-9999',
+                    }),
+                ),
+                [],
+                createValidationErrorPayload('IMMUTABLE_FIELD', undefined, [
+                    'recipient',
+                    'phoneNumber',
+                ]),
+            );
+            expectValidationErrorPayload(
+                await rejectedUpdate(
+                    plainToInstance(UpdateOrderDto, { orderedItems: [] }),
+                ),
+                [],
+                createValidationErrorPayload(
+                    'IMMUTABLE_FIELD',
+                    [pie.id],
+                    ['orderedItems'],
+                ),
+            );
+            expectValidationErrorPayload(
+                await rejectedUpdate(
+                    plainToInstance(UpdateOrderDto, {
+                        orderedItems: [
+                            orderMenuItemToNestedUpdateDto(pie, {
+                                quantity: 7,
+                            }),
+                        ],
+                    }),
+                ),
+                [{ prop: 'orderedItems', id: pie.id }],
+                createValidationErrorPayload('IMMUTABLE_FIELD', undefined, [
+                    'quantity',
+                ]),
+            );
+            // Nor through the line route or a revert
+            await expect(
+                asStaff(() => orderMenuItemService.remove(pie.id)),
+            ).rejects.toBeInstanceOf(ValidationException);
+            await expect(
+                asStaff(() => orderService.revertToRevision(orderId, 1)),
+            ).rejects.toBeInstanceOf(ValidationException);
+
+            const after = await loadOrder(orderId);
+            expect(after.recipient).toBe('Jane Doe');
+            expect(items(after)).toEqual(items(before));
+        });
+
+        it('accepts Petsi-owned edits: category, freeze, note and a staff line', async () => {
+            await asStaff(async () => {
+                await orderService.update(
+                    orderId,
+                    orderToUpdateDto(await loadOrder(orderId), {
+                        categoryId: otherCategory.id,
+                        isFrozen: true,
+                        note: 'internal note',
+                        orderedItems: [
+                            plainToInstance(NestedCreateOrderMenuItemDto, {
+                                createId: 'staff',
+                                menuItemId: scone.id,
+                                sizeId: large.id,
+                                quantity: 4,
+                            }),
+                        ],
+                    }),
+                );
+                await orderService.update(
+                    orderId,
+                    orderToUpdateDto(await loadOrder(orderId), {
+                        isFrozen: false,
+                    }),
+                );
+            });
+            const order = await loadOrder(orderId);
+            expect(order.category?.id).toBe(otherCategory.id);
+            expect(order.note).toBe('internal note');
+            expect(order.isFrozen).toBe(false);
+            expect(items(order)).toContainEqual({
+                menuItemId: scone.id,
+                quantity: 4,
+            });
+        });
+
+        it('keeps staff lines and Petsi fields across a Square update', async () => {
+            const result = await ingestService.ingest(
+                connection,
+                squareOrder({
+                    id: squareOrderId,
+                    version: 2,
+                    fulfillments: [pickup('2026-11-05T15:00:00Z')],
+                    lineItems: [
+                        line('l-pie', VAR_PIE, '3'),
+                        line('l-new', VAR_UNMAPPED, '1'),
+                    ],
+                }),
+            );
+            expect(result).toEqual({ outcome: 'updated', orderId });
+
+            const order = await loadOrder(orderId);
+            expect(items(order)).toEqual(
+                [
+                    { menuItemId: applePie.id, quantity: 3 },
+                    { menuItemId: scone.id, quantity: 4 },
+                ].sort((a, b) => a.menuItemId - b.menuItemId),
+            );
+            expect(order.fulfillmentDate.toISOString()).toBe(
+                '2026-11-05T15:00:00.000Z',
+            );
+            expect(order.category?.id).toBe(otherCategory.id);
+            expect(order.note).toBe('internal note');
+        });
+
+        it('404s a detach from another location', async () => {
+            await expect(
+                asStaff(() =>
+                    detachService.detachForCurrentTenant(9_999_999, orderId),
+                ),
+            ).rejects.toBeInstanceOf(NotFoundException);
+            expect((await linkFor(squareOrderId))?.status).toBe('linked');
+        });
+
+        it('detach dismisses pending lines and unlocks the order', async () => {
+            await asStaff(() =>
+                detachService.detachForCurrentTenant(location.id, orderId),
+            );
+
+            const link = await linkFor(squareOrderId);
+            expect(link?.status).toBe('detached');
+            expect(link?.lineMap).toEqual({});
+            expect(
+                (await linesFor(squareOrderId)).map((l) => [
+                    l.squareLineUid,
+                    l.status,
+                ]),
+            ).toEqual([['l-new', 'dismissed']]);
+
+            // Square-owned fields and lines are now editable
+            const before = await loadOrder(orderId);
+            const pie = pieItemOf(before);
+            await asStaff(() =>
+                orderService.update(
+                    orderId,
+                    plainToInstance(UpdateOrderDto, {
+                        recipient: 'Phone Change',
+                        orderedItems: before.orderedItems
+                            .filter((item) => item.id !== pie.id)
+                            .map((item) =>
+                                orderMenuItemToNestedUpdateDto(item),
+                            ),
+                    }),
+                ),
+            );
+            const after = await loadOrder(orderId);
+            expect(after.recipient).toBe('Phone Change');
+            expect(items(after)).toEqual([
+                { menuItemId: scone.id, quantity: 4 },
+            ]);
+        });
+
+        it('ignores later Square updates', async () => {
+            const updateSpy = jest.spyOn(orderService, 'update');
+            const result = await ingestService.ingest(
+                connection,
+                squareOrder({
+                    id: squareOrderId,
+                    version: 3,
+                    lineItems: [
+                        line('l-pie', VAR_PIE, '9'),
+                        line('l-adhoc', undefined, '1'),
+                    ],
+                }),
+            );
+            expect(result).toEqual({ outcome: 'skipped', reason: 'detached' });
+            expect(updateSpy).not.toHaveBeenCalled();
+
+            const order = await loadOrder(orderId);
+            expect(order.recipient).toBe('Phone Change');
+            expect(items(order)).toEqual([
+                { menuItemId: scone.id, quantity: 4 },
+            ]);
+            expect(
+                (await linesFor(squareOrderId)).map((l) => l.squareLineUid),
+            ).toEqual(['l-new']);
+            expect((await linkFor(squareOrderId))?.squareVersion).toBe('2');
+        });
+
+        it('detaching again is a no-op', async () => {
+            await asStaff(() =>
+                detachService.detachForCurrentTenant(location.id, orderId),
+            );
+            expect((await linkFor(squareOrderId))?.status).toBe('detached');
         });
     });
 

@@ -23,6 +23,12 @@ export interface RequestContextValues {
      * `getRevisionActor` records `square_webhook` instead of `system`.
      */
     revisionActorType?: 'square_webhook';
+    /**
+     * Set by Square ingest and line conversion, which write Square-owned order
+     * fields and lines; staff writes to those are rejected while the order is
+     * linked (`OrderValidator`).
+     */
+    squareSystemWriter?: boolean;
 }
 
 @Injectable()

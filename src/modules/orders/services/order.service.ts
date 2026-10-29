@@ -45,6 +45,7 @@ import {
 import { ORDER_STATUSES, OrderStatus } from '../utils/order-statuses';
 import { OrderValidator } from '../validators/order.validator';
 import { OrderRecurrenceService } from './order-recurrence.service';
+import { OrderSquareStatusService } from './order-square-status.service';
 import { OrderWriteHooks } from './order-write-hooks.service';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -65,6 +66,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         private readonly orderChangeDetector: OrderChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
         private readonly orderWriteHooks: OrderWriteHooks,
+        private readonly squareStatus: OrderSquareStatusService,
     ) {
         super(repo, 'OrderService', requestContextService, validator);
     }
@@ -500,6 +502,9 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         // tenant/location authorization is enforced. RevisionHistoryService
         // has no tenant/location awareness of its own.
         await this.findOne(orderId);
+        // A revert replaces every line (new ids), which would orphan the
+        // Square line map: a linked order must be detached first.
+        await this.squareStatus.assertNotSquareOwned(orderId);
 
         const row = await this.revisionHistoryService.getRevisionRow(
             REVISION_ENTITY_TYPES.ORDER,

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { OrderSquareStatusService } from './order-square-status.service';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import {
@@ -21,8 +22,16 @@ export class OrderMenuItemService extends LocationScopedServiceBase<OrderMenuIte
         validator: OrderMenuItemValidator,
 
         private readonly menuItemComposer: OrderMenuItemComposer,
+        private readonly squareStatus: OrderSquareStatusService,
     ) {
         super(repo, 'OrderMenuItemService', requestContextService, validator);
+    }
+
+    /** A Square-derived item can't be removed while its order is linked. */
+    async remove(id: number): Promise<boolean> {
+        const item = await this.findOne(id, ['parentOrder']);
+        await this.squareStatus.assertNotSquareOwned(item.parentOrder.id, id);
+        return super.remove(id);
     }
 
     protected async createEntity(

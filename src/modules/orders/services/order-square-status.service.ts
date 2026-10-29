@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { SquareOrderLink } from '../../square/entities/square-order-link.entity';
 import { SquareUnresolvedLine } from '../../square/entities/square-unresolved-line.entity';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderSquareUnresolvedLineDto } from '../dto/order/order-square-unresolved-line.dto';
 
 export interface OrderSquareStatus {
@@ -16,7 +19,8 @@ export const NO_SQUARE_STATUS: OrderSquareStatus = {
 };
 
 /**
- * Reads the Square link state of orders for `OrderResponseDto`. Reads the
+ * Reads the Square link state of orders for `OrderResponseDto`, and guards
+ * the Square-owned data of linked orders. Reads the
  * Square tables directly (not through `SquareModule`, which imports this
  * module). Callers pass orders they've already loaded through the scoped
  * `OrderService`, so no tenant or location check is repeated here.
@@ -28,6 +32,7 @@ export class OrderSquareStatusService {
         private readonly orderLinkRepo: Repository<SquareOrderLink>,
         @InjectRepository(SquareUnresolvedLine)
         private readonly unresolvedLineRepo: Repository<SquareUnresolvedLine>,
+        private readonly requestContext: RequestContextService,
     ) {}
 
     async forOrders(
@@ -74,6 +79,42 @@ export class OrderSquareStatusService {
             });
         }
         return result;
+    }
+
+    /**
+     * The ids of the order's Square-derived items, or null when the order
+     * isn't linked to Square (never imported, or detached).
+     */
+    async squareLineIds(orderId: number): Promise<Set<number> | null> {
+        const link = await this.orderLinkRepo.findOne({
+            where: { orderId, status: 'linked' },
+            select: { id: true, lineMap: true },
+        });
+        return link ? new Set(Object.values(link.lineMap).flat()) : null;
+    }
+
+    /**
+     * Rejects a staff change, outside the order update path, to Square-owned
+     * data of a linked order: removing a Square-derived item (or one of its
+     * contents) when `orderMenuItemId` is given, otherwise any change to the
+     * order (revert). Square's own writers set `squareSystemWriter`.
+     */
+    async assertNotSquareOwned(
+        orderId: number,
+        orderMenuItemId?: number,
+    ): Promise<void> {
+        if (this.requestContext.get<boolean>('squareSystemWriter')) return;
+        const squareLineIds = await this.squareLineIds(orderId);
+        if (
+            !squareLineIds ||
+            (orderMenuItemId !== undefined &&
+                !squareLineIds.has(orderMenuItemId))
+        ) {
+            return;
+        }
+        const errorMap = new ValidationErrorMap(orderMenuItemId ?? orderId);
+        errorMap.addError('IMMUTABLE_FIELD');
+        throw new ValidationException(errorMap);
     }
 
     async forOrder(orderId: number): Promise<OrderSquareStatus> {

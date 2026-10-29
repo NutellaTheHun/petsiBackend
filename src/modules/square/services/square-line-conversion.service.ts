@@ -304,6 +304,8 @@ export class SquareLineConversionService implements OnModuleInit {
                     roles: undefined,
                     revisionActorType:
                         actorUserId == null ? 'square_webhook' : undefined,
+                    // May write the Square-owned fields and lines
+                    squareSystemWriter: true,
                 },
                 () =>
                     this.orderWriteHooks.runWithInTransactionHook(
