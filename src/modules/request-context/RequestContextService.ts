@@ -18,6 +18,11 @@ export interface RequestContextValues {
     tenantId?: number;
     isTenantAdmin?: boolean;
     locations?: { locationId: number; roles: string[] }[];
+    /**
+     * Set by system writers acting on Square's behalf (the webhook path), so
+     * `getRevisionActor` records `square_webhook` instead of `system`.
+     */
+    revisionActorType?: 'square_webhook';
 }
 
 @Injectable()

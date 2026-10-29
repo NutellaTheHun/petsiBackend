@@ -8,12 +8,14 @@ import { LocationsModule } from '../locations/locations.module';
 import { OrderCategory } from '../orders/entities/order-category.entity';
 import { Order } from '../orders/entities/order.entity';
 import { OrdersModule } from '../orders/orders.module';
+import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { SquareClientFactory } from './client/square-client.factory';
 import { SquareCatalogController } from './controllers/square-catalog.controller';
 import { SquareConnectionController } from './controllers/square-connection.controller';
 import { SquareLocationLinkController } from './controllers/square-location-link.controller';
 import { SquareOAuthCallbackController } from './controllers/square-oauth-callback.controller';
+import { SquareWebhookController } from './controllers/square-webhook.controller';
 import { SquareCategoryLink } from './entities/square-category-link.entity';
 import { SquareConnection } from './entities/square-connection.entity';
 import { SquareItemHint } from './entities/square-item-hint.entity';
@@ -24,6 +26,7 @@ import { SquareOrderLink } from './entities/square-order-link.entity';
 import { SquareSizeAlias } from './entities/square-size-alias.entity';
 import { SquareUnresolvedLine } from './entities/square-unresolved-line.entity';
 import { SquareVariationLink } from './entities/square-variation-link.entity';
+import { SquareWebhookReceipt } from './entities/square-webhook-receipt.entity';
 import { TenantAdminGuard } from './guards/tenant-admin.guard';
 import { SquareCatalogDerivationService } from './services/square-catalog-derivation.service';
 import { SquareCatalogSyncService } from './services/square-catalog-sync.service';
@@ -41,6 +44,7 @@ import { SquareOrderIngestService } from './services/square-order-ingest.service
 import { SquarePostConnectService } from './services/square-post-connect.service';
 import { SquareTokenCryptoService } from './services/square-token-crypto.service';
 import { SquareTokenRefreshService } from './services/square-token-refresh.service';
+import { SquareWebhookService } from './services/square-webhook.service';
 import { SquareTestUtil } from './utils/square-test.util';
 import { SquareModifierLinkValidator } from './validators/square-modifier-link.validator';
 import { SquareVariationLinkValidator } from './validators/square-variation-link.validator';
@@ -58,6 +62,7 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
             SquareModifierLink,
             SquareOrderLink,
             SquareUnresolvedLine,
+            SquareWebhookReceipt,
             Order,
             MenuItem,
             MenuItemSize,
@@ -72,12 +77,15 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         LocationsModule,
         // OrderService: ingest writes orders through it as a system writer
         OrdersModule,
+        // TenantFeatureService: the webhook checks the tenant's flag
+        FeatureFlagsModule,
     ],
     controllers: [
         SquareConnectionController,
         SquareOAuthCallbackController,
         SquareLocationLinkController,
         SquareCatalogController,
+        SquareWebhookController,
     ],
     providers: [
         SquareClientFactory,
@@ -99,6 +107,7 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         SquareModifierLinkValidator,
         SquareModifierPropagationService,
         SquareOrderIngestService,
+        SquareWebhookService,
         TenantAdminGuard,
         SquareTestUtil,
     ],

@@ -19,6 +19,10 @@ export const SQUARE_CONFIG_KEYS = {
     OAUTH_REDIRECT_URL: 'SQUARE_OAUTH_REDIRECT_URL',
     /** The frontend settings page the OAuth callback sends the browser back to. */
     SETTINGS_URL: 'SQUARE_SETTINGS_URL',
+    /** The app-level webhook subscription's signature key. */
+    WEBHOOK_SIGNATURE_KEY: 'SQUARE_WEBHOOK_SIGNATURE_KEY',
+    /** The webhook URL exactly as registered with Square (part of the signed payload). */
+    WEBHOOK_NOTIFICATION_URL: 'SQUARE_WEBHOOK_NOTIFICATION_URL',
 } as const;
 
 /**

@@ -21,6 +21,7 @@ export const SQUARE_TEST_CONFIG = {
     applicationId: 'sandbox-sq0idb-test-app',
     oauthRedirectUrl: 'http://localhost:3000/square/oauth/callback',
     settingsUrl: 'http://localhost:5173/settings/square',
+    webhookNotificationUrl: 'https://petsi.example.com/square/webhooks',
 } as const;
 
 /** Fresh secrets per module, so specs never depend on a configured secret. */
@@ -34,6 +35,10 @@ function testSquareConfig() {
         [SQUARE_CONFIG_KEYS.OAUTH_REDIRECT_URL]:
             SQUARE_TEST_CONFIG.oauthRedirectUrl,
         [SQUARE_CONFIG_KEYS.SETTINGS_URL]: SQUARE_TEST_CONFIG.settingsUrl,
+        [SQUARE_CONFIG_KEYS.WEBHOOK_SIGNATURE_KEY]:
+            randomBytes(32).toString('base64'),
+        [SQUARE_CONFIG_KEYS.WEBHOOK_NOTIFICATION_URL]:
+            SQUARE_TEST_CONFIG.webhookNotificationUrl,
     };
 }
 

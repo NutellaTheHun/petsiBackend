@@ -17,6 +17,7 @@ import { orderToUpdateDto } from '../../orders/utils/entity-transformers/order.d
 import { NestedCreateOrderMenuItemDto } from '../../orders/dto/order-menu-item/nested-create-order-menu-item.dto';
 import { plainToInstance } from 'class-transformer';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { RevisionHistoryService } from '../../revision-history/revision-history.service';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
@@ -688,6 +689,42 @@ describe('SquareOrderIngestService', () => {
                 squareLinked: false,
                 hasUnresolvedSquareLines: false,
                 unresolvedSquareLines: [],
+            });
+        });
+    });
+
+    describe('revision actor', () => {
+        let appendRevision: jest.SpiedFunction<
+            RevisionHistoryService['appendRevision']
+        >;
+
+        beforeEach(() => {
+            appendRevision = jest.spyOn(
+                module.get(RevisionHistoryService),
+                'appendRevision',
+            );
+            appendRevision.mockClear();
+        });
+
+        it.each([
+            [
+                'square_webhook without a triggering user',
+                {},
+                { type: 'square_webhook' },
+            ],
+            [
+                'the triggering user',
+                { actorUserId: 42 },
+                { type: 'user', id: 42 },
+            ],
+        ])('records %s', async (_label, opts, actor) => {
+            await ingestService.ingest(connection, squareOrder({}), opts);
+
+            expect(appendRevision.mock.calls[0][1]).toMatchObject({
+                changeLog: {
+                    kind: 'created',
+                    actor,
+                },
             });
         });
     });

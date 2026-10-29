@@ -137,6 +137,9 @@ export class SquareOrderIngestService {
                 userId: opts.actorUserId,
                 locations: undefined,
                 roles: undefined,
+                // No triggering user means a webhook-driven write
+                revisionActorType:
+                    opts.actorUserId == null ? 'square_webhook' : undefined,
             },
             () =>
                 existingOrder

@@ -1,5 +1,5 @@
 import { CacheModule } from '@nestjs/cache-manager';
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -29,6 +29,8 @@ import { RoleModule } from './modules/roles/role.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SquareModule } from './modules/square/square.module';
+import { SQUARE_OAUTH_CALLBACK_PATH } from './modules/square/controllers/square-oauth-callback.controller';
+import { SQUARE_WEBHOOK_PATH } from './modules/square/controllers/square-webhook.controller';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { TenantProvisioningModule } from './modules/tenant-provisioning/tenant-provisioning.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
@@ -100,8 +102,16 @@ import { UserModule } from './modules/users/user.module';
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
+        consumer.apply(RequestIdMiddleware).forRoutes('*');
         consumer
-            .apply(RequestIdMiddleware, TenantResolutionMiddleware)
+            .apply(TenantResolutionMiddleware)
+            // App-level Square URLs, shared by every tenant: the webhook takes
+            // the tenant from the event's merchant id, the OAuth callback from
+            // its signed state, never from the host.
+            .exclude(
+                { path: SQUARE_WEBHOOK_PATH, method: RequestMethod.POST },
+                { path: SQUARE_OAUTH_CALLBACK_PATH, method: RequestMethod.GET },
+            )
             .forRoutes('*');
     }
     constructor(private dataSource: DataSource) {}
