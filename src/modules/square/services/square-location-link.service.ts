@@ -9,6 +9,7 @@ import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util
 import { Location } from '../../locations/entities/location.entity';
 import { LocationService } from '../../locations/services/location.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { SquareLocationImportResultDto } from '../dto/square-location-import-result.dto';
 import { SquareLocationLinkDto } from '../dto/square-location-link.dto';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
 import { SquareLocationImportService } from './square-location-import.service';
@@ -100,8 +101,10 @@ export class SquareLocationLinkService {
     }
 
     /**
-     * Enabling requires a mapped Petsi location and runs the location's
-     * initial order import. Setting the current value again does nothing.
+     * Enabling requires a mapped Petsi location and a live Square connection,
+     * and runs the location's initial order import as the caller. Setting the
+     * current value again does nothing. If the import itself fails, the link
+     * stays enabled and "Re-sync location" retries it.
      */
     async setEnabledForCurrentTenant(
         id: number,
@@ -116,12 +119,31 @@ export class SquareLocationLinkService {
             errorMap.addError('MISSING_PROPERTY', undefined, ['locationId']);
             throw new ValidationException(errorMap);
         }
+        if (enabled) {
+            await this.importService.requireConnection(link.tenantId);
+        }
         await this.linkRepo.update({ id: link.id }, { enabled });
         const updated = await this.linkRepo.findOneByOrFail({ id: link.id });
         if (enabled) {
-            await this.importService.importLocation(updated);
+            await this.importService.importLocation(updated, this.getUserId());
         }
         return toDto(updated);
+    }
+
+    /**
+     * Re-runs the initial import for an enabled link as the caller, to
+     * recover orders missed while webhooks weren't arriving.
+     */
+    async resyncForCurrentTenant(
+        id: number,
+    ): Promise<SquareLocationImportResultDto> {
+        const link = await this.findLinkOrThrow(id);
+        if (!link.enabled) {
+            const errorMap = new ValidationErrorMap(link.id);
+            errorMap.addError('INCONSISTENT_STATE', undefined, ['enabled']);
+            throw new ValidationException(errorMap);
+        }
+        return this.importService.importLocation(link, this.getUserId());
     }
 
     private async findLinkOrThrow(id: number): Promise<SquareLocationLink> {
@@ -141,6 +163,10 @@ export class SquareLocationLinkService {
             throw new NotFoundException();
         }
         return tenantId;
+    }
+
+    private getUserId(): number | undefined {
+        return this.requestContextService.get<number>('userId');
     }
 }
 

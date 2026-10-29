@@ -86,7 +86,9 @@ describe('Square location links', () => {
     beforeEach(() => {
         testCtx = new DatabaseTestContext();
         fake.reset();
-        requestContext.setContext({ tenantId: tenant.id });
+        // Enabling runs the initial import; these specs import nothing
+        fake.tenantApi.orders.search = () => Promise.resolve({});
+        requestContext.setContext({ tenantId: tenant.id, userId: 5 });
         testCtx.addCleanupFunction(async () => {
             await linkRepo.delete({ tenantId: tenant.id });
         });
@@ -305,6 +307,7 @@ describe('Square location links', () => {
                 expect(importSpy).toHaveBeenCalledTimes(1);
                 expect(importSpy).toHaveBeenCalledWith(
                     expect.objectContaining({ id: linkA.id, enabled: true }),
+                    5,
                 );
 
                 await linkService.setEnabledForCurrentTenant(linkA.id, false);

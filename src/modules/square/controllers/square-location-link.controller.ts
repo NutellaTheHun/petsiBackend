@@ -13,20 +13,30 @@ import {
 import {
     ApiBadRequestResponse,
     ApiBearerAuth,
+    ApiConflictResponse,
     ApiCreatedResponse,
     ApiForbiddenResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiOperation,
     ApiTags,
+    ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { RequiresFeature } from '../../../common/decorators/RequiresFeature';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
+import { SquareLocationImportResultDto } from '../dto/square-location-import-result.dto';
 import { SquareLocationLinkDto } from '../dto/square-location-link.dto';
 import { UpdateSquareLocationLinkEnabledDto } from '../dto/update-square-location-link-enabled.dto';
 import { UpdateSquareLocationLinkLocationDto } from '../dto/update-square-location-link-location.dto';
 import { TenantAdminGuard } from '../guards/tenant-admin.guard';
 import { SquareLocationLinkService } from '../services/square-location-link.service';
+
+/**
+ * Re-sync limit, per client IP: each run pages through the location's Square
+ * orders, so it's kept well under the global limit.
+ */
+export const SQUARE_RESYNC_THROTTLE = { limit: 3, ttl: 60_000 };
 
 @ApiTags('Square')
 @ApiBearerAuth('access-token')
@@ -95,10 +105,36 @@ export class SquareLocationLinkController {
             'VALIDATION_ERROR (MISSING_PROPERTY on locationId): enabling an unmapped link',
     })
     @ApiNotFoundResponse({ description: 'No such location link' })
+    @ApiConflictResponse({
+        description: 'SQUARE_NOT_CONNECTED / SQUARE_REAUTH_REQUIRED (enabling)',
+    })
     async setEnabled(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateSquareLocationLinkEnabledDto,
     ): Promise<SquareLocationLinkDto> {
         return this.linkService.setEnabledForCurrentTenant(id, dto.enabled);
+    }
+
+    @Post(':id/resync')
+    @HttpCode(HttpStatus.OK)
+    @Throttle({ default: SQUARE_RESYNC_THROTTLE })
+    @ApiOperation({
+        summary:
+            "Re-imports an enabled Square location's upcoming orders, e.g. after an outage; safe to repeat (tenant admins, rate-limited)",
+    })
+    @ApiOkResponse({ type: SquareLocationImportResultDto })
+    @ApiBadRequestResponse({
+        description:
+            'VALIDATION_ERROR (INCONSISTENT_STATE on enabled): the link is disabled',
+    })
+    @ApiNotFoundResponse({ description: 'No such location link' })
+    @ApiConflictResponse({
+        description: 'SQUARE_NOT_CONNECTED / SQUARE_REAUTH_REQUIRED',
+    })
+    @ApiTooManyRequestsResponse({ description: 'Re-sync rate limit reached' })
+    async resync(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<SquareLocationImportResultDto> {
+        return this.linkService.resyncForCurrentTenant(id);
     }
 }

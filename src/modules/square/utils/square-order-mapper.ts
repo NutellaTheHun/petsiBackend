@@ -101,9 +101,7 @@ export function mapSquareOrder(
     if (order.state === 'CANCELED') {
         return { kind: 'skip', reason: 'cancelled' };
     }
-    const fulfillment = (order.fulfillments ?? []).find(
-        (f) => f.type != null && IMPORTED_FULFILLMENT_TYPES.has(f.type),
-    );
+    const fulfillment = findImportedFulfillment(order);
     if (!fulfillment) {
         return { kind: 'skip', reason: 'no_pickup_or_delivery' };
     }
@@ -232,9 +230,7 @@ function mapFulfillmentFields(
     const details = isDelivery
         ? fulfillment.deliveryDetails
         : fulfillment.pickupDetails;
-    const dueAt = isDelivery
-        ? fulfillment.deliveryDetails?.deliverAt
-        : fulfillment.pickupDetails?.pickupAt;
+    const dueAt = fulfillmentDueAt(fulfillment);
     const recipient = details?.recipient;
 
     const recipientName = recipient?.displayName?.trim();
@@ -258,6 +254,26 @@ function mapFulfillmentFields(
         email: recipient?.emailAddress ?? null,
         deliveryAddress: joinAddress(recipient?.address),
     };
+}
+
+/** The first pickup or delivery fulfillment: the one an order is imported by. */
+export function findImportedFulfillment(
+    order: Square.Order,
+): Square.Fulfillment | undefined {
+    return (order.fulfillments ?? []).find(
+        (f) => f.type != null && IMPORTED_FULFILLMENT_TYPES.has(f.type),
+    );
+}
+
+/** The fulfillment's due time (RFC 3339), if Square sent one. */
+export function fulfillmentDueAt(
+    fulfillment: Square.Fulfillment,
+): string | null {
+    return (
+        (fulfillment.type === 'DELIVERY'
+            ? fulfillment.deliveryDetails?.deliverAt
+            : fulfillment.pickupDetails?.pickupAt) ?? null
+    );
 }
 
 /** Address lines, locality and postal code, joined with `, `; null if empty. */

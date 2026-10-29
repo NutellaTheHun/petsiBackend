@@ -9,9 +9,14 @@ import { TestUser } from '../../../test/test-user-guard';
 import { Location } from '../../locations/entities/location.entity';
 import { LocationTestUtil } from '../../locations/utils/location-test.util';
 import { Tenant } from '../../tenants/entities/tenant.entity';
+import { SquareClientFactory } from '../client/square-client.factory';
 import { SquareLocationLinkDto } from '../dto/square-location-link.dto';
+import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
+import { FakeSquareClientFactory } from '../utils/fake-square-client.factory';
+import { SquareTestUtil } from '../utils/square-test.util';
 import { getSquareTestingModule } from '../utils/square-testing.module';
+import { SQUARE_RESYNC_THROTTLE } from './square-location-link.controller';
 
 const P = `t${Date.now()}`;
 
@@ -19,6 +24,8 @@ describe('square location link controller (access + wiring)', () => {
     let app: INestApplication;
     let linkRepo: Repository<SquareLocationLink>;
     let tenantRepo: Repository<Tenant>;
+    let connectionRepo: Repository<SquareConnection>;
+    let fake: FakeSquareClientFactory;
     let testCtx: DatabaseTestContext;
 
     let tenant: Tenant;
@@ -35,11 +42,14 @@ describe('square location link controller (access + wiring)', () => {
         const module: TestingModule = await getSquareTestingModule();
         linkRepo = module.get(getRepositoryToken(SquareLocationLink));
         tenantRepo = module.get(getRepositoryToken(Tenant));
+        connectionRepo = module.get(getRepositoryToken(SquareConnection));
+        fake = module.get(SquareClientFactory);
 
         ({
             tenant,
             locations: [location],
         } = await module.get(LocationTestUtil).seedLocations(P, undefined, 1));
+        await module.get(SquareTestUtil).seedConnection(P, tenant.id);
 
         ({ app } = await createHttpTestApp(module, {
             user: () => currentUser,
@@ -48,6 +58,7 @@ describe('square location link controller (access + wiring)', () => {
 
     afterAll(async () => {
         await linkRepo.delete({ tenantId: tenant.id });
+        await connectionRepo.delete({ tenantId: tenant.id });
         await tenantRepo.delete(tenant.id);
         await app.close();
     });
@@ -55,19 +66,26 @@ describe('square location link controller (access + wiring)', () => {
     beforeEach(() => {
         testCtx = new DatabaseTestContext();
         currentUser = tenantAdmin();
+        fake.reset();
+        // Enabling and re-syncing search Square; no orders come back
+        fake.tenantApi.orders.search = () => Promise.resolve({});
     });
 
     afterEach(async () => {
         await testCtx.executeCleanupFunctions();
     });
 
-    async function seedLink(suffix: string): Promise<SquareLocationLink> {
+    async function seedLink(
+        suffix: string,
+        overrides: Partial<SquareLocationLink> = {},
+    ): Promise<SquareLocationLink> {
         const link = await linkRepo.save({
             tenantId: tenant.id,
             squareLocationId: `${P}-${suffix}`,
             squareName: `${P} ${suffix}`,
             squareStatus: 'ACTIVE',
             timezone: 'America/New_York',
+            ...overrides,
         });
         testCtx.addCleanupFunction(async () => {
             await linkRepo.delete(link.id);
@@ -137,6 +155,26 @@ describe('square location link controller (access + wiring)', () => {
         expect(JSON.stringify(list.body)).toContain(`${P} new-site`);
     });
 
+    it('re-syncs an enabled link and returns the import counts', async () => {
+        const link = await seedLink('resync', {
+            enabled: true,
+            locationId: location.id,
+        });
+        const res = await server().post(
+            `/square/location-links/${link.id}/resync`,
+        );
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({
+            found: 0,
+            pastDue: 0,
+            created: 0,
+            updated: 0,
+            unchanged: 0,
+            skipped: 0,
+            rejected: 0,
+        });
+    });
+
     const routes = [
         [
             'GET /square/location-links',
@@ -160,6 +198,10 @@ describe('square location link controller (access + wiring)', () => {
                     .patch('/square/location-links/1/enabled')
                     .send({ enabled: false }),
         ],
+        [
+            'POST /square/location-links/:id/resync',
+            () => server().post('/square/location-links/1/resync'),
+        ],
     ] as const;
 
     describe.each(routes)('%s', (_route, send) => {
@@ -181,5 +223,27 @@ describe('square location link controller (access + wiring)', () => {
             currentUser = undefined;
             expect((await send()).status).toBe(401);
         });
+    });
+
+    // Last: it uses up the re-sync budget for this app's throttler storage
+    it('rate-limits re-sync with 429', async () => {
+        const link = await seedLink('throttled', {
+            enabled: true,
+            locationId: location.id,
+        });
+        // Earlier re-sync calls in this file share the window, so the limit
+        // is reached within limit + 1 calls
+        const responses: request.Response[] = [];
+        for (let i = 0; i <= SQUARE_RESYNC_THROTTLE.limit; i++) {
+            responses.push(
+                await server().post(`/square/location-links/${link.id}/resync`),
+            );
+        }
+        const statuses = responses.map((res) => res.status);
+        expect(
+            statuses.filter((status) => status === 200).length,
+        ).toBeLessThanOrEqual(SQUARE_RESYNC_THROTTLE.limit);
+        expect(statuses.at(-1)).toBe(429);
+        expect(responses.at(-1)!.body).toMatchObject({ statusCode: 429 });
     });
 });
