@@ -4,7 +4,9 @@ import {
     joinAddress,
     mapSquareOrder,
     parseSquareQuantity,
+    SquareOrderContainerDefinition,
     SquareOrderMappingInput,
+    SquareOrderModifierMapping,
     SquareOrderPlan,
     SquareOrderVariationMapping,
 } from './square-order-mapper';
@@ -55,15 +57,23 @@ function pickupOrder(overrides: Partial<Square.Order> = {}): Square.Order {
     };
 }
 
+interface Catalog {
+    modifiers?: Record<string, SquareOrderModifierMapping>;
+    containers?: Map<number, SquareOrderContainerDefinition>;
+}
+
 function input(
     order: Square.Order,
     variations: Record<string, SquareOrderVariationMapping> = {
         'VAR-PIE': pie,
     },
+    catalog: Catalog = {},
 ): SquareOrderMappingInput {
     return {
         order,
         variations: new Map(Object.entries(variations)),
+        modifiers: new Map(Object.entries(catalog.modifiers ?? {})),
+        containers: catalog.containers ?? new Map(),
         timezone: 'America/New_York',
     };
 }
@@ -71,8 +81,9 @@ function input(
 function plan(
     order: Square.Order,
     variations?: Record<string, SquareOrderVariationMapping>,
+    catalog?: Catalog,
 ): SquareOrderPlan {
-    const result = mapSquareOrder(input(order, variations));
+    const result = mapSquareOrder(input(order, variations, catalog));
     if (result.kind !== 'plan') {
         throw new Error(`expected a plan, got skip: ${result.reason}`);
     }
@@ -172,6 +183,7 @@ describe('mapSquareOrder', () => {
                     menuItemId: 1,
                     menuItemSizeId: 10,
                     quantity: 2,
+                    containerItems: [],
                 },
             ]);
             expect(result.unresolved).toEqual([]);
@@ -267,6 +279,382 @@ describe('mapSquareOrder', () => {
             expect(() => mapSquareOrder(input(order))).toThrow(
                 ValidationException,
             );
+        });
+    });
+
+    describe('modifier modes and containers', () => {
+        // Menu items: 2 scone (size 20), 3 chocolate chip and 4 oatmeal
+        // cookies (size 30), 5 box of 6 cookies (size 50), 7 fixed platter
+        // (sizes 70 and 71).
+        const scone: SquareOrderVariationMapping = {
+            enabled: true,
+            menuItemId: null,
+            menuItemSizeId: null,
+            modifierMode: 'modifier_is_item',
+        };
+        const box: SquareOrderVariationMapping = {
+            enabled: true,
+            menuItemId: 5,
+            menuItemSizeId: 50,
+            modifierMode: 'container_contents',
+        };
+        const platter: SquareOrderVariationMapping = {
+            enabled: true,
+            menuItemId: 7,
+            menuItemSizeId: 70,
+            modifierMode: 'none',
+        };
+        const variations = {
+            'VAR-PIE': pie,
+            'VAR-SCONE': scone,
+            'VAR-BOX': box,
+            'VAR-PLATTER': platter,
+        };
+
+        const mapped = (
+            menuItemId: number,
+            menuItemSizeId: number,
+        ): SquareOrderModifierMapping => ({
+            enabled: true,
+            kind: 'item',
+            menuItemId,
+            menuItemSizeId,
+        });
+        const modifiers: Record<string, SquareOrderModifierMapping> = {
+            'MOD-LEMON': mapped(2, 20),
+            // One flavor per box slot: two modifier objects, one product
+            'MOD-CHOC-1': mapped(3, 30),
+            'MOD-CHOC-2': mapped(3, 30),
+            'MOD-OAT-1': mapped(4, 30),
+            'MOD-SHOT': {
+                enabled: true,
+                kind: 'ignore',
+                menuItemId: null,
+                menuItemSizeId: null,
+            },
+            'MOD-UNMAPPED': { ...mapped(2, 20), menuItemId: null },
+            'MOD-DISABLED': { ...mapped(2, 20), enabled: false },
+        };
+        const containers = new Map<number, SquareOrderContainerDefinition>([
+            [
+                5,
+                {
+                    variableMaxAmount: 6,
+                    items: [
+                        {
+                            parentSizeId: 50,
+                            menuItemId: 3,
+                            menuItemSizeId: 30,
+                            quantity: 1,
+                        },
+                        {
+                            parentSizeId: 50,
+                            menuItemId: 4,
+                            menuItemSizeId: 30,
+                            quantity: 1,
+                        },
+                    ],
+                },
+            ],
+            [
+                7,
+                {
+                    variableMaxAmount: null,
+                    items: [
+                        {
+                            parentSizeId: 70,
+                            menuItemId: 2,
+                            menuItemSizeId: 20,
+                            quantity: 3,
+                        },
+                        {
+                            parentSizeId: 70,
+                            menuItemId: 4,
+                            menuItemSizeId: 30,
+                            quantity: 3,
+                        },
+                        {
+                            parentSizeId: 71,
+                            menuItemId: 2,
+                            menuItemSizeId: 20,
+                            quantity: 5,
+                        },
+                    ],
+                },
+            ],
+        ]);
+
+        const lineWith = (
+            uid: string,
+            catalogObjectId: string,
+            quantity: string,
+            mods: [string | undefined, string?][],
+        ): Square.OrderLineItem => ({
+            uid,
+            name: uid,
+            quantity,
+            catalogObjectId,
+            modifiers: mods.map(([id, modQuantity], i) => ({
+                uid: `${uid}-m${i}`,
+                catalogObjectId: id,
+                name: id ?? 'custom',
+                quantity: modQuantity,
+            })),
+        });
+
+        const line = (
+            uid: string,
+            catalogObjectId: string,
+            quantity = '1',
+        ): Square.OrderLineItem => ({ uid, quantity, catalogObjectId });
+
+        const planLines = (...lineItems: Square.OrderLineItem[]) =>
+            plan(pickupOrder({ lineItems }), variations, {
+                modifiers,
+                containers,
+            });
+
+        const reasons = (result: SquareOrderPlan) =>
+            result.unresolved.map((l) => [l.squareLineUid, l.reason]);
+
+        describe('modifier_is_item', () => {
+            it('places one item per item-modifier, line quantity × modifier quantity', () => {
+                const result = planLines(
+                    lineWith('scone', 'VAR-SCONE', '2', [
+                        ['MOD-LEMON', '3'],
+                        ['MOD-OAT-1'],
+                        ['MOD-SHOT'],
+                    ]),
+                );
+                expect(result.lines).toEqual([
+                    {
+                        squareLineUid: 'scone',
+                        menuItemId: 2,
+                        menuItemSizeId: 20,
+                        quantity: 6,
+                        containerItems: [],
+                    },
+                    {
+                        squareLineUid: 'scone',
+                        menuItemId: 4,
+                        menuItemSizeId: 30,
+                        quantity: 2,
+                        containerItems: [],
+                    },
+                ]);
+                expect(result.unresolved).toEqual([]);
+            });
+
+            it('merges modifiers mapped to the same product', () => {
+                const result = planLines(
+                    lineWith('scone', 'VAR-SCONE', '2', [
+                        ['MOD-CHOC-1'],
+                        ['MOD-CHOC-2', '2'],
+                    ]),
+                );
+                expect(result.lines).toMatchObject([
+                    { menuItemId: 3, menuItemSizeId: 30, quantity: 6 },
+                ]);
+            });
+
+            it('skips ignored and disabled modifiers', () => {
+                const result = planLines(
+                    lineWith('scone', 'VAR-SCONE', '1', [
+                        ['MOD-LEMON'],
+                        ['MOD-SHOT'],
+                        ['MOD-DISABLED'],
+                    ]),
+                );
+                expect(result.lines).toMatchObject([
+                    { menuItemId: 2, quantity: 1 },
+                ]);
+                expect(result.unresolved).toEqual([]);
+            });
+
+            it.each([
+                ['an unmapped modifier', [['MOD-LEMON'], ['MOD-UNMAPPED']]],
+                ['an unknown modifier', [['MOD-LEMON'], ['MOD-NEW']]],
+                ['a custom modifier', [['MOD-LEMON'], [undefined]]],
+                ['only ignored modifiers', [['MOD-SHOT']]],
+            ] as [string, [string | undefined][]][])(
+                'makes the line unmapped_modifier for %s',
+                (_label, mods) => {
+                    const result = planLines(
+                        lineWith('scone', 'VAR-SCONE', '1', mods),
+                        line('pie', 'VAR-PIE'),
+                    );
+                    expect(result.lines.map((l) => l.squareLineUid)).toEqual([
+                        'pie',
+                    ]);
+                    expect(reasons(result)).toEqual([
+                        ['scone', 'unmapped_modifier'],
+                    ]);
+                },
+            );
+
+            it('rejects a fractional modifier quantity', () => {
+                const order = pickupOrder({
+                    lineItems: [
+                        lineWith('scone', 'VAR-SCONE', '1', [
+                            ['MOD-LEMON', '0.5'],
+                        ]),
+                    ],
+                });
+                expect(() =>
+                    mapSquareOrder(
+                        input(order, variations, { modifiers, containers }),
+                    ),
+                ).toThrow(ValidationException);
+            });
+        });
+
+        describe('container_contents', () => {
+            it('places one box with merged contents per unit of the line', () => {
+                const result = planLines(
+                    lineWith('box', 'VAR-BOX', '2', [
+                        ['MOD-CHOC-1', '2'],
+                        ['MOD-CHOC-2'],
+                        ['MOD-OAT-1', '3'],
+                        ['MOD-SHOT'],
+                    ]),
+                );
+                expect(result.lines).toEqual([
+                    {
+                        squareLineUid: 'box',
+                        menuItemId: 5,
+                        menuItemSizeId: 50,
+                        quantity: 2,
+                        containerItems: [
+                            { menuItemId: 3, menuItemSizeId: 30, quantity: 3 },
+                            { menuItemId: 4, menuItemSizeId: 30, quantity: 3 },
+                        ],
+                    },
+                ]);
+                expect(result.unresolved).toEqual([]);
+            });
+
+            it.each([
+                [
+                    'under count',
+                    [
+                        ['MOD-CHOC-1', '2'],
+                        ['MOD-OAT-1', '3'],
+                    ],
+                ],
+                [
+                    'over count',
+                    [
+                        ['MOD-CHOC-1', '4'],
+                        ['MOD-OAT-1', '3'],
+                    ],
+                ],
+                // Lemon scone isn't in the box's allowed list
+                [
+                    'a disallowed flavor',
+                    [
+                        ['MOD-CHOC-1', '3'],
+                        ['MOD-LEMON', '3'],
+                    ],
+                ],
+            ] as [string, [string, string][]][])(
+                'makes a box %s container_invalid and keeps the other lines',
+                (_label, mods) => {
+                    const result = planLines(
+                        lineWith('box', 'VAR-BOX', '1', mods),
+                        line('pie', 'VAR-PIE'),
+                    );
+                    expect(result.lines.map((l) => l.squareLineUid)).toEqual([
+                        'pie',
+                    ]);
+                    expect(reasons(result)).toEqual([
+                        ['box', 'container_invalid'],
+                    ]);
+                },
+            );
+
+            it('checks the allowed list for the box size', () => {
+                const result = planLines(
+                    lineWith('box', 'VAR-BOX', '1', [['MOD-CHOC-1', '6']]),
+                );
+                expect(result.lines).toHaveLength(1);
+
+                const otherSize = plan(
+                    pickupOrder({
+                        lineItems: [
+                            lineWith('box', 'VAR-BOX', '1', [
+                                ['MOD-CHOC-1', '6'],
+                            ]),
+                        ],
+                    }),
+                    { 'VAR-BOX': { ...box, menuItemSizeId: 51 } },
+                    { modifiers, containers },
+                );
+                expect(reasons(otherSize)).toEqual([
+                    ['box', 'container_invalid'],
+                ]);
+            });
+
+            it('makes a box with an unmapped flavor unmapped_modifier', () => {
+                const result = planLines(
+                    lineWith('box', 'VAR-BOX', '1', [
+                        ['MOD-CHOC-1', '5'],
+                        ['MOD-UNMAPPED'],
+                    ]),
+                );
+                expect(reasons(result)).toEqual([['box', 'unmapped_modifier']]);
+            });
+
+            it('makes the line container_invalid when the item is not a variable container', () => {
+                const notVariable = plan(
+                    pickupOrder({
+                        lineItems: [
+                            lineWith('box', 'VAR-BOX', '1', [
+                                ['MOD-CHOC-1', '6'],
+                            ]),
+                        ],
+                    }),
+                    { 'VAR-BOX': { ...box, menuItemId: 7 } },
+                    { modifiers, containers },
+                );
+                expect(reasons(notVariable)).toEqual([
+                    ['box', 'container_invalid'],
+                ]);
+            });
+        });
+
+        describe('none', () => {
+            it('expands a fixed container from its definition for that size', () => {
+                const result = planLines(line('platter', 'VAR-PLATTER', '2'));
+                expect(result.lines).toEqual([
+                    {
+                        squareLineUid: 'platter',
+                        menuItemId: 7,
+                        menuItemSizeId: 70,
+                        quantity: 2,
+                        containerItems: [
+                            { menuItemId: 2, menuItemSizeId: 20, quantity: 3 },
+                            { menuItemId: 4, menuItemSizeId: 30, quantity: 3 },
+                        ],
+                    },
+                ]);
+            });
+
+            it('ignores modifiers, mapped or not', () => {
+                const result = planLines(
+                    lineWith('platter', 'VAR-PLATTER', '1', [['MOD-UNMAPPED']]),
+                );
+                expect(result.lines).toHaveLength(1);
+                expect(result.unresolved).toEqual([]);
+            });
+
+            it('makes a variable container container_invalid instead of an empty box', () => {
+                const result = plan(
+                    pickupOrder({ lineItems: [line('box', 'VAR-BOX')] }),
+                    { 'VAR-BOX': { ...box, modifierMode: 'none' } },
+                    { modifiers, containers },
+                );
+                expect(reasons(result)).toEqual([['box', 'container_invalid']]);
+            });
         });
     });
 });

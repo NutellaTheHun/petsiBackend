@@ -268,6 +268,39 @@ describe('order menu item service', () => {
         ).toBeDefined();
     });
 
+    it('should remove container items left out of containerOrderMenuItems on update', async () => {
+        const relations = [
+            'menuItem',
+            'size',
+            'containerOrderMenuItems',
+            'containerOrderMenuItems.containedMenuItem',
+            'containerOrderMenuItems.containedItemSize',
+        ];
+        const toUpdate = await orderMenuItemRepo.findOneOrFail({
+            where: { id: containerOrderMenuItems[0].id },
+            relations,
+        });
+        const [dropped, ...kept] = toUpdate.containerOrderMenuItems!;
+        if (!dropped) throw new Error('seeded container has no contents');
+
+        const dto = orderMenuItemToUpdateDto({
+            ...toUpdate,
+            containerOrderMenuItems: kept,
+        });
+
+        await dataSource.transaction(async (manager) => {
+            await orderItemService.updateEntityForTest(dto, toUpdate, manager);
+        });
+
+        const updatedItem = await orderMenuItemRepo.findOneOrFail({
+            where: { id: toUpdate.id },
+            relations,
+        });
+        expect(
+            updatedItem.containerOrderMenuItems!.map((c) => c.id).sort(),
+        ).toEqual(kept.map((c) => c.id).sort());
+    });
+
     // test findAll()
     it('should find seeded order menu item in findAll results', async () => {
         const serviceResult = await orderItemService.findAll({ limit: 100 });

@@ -80,11 +80,12 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
         }
 
         if (dto.containerOrderMenuItems) {
-            entity.containerOrderMenuItems =
+            const previous = [...(entity.containerOrderMenuItems ?? [])];
+            const composed =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
                     manager,
-                    entity.containerOrderMenuItems ?? [],
+                    previous,
                     {
                         parentOrderMenuItemId: entity.id,
                         parentMenuItemId: entity.menuItem.id,
@@ -93,6 +94,22 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                         locationId: entity.locationId,
                     },
                 );
+            // The DTO is the full contents (the validator sums only it): the
+            // composer returns every existing child too, so drop the ones the
+            // DTO no longer names. Filter before removing: `manager.remove`
+            // clears the removed entity's id.
+            const keptIds = new Set(
+                dto.containerOrderMenuItems.flatMap((item) =>
+                    'createId' in item ? [] : [item.id],
+                ),
+            );
+            const removed = previous.filter((x) => !keptIds.has(x.id));
+            entity.containerOrderMenuItems = composed.filter(
+                (x) => !removed.includes(x),
+            );
+            for (const old of removed) {
+                await manager.remove(old);
+            }
         }
         await manager.save(entity);
     }

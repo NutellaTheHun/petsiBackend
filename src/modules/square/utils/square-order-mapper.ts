@@ -6,6 +6,7 @@ import {
     SquareModifierSnapshot,
     SquareUnresolvedLineReason,
 } from '../entities/square-unresolved-line.entity';
+import { SquareModifierLink } from '../entities/square-modifier-link.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 
 /** The variation-link fields ingest reads, keyed by Square variation id. */
@@ -14,9 +15,33 @@ export type SquareOrderVariationMapping = Pick<
     'enabled' | 'menuItemId' | 'menuItemSizeId' | 'modifierMode'
 >;
 
+/** The modifier-link fields ingest reads, keyed by Square modifier id. */
+export type SquareOrderModifierMapping = Pick<
+    SquareModifierLink,
+    'enabled' | 'kind' | 'menuItemId' | 'menuItemSizeId'
+>;
+
+/** One `MenuItemContainerItem` row of a container menu item. */
+export interface SquareContainerDefinitionItem {
+    parentSizeId: number;
+    menuItemId: number;
+    menuItemSizeId: number;
+    quantity: number;
+}
+
+/** A `CONTAINER` menu item's definition, for every size. */
+export interface SquareOrderContainerDefinition {
+    /** Null for a fixed container. */
+    variableMaxAmount: number | null;
+    items: SquareContainerDefinitionItem[];
+}
+
 export interface SquareOrderMappingInput {
     order: Square.Order;
     variations: ReadonlyMap<string, SquareOrderVariationMapping>;
+    modifiers: ReadonlyMap<string, SquareOrderModifierMapping>;
+    /** Container menu items by menu item id; other items are absent. */
+    containers: ReadonlyMap<number, SquareOrderContainerDefinition>;
     /** The location link's IANA timezone; null if Square sent none. */
     timezone: string | null;
 }
@@ -28,11 +53,24 @@ export type SquareOrderSkipReason =
     | 'cancelled'
     | 'no_pickup_or_delivery';
 
+export interface PlannedContainerItem {
+    menuItemId: number;
+    menuItemSizeId: number;
+    /** Per container. */
+    quantity: number;
+}
+
+/**
+ * One Petsi order item. A `modifier_is_item` Square line can plan several,
+ * all with its uid (one per menu item and size).
+ */
 export interface PlannedSquareLine {
     squareLineUid: string;
     menuItemId: number;
     menuItemSizeId: number;
     quantity: number;
+    /** Empty unless the menu item is a container. */
+    containerItems: PlannedContainerItem[];
 }
 
 export interface PlannedUnresolvedLine {
@@ -83,9 +121,9 @@ const IMPORTED_FULFILLMENT_TYPES: ReadonlySet<string> = new Set([
  * Square order → a plan of Petsi order fields, lines and unresolved lines.
  * Pure: everything it needs (variation links, timezone) is passed in.
  * A whole-order problem (no recipient, no due time, a bad quantity) throws a
- * `ValidationException`, like an `OrderService` rejection.
- * Only `modifierMode = none` places lines; the other modes come in task 13
- * and leave the line unresolved until then.
+ * `ValidationException`, like an `OrderService` rejection. A line that can't
+ * be placed exactly (including a box that breaks the container rules) is
+ * planned as unresolved, never guessed.
  */
 export function mapSquareOrder(
     input: SquareOrderMappingInput,
@@ -123,8 +161,16 @@ export function mapSquareOrder(
             continue;
         }
 
-        const placement = placeLine(lineItem, input.variations);
+        const placement = placeLine(lineItem, quantity, input);
         if (placement.kind === 'skip') {
+            continue;
+        }
+        if (placement.kind === 'invalid_modifier_quantity') {
+            errors.addError(
+                'OUT_OF_RANGE',
+                [uid],
+                ['lineItems', 'modifiers', 'quantity'],
+            );
             continue;
         }
         if (placement.kind === 'unresolved') {
@@ -133,12 +179,12 @@ export function mapSquareOrder(
             );
             continue;
         }
-        lines.push({
-            squareLineUid: uid,
-            menuItemId: placement.menuItemId,
-            menuItemSizeId: placement.menuItemSizeId,
-            quantity,
-        });
+        lines.push(
+            ...placement.items.map((item) => ({
+                squareLineUid: uid,
+                ...item,
+            })),
+        );
     }
 
     if (!errors.isEmpty() || !fields) {
@@ -159,38 +205,194 @@ export function mapSquareOrder(
     };
 }
 
+type PlacedItem = Omit<PlannedSquareLine, 'squareLineUid'>;
+
 type LinePlacement =
     | { kind: 'skip' }
+    | { kind: 'invalid_modifier_quantity' }
     | { kind: 'unresolved'; reason: SquareUnresolvedLineReason }
-    | { kind: 'placed'; menuItemId: number; menuItemSizeId: number };
+    | { kind: 'placed'; items: PlacedItem[] };
 
 function placeLine(
     lineItem: Square.OrderLineItem,
-    variations: ReadonlyMap<string, SquareOrderVariationMapping>,
+    quantity: number,
+    input: SquareOrderMappingInput,
 ): LinePlacement {
     if (!lineItem.catalogObjectId) {
         return { kind: 'unresolved', reason: 'ad_hoc' };
     }
-    const link = variations.get(lineItem.catalogObjectId);
+    const link = input.variations.get(lineItem.catalogObjectId);
     if (link && !link.enabled) {
         return { kind: 'skip' };
     }
-    if (!link || link.menuItemId == null || link.menuItemSizeId == null) {
+    if (!link) {
         return { kind: 'unresolved', reason: 'unmapped_variation' };
     }
-    switch (link.modifierMode) {
-        case 'none':
-            return {
-                kind: 'placed',
+    // The modifiers are the products; the variation needn't be mapped.
+    if (link.modifierMode === 'modifier_is_item') {
+        return placeModifierItems(lineItem, quantity, input.modifiers);
+    }
+    if (link.menuItemId == null || link.menuItemSizeId == null) {
+        return { kind: 'unresolved', reason: 'unmapped_variation' };
+    }
+    const container = input.containers.get(link.menuItemId);
+    if (link.modifierMode === 'container_contents') {
+        return placeContainerContents(
+            lineItem,
+            quantity,
+            {
                 menuItemId: link.menuItemId,
                 menuItemSizeId: link.menuItemSizeId,
-            };
-        // Placed by task 13; never import a wrong box or a flavorless line.
-        case 'modifier_is_item':
-            return { kind: 'unresolved', reason: 'unmapped_modifier' };
-        case 'container_contents':
-            return { kind: 'unresolved', reason: 'container_invalid' };
+            },
+            container,
+            input.modifiers,
+        );
     }
+    // A variable box without chosen contents would be a wrong box
+    if (container && container.variableMaxAmount != null) {
+        return { kind: 'unresolved', reason: 'container_invalid' };
+    }
+    return {
+        kind: 'placed',
+        items: [
+            {
+                menuItemId: link.menuItemId,
+                menuItemSizeId: link.menuItemSizeId,
+                quantity,
+                // Neither the order composers nor the validator fill a fixed
+                // container, and an empty one passes validation.
+                containerItems: container
+                    ? fixedContents(container, link.menuItemSizeId)
+                    : [],
+            },
+        ],
+    };
+}
+
+/** `modifier_is_item`: one order item per mapped item-modifier. */
+function placeModifierItems(
+    lineItem: Square.OrderLineItem,
+    quantity: number,
+    modifiers: ReadonlyMap<string, SquareOrderModifierMapping>,
+): LinePlacement {
+    const chosen = resolveModifierItems(lineItem, modifiers);
+    if (chosen.kind !== 'resolved') {
+        return chosen;
+    }
+    // Only ignored modifiers (or none): never import a flavorless line
+    if (!chosen.items.length) {
+        return { kind: 'unresolved', reason: 'unmapped_modifier' };
+    }
+    return {
+        kind: 'placed',
+        items: chosen.items.map((item) => ({
+            ...item,
+            quantity: item.quantity * quantity,
+            containerItems: [],
+        })),
+    };
+}
+
+/**
+ * `container_contents`: one box per unit of the line, filled from the
+ * item-modifiers. The contents must pass the rules `OrderMenuItemValidator`
+ * enforces (no duplicates, which merging guarantees; a total equal to the
+ * box's maximum; only items the box allows for its size), or the line is
+ * unresolved: a wrong box is never imported.
+ */
+function placeContainerContents(
+    lineItem: Square.OrderLineItem,
+    quantity: number,
+    box: { menuItemId: number; menuItemSizeId: number },
+    container: SquareOrderContainerDefinition | undefined,
+    modifiers: ReadonlyMap<string, SquareOrderModifierMapping>,
+): LinePlacement {
+    const chosen = resolveModifierItems(lineItem, modifiers);
+    if (chosen.kind !== 'resolved') {
+        return chosen;
+    }
+    if (!container || container.variableMaxAmount == null) {
+        return { kind: 'unresolved', reason: 'container_invalid' };
+    }
+    const allowed = new Set(
+        container.items
+            .filter((item) => item.parentSizeId === box.menuItemSizeId)
+            .map((item) => itemKey(item.menuItemId, item.menuItemSizeId)),
+    );
+    const total = chosen.items.reduce((sum, item) => sum + item.quantity, 0);
+    const allAllowed = chosen.items.every((item) =>
+        allowed.has(itemKey(item.menuItemId, item.menuItemSizeId)),
+    );
+    if (total !== container.variableMaxAmount || !allAllowed) {
+        return { kind: 'unresolved', reason: 'container_invalid' };
+    }
+    return {
+        kind: 'placed',
+        items: [{ ...box, quantity, containerItems: chosen.items }],
+    };
+}
+
+/** A fixed container's defined contents for one size. */
+function fixedContents(
+    container: SquareOrderContainerDefinition,
+    parentSizeId: number,
+): PlannedContainerItem[] {
+    return container.items
+        .filter((item) => item.parentSizeId === parentSizeId)
+        .map(({ menuItemId, menuItemSizeId, quantity }) => ({
+            menuItemId,
+            menuItemSizeId,
+            quantity,
+        }));
+}
+
+type ModifierItems =
+    | { kind: 'invalid_modifier_quantity' }
+    | { kind: 'unresolved'; reason: 'unmapped_modifier' }
+    | { kind: 'resolved'; items: PlannedContainerItem[] };
+
+/**
+ * The line's item-modifiers merged by menu item and size, with quantities
+ * per unit of the line. Ignored and disabled modifiers are left out; one
+ * that is unmapped (or has no catalog id) leaves the line unresolved.
+ */
+function resolveModifierItems(
+    lineItem: Square.OrderLineItem,
+    modifiers: ReadonlyMap<string, SquareOrderModifierMapping>,
+): ModifierItems {
+    const merged = new Map<string, PlannedContainerItem>();
+    for (const modifier of lineItem.modifiers ?? []) {
+        const link = modifier.catalogObjectId
+            ? modifiers.get(modifier.catalogObjectId)
+            : undefined;
+        if (link && (!link.enabled || link.kind === 'ignore')) {
+            continue;
+        }
+        if (!link || link.menuItemId == null || link.menuItemSizeId == null) {
+            return { kind: 'unresolved', reason: 'unmapped_modifier' };
+        }
+        // Modifier quantity defaults to 1 per unit of the line.
+        const quantity = parseSquareQuantity(modifier.quantity ?? '1');
+        if (quantity == null) {
+            return { kind: 'invalid_modifier_quantity' };
+        }
+        const key = itemKey(link.menuItemId, link.menuItemSizeId);
+        const existing = merged.get(key);
+        if (existing) {
+            existing.quantity += quantity;
+        } else {
+            merged.set(key, {
+                menuItemId: link.menuItemId,
+                menuItemSizeId: link.menuItemSizeId,
+                quantity,
+            });
+        }
+    }
+    return { kind: 'resolved', items: [...merged.values()] };
+}
+
+function itemKey(menuItemId: number, menuItemSizeId: number): string {
+    return `${menuItemId}:${menuItemSizeId}`;
 }
 
 function toUnresolvedLine(

@@ -21,6 +21,7 @@ import { RevisionHistoryService } from '../../revision-history/revision-history.
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
+import { SquareModifierLink } from '../entities/square-modifier-link.entity';
 import { SquareOrderLink } from '../entities/square-order-link.entity';
 import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
@@ -620,6 +621,381 @@ describe('SquareOrderIngestService', () => {
                     l.status,
                 ]),
             ).toEqual([['l-new', 'resolved']]);
+        });
+    });
+
+    describe('boxes and modifier modes', () => {
+        const VAR_BOX = `${P}-var-box`;
+        const VAR_SCONE = `${P}-var-scone`;
+        const VAR_PLATTER = `${P}-var-platter`;
+        const MOD_CHOC_1 = `${P}-mod-choc-1`;
+        const MOD_CHOC_2 = `${P}-mod-choc-2`;
+        const MOD_OAT = `${P}-mod-oat`;
+        const MOD_LEMON = `${P}-mod-lemon`;
+        const MOD_SHOT = `${P}-mod-shot`;
+        const MOD_UNMAPPED = `${P}-mod-unmapped`;
+
+        let modifierRepo: Repository<SquareModifierLink>;
+        let each: MenuItemSize;
+        let boxSize: MenuItemSize;
+        let platterSize: MenuItemSize;
+        let chocChip: MenuItem;
+        let oatmeal: MenuItem;
+        let lemonScone: MenuItem;
+        let boxOf6: MenuItem;
+        let platter: MenuItem;
+
+        const withModifiers = (
+            uid: string,
+            catalogObjectId: string,
+            quantity: string,
+            mods: [string, string?][],
+        ): Square.OrderLineItem => ({
+            ...line(uid, catalogObjectId, quantity),
+            modifiers: mods.map(([id, modQuantity], i) => ({
+                uid: `${uid}-m${i}`,
+                catalogObjectId: id,
+                name: id,
+                quantity: modQuantity ?? '1',
+            })),
+        });
+
+        const loadWithContents = (id: number) =>
+            orderRepo.findOneOrFail({
+                where: { id },
+                relations: [
+                    'orderedItems',
+                    'orderedItems.menuItem',
+                    'orderedItems.containerOrderMenuItems',
+                    'orderedItems.containerOrderMenuItems.containedMenuItem',
+                ],
+            });
+
+        const contentsOf = (order: Order, menuItemId: number) =>
+            order.orderedItems
+                .find((item) => item.menuItem.id === menuItemId)!
+                .containerOrderMenuItems!.map((c) => ({
+                    menuItemId: c.containedMenuItem.id,
+                    quantity: c.quantity,
+                }))
+                .sort((a, b) => a.menuItemId - b.menuItemId);
+
+        const singles = (names: string[]) =>
+            menuItemRepo.save(
+                names.map((name) =>
+                    menuItemRepo.create({
+                        tenantId: tenant.id,
+                        name: `${P} ${name}`,
+                        type: MENU_ITEM_TYPES.SINGLE,
+                        sizes: [each],
+                    }),
+                ),
+            );
+
+        const contents = (
+            parentSize: MenuItemSize,
+            entries: [MenuItem, number][],
+        ) =>
+            entries.map(([item, quantity]) => ({
+                tenantId: tenant.id,
+                parentItemSize: parentSize,
+                containedMenuItem: item,
+                containedItemSize: each,
+                quantity,
+            }));
+
+        beforeAll(async () => {
+            modifierRepo = module.get(getRepositoryToken(SquareModifierLink));
+            [each, boxSize, platterSize] = await sizeRepo.save(
+                ['Each', 'Box', 'Platter'].map((name) => ({
+                    tenantId: tenant.id,
+                    name: `${P} ${name}`,
+                })),
+            );
+            [chocChip, oatmeal, lemonScone] = await singles([
+                'Chocolate Chip',
+                'Oatmeal',
+                'Lemon Scone',
+            ]);
+            [boxOf6, platter] = await menuItemRepo.save([
+                menuItemRepo.create({
+                    tenantId: tenant.id,
+                    name: `${P} Box of 6 Cookies`,
+                    type: MENU_ITEM_TYPES.CONTAINER,
+                    variableMaxAmount: 6,
+                    sizes: [boxSize],
+                    containerMenuItems: contents(boxSize, [
+                        [chocChip, 1],
+                        [oatmeal, 1],
+                    ]),
+                }),
+                menuItemRepo.create({
+                    tenantId: tenant.id,
+                    name: `${P} Pastry Platter`,
+                    type: MENU_ITEM_TYPES.CONTAINER,
+                    variableMaxAmount: null,
+                    sizes: [platterSize],
+                    containerMenuItems: contents(platterSize, [
+                        [chocChip, 3],
+                        [lemonScone, 2],
+                    ]),
+                }),
+            ]);
+
+            await variationRepo.save(
+                [
+                    {
+                        squareVariationId: VAR_BOX,
+                        menuItemId: boxOf6.id,
+                        menuItemSizeId: boxSize.id,
+                        modifierMode: 'container_contents' as const,
+                    },
+                    {
+                        squareVariationId: VAR_SCONE,
+                        menuItemId: null,
+                        menuItemSizeId: null,
+                        modifierMode: 'modifier_is_item' as const,
+                    },
+                    {
+                        squareVariationId: VAR_PLATTER,
+                        menuItemId: platter.id,
+                        menuItemSizeId: platterSize.id,
+                    },
+                ].map((mapping) =>
+                    variationRepo.create({
+                        tenantId: tenant.id,
+                        squareItemId: `${mapping.squareVariationId}-item`,
+                        squareItemName: mapping.squareVariationId,
+                        squareVariationName: '',
+                        ...mapping,
+                    }),
+                ),
+            );
+
+            const modifier = (
+                squareModifierId: string,
+                mapping: Partial<SquareModifierLink>,
+            ) =>
+                modifierRepo.create({
+                    tenantId: tenant.id,
+                    squareModifierId,
+                    squareModifierListId: `${squareModifierId}-list`,
+                    squareModifierListName: 'Flavor',
+                    squareModifierName: squareModifierId,
+                    menuItemSizeId: each.id,
+                    ...mapping,
+                });
+            await modifierRepo.save([
+                modifier(MOD_CHOC_1, { menuItemId: chocChip.id }),
+                modifier(MOD_CHOC_2, { menuItemId: chocChip.id }),
+                modifier(MOD_OAT, { menuItemId: oatmeal.id }),
+                modifier(MOD_LEMON, { menuItemId: lemonScone.id }),
+                modifier(MOD_SHOT, {
+                    kind: 'ignore',
+                    menuItemId: null,
+                    menuItemSizeId: null,
+                }),
+                modifier(MOD_UNMAPPED, {
+                    menuItemId: null,
+                    menuItemSizeId: null,
+                }),
+            ]);
+        });
+
+        afterAll(async () => {
+            await modifierRepo.delete({ tenantId: tenant.id });
+        });
+
+        it('imports a valid box as one container item with merged counts', async () => {
+            const order = squareOrder({
+                lineItems: [
+                    withModifiers('l-box', VAR_BOX, '2', [
+                        [MOD_CHOC_1, '2'],
+                        [MOD_CHOC_2],
+                        [MOD_OAT, '3'],
+                        [MOD_SHOT],
+                    ]),
+                ],
+            });
+            const result = await ingestService.ingest(connection, order);
+            if (result.outcome !== 'created') throw new Error(result.outcome);
+
+            const petsiOrder = await loadWithContents(result.orderId);
+            expect(items(petsiOrder)).toEqual([
+                { menuItemId: boxOf6.id, quantity: 2 },
+            ]);
+            expect(contentsOf(petsiOrder, boxOf6.id)).toEqual([
+                { menuItemId: chocChip.id, quantity: 3 },
+                { menuItemId: oatmeal.id, quantity: 3 },
+            ]);
+            expect(await linesFor(order.id!)).toEqual([]);
+            expect((await linkFor(order.id!))?.lineMap).toEqual({
+                'l-box': [petsiOrder.orderedItems[0].id],
+            });
+        });
+
+        it.each([
+            [
+                'under count',
+                [
+                    [MOD_CHOC_1, '2'],
+                    [MOD_OAT, '3'],
+                ],
+            ],
+            [
+                'over count',
+                [
+                    [MOD_CHOC_1, '4'],
+                    [MOD_OAT, '3'],
+                ],
+            ],
+            [
+                'with a disallowed flavor',
+                [
+                    [MOD_CHOC_1, '3'],
+                    [MOD_LEMON, '3'],
+                ],
+            ],
+        ] as [string, [string, string][]][])(
+            'makes a box %s a pending container_invalid line and imports the rest',
+            async (_label, mods) => {
+                const order = squareOrder({
+                    lineItems: [
+                        line('l-pie', VAR_PIE, '1'),
+                        withModifiers('l-box', VAR_BOX, '1', mods),
+                    ],
+                });
+                const result = await ingestService.ingest(connection, order);
+                if (result.outcome !== 'created') {
+                    throw new Error(result.outcome);
+                }
+
+                expect(items(await loadOrder(result.orderId))).toEqual([
+                    { menuItemId: applePie.id, quantity: 1 },
+                ]);
+                expect(await linesFor(order.id!)).toMatchObject([
+                    {
+                        squareLineUid: 'l-box',
+                        squareVariationId: VAR_BOX,
+                        reason: 'container_invalid',
+                        status: 'pending',
+                        quantity: 1,
+                    },
+                ]);
+            },
+        );
+
+        it('imports modifier products past an ignored add-on; an unmapped modifier leaves its line pending', async () => {
+            const order = squareOrder({
+                lineItems: [
+                    withModifiers('l-scone', VAR_SCONE, '2', [
+                        [MOD_LEMON, '2'],
+                        [MOD_OAT],
+                        [MOD_SHOT],
+                    ]),
+                    withModifiers('l-scone-2', VAR_SCONE, '1', [
+                        [MOD_CHOC_1],
+                        [MOD_UNMAPPED],
+                    ]),
+                ],
+            });
+            const result = await ingestService.ingest(connection, order);
+            if (result.outcome !== 'created') throw new Error(result.outcome);
+
+            const petsiOrder = await loadOrder(result.orderId);
+            expect(items(petsiOrder)).toEqual(
+                [
+                    { menuItemId: lemonScone.id, quantity: 4 },
+                    { menuItemId: oatmeal.id, quantity: 2 },
+                ].sort((a, b) => a.menuItemId - b.menuItemId),
+            );
+            expect(
+                (await linkFor(order.id!))?.lineMap['l-scone'].sort(),
+            ).toEqual(petsiOrder.orderedItems.map((item) => item.id).sort());
+            expect(await linesFor(order.id!)).toMatchObject([
+                {
+                    squareLineUid: 'l-scone-2',
+                    reason: 'unmapped_modifier',
+                    status: 'pending',
+                },
+            ]);
+        });
+
+        it('imports a fixed container with its defined contents', async () => {
+            const order = squareOrder({
+                lineItems: [line('l-platter', VAR_PLATTER, '1')],
+            });
+            const result = await ingestService.ingest(connection, order);
+            if (result.outcome !== 'created') throw new Error(result.outcome);
+
+            const petsiOrder = await loadWithContents(result.orderId);
+            expect(contentsOf(petsiOrder, platter.id)).toEqual(
+                [
+                    { menuItemId: chocChip.id, quantity: 3 },
+                    { menuItemId: lemonScone.id, quantity: 2 },
+                ].sort((a, b) => a.menuItemId - b.menuItemId),
+            );
+        });
+
+        it('replaces a box’s contents and a modifier line’s products on a Square update', async () => {
+            const squareOrderId = `${P}-box-update`;
+            const v1 = squareOrder({
+                id: squareOrderId,
+                version: 1,
+                lineItems: [
+                    withModifiers('l-box', VAR_BOX, '1', [
+                        [MOD_CHOC_1, '3'],
+                        [MOD_OAT, '3'],
+                    ]),
+                    withModifiers('l-scone', VAR_SCONE, '1', [[MOD_LEMON]]),
+                ],
+            });
+            const created = await ingestService.ingest(connection, v1);
+            if (created.outcome !== 'created') {
+                throw new Error(created.outcome);
+            }
+            const boxItemId = (
+                await loadOrder(created.orderId)
+            ).orderedItems.find((item) => item.menuItem.id === boxOf6.id)!.id;
+
+            const updated = await ingestService.ingest(connection, {
+                ...v1,
+                version: 2,
+                lineItems: [
+                    withModifiers('l-box', VAR_BOX, '1', [
+                        [MOD_CHOC_1, '1'],
+                        [MOD_CHOC_2, '5'],
+                    ]),
+                    withModifiers('l-scone', VAR_SCONE, '1', [
+                        [MOD_LEMON, '2'],
+                        [MOD_OAT],
+                    ]),
+                ],
+            });
+            expect(updated).toEqual({
+                outcome: 'updated',
+                orderId: created.orderId,
+            });
+
+            const order = await loadWithContents(created.orderId);
+            const box = order.orderedItems.find(
+                (item) => item.menuItem.id === boxOf6.id,
+            )!;
+            // Changed in place, not recreated
+            expect(box.id).toBe(boxItemId);
+            expect(contentsOf(order, boxOf6.id)).toEqual([
+                { menuItemId: chocChip.id, quantity: 6 },
+            ]);
+            expect(items(order)).toEqual(
+                [
+                    { menuItemId: boxOf6.id, quantity: 1 },
+                    { menuItemId: lemonScone.id, quantity: 2 },
+                    { menuItemId: oatmeal.id, quantity: 1 },
+                ].sort((a, b) => a.menuItemId - b.menuItemId),
+            );
+            const lineMap = (await linkFor(squareOrderId))!.lineMap;
+            expect(lineMap['l-box']).toEqual([boxItemId]);
+            expect(lineMap['l-scone']).toHaveLength(2);
         });
     });
 
