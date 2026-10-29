@@ -12,7 +12,11 @@ import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareClientFactory } from '../client/square-client.factory';
 import { SquareConnection } from '../entities/square-connection.entity';
+import { SquareCategoryLink } from '../entities/square-category-link.entity';
+import { SquareItemHint } from '../entities/square-item-hint.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
+import { SquareSizeAlias } from '../entities/square-size-alias.entity';
+import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import { SquareOAuthState } from '../entities/square-oauth-state.entity';
 import { SquareOAuthStateService } from '../services/square-oauth-state.service';
 import { SquareTokenCryptoService } from '../services/square-token-crypto.service';
@@ -30,6 +34,8 @@ describe('square OAuth connect flow (HTTP)', () => {
     let fake: FakeSquareClientFactory;
     let connectionRepo: Repository<SquareConnection>;
     let linkRepo: Repository<SquareLocationLink>;
+    let variationRepo: Repository<SquareVariationLink>;
+    let catalogRepos: Repository<{ tenantId: number }>[];
     let stateRepo: Repository<SquareOAuthState>;
     let categoryRepo: Repository<OrderCategory>;
     let tenantRepo: Repository<Tenant>;
@@ -49,6 +55,12 @@ describe('square OAuth connect flow (HTTP)', () => {
         fake = module.get(SquareClientFactory);
         connectionRepo = module.get(getRepositoryToken(SquareConnection));
         linkRepo = module.get(getRepositoryToken(SquareLocationLink));
+        variationRepo = module.get(getRepositoryToken(SquareVariationLink));
+        catalogRepos = [
+            SquareSizeAlias,
+            SquareItemHint,
+            SquareCategoryLink,
+        ].map((entity) => module.get(getRepositoryToken(entity)));
         stateRepo = module.get(getRepositoryToken(SquareOAuthState));
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         tenantRepo = module.get(getRepositoryToken(Tenant));
@@ -84,6 +96,10 @@ describe('square OAuth connect flow (HTTP)', () => {
         });
         testCtx.addCleanupFunction(async () => {
             await linkRepo.delete({ tenantId: tenant.id });
+            await variationRepo.delete({ tenantId: tenant.id });
+            for (const repo of catalogRepos) {
+                await repo.delete({ tenantId: tenant.id });
+            }
         });
     });
 
@@ -138,8 +154,41 @@ describe('square OAuth connect flow (HTTP)', () => {
         fake.appApi.oAuth.obtainToken = obtainToken;
         fake.appApi.oAuth.revokeToken = revokeToken;
         fake.tenantApi.merchants.get = getMerchant;
+        const searchCatalog = jest.fn(
+            (): Promise<Square.SearchCatalogObjectsResponse> =>
+                Promise.resolve({
+                    objects: [
+                        {
+                            type: 'ITEM',
+                            id: `${P}-sq-item`,
+                            itemData: {
+                                name: `${P} Pie`,
+                                variations: [
+                                    {
+                                        type: 'ITEM_VARIATION',
+                                        id: `${P}-sq-var`,
+                                        version: 3n,
+                                        itemVariationData: {
+                                            itemId: `${P}-sq-item`,
+                                            name: 'Large',
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                    latestTime: '2026-10-28T00:00:00.000Z',
+                }),
+        );
         fake.tenantApi.locations.list = listLocations;
-        return { obtainToken, getMerchant, revokeToken, listLocations };
+        fake.tenantApi.catalog.search = searchCatalog;
+        return {
+            obtainToken,
+            getMerchant,
+            revokeToken,
+            listLocations,
+            searchCatalog,
+        };
     }
 
     async function startState(): Promise<string> {
@@ -228,8 +277,9 @@ describe('square OAuth connect flow (HTTP)', () => {
             expect(connection?.accessTokenExpiresAt?.toISOString()).toBe(
                 '2026-11-27T00:00:00.000Z',
             );
-            // The merchant profile and the location sync used the new token
+            // The merchant profile and both syncs used the new token
             expect(fake.tenantAccessTokens).toEqual([
+                `${P}-access`,
                 `${P}-access`,
                 `${P}-access`,
             ]);
@@ -262,6 +312,30 @@ describe('square OAuth connect flow (HTTP)', () => {
                     locationId: null,
                 }),
             ]);
+        });
+
+        it('runs the full catalog sync and stores its cursor', async () => {
+            const { searchCatalog } = stubSquare();
+            const state = await startState();
+
+            currentUser = undefined;
+            expectOutcome(await callback({ code: 'c', state }), 'connected');
+
+            expect(searchCatalog).toHaveBeenCalledTimes(1);
+            expect(await variationRepo.findBy({ tenantId: tenant.id })).toEqual(
+                [
+                    expect.objectContaining({
+                        squareVariationId: `${P}-sq-var`,
+                        squareItemName: `${P} Pie`,
+                        squareVersion: '3',
+                        enabled: true,
+                        reviewedAt: null,
+                    }),
+                ],
+            );
+            expect((await findConnection())?.catalogSyncedAt).toBe(
+                '2026-10-28T00:00:00.000Z',
+            );
         });
 
         it('rejects a replayed state', async () => {
