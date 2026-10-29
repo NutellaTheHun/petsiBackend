@@ -22,7 +22,9 @@ import { SquareVariationLink } from './entities/square-variation-link.entity';
 import { TenantAdminGuard } from './guards/tenant-admin.guard';
 import { SquareCatalogDerivationService } from './services/square-catalog-derivation.service';
 import { SquareCatalogSyncService } from './services/square-catalog-sync.service';
+import { SquareCatalogMappingService } from './services/square-catalog-mapping.service';
 import { SquareCatalogService } from './services/square-catalog.service';
+import { SquareLineConversionService } from './services/square-line-conversion.service';
 import { SquareConnectionService } from './services/square-connection.service';
 import { SquareLocationImportService } from './services/square-location-import.service';
 import { SquareLocationLinkService } from './services/square-location-link.service';
@@ -33,6 +35,7 @@ import { SquarePostConnectService } from './services/square-post-connect.service
 import { SquareTokenCryptoService } from './services/square-token-crypto.service';
 import { SquareTokenRefreshService } from './services/square-token-refresh.service';
 import { SquareTestUtil } from './utils/square-test.util';
+import { SquareVariationLinkValidator } from './validators/square-variation-link.validator';
 
 @Module({
     imports: [
@@ -76,6 +79,9 @@ import { SquareTestUtil } from './utils/square-test.util';
         SquareCatalogSyncService,
         SquareCatalogDerivationService,
         SquareCatalogService,
+        SquareCatalogMappingService,
+        SquareLineConversionService,
+        SquareVariationLinkValidator,
         TenantAdminGuard,
         SquareTestUtil,
     ],

@@ -150,6 +150,70 @@ describe('square catalog controller (access + wiring)', () => {
         expect((await getCatalog()).status).toBe(403);
     });
 
+    describe('mapping routes', () => {
+        const overrideVariation = (id: number, body: object) =>
+            request(app.getHttpServer())
+                .patch(`/square/catalog/variations/${id}`)
+                .send(body);
+
+        it.each([
+            ['an admin at a location', 'admin', 200],
+            ['a manager at a location', 'manager', 200],
+            ['staff', 'staff', 403],
+        ])('%s (%s) gets %i', async (_who, role, status) => {
+            const { link } = await seedItem();
+            currentUser = withRoles(role);
+            expect(
+                (await overrideVariation(link.id, { enabled: false })).status,
+            ).toBe(status);
+            expect(
+                (
+                    await request(app.getHttpServer())
+                        .post('/square/catalog/review')
+                        .send({ variationLinkIds: [link.id] })
+                ).status,
+            ).toBe(status === 200 ? 204 : status);
+            expect(
+                (
+                    await request(app.getHttpServer()).get(
+                        '/square/catalog/size-alias-suggestions',
+                    )
+                ).status,
+            ).toBe(status);
+        });
+
+        it('returns a VALIDATION_ERROR tree for container_contents on an unmapped link', async () => {
+            const { link } = await seedItem();
+            const res = await overrideVariation(link.id, {
+                modifierMode: 'container_contents',
+            });
+            expect(res.status).toBe(400);
+            expect(res.body).toMatchObject({
+                code: 'VALIDATION_ERROR',
+                details: {
+                    validationErrors: {
+                        id: link.id,
+                        errorPayload: [
+                            {
+                                errorCode: 'INCONSISTENT_STATE',
+                                fields: ['modifierMode'],
+                            },
+                        ],
+                    },
+                },
+            });
+        });
+
+        it('rejects an unknown modifier mode with 400 INVALID_REQUEST', async () => {
+            const { link } = await seedItem();
+            const res = await overrideVariation(link.id, {
+                modifierMode: 'everything',
+            });
+            expect(res.status).toBe(400);
+            expect(res.body).toMatchObject({ code: 'INVALID_REQUEST' });
+        });
+    });
+
     it('rejects a tenant without SQUARE_INTEGRATION with 403', async () => {
         currentUser = { ...withRoles('admin'), features: ['ORDER_MANAGEMENT'] };
         expect((await getCatalog()).status).toBe(403);

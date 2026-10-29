@@ -115,7 +115,9 @@ export class SquareCatalogService {
     }
 }
 
-function toVariationDto(link: SquareVariationLink): SquareVariationLinkDto {
+export function toVariationDto(
+    link: SquareVariationLink,
+): SquareVariationLinkDto {
     return {
         id: link.id,
         squareVariationId: link.squareVariationId,
