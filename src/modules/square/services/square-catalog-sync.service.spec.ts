@@ -14,6 +14,7 @@ import { SquareClientFactory } from '../client/square-client.factory';
 import { SquareCategoryLink } from '../entities/square-category-link.entity';
 import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareItemHint } from '../entities/square-item-hint.entity';
+import { SquareModifierLink } from '../entities/square-modifier-link.entity';
 import { SquareSizeAlias } from '../entities/square-size-alias.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import { FakeSquareClientFactory } from '../utils/fake-square-client.factory';
@@ -60,6 +61,7 @@ const item = (
         variations: Square.CatalogObject[];
         isArchived?: boolean;
         isDeleted?: boolean;
+        modifierListIds?: string[];
     },
 ): Square.CatalogObject => ({
     type: 'ITEM',
@@ -73,7 +75,37 @@ const item = (
             : undefined,
         isArchived: opts.isArchived ?? false,
         variations: opts.variations,
+        modifierListInfo: opts.modifierListIds?.map((listId) => ({
+            modifierListId: `${P}-${listId}`,
+        })),
     },
+});
+
+const modifier = (
+    id: string,
+    listId: string,
+    name: string,
+    overrides: Partial<Square.CatalogObject.Modifier> = {},
+): Square.CatalogObject => ({
+    type: 'MODIFIER',
+    id: `${P}-${id}`,
+    version: 1n,
+    modifierData: { name, modifierListId: `${P}-${listId}` },
+    ...overrides,
+});
+
+/** A list with its modifiers inline, as `catalog.search` returns it. */
+const modifierList = (
+    id: string,
+    name: string,
+    modifiers: Square.CatalogObject[],
+    overrides: Partial<Square.CatalogObject.ModifierList> = {},
+): Square.CatalogObject => ({
+    type: 'MODIFIER_LIST',
+    id: `${P}-${id}`,
+    version: 1n,
+    modifierListData: { name, modifiers },
+    ...overrides,
 });
 
 describe('Square catalog sync', () => {
@@ -86,6 +118,7 @@ describe('Square catalog sync', () => {
     let hintRepo: Repository<SquareItemHint>;
     let aliasRepo: Repository<SquareSizeAlias>;
     let variationRepo: Repository<SquareVariationLink>;
+    let modifierRepo: Repository<SquareModifierLink>;
     let menuItemRepo: Repository<MenuItem>;
     let sizeRepo: Repository<MenuItemSize>;
     let connectionRepo: Repository<SquareConnection>;
@@ -99,6 +132,7 @@ describe('Square catalog sync', () => {
     let boxSize: MenuItemSize;
     let applePie: MenuItem;
     let cookieBox: MenuItem;
+    let chocolateChip: MenuItem;
 
     beforeAll(async () => {
         module = await getSquareTestingModule();
@@ -110,6 +144,7 @@ describe('Square catalog sync', () => {
         hintRepo = module.get(getRepositoryToken(SquareItemHint));
         aliasRepo = module.get(getRepositoryToken(SquareSizeAlias));
         variationRepo = module.get(getRepositoryToken(SquareVariationLink));
+        modifierRepo = module.get(getRepositoryToken(SquareModifierLink));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         connectionRepo = module.get(getRepositoryToken(SquareConnection));
@@ -136,6 +171,14 @@ describe('Square catalog sync', () => {
                 type: MENU_ITEM_TYPES.CONTAINER,
                 variableMaxAmount: 6,
                 sizes: [boxSize],
+            }),
+        );
+        chocolateChip = await menuItemRepo.save(
+            menuItemRepo.create({
+                tenantId: tenant.id,
+                name: `${P} Chocolate Chip`,
+                type: MENU_ITEM_TYPES.SINGLE,
+                sizes: [small],
             }),
         );
         // Two menu items with the same normalized name: never auto-matched
@@ -169,6 +212,7 @@ describe('Square catalog sync', () => {
         fake.reset();
         requestContext.setContext({ tenantId: tenant.id });
         testCtx.addCleanupFunction(async () => {
+            await modifierRepo.delete({ tenantId: tenant.id });
             await variationRepo.delete({ tenantId: tenant.id });
             await aliasRepo.delete({ tenantId: tenant.id });
             await hintRepo.delete({ tenantId: tenant.id });
@@ -562,5 +606,174 @@ describe('Square catalog sync', () => {
         const catalog = await catalogService.findCatalogForCurrentTenant();
         const json = JSON.stringify(catalog);
         expect(json).toContain(`"squareVersion":"${version.toString()}"`);
+    });
+
+    describe('modifiers', () => {
+        const slots = ['slot-1', 'slot-2', 'slot-3'];
+        const flavors = (slot: string) => [
+            modifier(`${slot}-cc`, slot, `${P} Chocolate Chip`),
+            modifier(`${slot}-sugar`, slot, `${P} Sugar`),
+        ];
+        /** A cookie box with one modifier list per slot, each with every flavor. */
+        const cookieBoxFixture = (boxSlots = slots) => [
+            item('cbox', `${P} Box of 6 Cookies`, {
+                variations: [variation('cbox-6', 'cbox', `${P} Box`)],
+                modifierListIds: boxSlots,
+            }),
+            ...boxSlots.map((slot, i) =>
+                modifierList(slot, `Cookie ${i + 1}`, flavors(slot)),
+            ),
+        ];
+        const muffinBoxFixture = () => [
+            item('mbox', `${P} Box of 6 Muffins`, {
+                categoryId: 'cat-pies',
+                variations: [variation('mbox-6', 'mbox', `${P} Box`)],
+                modifierListIds: ['m-slot'],
+            }),
+            modifierList('m-slot', 'Muffin 1', [
+                modifier('m-slot-sugar', 'm-slot', `${P} sugar`),
+            ]),
+        ];
+        const findModifier = (id: string) =>
+            modifierRepo.findOneByOrFail({
+                tenantId: tenant.id,
+                squareModifierId: `${P}-${id}`,
+            });
+
+        it('creates one modifier link per slot per flavor, needing review', async () => {
+            const requests = stubCatalog(cookieBoxFixture());
+            await syncService.fullSync(connection);
+
+            expect(requests[0].objectTypes).toEqual(
+                expect.arrayContaining(['MODIFIER_LIST', 'MODIFIER']),
+            );
+            const links = await modifierRepo.find({
+                where: { tenantId: tenant.id },
+                order: { squareModifierId: 'ASC' },
+            });
+            expect(links).toHaveLength(6);
+            for (const link of links) {
+                expect(link).toMatchObject({
+                    squareItemIds: [`${P}-cbox`],
+                    isDeleted: false,
+                    enabled: true,
+                    mappingSource: 'derived',
+                    reviewedAt: null,
+                });
+            }
+            expect(await findModifier('slot-2-sugar')).toMatchObject({
+                squareModifierListId: `${P}-slot-2`,
+                squareModifierListName: 'Cookie 2',
+                squareModifierName: `${P} Sugar`,
+                kind: 'item',
+                menuItemId: null,
+                menuItemSizeId: null,
+            });
+            // Exactly one SINGLE menu item with that name and one size
+            expect(await findModifier('slot-3-cc')).toMatchObject({
+                menuItemId: chocolateChip.id,
+                menuItemSizeId: small.id,
+            });
+        });
+
+        it("gives new and unmapped modifiers their mapped siblings' mapping, never across items", async () => {
+            stubCatalog(cookieBoxFixture(['slot-1', 'slot-2']));
+            await syncService.fullSync(connection);
+            await modifierRepo.update(
+                { id: (await findModifier('slot-1-sugar')).id },
+                { kind: 'ignore', mappingSource: 'manual' },
+            );
+
+            stubCatalog([pies(), ...cookieBoxFixture(), ...muffinBoxFixture()]);
+            await syncService.fullSync(connection);
+
+            // Existing unmapped sibling and the new slot follow
+            expect(await findModifier('slot-2-sugar')).toMatchObject({
+                kind: 'ignore',
+                mappingSource: 'derived',
+            });
+            expect(await findModifier('slot-3-sugar')).toMatchObject({
+                kind: 'ignore',
+                mappingSource: 'derived',
+                reviewedAt: null,
+            });
+            // Same name, other Square item
+            expect(await findModifier('m-slot-sugar')).toMatchObject({
+                kind: 'item',
+                menuItemId: null,
+                squareItemIds: [`${P}-mbox`],
+            });
+        });
+
+        it('keeps tenant choices across re-syncs while refreshing Square-side fields', async () => {
+            stubCatalog(cookieBoxFixture());
+            await syncService.fullSync(connection);
+            const ignored = await findModifier('slot-1-sugar');
+            await modifierRepo.update(ignored.id, {
+                kind: 'ignore',
+                mappingSource: 'manual',
+                enabled: false,
+            });
+
+            stubCatalog([
+                ...cookieBoxFixture(),
+                modifierList('slot-1', 'First cookie', [
+                    modifier('slot-1-sugar', 'slot-1', `${P} Sugar Cookie`),
+                ]),
+            ]);
+            await syncService.fullSync(connection);
+
+            expect(await findModifier('slot-1-sugar')).toMatchObject({
+                squareModifierListName: 'First cookie',
+                squareModifierName: `${P} Sugar Cookie`,
+                kind: 'ignore',
+                mappingSource: 'manual',
+                enabled: false,
+            });
+        });
+
+        it('follows attachments, deleted lists and top-level modifiers in an incremental sync', async () => {
+            stubCatalog(cookieBoxFixture());
+            await syncService.fullSync(connection);
+
+            stubCatalog([
+                // The box drops slot 3
+                item('cbox', `${P} Box of 6 Cookies`, {
+                    variations: [],
+                    modifierListIds: ['slot-1', 'slot-2'],
+                }),
+                modifierList('slot-2', 'Cookie 2', [], { isDeleted: true }),
+                modifier('slot-1-oat', 'slot-1', `${P} Oatmeal`),
+            ]);
+            await syncService.syncSince(connection, '2026-10-28T12:00:00.000Z');
+
+            expect((await findModifier('slot-3-cc')).squareItemIds).toEqual([]);
+            expect((await findModifier('slot-2-cc')).isDeleted).toBe(true);
+            expect((await findModifier('slot-1-cc')).isDeleted).toBe(false);
+            expect(await findModifier('slot-1-oat')).toMatchObject({
+                squareModifierListName: 'Cookie 1',
+                squareItemIds: [`${P}-cbox`],
+                reviewedAt: null,
+            });
+        });
+
+        it('starts new modifiers disabled when all their items are in a disabled category', async () => {
+            stubCatalog([pies(), ...muffinBoxFixture()]);
+            await syncService.fullSync(connection);
+            await categoryRepo.update(
+                { tenantId: tenant.id, squareCategoryId: `${P}-cat-pies` },
+                { enabled: false },
+            );
+
+            stubCatalog([
+                pies(),
+                ...muffinBoxFixture(),
+                modifier('m-slot-blue', 'm-slot', 'Blueberry'),
+            ]);
+            await syncService.fullSync(connection);
+
+            expect((await findModifier('m-slot-blue')).enabled).toBe(false);
+            expect((await findModifier('m-slot-sugar')).enabled).toBe(true);
+        });
     });
 });

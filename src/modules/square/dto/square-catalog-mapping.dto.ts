@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-    ArrayNotEmpty,
     IsArray,
     IsBoolean,
     IsIn,
@@ -9,6 +8,10 @@ import {
     IsPositive,
     ValidateIf,
 } from 'class-validator';
+import {
+    SQUARE_MODIFIER_KINDS,
+    SquareModifierKind,
+} from '../entities/square-modifier-link.entity';
 import {
     SQUARE_MODIFIER_MODES,
     SquareModifierMode,
@@ -85,13 +88,63 @@ export class UpdateSquareCategoryLinkEnabledDto {
     enabled: boolean;
 }
 
+/**
+ * A modifier link's mapping as a whole: map (`item` with both ids), clear
+ * (`item` with neither) or ignore. Applies to its non-manual siblings too.
+ */
+export class UpdateSquareModifierLinkMappingDto {
+    @ApiProperty({ enum: SQUARE_MODIFIER_KINDS, example: 'item' })
+    @IsIn(SQUARE_MODIFIER_KINDS)
+    kind: SquareModifierKind;
+
+    @ApiPropertyOptional({
+        type: Number,
+        nullable: true,
+        example: 31,
+        description: 'A SINGLE menu item; omit or null to clear or ignore',
+    })
+    @IsOptional()
+    @ValidateIf(
+        (dto: UpdateSquareModifierLinkMappingDto) => dto.menuItemId !== null,
+    )
+    @IsInt()
+    @IsPositive()
+    menuItemId?: number | null;
+
+    @ApiPropertyOptional({ type: Number, nullable: true, example: 2 })
+    @IsOptional()
+    @ValidateIf(
+        (dto: UpdateSquareModifierLinkMappingDto) =>
+            dto.menuItemSizeId !== null,
+    )
+    @IsInt()
+    @IsPositive()
+    menuItemSizeId?: number | null;
+}
+
+export class UpdateSquareModifierLinkEnabledDto {
+    @ApiProperty({
+        example: false,
+        description: 'Disabled modifiers are skipped on import',
+    })
+    @IsBoolean()
+    enabled: boolean;
+}
+
 export class MarkSquareLinksReviewedDto {
-    @ApiProperty({ type: [Number], example: [1, 2] })
+    @ApiPropertyOptional({ type: [Number], example: [1, 2] })
+    @IsOptional()
     @IsArray()
-    @ArrayNotEmpty()
     @IsInt({ each: true })
     @IsPositive({ each: true })
-    variationLinkIds: number[];
+    variationLinkIds?: number[];
+
+    @ApiPropertyOptional({ type: [Number], example: [3] })
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @IsPositive({ each: true })
+    modifierLinkIds?: number[];
 }
 
 /** Size aliases whose names differ only in their "serves N" text. */

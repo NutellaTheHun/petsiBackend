@@ -16,6 +16,7 @@ import { SquareCategoryLink } from './entities/square-category-link.entity';
 import { SquareConnection } from './entities/square-connection.entity';
 import { SquareItemHint } from './entities/square-item-hint.entity';
 import { SquareLocationLink } from './entities/square-location-link.entity';
+import { SquareModifierLink } from './entities/square-modifier-link.entity';
 import { SquareOAuthState } from './entities/square-oauth-state.entity';
 import { SquareSizeAlias } from './entities/square-size-alias.entity';
 import { SquareVariationLink } from './entities/square-variation-link.entity';
@@ -29,12 +30,14 @@ import { SquareConnectionService } from './services/square-connection.service';
 import { SquareLocationImportService } from './services/square-location-import.service';
 import { SquareLocationLinkService } from './services/square-location-link.service';
 import { SquareLocationSyncService } from './services/square-location-sync.service';
+import { SquareModifierPropagationService } from './services/square-modifier-propagation.service';
 import { SquareOAuthStateService } from './services/square-oauth-state.service';
 import { SquareOAuthService } from './services/square-oauth.service';
 import { SquarePostConnectService } from './services/square-post-connect.service';
 import { SquareTokenCryptoService } from './services/square-token-crypto.service';
 import { SquareTokenRefreshService } from './services/square-token-refresh.service';
 import { SquareTestUtil } from './utils/square-test.util';
+import { SquareModifierLinkValidator } from './validators/square-modifier-link.validator';
 import { SquareVariationLinkValidator } from './validators/square-variation-link.validator';
 
 @Module({
@@ -47,6 +50,7 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
             SquareItemHint,
             SquareSizeAlias,
             SquareVariationLink,
+            SquareModifierLink,
             MenuItem,
             MenuItemSize,
             OrderCategory,
@@ -82,6 +86,8 @@ import { SquareVariationLinkValidator } from './validators/square-variation-link
         SquareCatalogMappingService,
         SquareLineConversionService,
         SquareVariationLinkValidator,
+        SquareModifierLinkValidator,
+        SquareModifierPropagationService,
         TenantAdminGuard,
         SquareTestUtil,
     ],

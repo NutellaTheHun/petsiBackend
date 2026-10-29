@@ -32,6 +32,8 @@ import {
     SquareSizeAliasSuggestionDto,
     UpdateSquareCategoryLinkEnabledDto,
     UpdateSquareItemHintDto,
+    UpdateSquareModifierLinkEnabledDto,
+    UpdateSquareModifierLinkMappingDto,
     UpdateSquareSizeAliasDto,
     UpdateSquareVariationLinkDto,
 } from '../dto/square-catalog-mapping.dto';
@@ -40,6 +42,7 @@ import {
     SquareCatalogDto,
     SquareCatalogView,
     SquareCategoryLinkDto,
+    SquareModifierLinkDto,
     SquareSizeAliasDto,
     SquareVariationLinkDto,
 } from '../dto/square-catalog.dto';
@@ -176,11 +179,48 @@ export class SquareCatalogController {
         return this.mappingService.resetVariationLinkForCurrentTenant(id);
     }
 
+    @Patch('modifiers/:id/mapping')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary:
+            'Maps a modifier to a menu item and size, ignores it, or clears it; the link becomes manual and reviewed, and same-named non-manual modifiers on the same Square item follow. Returns the link, then the siblings it changed (admins and managers)',
+    })
+    @ApiOkResponse({ type: [SquareModifierLinkDto] })
+    @ApiBadRequestResponse({
+        description:
+            'VALIDATION_ERROR: unknown or non-SINGLE menu item, a size the item is not offered in, a missing size, or a menu item on an ignored modifier',
+    })
+    @ApiNotFoundResponse({ description: 'No such modifier link' })
+    async setModifierMapping(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateSquareModifierLinkMappingDto,
+    ): Promise<SquareModifierLinkDto[]> {
+        return this.mappingService.setModifierMappingForCurrentTenant(id, dto);
+    }
+
+    @Patch('modifiers/:id/enabled')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary:
+            'Enables or disables one modifier link; it becomes manual and reviewed (admins and managers)',
+    })
+    @ApiOkResponse({ type: SquareModifierLinkDto })
+    @ApiNotFoundResponse({ description: 'No such modifier link' })
+    async setModifierEnabled(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateSquareModifierLinkEnabledDto,
+    ): Promise<SquareModifierLinkDto> {
+        return this.mappingService.setModifierEnabledForCurrentTenant(
+            id,
+            dto.enabled,
+        );
+    }
+
     @Patch('categories/:id/enabled')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary:
-            'Enables or disables a Square category and its non-manual variation links (admins and managers)',
+            'Enables or disables a Square category and its non-manual variation and modifier links (admins and managers)',
     })
     @ApiOkResponse({ type: SquareCategoryLinkDto })
     @ApiNotFoundResponse({ description: 'No such category link' })
@@ -197,12 +237,11 @@ export class SquareCatalogController {
     @Post('review')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({
-        summary: 'Marks variation links as reviewed (admins and managers)',
+        summary:
+            'Marks variation and modifier links as reviewed (admins and managers)',
     })
     @ApiNoContentResponse()
     async markReviewed(@Body() dto: MarkSquareLinksReviewedDto): Promise<void> {
-        await this.mappingService.markReviewedForCurrentTenant(
-            dto.variationLinkIds,
-        );
+        await this.mappingService.markReviewedForCurrentTenant(dto);
     }
 }

@@ -11,6 +11,7 @@ import { LocationTestUtil } from '../../locations/utils/location-test.util';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareCatalogDto } from '../dto/square-catalog.dto';
 import { SquareItemHint } from '../entities/square-item-hint.entity';
+import { SquareModifierLink } from '../entities/square-modifier-link.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import { getSquareTestingModule } from '../utils/square-testing.module';
 
@@ -20,6 +21,7 @@ describe('square catalog controller (access + wiring)', () => {
     let app: INestApplication;
     let hintRepo: Repository<SquareItemHint>;
     let variationRepo: Repository<SquareVariationLink>;
+    let modifierRepo: Repository<SquareModifierLink>;
     let tenantRepo: Repository<Tenant>;
     let testCtx: DatabaseTestContext;
 
@@ -37,6 +39,7 @@ describe('square catalog controller (access + wiring)', () => {
         const module: TestingModule = await getSquareTestingModule();
         hintRepo = module.get(getRepositoryToken(SquareItemHint));
         variationRepo = module.get(getRepositoryToken(SquareVariationLink));
+        modifierRepo = module.get(getRepositoryToken(SquareModifierLink));
         tenantRepo = module.get(getRepositoryToken(Tenant));
 
         ({
@@ -81,11 +84,23 @@ describe('square catalog controller (access + wiring)', () => {
             squareVersion: '9007199254740993',
         });
         testCtx.addCleanupFunction(async () => {
+            await modifierRepo.delete({ tenantId: tenant.id });
             await variationRepo.delete({ tenantId: tenant.id });
             await hintRepo.delete({ tenantId: tenant.id });
         });
         return { hint, link };
     }
+
+    /** A modifier on a list attached to the seeded item. */
+    const seedModifier = () =>
+        modifierRepo.save({
+            tenantId: tenant.id,
+            squareModifierId: `${P}-mod`,
+            squareModifierListId: `${P}-list`,
+            squareModifierListName: 'Flavor',
+            squareModifierName: 'Lemon',
+            squareItemIds: [`${P}-item`],
+        });
 
     const getCatalog = (query: Record<string, string> = {}) =>
         request(app.getHttpServer()).get('/square/catalog').query(query);
@@ -121,6 +136,30 @@ describe('square catalog controller (access + wiring)', () => {
                         reviewedAt: null,
                     },
                 ],
+                modifiers: [],
+            },
+        ]);
+    });
+
+    it('lists the modifiers of the lists attached to an item', async () => {
+        await seedItem();
+        const modifier = await seedModifier();
+        const body = (await getCatalog()).body as SquareCatalogDto;
+        expect(body.items[0].modifiers).toEqual([
+            {
+                id: modifier.id,
+                squareModifierId: `${P}-mod`,
+                squareModifierListId: `${P}-list`,
+                squareModifierListName: 'Flavor',
+                squareModifierName: 'Lemon',
+                squareItemIds: [`${P}-item`],
+                isDeleted: false,
+                enabled: true,
+                kind: 'item',
+                menuItemId: null,
+                menuItemSizeId: null,
+                mappingSource: 'derived',
+                reviewedAt: null,
             },
         ]);
     });
@@ -173,6 +212,25 @@ describe('square catalog controller (access + wiring)', () => {
                         .send({ variationLinkIds: [link.id] })
                 ).status,
             ).toBe(status === 200 ? 204 : status);
+            const modifier = await seedModifier();
+            expect(
+                (
+                    await request(app.getHttpServer())
+                        .patch(
+                            `/square/catalog/modifiers/${modifier.id}/mapping`,
+                        )
+                        .send({ kind: 'ignore' })
+                ).status,
+            ).toBe(status);
+            expect(
+                (
+                    await request(app.getHttpServer())
+                        .patch(
+                            `/square/catalog/modifiers/${modifier.id}/enabled`,
+                        )
+                        .send({ enabled: false })
+                ).status,
+            ).toBe(status);
             expect(
                 (
                     await request(app.getHttpServer()).get(
@@ -202,6 +260,48 @@ describe('square catalog controller (access + wiring)', () => {
                     },
                 },
             });
+        });
+
+        it('returns a VALIDATION_ERROR tree for modifier_is_item on a variation without modifier lists', async () => {
+            const { link } = await seedItem();
+            const res = await overrideVariation(link.id, {
+                modifierMode: 'modifier_is_item',
+            });
+            expect(res.status).toBe(400);
+            expect(res.body).toMatchObject({
+                code: 'VALIDATION_ERROR',
+                details: {
+                    validationErrors: {
+                        id: link.id,
+                        errorPayload: [
+                            {
+                                errorCode: 'INCONSISTENT_STATE',
+                                fields: ['modifierMode'],
+                            },
+                        ],
+                    },
+                },
+            });
+        });
+
+        it('returns a VALIDATION_ERROR tree for a modifier mapped without a size', async () => {
+            await seedItem();
+            const modifier = await seedModifier();
+            const res = await request(app.getHttpServer())
+                .patch(`/square/catalog/modifiers/${modifier.id}/mapping`)
+                .send({ kind: 'item', menuItemId: 9_999_999 });
+            expect(res.status).toBe(400);
+            expect(res.body).toMatchObject({ code: 'VALIDATION_ERROR' });
+        });
+
+        it('rejects an unknown modifier kind with 400 INVALID_REQUEST', async () => {
+            await seedItem();
+            const modifier = await seedModifier();
+            const res = await request(app.getHttpServer())
+                .patch(`/square/catalog/modifiers/${modifier.id}/mapping`)
+                .send({ kind: 'everything' });
+            expect(res.status).toBe(400);
+            expect(res.body).toMatchObject({ code: 'INVALID_REQUEST' });
         });
 
         it('rejects an unknown modifier mode with 400 INVALID_REQUEST', async () => {

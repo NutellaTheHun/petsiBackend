@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+    SQUARE_MODIFIER_KINDS,
+    SquareModifierKind,
+} from '../entities/square-modifier-link.entity';
+import {
     SQUARE_MAPPING_SOURCES,
     SQUARE_MODIFIER_MODES,
     SquareMappingSource,
@@ -99,6 +103,59 @@ export class SquareVariationLinkDto {
     reviewedAt: Date | null;
 }
 
+export class SquareModifierLinkDto {
+    @ApiProperty({ example: 1 })
+    id: number;
+
+    @ApiProperty({ example: 'HOOM4RVJ2MC4GXDCZ5BNWKOT' })
+    squareModifierId: string;
+
+    @ApiProperty({ example: 'EKKPJMKTXNLXUBMJEZF6QFTM' })
+    squareModifierListId: string;
+
+    @ApiProperty({ example: 'Cookie 1' })
+    squareModifierListName: string;
+
+    @ApiProperty({ example: 'Chocolate Chip' })
+    squareModifierName: string;
+
+    @ApiProperty({
+        type: [String],
+        description: 'The Square items the modifier list is attached to',
+    })
+    squareItemIds: string[];
+
+    @ApiProperty({ example: false })
+    isDeleted: boolean;
+
+    @ApiProperty({ example: true })
+    enabled: boolean;
+
+    @ApiProperty({
+        enum: SQUARE_MODIFIER_KINDS,
+        example: 'item',
+        description:
+            'item: becomes menuItemId/menuItemSizeId (unmapped while null); ignore: skipped on import',
+    })
+    kind: SquareModifierKind;
+
+    @ApiProperty({ type: Number, nullable: true, example: 31 })
+    menuItemId: number | null;
+
+    @ApiProperty({ type: Number, nullable: true, example: 2 })
+    menuItemSizeId: number | null;
+
+    @ApiProperty({ enum: SQUARE_MAPPING_SOURCES, example: 'derived' })
+    mappingSource: SquareMappingSource;
+
+    @ApiProperty({
+        type: Date,
+        nullable: true,
+        description: 'Null while the link needs review',
+    })
+    reviewedAt: Date | null;
+}
+
 export class SquareCatalogItemDto {
     @ApiProperty({ example: 1 })
     id: number;
@@ -128,6 +185,13 @@ export class SquareCatalogItemDto {
 
     @ApiProperty({ type: [SquareVariationLinkDto] })
     variations: SquareVariationLinkDto[];
+
+    @ApiProperty({
+        type: [SquareModifierLinkDto],
+        description:
+            'Modifiers of the lists attached to this item; a list on several items is listed under each',
+    })
+    modifiers: SquareModifierLinkDto[];
 }
 
 /** The tenant's Square catalog and how it maps to Petsi. */

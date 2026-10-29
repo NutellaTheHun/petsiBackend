@@ -15,6 +15,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareCategoryLink } from '../entities/square-category-link.entity';
 import { SquareItemHint } from '../entities/square-item-hint.entity';
+import { SquareModifierLink } from '../entities/square-modifier-link.entity';
 import { SquareSizeAlias } from '../entities/square-size-alias.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import { normalizeSquareName } from '../utils/square-name';
@@ -56,6 +57,7 @@ const item = (
     id: string,
     name: string,
     categoryId?: string,
+    modifierListIds: string[] = [],
 ): CatalogBatch['items'][number] => ({
     type: 'ITEM',
     id: `${P}-${id}`,
@@ -65,7 +67,31 @@ const item = (
         reportingCategory: categoryId
             ? { id: `${P}-${categoryId}` }
             : undefined,
+        modifierListInfo: modifierListIds.map((listId) => ({
+            modifierListId: `${P}-${listId}`,
+        })),
     },
+});
+
+const modifierList = (
+    id: string,
+    name: string,
+): NonNullable<CatalogBatch['modifierLists']>[number] => ({
+    type: 'MODIFIER_LIST',
+    id: `${P}-${id}`,
+    version: 1n,
+    modifierListData: { name },
+});
+
+const modifier = (
+    id: string,
+    listId: string,
+    name: string,
+): NonNullable<CatalogBatch['modifiers']>[number] => ({
+    type: 'MODIFIER',
+    id: `${P}-${id}`,
+    version: 1n,
+    modifierData: { name, modifierListId: `${P}-${listId}` },
 });
 
 describe('Square catalog mapping', () => {
@@ -79,6 +105,7 @@ describe('Square catalog mapping', () => {
     let hintRepo: Repository<SquareItemHint>;
     let aliasRepo: Repository<SquareSizeAlias>;
     let variationRepo: Repository<SquareVariationLink>;
+    let modifierRepo: Repository<SquareModifierLink>;
     let menuItemRepo: Repository<MenuItem>;
     let sizeRepo: Repository<MenuItemSize>;
     let tenantRepo: Repository<Tenant>;
@@ -105,6 +132,7 @@ describe('Square catalog mapping', () => {
         hintRepo = module.get(getRepositoryToken(SquareItemHint));
         aliasRepo = module.get(getRepositoryToken(SquareSizeAlias));
         variationRepo = module.get(getRepositoryToken(SquareVariationLink));
+        modifierRepo = module.get(getRepositoryToken(SquareModifierLink));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         tenantRepo = module.get(getRepositoryToken(Tenant));
@@ -159,6 +187,7 @@ describe('Square catalog mapping', () => {
         testCtx = new DatabaseTestContext();
         requestContext.setContext({ tenantId: tenant.id });
         testCtx.addCleanupFunction(async () => {
+            await modifierRepo.delete({ tenantId: tenant.id });
             await variationRepo.delete({ tenantId: tenant.id });
             await aliasRepo.delete({ tenantId: tenant.id });
             await hintRepo.delete({ tenantId: tenant.id });
@@ -555,7 +584,9 @@ describe('Square catalog mapping', () => {
         it("marks the caller's links as reviewed", async () => {
             await seedCatalog();
             const link = await findVariation('pie-large');
-            await mappingService.markReviewedForCurrentTenant([link.id]);
+            await mappingService.markReviewedForCurrentTenant({
+                variationLinkIds: [link.id],
+            });
 
             expect(
                 (await findVariation('pie-large')).reviewedAt,
@@ -567,9 +598,311 @@ describe('Square catalog mapping', () => {
             await seedCatalog();
             const link = await findVariation('pie-large');
             requestContext.setContext({ tenantId: otherTenant.id });
-            await mappingService.markReviewedForCurrentTenant([link.id]);
+            await mappingService.markReviewedForCurrentTenant({
+                variationLinkIds: [link.id],
+            });
 
             expect((await findVariation('pie-large')).reviewedAt).toBeNull();
+        });
+    });
+
+    describe('modifier links', () => {
+        /**
+         * A cookie box with one modifier list per slot (3 slots x 2 flavors),
+         * and a muffin box (in Pies) whose own list has a same-named flavor.
+         */
+        async function seedBoxes(): Promise<void> {
+            const slots = ['slot-1', 'slot-2', 'slot-3'];
+            await syncService.apply(tenant.id, {
+                categories: [category('cat-pies', `${P} Pies`)],
+                items: [
+                    item('cbox', `${P} Box of 6 Cookies`, undefined, slots),
+                    item('mbox', `${P} Box of 6 Muffins`, 'cat-pies', [
+                        'm-slot',
+                    ]),
+                    item('scone', `${P} Scone`),
+                ],
+                variations: [
+                    variation('cbox-6', 'cbox', `${P} Box`),
+                    variation('scone-reg', 'scone', ''),
+                ],
+                modifierLists: [
+                    ...slots.map((slot, i) =>
+                        modifierList(slot, `Cookie ${i + 1}`),
+                    ),
+                    modifierList('m-slot', 'Muffin 1'),
+                ],
+                modifiers: [
+                    ...slots.flatMap((slot) => [
+                        modifier(`${slot}-cc`, slot, 'Chocolate Chip'),
+                        modifier(`${slot}-sugar`, slot, 'Sugar'),
+                    ]),
+                    modifier('m-slot-cc', 'm-slot', 'chocolate chip'),
+                ],
+            });
+        }
+
+        const findModifier = (id: string) =>
+            modifierRepo.findOneByOrFail({
+                tenantId: tenant.id,
+                squareModifierId: `${P}-${id}`,
+            });
+        const mapping = (link: SquareModifierLink) => ({
+            kind: link.kind,
+            menuItemId: link.menuItemId,
+            menuItemSizeId: link.menuItemSizeId,
+        });
+        const cherryLarge = () => ({
+            kind: 'item' as const,
+            menuItemId: cherryPie.id,
+            menuItemSizeId: large.id,
+        });
+
+        it('mapping a flavor in one slot maps it in every slot of that box, and not on another item', async () => {
+            await seedBoxes();
+            const convert = jest.spyOn(
+                lineConversion,
+                'convertForModifierLinks',
+            );
+            const slot1 = await findModifier('slot-1-cc');
+
+            const dtos =
+                await mappingService.setModifierMappingForCurrentTenant(
+                    slot1.id,
+                    cherryLarge(),
+                );
+
+            const slot2 = await findModifier('slot-2-cc');
+            const slot3 = await findModifier('slot-3-cc');
+            expect(dtos.map((d) => d.id)).toEqual([
+                slot1.id,
+                slot2.id,
+                slot3.id,
+            ]);
+            const mapped = await findModifier('slot-1-cc');
+            expect(mapped).toMatchObject({
+                ...cherryLarge(),
+                mappingSource: 'manual',
+            });
+            expect(mapped.reviewedAt).toBeInstanceOf(Date);
+            for (const sibling of [slot2, slot3]) {
+                expect(sibling).toMatchObject({
+                    ...cherryLarge(),
+                    mappingSource: 'derived',
+                });
+                expect(sibling.reviewedAt).toBeInstanceOf(Date);
+            }
+            // Other flavors and the same flavor on the muffin box are untouched
+            expect(mapping(await findModifier('slot-2-sugar'))).toEqual({
+                kind: 'item',
+                menuItemId: null,
+                menuItemSizeId: null,
+            });
+            expect(await findModifier('m-slot-cc')).toMatchObject({
+                menuItemId: null,
+                reviewedAt: null,
+            });
+            expect(convert).toHaveBeenCalledWith(tenant.id, [
+                slot1.id,
+                slot2.id,
+                slot3.id,
+            ]);
+        });
+
+        it('does not overwrite manual siblings', async () => {
+            await seedBoxes();
+            const slot2 = await findModifier('slot-2-cc');
+            await mappingService.setModifierMappingForCurrentTenant(slot2.id, {
+                kind: 'item',
+                menuItemId: applePie.id,
+                menuItemSizeId: small.id,
+            });
+
+            await mappingService.setModifierMappingForCurrentTenant(
+                (await findModifier('slot-1-cc')).id,
+                cherryLarge(),
+            );
+
+            expect(await findModifier('slot-2-cc')).toMatchObject({
+                menuItemId: applePie.id,
+                menuItemSizeId: small.id,
+                mappingSource: 'manual',
+            });
+            expect((await findModifier('slot-3-cc')).menuItemId).toBe(
+                cherryPie.id,
+            );
+        });
+
+        it('propagates ignore and clear, and ignored modifiers stay ignored across re-syncs', async () => {
+            await seedBoxes();
+            const slot1 = await findModifier('slot-1-sugar');
+            await mappingService.setModifierMappingForCurrentTenant(slot1.id, {
+                kind: 'ignore',
+            });
+            for (const slot of ['slot-1', 'slot-2', 'slot-3']) {
+                expect((await findModifier(`${slot}-sugar`)).kind).toBe(
+                    'ignore',
+                );
+            }
+
+            await seedBoxes();
+            expect((await findModifier('slot-2-sugar')).kind).toBe('ignore');
+
+            await mappingService.setModifierMappingForCurrentTenant(slot1.id, {
+                kind: 'item',
+                menuItemId: null,
+            });
+            expect(mapping(await findModifier('slot-3-sugar'))).toEqual({
+                kind: 'item',
+                menuItemId: null,
+                menuItemSizeId: null,
+            });
+        });
+
+        it('rejects a container menu item', async () => {
+            await seedBoxes();
+            await expectValidationError(
+                mappingService.setModifierMappingForCurrentTenant(
+                    (await findModifier('slot-1-cc')).id,
+                    {
+                        kind: 'item',
+                        menuItemId: cookieBox.id,
+                        menuItemSizeId: boxSize.id,
+                    },
+                ),
+                'INVALID_REFERENCE',
+                'menuItemId',
+            );
+        });
+
+        it('rejects a size the menu item is not offered in, or no size', async () => {
+            await seedBoxes();
+            const link = await findModifier('slot-1-cc');
+            await expectValidationError(
+                mappingService.setModifierMappingForCurrentTenant(link.id, {
+                    kind: 'item',
+                    menuItemId: cherryPie.id,
+                    menuItemSizeId: small.id,
+                }),
+                'INVALID_REFERENCE',
+                'menuItemSizeId',
+            );
+            await expectValidationError(
+                mappingService.setModifierMappingForCurrentTenant(link.id, {
+                    kind: 'item',
+                    menuItemId: cherryPie.id,
+                }),
+                'MISSING_PROPERTY',
+                'menuItemSizeId',
+            );
+            expect((await findModifier('slot-1-cc')).menuItemId).toBeNull();
+        });
+
+        it('04s for a link in another tenant', async () => {
+            await seedBoxes();
+            const link = await findModifier('slot-1-cc');
+            requestContext.setContext({ tenantId: otherTenant.id });
+            await expect(
+                mappingService.setModifierMappingForCurrentTenant(link.id, {
+                    kind: 'ignore',
+                }),
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('disabling one makes it manual and leaves its siblings alone', async () => {
+            await seedBoxes();
+            const link = await findModifier('slot-1-cc');
+            const dto = await mappingService.setModifierEnabledForCurrentTenant(
+                link.id,
+                false,
+            );
+            expect(dto).toMatchObject({
+                enabled: false,
+                mappingSource: 'manual',
+            });
+            expect((await findModifier('slot-2-cc')).enabled).toBe(true);
+        });
+
+        it('a category toggle follows the items the list is attached to', async () => {
+            await seedBoxes();
+            const pies = await findCategory();
+            await mappingService.setCategoryEnabledForCurrentTenant(
+                pies.id,
+                false,
+            );
+            expect((await findModifier('m-slot-cc')).enabled).toBe(false);
+            // The cookie box is uncategorized
+            expect((await findModifier('slot-1-cc')).enabled).toBe(true);
+
+            // New modifiers on the muffin box start disabled
+            await syncService.apply(tenant.id, {
+                categories: [],
+                items: [],
+                variations: [],
+                modifiers: [modifier('m-slot-blue', 'm-slot', 'Blueberry')],
+            });
+            expect(await findModifier('m-slot-blue')).toMatchObject({
+                enabled: false,
+                squareModifierListName: 'Muffin 1',
+                squareItemIds: [`${P}-mbox`],
+            });
+
+            await mappingService.setCategoryEnabledForCurrentTenant(
+                pies.id,
+                true,
+            );
+            expect((await findModifier('m-slot-cc')).enabled).toBe(true);
+        });
+
+        it('marks modifier links as reviewed', async () => {
+            await seedBoxes();
+            const link = await findModifier('slot-1-cc');
+            await mappingService.markReviewedForCurrentTenant({
+                modifierLinkIds: [link.id],
+            });
+            expect((await findModifier('slot-1-cc')).reviewedAt).toBeInstanceOf(
+                Date,
+            );
+            expect((await findModifier('slot-2-cc')).reviewedAt).toBeNull();
+        });
+
+        describe('modifier_is_item on a variation', () => {
+            it('is rejected when the item has no modifier lists', async () => {
+                await seedBoxes();
+                await syncService.apply(tenant.id, {
+                    categories: [],
+                    items: [item('scone', `${P} Scone`)],
+                    variations: [],
+                });
+                await expectValidationError(
+                    mappingService.overrideVariationLinkForCurrentTenant(
+                        (await findVariation('scone-reg')).id,
+                        { modifierMode: 'modifier_is_item' },
+                    ),
+                    'INCONSISTENT_STATE',
+                    'modifierMode',
+                );
+                expect((await findVariation('scone-reg')).modifierMode).toBe(
+                    'none',
+                );
+            });
+
+            it('is accepted when the item has a modifier list', async () => {
+                await seedBoxes();
+                await syncService.apply(tenant.id, {
+                    categories: [],
+                    items: [item('scone', `${P} Scone`, undefined, ['glaze'])],
+                    variations: [],
+                    modifierLists: [modifierList('glaze', 'Glaze')],
+                    modifiers: [modifier('glaze-lemon', 'glaze', 'Lemon')],
+                });
+                const dto =
+                    await mappingService.overrideVariationLinkForCurrentTenant(
+                        (await findVariation('scone-reg')).id,
+                        { modifierMode: 'modifier_is_item' },
+                    );
+                expect(dto.modifierMode).toBe('modifier_is_item');
+            });
         });
     });
 
