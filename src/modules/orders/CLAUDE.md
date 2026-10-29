@@ -41,3 +41,5 @@ Key relationships:
 2026-10-29 — `OrderMenuItemComposer.updateInTransaction` never removed container items left out of `containerOrderMenuItems` (same cause as the `orderedItems` gotcha) — a nested `containerOrderMenuItems` on update is now the full contents; omitted items are deleted.
 
 2026-10-29 — `where: { id: null }` matches any row in TypeORM 0.3, so a null `categoryId` passed the existence check and the lookup — check for null before querying.
+
+2026-10-29 — `OrderChangeDetector` treated a field left out of an `UpdateOrderDto` (`undefined`) as a change, so every partial update (Square ingest) appended a revision and never short-circuited — `undefined` now means "not sent" (`sentAndChanged`), matching `updateEntity`; a new scalar field must use `sentAndChanged`, not `!unchanged`.

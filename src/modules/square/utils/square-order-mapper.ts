@@ -7,6 +7,7 @@ import {
     SquareUnresolvedLineReason,
 } from '../entities/square-unresolved-line.entity';
 import { SquareModifierLink } from '../entities/square-modifier-link.entity';
+import { SquareRefundSummary } from '../entities/square-order-issue.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 
 /** The variation-link fields ingest reads, keyed by Square variation id. */
@@ -145,8 +146,8 @@ export function squareOrderSkipReason(
     if (order.state === 'DRAFT') {
         return 'draft';
     }
-    // Auto-cancel of imported orders comes in task 17.
-    if (order.state === 'CANCELED') {
+    // Never imported; an imported one is cancelled by ingest instead
+    if (isSquareOrderCancelled(order)) {
         return 'cancelled';
     }
     if (!findImportedFulfillment(order)) {
@@ -527,13 +528,80 @@ function mapFulfillmentFields(
     };
 }
 
-/** The first pickup or delivery fulfillment: the one an order is imported by. */
+const ENDED_FULFILLMENT_STATES: ReadonlySet<string> = new Set([
+    'CANCELED',
+    'FAILED',
+]);
+
+function importedFulfillments(order: Square.Order): Square.Fulfillment[] {
+    return (order.fulfillments ?? []).filter(
+        (f) => f.type != null && IMPORTED_FULFILLMENT_TYPES.has(f.type),
+    );
+}
+
+function isEnded(fulfillment: Square.Fulfillment): boolean {
+    return (
+        fulfillment.state != null &&
+        ENDED_FULFILLMENT_STATES.has(fulfillment.state)
+    );
+}
+
+/**
+ * The pickup or delivery fulfillment an order is imported by: the first one
+ * that isn't cancelled or failed, else the first one.
+ */
 export function findImportedFulfillment(
     order: Square.Order,
 ): Square.Fulfillment | undefined {
-    return (order.fulfillments ?? []).find(
-        (f) => f.type != null && IMPORTED_FULFILLMENT_TYPES.has(f.type),
-    );
+    const fulfillments = importedFulfillments(order);
+    return fulfillments.find((f) => !isEnded(f)) ?? fulfillments[0];
+}
+
+/**
+ * Square cancelled the order: its state is `CANCELED`, or it has pickup or
+ * delivery fulfillments and every one is `CANCELED` or `FAILED`. Progress
+ * states (`PREPARED`, `COMPLETED`, …) never count.
+ */
+export function isSquareOrderCancelled(order: Square.Order): boolean {
+    if (order.state === 'CANCELED') {
+        return true;
+    }
+    const fulfillments = importedFulfillments(order);
+    return fulfillments.length > 0 && fulfillments.every(isEnded);
+}
+
+/**
+ * The order's returns as a refund summary (line uids, quantities, the
+ * returned amount), or null when nothing was returned. Never reads tenders
+ * or refunds' payment data.
+ */
+export function squareRefundSummary(
+    order: Square.Order,
+): SquareRefundSummary | null {
+    const returns = order.returns ?? [];
+    if (!returns.length) {
+        return null;
+    }
+    const total = order.returnAmounts?.totalMoney;
+    return {
+        returnUids: returns
+            .map((r) => r.uid)
+            .filter((uid): uid is string => !!uid)
+            .sort(),
+        lines: returns.flatMap((r) =>
+            (r.returnLineItems ?? []).map((item) => ({
+                squareLineUid: item.sourceLineItemUid ?? null,
+                quantity: item.quantity,
+            })),
+        ),
+        returnedAmount:
+            total?.amount != null
+                ? {
+                      amount: total.amount.toString(),
+                      currency: total.currency ?? null,
+                  }
+                : null,
+    };
 }
 
 /** The fulfillment's due time (RFC 3339), if Square sent one. */

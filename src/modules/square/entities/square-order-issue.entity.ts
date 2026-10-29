@@ -35,6 +35,19 @@ export type SquareOrderIssueStatus =
     (typeof SQUARE_ORDER_ISSUE_STATUSES)[number];
 
 /**
+ * The returns on a Square order (`refund_received`): which lines and how much,
+ * never tenders or payment data.
+ */
+export interface SquareRefundSummary {
+    /** Square's return uids; a return not seen before reopens the issue. */
+    returnUids: string[];
+    /** Returned quantities per original Square line uid (decimal strings). */
+    lines: { squareLineUid: string | null; quantity: string }[];
+    /** The order's total returned money, in the smallest currency unit. */
+    returnedAmount: { amount: string; currency: string | null } | null;
+}
+
+/**
  * What went wrong, in Petsi's terms. Never a raw Square body, recipient data
  * or tenders: a validation tree carries only error codes, ids and field names.
  */
@@ -46,13 +59,17 @@ export interface SquareOrderIssueDetail {
      * the existing order (not a Square update): retrying converts them again.
      */
     unresolvedLineIds?: number[];
+    /** What Square returned (`refund_received`). */
+    refund?: SquareRefundSummary;
 }
 
 /**
  * One row per Square order that needs a person at the order level: Petsi
- * rejected it, or it can't be placed at a Petsi location. No order is created
- * for it and nothing is invented. Retried by the next Square update, a manual
- * retry or a re-sync; a successful ingest resolves it.
+ * rejected it, or it can't be placed at a Petsi location (no order is created
+ * and nothing is invented; retried by the next Square update, a manual retry
+ * or a re-sync, and a successful ingest resolves it), or Square refunded or
+ * cancelled an order Petsi won't change by itself (`refund_received`,
+ * `cancelled_while_detached`: staff decide, nothing retries them).
  */
 @Entity()
 @Unique(['tenantId', 'squareOrderId'])

@@ -19,6 +19,7 @@ import { OrderController } from '../../orders/controllers/order.controller';
 import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { OrderService } from '../../orders/services/order.service';
+import { ORDER_STATUSES } from '../../orders/utils/order-statuses';
 import { OrderMenuItemService } from '../../orders/services/order-menu-item.service';
 import { UpdateOrderDto } from '../../orders/dto/order/update-order.dto';
 import { orderMenuItemToNestedUpdateDto } from '../../orders/utils/entity-transformers/order-menu-item.dto.transformer';
@@ -1534,6 +1535,259 @@ describe('SquareOrderIngestService', () => {
                 status: 'dismissed',
                 squareVersion: '2',
             });
+        });
+    });
+
+    describe('cancellation and refunds', () => {
+        const issueFor = (squareOrderId: string) =>
+            issueRepo.findOne({
+                where: { tenantId: tenant.id, squareOrderId },
+            });
+
+        /** Imports a pie line and a pending unmapped line. */
+        const importOrder = async (overrides: Partial<Square.Order> = {}) => {
+            const order = squareOrder({
+                version: 1,
+                lineItems: [
+                    line('l-pie', VAR_PIE, '2'),
+                    line('l-new', VAR_UNMAPPED, '1'),
+                ],
+                ...overrides,
+            });
+            const result = await ingestService.ingest(connection, order);
+            if (result.outcome !== 'created') throw new Error(result.outcome);
+            return { order, orderId: result.orderId };
+        };
+
+        const expectCancelled = async (
+            squareOrderId: string,
+            orderId: number,
+        ) => {
+            const order = await loadOrder(orderId);
+            expect(order.status).toBe(ORDER_STATUSES.CANCELLED);
+            // Lines are untouched
+            expect(items(order)).toEqual([
+                { menuItemId: applePie.id, quantity: 2 },
+            ]);
+            expect(
+                (await linesFor(squareOrderId)).map((l) => l.status),
+            ).toEqual(['dismissed']);
+            expect((await linkFor(squareOrderId))?.squareVersion).toBe('2');
+        };
+
+        it('cancels a CANCELED order and dismisses its pending lines', async () => {
+            const { order, orderId } = await importOrder();
+            const appendRevision = jest.spyOn(
+                module.get(RevisionHistoryService),
+                'appendRevision',
+            );
+            appendRevision.mockClear();
+
+            const result = await ingestService.ingest(connection, {
+                ...order,
+                state: 'CANCELED',
+                version: 2,
+            });
+
+            expect(result).toEqual({ outcome: 'cancelled', orderId });
+            await expectCancelled(order.id!, orderId);
+            expect(appendRevision.mock.calls[0][1]).toMatchObject({
+                changeLog: { actor: { type: 'square_webhook' } },
+            });
+
+            // A repeated cancel is stale
+            expect(
+                await ingestService.ingest(connection, {
+                    ...order,
+                    state: 'CANCELED',
+                    version: 2,
+                }),
+            ).toEqual({ outcome: 'stale' });
+        });
+
+        it('cancels when every pickup or delivery fulfillment is cancelled or failed', async () => {
+            const { order, orderId } = await importOrder({
+                fulfillments: [pickup(), pickup()],
+            });
+
+            const result = await ingestService.ingest(connection, {
+                ...order,
+                version: 2,
+                fulfillments: [
+                    { ...pickup(), state: 'CANCELED' },
+                    { ...pickup(), state: 'FAILED' },
+                ],
+            });
+
+            expect(result).toEqual({ outcome: 'cancelled', orderId });
+            await expectCancelled(order.id!, orderId);
+        });
+
+        it('records a cancel of a detached order as an issue and leaves the order active', async () => {
+            const { order, orderId } = await importOrder();
+            await asStaff(() =>
+                detachService.detachForCurrentTenant(location.id, orderId),
+            );
+            const updateSpy = jest.spyOn(orderService, 'update');
+
+            const result = await ingestService.ingest(connection, {
+                ...order,
+                state: 'CANCELED',
+                version: 2,
+            });
+
+            expect(result).toMatchObject({
+                outcome: 'flagged',
+                reason: 'cancelled_while_detached',
+            });
+            expect(updateSpy).not.toHaveBeenCalled();
+            expect((await loadOrder(orderId)).status).toBe(
+                ORDER_STATUSES.ACTIVE,
+            );
+            expect(await issueFor(order.id!)).toMatchObject({
+                reason: 'cancelled_while_detached',
+                status: 'open',
+                orderId,
+                locationId: location.id,
+            });
+
+            // Dismissed by staff: a redelivered cancel doesn't reopen it
+            await issueRepo.update(
+                { tenantId: tenant.id, squareOrderId: order.id! },
+                { status: 'dismissed' },
+            );
+            expect(
+                await ingestService.ingest(connection, {
+                    ...order,
+                    state: 'CANCELED',
+                    version: 3,
+                }),
+            ).toEqual({ outcome: 'skipped', reason: 'detached' });
+            expect((await issueFor(order.id!))?.status).toBe('dismissed');
+        });
+
+        it('records returns as a refund_received issue and leaves the lines unchanged', async () => {
+            const { order, orderId } = await importOrder();
+            const before = await loadOrder(orderId);
+            const returnOf = (uid: string): Square.OrderReturn => ({
+                uid,
+                returnLineItems: [
+                    {
+                        uid: `${uid}-line`,
+                        sourceLineItemUid: 'l-pie',
+                        quantity: '1',
+                    },
+                ],
+            });
+            const refunded = {
+                ...order,
+                version: 2,
+                returns: [returnOf('ret-1')],
+                returnAmounts: {
+                    totalMoney: { amount: 1250n, currency: 'USD' as const },
+                },
+                tenders: [
+                    {
+                        type: 'CARD' as const,
+                        cardDetails: { card: { last4: '4242' } },
+                    },
+                ],
+            };
+
+            expect(
+                (await ingestService.ingest(connection, refunded)).outcome,
+            ).toBe('updated');
+
+            const after = await loadOrder(orderId);
+            expect(after.status).toBe(ORDER_STATUSES.ACTIVE);
+            expect(items(after)).toEqual(items(before));
+            expect((await linesFor(order.id!)).map((l) => l.status)).toEqual([
+                'pending',
+            ]);
+            const issue = await issueFor(order.id!);
+            expect(issue).toMatchObject({
+                reason: 'refund_received',
+                status: 'open',
+                orderId,
+                locationId: location.id,
+                squareVersion: '2',
+                detail: {
+                    refund: {
+                        returnUids: ['ret-1'],
+                        lines: [{ squareLineUid: 'l-pie', quantity: '1' }],
+                        returnedAmount: { amount: '1250', currency: 'USD' },
+                    },
+                },
+            });
+            expect(JSON.stringify(issue?.detail)).not.toContain('4242');
+
+            // Staff dismiss it; a later version with the same return keeps it
+            // dismissed, a new return reopens it
+            await issueRepo.update({ id: issue!.id }, { status: 'dismissed' });
+            await ingestService.ingest(connection, { ...refunded, version: 3 });
+            expect((await issueFor(order.id!))?.status).toBe('dismissed');
+
+            await ingestService.ingest(connection, {
+                ...refunded,
+                version: 4,
+                returns: [returnOf('ret-1'), returnOf('ret-2')],
+            });
+            expect(await issueFor(order.id!)).toMatchObject({
+                status: 'open',
+                detail: { refund: { returnUids: ['ret-1', 'ret-2'] } },
+            });
+        });
+
+        it('changes nothing on a fulfillment progress change alone', async () => {
+            const { order, orderId } = await importOrder();
+            const before = await loadOrder(orderId);
+            const appendRevision = jest.spyOn(
+                module.get(RevisionHistoryService),
+                'appendRevision',
+            );
+            appendRevision.mockClear();
+
+            const result = await ingestService.ingest(connection, {
+                ...order,
+                version: 2,
+                fulfillments: [{ ...pickup(), state: 'PREPARED' }],
+            });
+
+            expect(result).toEqual({ outcome: 'updated', orderId });
+            expect(appendRevision).not.toHaveBeenCalled();
+            const after = await loadOrder(orderId);
+            expect(after.status).toBe(ORDER_STATUSES.ACTIVE);
+            expect(after.updatedAt).toEqual(before.updatedAt);
+            expect(items(after)).toEqual(items(before));
+            expect((await linesFor(order.id!)).map((l) => l.status)).toEqual([
+                'pending',
+            ]);
+            expect(await issueFor(order.id!)).toBeNull();
+        });
+
+        it('resolves the open issue of a rejected order Square then cancels', async () => {
+            const rejected = squareOrder({
+                version: 1,
+                fulfillments: [
+                    {
+                        type: 'PICKUP',
+                        pickupDetails: { pickupAt: '2026-11-02T15:00:00Z' },
+                    },
+                ],
+            });
+            expect(
+                (await ingestService.ingest(connection, rejected)).outcome,
+            ).toBe('rejected');
+
+            const result = await ingestService.ingest(connection, {
+                ...rejected,
+                state: 'CANCELED',
+                version: 2,
+            });
+
+            expect(result).toEqual({ outcome: 'skipped', reason: 'cancelled' });
+            expect((await issueFor(rejected.id!))?.status).toBe('resolved');
+            expect(await linkFor(rejected.id!)).toBeNull();
         });
     });
 

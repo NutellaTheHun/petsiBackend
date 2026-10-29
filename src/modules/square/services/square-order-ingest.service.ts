@@ -14,6 +14,7 @@ import { UpdateOrderDto } from '../../orders/dto/order/update-order.dto';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { OrderService } from '../../orders/services/order.service';
+import { ORDER_STATUSES } from '../../orders/utils/order-statuses';
 import { orderMenuItemToNestedUpdateDto } from '../../orders/utils/entity-transformers/order-menu-item.dto.transformer';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -32,8 +33,10 @@ import {
 import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import {
+    isSquareOrderCancelled,
     mapSquareOrder,
     squareOrderSkipReason,
+    squareRefundSummary,
     PlannedContainerItem,
     PlannedOrderFields,
     PlannedSquareLine,
@@ -55,6 +58,17 @@ export type SquareIngestResult =
     | { outcome: 'skipped'; reason: SquareIngestSkipReason }
     | { outcome: 'stale' }
     | { outcome: 'created' | 'updated'; orderId: number }
+    | {
+          /** Square cancelled it; the Petsi order (if any) is now CANCELLED. */
+          outcome: 'cancelled';
+          orderId: number | null;
+      }
+    | {
+          /** Square cancelled a detached order: recorded as an issue only. */
+          outcome: 'flagged';
+          reason: 'cancelled_while_detached';
+          issueId: number;
+      }
     | {
           /** Recorded as an order issue; no order was created or changed. */
           outcome: 'rejected';
@@ -204,9 +218,11 @@ export class SquareOrderIngestService {
                   where: { tenantId, squareOrderId: squareOrder.id },
               })
             : null;
-        // Detached orders only get the cancellation check (task 16/17).
+        // Detached orders only get the cancellation check
         if (existingLink?.status === 'detached') {
-            return { outcome: 'skipped', reason: 'detached' };
+            return isSquareOrderCancelled(squareOrder)
+                ? this.flagCancelledWhileDetached(squareOrder, existingLink)
+                : { outcome: 'skipped', reason: 'detached' };
         }
         if (
             existingLink &&
@@ -215,9 +231,21 @@ export class SquareOrderIngestService {
         ) {
             return { outcome: 'stale' };
         }
+        if (existingLink && isSquareOrderCancelled(squareOrder)) {
+            return this.cancel(squareOrder, existingLink, opts);
+        }
 
         const skipReason = squareOrderSkipReason(squareOrder);
         if (skipReason) {
+            if (skipReason === 'cancelled') {
+                // Never imported: an open rejection no longer needs anyone
+                await this.resolveIssue(this.issueRepo.manager, {
+                    tenantId,
+                    squareOrderId: squareOrder.id!,
+                    squareVersion: String(squareOrder.version ?? 0),
+                    orderId: null,
+                });
+            }
             return { outcome: 'skipped', reason: skipReason };
         }
         // The link's Petsi location was deleted: nowhere to put the order
@@ -275,20 +303,9 @@ export class SquareOrderIngestService {
 
         let written: { orderId: number; lineMap: SquareOrderLineMap };
         try {
-            written = await this.requestContext.runWithContext(
-                {
-                    tenantId,
-                    // A system writer may write at any of the tenant's locations.
-                    isTenantAdmin: true,
-                    userId: opts.actorUserId,
-                    locations: undefined,
-                    roles: undefined,
-                    // No triggering user means a webhook-driven write
-                    revisionActorType:
-                        opts.actorUserId == null ? 'square_webhook' : undefined,
-                    // May write the Square-owned fields and lines
-                    squareSystemWriter: true,
-                },
+            written = await this.asSystemWriter(
+                tenantId,
+                opts.actorUserId,
                 () =>
                     existingOrder
                         ? this.updateOrder(existingOrder, existingLink!, plan)
@@ -326,12 +343,221 @@ export class SquareOrderIngestService {
                 squareVersion: plan.squareVersion,
                 orderId: written.orderId,
             });
+            await this.flagNewReturns(manager, {
+                tenantId,
+                squareOrder,
+                orderId: written.orderId,
+                locationId: existingOrder?.locationId ?? locationId,
+            });
         });
 
         return {
             outcome: existingOrder ? 'updated' : 'created',
             orderId: written.orderId,
         };
+    }
+
+    /**
+     * Runs `fn` as the Square system writer: the connection's tenant, any of
+     * its locations, allowed to write Square-owned fields and lines.
+     */
+    private asSystemWriter<T>(
+        tenantId: number,
+        actorUserId: number | undefined,
+        fn: () => Promise<T>,
+    ): Promise<T> {
+        return this.requestContext.runWithContext(
+            {
+                tenantId,
+                // A system writer may write at any of the tenant's locations.
+                isTenantAdmin: true,
+                userId: actorUserId,
+                locations: undefined,
+                roles: undefined,
+                // No triggering user means a webhook-driven write
+                revisionActorType:
+                    actorUserId == null ? 'square_webhook' : undefined,
+                // May write the Square-owned fields and lines
+                squareSystemWriter: true,
+            },
+            fn,
+        );
+    }
+
+    /**
+     * Square cancelled an imported order: the Petsi order becomes
+     * `CANCELLED` (through `OrderService`, so it gets a revision) and its
+     * pending unresolved lines are dismissed. Nothing else about the order
+     * changes. An open retryable issue no longer needs anyone and is resolved.
+     */
+    private async cancel(
+        squareOrder: Square.Order,
+        link: SquareOrderLink,
+        opts: { actorUserId?: number },
+    ): Promise<SquareIngestResult> {
+        const tenantId = link.tenantId;
+        const order =
+            link.orderId != null
+                ? await this.orderRepo.findOne({
+                      where: { id: link.orderId, tenantId },
+                      select: { id: true, status: true },
+                      loadEagerRelations: false,
+                  })
+                : null;
+        if (order && order.status !== ORDER_STATUSES.CANCELLED) {
+            try {
+                await this.asSystemWriter(tenantId, opts.actorUserId, () =>
+                    this.orderService.update(
+                        order.id,
+                        plainToInstance(UpdateOrderDto, {
+                            status: ORDER_STATUSES.CANCELLED,
+                        }),
+                    ),
+                );
+            } catch (err) {
+                if (!(err instanceof ValidationException)) {
+                    throw err;
+                }
+                return this.reject(tenantId, squareOrder, link, {
+                    reason: 'validation_failed',
+                    detail: { validationErrors: err.errors },
+                    locationId: null,
+                });
+            }
+        }
+
+        const squareVersion = String(squareOrder.version ?? 0);
+        await this.orderRepo.manager.transaction(async (manager) => {
+            await manager.update(
+                SquareOrderLink,
+                { id: link.id },
+                { squareVersion },
+            );
+            await manager.update(
+                SquareUnresolvedLine,
+                {
+                    tenantId,
+                    squareOrderId: link.squareOrderId,
+                    status: 'pending',
+                },
+                { status: 'dismissed' },
+            );
+            await this.resolveIssue(manager, {
+                tenantId,
+                squareOrderId: link.squareOrderId,
+                squareVersion,
+                orderId: order?.id ?? null,
+            });
+        });
+        return { outcome: 'cancelled', orderId: order?.id ?? null };
+    }
+
+    /**
+     * Square cancelled an order staff took over: Petsi leaves it alone and
+     * records a `cancelled_while_detached` issue for staff to act on, once
+     * (a repeated cancel, or an order staff already cancelled, adds nothing).
+     */
+    private async flagCancelledWhileDetached(
+        squareOrder: Square.Order,
+        link: SquareOrderLink,
+    ): Promise<SquareIngestResult> {
+        const tenantId = link.tenantId;
+        const order =
+            link.orderId != null
+                ? await this.orderRepo.findOne({
+                      where: { id: link.orderId, tenantId },
+                      select: { id: true, status: true, locationId: true },
+                      loadEagerRelations: false,
+                  })
+                : null;
+        const existing = await this.issueRepo.findOne({
+            where: { tenantId, squareOrderId: link.squareOrderId },
+        });
+        if (
+            !order ||
+            order.status === ORDER_STATUSES.CANCELLED ||
+            existing?.reason === 'cancelled_while_detached'
+        ) {
+            return { outcome: 'skipped', reason: 'detached' };
+        }
+        const issue = await this.issueRepo.save(
+            Object.assign(
+                existing ??
+                    this.issueRepo.create({
+                        tenantId,
+                        squareOrderId: link.squareOrderId,
+                    }),
+                {
+                    squareLocationId: squareOrder.locationId,
+                    squareVersion: String(squareOrder.version ?? 0),
+                    locationId: order.locationId,
+                    orderId: order.id,
+                    reason: 'cancelled_while_detached',
+                    detail: null,
+                    status: 'open',
+                    lastAttemptAt: new Date(),
+                } satisfies Partial<SquareOrderIssue>,
+            ),
+        );
+        return {
+            outcome: 'flagged',
+            reason: 'cancelled_while_detached',
+            issueId: issue.id,
+        };
+    }
+
+    /**
+     * Refunds never change lines: when the order carries a return the
+     * order's issue hasn't recorded yet, the issue becomes an open
+     * `refund_received` with the refund summary. Staff decide (Detach, edit).
+     */
+    private async flagNewReturns(
+        manager: EntityManager,
+        args: {
+            tenantId: number;
+            squareOrder: Square.Order;
+            orderId: number;
+            locationId: number;
+        },
+    ): Promise<void> {
+        const refund = squareRefundSummary(args.squareOrder);
+        if (!refund) {
+            return;
+        }
+        const squareOrderId = args.squareOrder.id!;
+        const existing = await manager.findOne(SquareOrderIssue, {
+            where: { tenantId: args.tenantId, squareOrderId },
+        });
+        const seen = new Set(
+            existing?.reason === 'refund_received'
+                ? (existing.detail?.refund?.returnUids ?? [])
+                : [],
+        );
+        if (
+            existing?.reason === 'refund_received' &&
+            refund.returnUids.every((uid) => seen.has(uid))
+        ) {
+            return;
+        }
+        await manager.save(
+            Object.assign(
+                existing ??
+                    manager.create(SquareOrderIssue, {
+                        tenantId: args.tenantId,
+                        squareOrderId,
+                    }),
+                {
+                    squareLocationId: args.squareOrder.locationId,
+                    squareVersion: String(args.squareOrder.version ?? 0),
+                    locationId: args.locationId,
+                    orderId: args.orderId,
+                    reason: 'refund_received',
+                    detail: { refund },
+                    status: 'open',
+                    lastAttemptAt: new Date(),
+                } satisfies Partial<SquareOrderIssue>,
+            ),
+        );
     }
 
     /**
@@ -382,14 +608,17 @@ export class SquareOrderIngestService {
         return { outcome: 'rejected', reason: args.reason, issueId: saved.id };
     }
 
-    /** A successful ingest resolves the order's open retryable issue. */
+    /**
+     * A successful ingest (or a cancel) resolves the order's open retryable
+     * issue.
+     */
     private async resolveIssue(
         manager: EntityManager,
         args: {
             tenantId: number;
             squareOrderId: string;
             squareVersion: string;
-            orderId: number;
+            orderId: number | null;
         },
     ): Promise<void> {
         await manager.update(

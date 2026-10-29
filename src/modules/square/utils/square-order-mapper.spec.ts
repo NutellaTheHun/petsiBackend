@@ -1,6 +1,7 @@
 import { Square } from 'square';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import {
+    isSquareOrderCancelled,
     joinAddress,
     mapSquareOrder,
     parseSquareQuantity,
@@ -10,6 +11,7 @@ import {
     SquareOrderModifierMapping,
     SquareOrderPlan,
     SquareOrderVariationMapping,
+    squareRefundSummary,
 } from './square-order-mapper';
 
 const pie: SquareOrderVariationMapping = {
@@ -739,5 +741,117 @@ describe('joinAddress', () => {
     it('is null without an address', () => {
         expect(joinAddress(undefined)).toBeNull();
         expect(joinAddress({})).toBeNull();
+    });
+});
+
+describe('isSquareOrderCancelled', () => {
+    const fulfillment = (
+        type: Square.FulfillmentType,
+        state: Square.FulfillmentState,
+    ): Square.Fulfillment => ({ type, state });
+
+    it('is true for a CANCELED order', () => {
+        expect(isSquareOrderCancelled(pickupOrder({ state: 'CANCELED' }))).toBe(
+            true,
+        );
+    });
+
+    it('is true when every pickup or delivery fulfillment is cancelled or failed', () => {
+        const order = pickupOrder({
+            fulfillments: [
+                fulfillment('PICKUP', 'CANCELED'),
+                fulfillment('DELIVERY', 'FAILED'),
+                // Not imported, so it doesn't keep the order alive
+                fulfillment('SHIPMENT', 'PROPOSED'),
+            ],
+        });
+        expect(isSquareOrderCancelled(order)).toBe(true);
+        expect(mapSquareOrder(input(order))).toEqual({
+            kind: 'skip',
+            reason: 'cancelled',
+        });
+    });
+
+    it('is false while one pickup or delivery fulfillment is live', () => {
+        expect(
+            isSquareOrderCancelled(
+                pickupOrder({
+                    fulfillments: [
+                        fulfillment('PICKUP', 'CANCELED'),
+                        fulfillment('PICKUP', 'RESERVED'),
+                    ],
+                }),
+            ),
+        ).toBe(false);
+    });
+
+    it.each(['PROPOSED', 'RESERVED', 'PREPARED', 'COMPLETED'] as const)(
+        'ignores the progress state %s',
+        (state) => {
+            const order = pickupOrder();
+            order.fulfillments![0].state = state;
+            expect(isSquareOrderCancelled(order)).toBe(false);
+            expect(plan(order)).toEqual(plan(pickupOrder()));
+        },
+    );
+
+    it('is false without pickup or delivery fulfillments', () => {
+        expect(
+            isSquareOrderCancelled(pickupOrder({ fulfillments: undefined })),
+        ).toBe(false);
+    });
+
+    it('reads the live fulfillment when another one was cancelled', () => {
+        const cancelled: Square.Fulfillment = {
+            type: 'PICKUP',
+            state: 'CANCELED',
+            pickupDetails: { recipient, pickupAt: '2026-11-01T15:00:00Z' },
+        };
+        const order = pickupOrder();
+        order.fulfillments = [cancelled, ...order.fulfillments!];
+        expect(plan(order).fields).toEqual(plan(pickupOrder()).fields);
+    });
+});
+
+describe('squareRefundSummary', () => {
+    it('is null without returns', () => {
+        expect(squareRefundSummary(pickupOrder())).toBeNull();
+        expect(squareRefundSummary(pickupOrder({ returns: [] }))).toBeNull();
+    });
+
+    it('summarizes returned lines and the returned amount', () => {
+        const order = pickupOrder({
+            returns: [
+                {
+                    uid: 'ret-2',
+                    returnLineItems: [
+                        {
+                            uid: 'rl-1',
+                            sourceLineItemUid: 'line-pie',
+                            quantity: '1',
+                            basePriceMoney: { amount: 1250n, currency: 'USD' },
+                        },
+                    ],
+                },
+                { uid: 'ret-1' },
+            ],
+            returnAmounts: {
+                totalMoney: { amount: 1250n, currency: 'USD' },
+            },
+            tenders: [
+                {
+                    type: 'CARD',
+                    cardDetails: { card: { last4: '4242' } },
+                },
+            ],
+        });
+        const summary = squareRefundSummary(order);
+        expect(summary).toEqual({
+            returnUids: ['ret-1', 'ret-2'],
+            lines: [{ squareLineUid: 'line-pie', quantity: '1' }],
+            returnedAmount: { amount: '1250', currency: 'USD' },
+        });
+        // bigint-free and no card data
+        expect(JSON.stringify(summary)).not.toContain('4242');
     });
 });

@@ -166,6 +166,11 @@ export class SquareLocationImportService {
         });
         if (outcome.outcome === 'stale') {
             result.unchanged++;
+        } else if (outcome.outcome === 'cancelled') {
+            // Every fulfillment cancelled on an open order
+            result.updated++;
+        } else if (outcome.outcome === 'flagged') {
+            result.skipped++;
         } else {
             result[outcome.outcome]++;
         }

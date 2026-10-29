@@ -55,7 +55,7 @@ export class SquareOrderIssueDto {
             },
         },
         description:
-            "For validation_failed, the order validator's error tree under validationErrors",
+            "For validation_failed, the order validator's error tree under validationErrors; for refund_received, the returned lines and amount under refund",
     })
     detail: SquareOrderIssueDetail | null;
 
