@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Square } from 'square';
-import { ValidationException } from '../../../common/validation/validation-exception';
 import {
     SquareNotConnectedException,
     SquareReauthRequiredException,
@@ -160,23 +159,15 @@ export class SquareLocationImportService {
         actorUserId: number | undefined,
         result: SquareLocationImportResultDto,
     ): Promise<void> {
-        try {
-            const outcome = await this.ingest.ingest(connection, order, {
-                actorUserId,
-            });
-            if (outcome.outcome === 'stale') {
-                result.unchanged++;
-            } else {
-                result[outcome.outcome]++;
-            }
-        } catch (err) {
-            // One rejected order doesn't stop the import. The order issue for
-            // it is recorded by task 14.
-            if (err instanceof ValidationException) {
-                result.rejected++;
-                return;
-            }
-            throw err;
+        // A rejected order is recorded as an order issue (and retried by the
+        // next re-sync); it doesn't stop the import.
+        const outcome = await this.ingest.ingest(connection, order, {
+            actorUserId,
+        });
+        if (outcome.outcome === 'stale') {
+            result.unchanged++;
+        } else {
+            result[outcome.outcome]++;
         }
     }
 }

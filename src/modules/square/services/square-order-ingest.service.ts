@@ -15,6 +15,7 @@ import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { OrderService } from '../../orders/services/order.service';
 import { orderMenuItemToNestedUpdateDto } from '../../orders/utils/entity-transformers/order-menu-item.dto.transformer';
+import { ValidationException } from '../../../common/validation/validation-exception';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
@@ -23,14 +24,21 @@ import {
     SquareOrderLineMap,
     SquareOrderLink,
 } from '../entities/square-order-link.entity';
+import {
+    SQUARE_RETRYABLE_ISSUE_REASONS,
+    SquareOrderIssue,
+    SquareOrderIssueDetail,
+} from '../entities/square-order-issue.entity';
 import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
 import {
     mapSquareOrder,
+    squareOrderSkipReason,
     PlannedContainerItem,
     PlannedOrderFields,
     PlannedSquareLine,
     SquareOrderContainerDefinition,
+    SquareOrderMapping,
     SquareOrderModifierMapping,
     SquareOrderPlan,
     SquareOrderSkipReason,
@@ -45,7 +53,13 @@ export type SquareIngestSkipReason =
 export type SquareIngestResult =
     | { outcome: 'skipped'; reason: SquareIngestSkipReason }
     | { outcome: 'stale' }
-    | { outcome: 'created' | 'updated'; orderId: number };
+    | { outcome: 'created' | 'updated'; orderId: number }
+    | {
+          /** Recorded as an order issue; no order was created or changed. */
+          outcome: 'rejected';
+          reason: 'validation_failed' | 'location_unmapped';
+          issueId: number;
+      };
 
 const ORDER_LINE_RELATIONS = [
     'orderedItems',
@@ -89,6 +103,11 @@ function lineCreateId(line: PlannedSquareLine): string {
  * writer: the tenant comes from the connection and the location from the
  * location link, never from the caller's request.
  *
+ * An order Petsi can't accept (an `OrderService` validation rejection, or an
+ * enabled location link whose Petsi location is gone) becomes a
+ * `SquareOrderIssue` instead of an error, so callers still acknowledge it.
+ * A later successful ingest resolves the issue.
+ *
  * Not atomic across the order write and the link/unresolved-line write:
  * `OrderService` owns its own transaction.
  */
@@ -99,6 +118,8 @@ export class SquareOrderIngestService {
         private readonly locationLinkRepo: Repository<SquareLocationLink>,
         @InjectRepository(SquareOrderLink)
         private readonly orderLinkRepo: Repository<SquareOrderLink>,
+        @InjectRepository(SquareOrderIssue)
+        private readonly issueRepo: Repository<SquareOrderIssue>,
         @InjectRepository(SquareVariationLink)
         private readonly variationLinkRepo: Repository<SquareVariationLink>,
         @InjectRepository(SquareModifierLink)
@@ -124,10 +145,9 @@ export class SquareOrderIngestService {
         const locationLink = await this.locationLinkRepo.findOne({
             where: { tenantId, squareLocationId: squareOrder.locationId },
         });
-        if (!locationLink?.enabled || locationLink.locationId == null) {
+        if (!locationLink?.enabled) {
             return { outcome: 'skipped', reason: 'location_not_enabled' };
         }
-        const locationId = locationLink.locationId;
 
         const existingLink = squareOrder.id
             ? await this.orderLinkRepo.findOne({
@@ -146,14 +166,42 @@ export class SquareOrderIngestService {
             return { outcome: 'stale' };
         }
 
+        const skipReason = squareOrderSkipReason(squareOrder);
+        if (skipReason) {
+            return { outcome: 'skipped', reason: skipReason };
+        }
+        // The link's Petsi location was deleted: nowhere to put the order
+        if (locationLink.locationId == null) {
+            return this.reject(tenantId, squareOrder, existingLink, {
+                reason: 'location_unmapped',
+                detail: null,
+                locationId: null,
+            });
+        }
+        const locationId = locationLink.locationId;
+
         const variations = await this.loadVariations(tenantId, squareOrder);
-        const mapping = mapSquareOrder({
-            order: squareOrder,
-            variations,
-            modifiers: await this.loadModifiers(tenantId, squareOrder),
-            containers: await this.loadContainers(tenantId, variations),
-            timezone: locationLink.timezone,
-        });
+        let mapping: SquareOrderMapping;
+        try {
+            mapping = mapSquareOrder({
+                order: squareOrder,
+                variations,
+                modifiers: await this.loadModifiers(tenantId, squareOrder),
+                containers: await this.loadContainers(tenantId, variations),
+                timezone: locationLink.timezone,
+            });
+        } catch (err) {
+            // A whole-order problem in Square's data (no recipient, no due
+            // time, a bad quantity)
+            if (!(err instanceof ValidationException)) {
+                throw err;
+            }
+            return this.reject(tenantId, squareOrder, existingLink, {
+                reason: 'validation_failed',
+                detail: { validationErrors: err.errors },
+                locationId,
+            });
+        }
         if (mapping.kind === 'skip') {
             return { outcome: 'skipped', reason: mapping.reason };
         }
@@ -167,23 +215,36 @@ export class SquareOrderIngestService {
                   })
                 : null;
 
-        const written = await this.requestContext.runWithContext(
-            {
-                tenantId,
-                // A system writer may write at any of the tenant's locations.
-                isTenantAdmin: true,
-                userId: opts.actorUserId,
-                locations: undefined,
-                roles: undefined,
-                // No triggering user means a webhook-driven write
-                revisionActorType:
-                    opts.actorUserId == null ? 'square_webhook' : undefined,
-            },
-            () =>
-                existingOrder
-                    ? this.updateOrder(existingOrder, existingLink!, plan)
-                    : this.createOrder(connection, locationId, plan),
-        );
+        let written: { orderId: number; lineMap: SquareOrderLineMap };
+        try {
+            written = await this.requestContext.runWithContext(
+                {
+                    tenantId,
+                    // A system writer may write at any of the tenant's locations.
+                    isTenantAdmin: true,
+                    userId: opts.actorUserId,
+                    locations: undefined,
+                    roles: undefined,
+                    // No triggering user means a webhook-driven write
+                    revisionActorType:
+                        opts.actorUserId == null ? 'square_webhook' : undefined,
+                },
+                () =>
+                    existingOrder
+                        ? this.updateOrder(existingOrder, existingLink!, plan)
+                        : this.createOrder(connection, locationId, plan),
+            );
+        } catch (err) {
+            if (!(err instanceof ValidationException)) {
+                throw err;
+            }
+            // OrderService rejected it; its transaction wrote nothing
+            return this.reject(tenantId, squareOrder, existingLink, {
+                reason: 'validation_failed',
+                detail: { validationErrors: err.errors },
+                locationId,
+            });
+        }
 
         await this.orderRepo.manager.transaction(async (manager) => {
             await this.saveOrderLink(manager, {
@@ -199,12 +260,93 @@ export class SquareOrderIngestService {
                 orderId: written.orderId,
                 plan,
             });
+            await this.resolveIssue(manager, {
+                tenantId,
+                squareOrderId: plan.squareOrderId,
+                squareVersion: plan.squareVersion,
+                orderId: written.orderId,
+            });
         });
 
         return {
             outcome: existingOrder ? 'updated' : 'created',
             orderId: written.orderId,
         };
+    }
+
+    /**
+     * Records an in-scope order Petsi can't accept as the order's issue and
+     * writes nothing else (no order, link or unresolved line). Upserts the
+     * issue as open with this attempt's reason and detail; a dismissed issue
+     * stays dismissed (the attempt is still recorded), like a dismissed
+     * unresolved line.
+     *
+     * @param args.locationId the Petsi location the order would go to; an
+     * already imported order's own location takes precedence.
+     */
+    private async reject(
+        tenantId: number,
+        squareOrder: Square.Order,
+        existingLink: SquareOrderLink | null,
+        args: {
+            reason: 'validation_failed' | 'location_unmapped';
+            detail: SquareOrderIssueDetail | null;
+            locationId: number | null;
+        },
+    ): Promise<SquareIngestResult> {
+        const existingOrder =
+            existingLink?.orderId != null
+                ? await this.orderRepo.findOne({
+                      where: { id: existingLink.orderId, tenantId },
+                      select: { id: true, locationId: true },
+                      loadEagerRelations: false,
+                  })
+                : null;
+        // In scope, so the id is set (squareOrderSkipReason)
+        const squareOrderId = squareOrder.id!;
+        const issue =
+            (await this.issueRepo.findOne({
+                where: { tenantId, squareOrderId },
+            })) ?? this.issueRepo.create({ tenantId, squareOrderId });
+        Object.assign(issue, {
+            squareLocationId: squareOrder.locationId,
+            squareVersion: String(squareOrder.version ?? 0),
+            locationId: existingOrder?.locationId ?? args.locationId,
+            orderId: existingOrder?.id ?? null,
+            reason: args.reason,
+            detail: args.detail,
+            status: issue.status === 'dismissed' ? 'dismissed' : 'open',
+            lastAttemptAt: new Date(),
+        });
+        const saved = await this.issueRepo.save(issue);
+        return { outcome: 'rejected', reason: args.reason, issueId: saved.id };
+    }
+
+    /** A successful ingest resolves the order's open retryable issue. */
+    private async resolveIssue(
+        manager: EntityManager,
+        args: {
+            tenantId: number;
+            squareOrderId: string;
+            squareVersion: string;
+            orderId: number;
+        },
+    ): Promise<void> {
+        await manager.update(
+            SquareOrderIssue,
+            {
+                tenantId: args.tenantId,
+                squareOrderId: args.squareOrderId,
+                status: 'open',
+                reason: In([...SQUARE_RETRYABLE_ISSUE_REASONS]),
+            },
+            {
+                status: 'resolved',
+                squareVersion: args.squareVersion,
+                orderId: args.orderId,
+                lastAttemptAt: new Date(),
+            },
+        );
     }
 
     private async loadVariations(

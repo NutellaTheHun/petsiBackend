@@ -19,6 +19,7 @@ import { SquareClientFactory } from '../client/square-client.factory';
 import { SquareReauthRequiredException } from '../client/square-error-boundary';
 import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
+import { SquareOrderIssue } from '../entities/square-order-issue.entity';
 import { SquareOrderLink } from '../entities/square-order-link.entity';
 import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
@@ -60,6 +61,7 @@ describe('SquareLocationImportService', () => {
     let orderRepo: Repository<Order>;
     let orderItemRepo: Repository<OrderMenuItem>;
     let orderLinkRepo: Repository<SquareOrderLink>;
+    let issueRepo: Repository<SquareOrderIssue>;
     let unresolvedRepo: Repository<SquareUnresolvedLine>;
     let locationLinkRepo: Repository<SquareLocationLink>;
     let variationRepo: Repository<SquareVariationLink>;
@@ -136,6 +138,7 @@ describe('SquareLocationImportService', () => {
         orderRepo = module.get(getRepositoryToken(Order));
         orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         orderLinkRepo = module.get(getRepositoryToken(SquareOrderLink));
+        issueRepo = module.get(getRepositoryToken(SquareOrderIssue));
         unresolvedRepo = module.get(getRepositoryToken(SquareUnresolvedLine));
         locationLinkRepo = module.get(getRepositoryToken(SquareLocationLink));
         variationRepo = module.get(getRepositoryToken(SquareVariationLink));
@@ -223,6 +226,7 @@ describe('SquareLocationImportService', () => {
             locations: undefined,
         });
         testCtx.addCleanupFunction(async () => {
+            await issueRepo.delete({ tenantId: tenant.id });
             await unresolvedRepo.delete({ tenantId: tenant.id });
             await orderLinkRepo.delete({ tenantId: tenant.id });
             await orderRepo.delete({ tenantId: tenant.id });
@@ -491,6 +495,31 @@ describe('SquareLocationImportService', () => {
             expect(result).toMatchObject({ rejected: 1, created: 1 });
             expect(await linkFor(noRecipient.id!)).toBeNull();
             expect(await linkFor(good.id!)).not.toBeNull();
+            expect(
+                await issueRepo.findOneBy({
+                    tenantId: tenant.id,
+                    squareOrderId: noRecipient.id!,
+                }),
+            ).toMatchObject({ reason: 'validation_failed', status: 'open' });
+
+            // The next re-sync retries it, and Square now has the recipient
+            searchPages = [
+                [
+                    {
+                        ...noRecipient,
+                        version: 2,
+                        fulfillments: good.fulfillments,
+                    },
+                ],
+            ];
+            const retried = await linkService.resyncForCurrentTenant(link.id);
+            expect(retried).toMatchObject({ rejected: 0, created: 1 });
+            expect(
+                await issueRepo.findOneBy({
+                    tenantId: tenant.id,
+                    squareOrderId: noRecipient.id!,
+                }),
+            ).toMatchObject({ status: 'resolved' });
         });
 
         it('rejects re-syncing a disabled link', async () => {

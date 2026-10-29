@@ -22,6 +22,7 @@ import { Tenant } from '../../tenants/entities/tenant.entity';
 import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
 import { SquareModifierLink } from '../entities/square-modifier-link.entity';
+import { SquareOrderIssue } from '../entities/square-order-issue.entity';
 import { SquareOrderLink } from '../entities/square-order-link.entity';
 import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity';
 import { SquareVariationLink } from '../entities/square-variation-link.entity';
@@ -90,6 +91,7 @@ describe('SquareOrderIngestService', () => {
     let orderRepo: Repository<Order>;
     let orderLinkRepo: Repository<SquareOrderLink>;
     let unresolvedRepo: Repository<SquareUnresolvedLine>;
+    let issueRepo: Repository<SquareOrderIssue>;
     let locationLinkRepo: Repository<SquareLocationLink>;
     let variationRepo: Repository<SquareVariationLink>;
     let connectionRepo: Repository<SquareConnection>;
@@ -157,6 +159,7 @@ describe('SquareOrderIngestService', () => {
         orderRepo = module.get(getRepositoryToken(Order));
         orderLinkRepo = module.get(getRepositoryToken(SquareOrderLink));
         unresolvedRepo = module.get(getRepositoryToken(SquareUnresolvedLine));
+        issueRepo = module.get(getRepositoryToken(SquareOrderIssue));
         locationLinkRepo = module.get(getRepositoryToken(SquareLocationLink));
         variationRepo = module.get(getRepositoryToken(SquareVariationLink));
         connectionRepo = module.get(getRepositoryToken(SquareConnection));
@@ -262,6 +265,7 @@ describe('SquareOrderIngestService', () => {
             locations: undefined,
         });
         testCtx.addCleanupFunction(async () => {
+            await issueRepo.delete({ tenantId: tenant.id });
             await unresolvedRepo.delete({ tenantId: tenant.id });
             await orderLinkRepo.delete({ tenantId: tenant.id });
             await orderRepo.delete({ tenantId: tenant.id });
@@ -279,7 +283,6 @@ describe('SquareOrderIngestService', () => {
             ['an order without fulfillments', { fulfillments: undefined }],
             ['a draft', { state: 'DRAFT' }],
             ['a disabled location', { locationId: SQ_LOCATION_DISABLED }],
-            ['an unmapped location', { locationId: SQ_LOCATION_UNMAPPED }],
             ['an unknown location', { locationId: `${P}-sq-loc-unknown` }],
         ] as [string, Partial<Square.Order>][])(
             'creates nothing for %s',
@@ -476,6 +479,7 @@ describe('SquareOrderIngestService', () => {
         });
 
         afterAll(async () => {
+            await issueRepo.delete({ tenantId: tenant.id });
             await unresolvedRepo.delete({ tenantId: tenant.id });
             await orderLinkRepo.delete({ tenantId: tenant.id });
             await orderRepo.delete({ tenantId: tenant.id });
@@ -1065,6 +1069,209 @@ describe('SquareOrderIngestService', () => {
                 squareLinked: false,
                 hasUnresolvedSquareLines: false,
                 unresolvedSquareLines: [],
+            });
+        });
+    });
+
+    describe('order issues', () => {
+        /** Square sends a phone and email but no name: Petsi requires a recipient. */
+        const noName = (): Square.Fulfillment => ({
+            type: 'PICKUP',
+            pickupDetails: {
+                pickupAt: '2026-11-02T15:00:00Z',
+                recipient: {
+                    phoneNumber: '555-0199',
+                    emailAddress: 'secret@example.com',
+                },
+            },
+        });
+        // Fake card data, so the spec can check it never reaches an issue
+        const tenders: Square.Tender[] = [
+            {
+                type: 'CARD',
+                cardDetails: { card: { last4: '4242', bin: '411111' } },
+            },
+        ];
+
+        const issueFor = (squareOrderId: string) =>
+            issueRepo.findOne({
+                where: { tenantId: tenant.id, squareOrderId },
+            });
+
+        it('records a rejected order as an open issue with no order', async () => {
+            const order = squareOrder({ fulfillments: [noName()], tenders });
+
+            const result = await ingestService.ingest(connection, order);
+
+            expect(result).toMatchObject({
+                outcome: 'rejected',
+                reason: 'validation_failed',
+            });
+            const issue = await issueFor(order.id!);
+            expect(issue).toMatchObject({
+                status: 'open',
+                reason: 'validation_failed',
+                squareLocationId: SQ_LOCATION,
+                locationId: location.id,
+                orderId: null,
+                squareVersion: '1',
+                detail: {
+                    validationErrors: {
+                        errorPayload: expect.arrayContaining([
+                            expect.objectContaining({
+                                fields: ['recipient'],
+                            }),
+                        ]) as unknown,
+                    },
+                },
+            });
+            expect(issue!.lastAttemptAt).toBeInstanceOf(Date);
+            // Codes, ids and field names only: no Square body, contact or card
+            const detail = JSON.stringify(issue!.detail);
+            for (const leaked of ['555-0199', 'secret@', '4242', '411111']) {
+                expect(detail).not.toContain(leaked);
+            }
+            expect(await linkFor(order.id!)).toBeNull();
+            expect(
+                await orderRepo.count({ where: { tenantId: tenant.id } }),
+            ).toBe(0);
+        });
+
+        it('records an OrderService rejection the same way', async () => {
+            // A mapping the order validator rejects: a size the item lacks
+            const small = await sizeRepo.save({
+                tenantId: tenant.id,
+                name: `${P} Small`,
+            });
+            const badSize = await variationRepo.save(
+                variationRepo.create({
+                    tenantId: tenant.id,
+                    squareVariationId: `${P}-var-bad-size`,
+                    squareItemId: `${P}-var-bad-size-item`,
+                    squareItemName: 'Apple Pie',
+                    squareVariationName: 'Small',
+                    menuItemId: applePie.id,
+                    menuItemSizeId: small.id,
+                }),
+            );
+            testCtx.addCleanupFunction(async () => {
+                await variationRepo.delete(badSize.id);
+                await sizeRepo.delete(small.id);
+            });
+            const create = jest.spyOn(orderService, 'create');
+            const order = squareOrder({
+                lineItems: [line('l-small', badSize.squareVariationId)],
+            });
+
+            const result = await ingestService.ingest(connection, order);
+
+            expect(create).toHaveBeenCalled();
+            expect(result).toMatchObject({
+                outcome: 'rejected',
+                reason: 'validation_failed',
+            });
+            expect(await issueFor(order.id!)).toMatchObject({
+                status: 'open',
+                orderId: null,
+                detail: { validationErrors: expect.any(Object) as unknown },
+            });
+            expect(await linkFor(order.id!)).toBeNull();
+            expect(await linesFor(order.id!)).toEqual([]);
+        });
+
+        it('creates the order and resolves the issue on a fixing update', async () => {
+            const order = squareOrder({ fulfillments: [noName()] });
+            await ingestService.ingest(connection, order);
+
+            const result = await ingestService.ingest(connection, {
+                ...order,
+                version: 2,
+                fulfillments: [pickup()],
+            });
+
+            if (result.outcome !== 'created') throw new Error(result.outcome);
+            expect(await issueFor(order.id!)).toMatchObject({
+                status: 'resolved',
+                orderId: result.orderId,
+                squareVersion: '2',
+            });
+        });
+
+        it('keeps an imported order unchanged when Petsi rejects its update', async () => {
+            const order = squareOrder({});
+            const created = await ingestService.ingest(connection, order);
+            if (created.outcome !== 'created') throw new Error();
+
+            const result = await ingestService.ingest(connection, {
+                ...order,
+                version: 2,
+                fulfillments: [noName()],
+                lineItems: [line('l-pie', VAR_PIE, '5', 'Apple Pie')],
+            });
+
+            expect(result.outcome).toBe('rejected');
+            expect(await issueFor(order.id!)).toMatchObject({
+                status: 'open',
+                orderId: created.orderId,
+                locationId: location.id,
+                squareVersion: '2',
+            });
+            const saved = await loadOrder(created.orderId);
+            expect(saved.recipient).toBe('Jane Doe');
+            expect(items(saved)).toEqual([
+                { menuItemId: applePie.id, quantity: 2 },
+            ]);
+            // The link keeps the last imported version, so version 2 retries
+            expect((await linkFor(order.id!))?.squareVersion).toBe('1');
+        });
+
+        it('records an in-scope order at an unmapped location as location_unmapped', async () => {
+            const order = squareOrder({ locationId: SQ_LOCATION_UNMAPPED });
+
+            const result = await ingestService.ingest(connection, order);
+
+            expect(result).toMatchObject({
+                outcome: 'rejected',
+                reason: 'location_unmapped',
+            });
+            expect(await issueFor(order.id!)).toMatchObject({
+                status: 'open',
+                reason: 'location_unmapped',
+                squareLocationId: SQ_LOCATION_UNMAPPED,
+                locationId: null,
+                detail: null,
+            });
+            expect(await linkFor(order.id!)).toBeNull();
+            expect(
+                await orderRepo.count({ where: { tenantId: tenant.id } }),
+            ).toBe(0);
+        });
+
+        it('skips an out-of-scope order at an unmapped location without an issue', async () => {
+            const order = squareOrder({
+                locationId: SQ_LOCATION_UNMAPPED,
+                fulfillments: [{ type: 'IN_STORE' }],
+            });
+
+            const result = await ingestService.ingest(connection, order);
+
+            expect(result.outcome).toBe('skipped');
+            expect(await issueFor(order.id!)).toBeNull();
+        });
+
+        it('keeps a dismissed issue dismissed when the order is rejected again', async () => {
+            const order = squareOrder({ fulfillments: [noName()] });
+            await ingestService.ingest(connection, order);
+            await issueRepo.update(
+                { tenantId: tenant.id, squareOrderId: order.id! },
+                { status: 'dismissed' },
+            );
+
+            await ingestService.ingest(connection, { ...order, version: 2 });
+
+            expect(await issueFor(order.id!)).toMatchObject({
+                status: 'dismissed',
+                squareVersion: '2',
             });
         });
     });

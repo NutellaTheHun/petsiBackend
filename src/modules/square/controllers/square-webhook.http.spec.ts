@@ -24,6 +24,7 @@ import { SquareConnection } from '../entities/square-connection.entity';
 import { SquareItemHint } from '../entities/square-item-hint.entity';
 import { SquareLocationLink } from '../entities/square-location-link.entity';
 import { SquareModifierLink } from '../entities/square-modifier-link.entity';
+import { SquareOrderIssue } from '../entities/square-order-issue.entity';
 import { SquareOrderLink } from '../entities/square-order-link.entity';
 import { SquareSizeAlias } from '../entities/square-size-alias.entity';
 import { SquareUnresolvedLine } from '../entities/square-unresolved-line.entity';
@@ -63,6 +64,7 @@ describe('Square webhook endpoint (HTTP)', () => {
     let variationRepo: Repository<SquareVariationLink>;
     let hintRepo: Repository<SquareItemHint>;
     let orderLinkRepo: Repository<SquareOrderLink>;
+    let issueRepo: Repository<SquareOrderIssue>;
     let unresolvedRepo: Repository<SquareUnresolvedLine>;
     let receiptRepo: Repository<SquareWebhookReceipt>;
     let orderRepo: Repository<Order>;
@@ -206,6 +208,7 @@ describe('Square webhook endpoint (HTTP)', () => {
         variationRepo = module.get(getRepositoryToken(SquareVariationLink));
         hintRepo = module.get(getRepositoryToken(SquareItemHint));
         orderLinkRepo = module.get(getRepositoryToken(SquareOrderLink));
+        issueRepo = module.get(getRepositoryToken(SquareOrderIssue));
         unresolvedRepo = module.get(getRepositoryToken(SquareUnresolvedLine));
         receiptRepo = module.get(getRepositoryToken(SquareWebhookReceipt));
         orderRepo = module.get(getRepositoryToken(Order));
@@ -299,6 +302,7 @@ describe('Square webhook endpoint (HTTP)', () => {
         testCtx.addCleanupFunction(async () => {
             for (const t of [tenant, flaglessTenant]) {
                 await receiptRepo.delete({ tenantId: t.id });
+                await issueRepo.delete({ tenantId: t.id });
                 await unresolvedRepo.delete({ tenantId: t.id });
                 await orderLinkRepo.delete({ tenantId: t.id });
                 await orderRepo.delete({ tenantId: t.id });
@@ -447,8 +451,15 @@ describe('Square webhook endpoint (HTTP)', () => {
                         fulfillments: [{ type: 'PICKUP', pickupDetails: {} }],
                     },
                 });
-            await post(orderEvent(newOrderId(), 1)).expect(200);
+            const rejectedId = newOrderId();
+            await post(orderEvent(rejectedId, 1)).expect(200);
             expect(await ordersOf(tenant)).toHaveLength(1);
+            expect(
+                await issueRepo.findOneBy({
+                    tenantId: tenant.id,
+                    squareOrderId: rejectedId,
+                }),
+            ).toMatchObject({ reason: 'validation_failed', status: 'open' });
         });
     });
 

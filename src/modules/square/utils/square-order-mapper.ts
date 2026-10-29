@@ -118,6 +118,29 @@ const IMPORTED_FULFILLMENT_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Why an order is out of scope for import at all (checked before any
+ * mapping), or null when it's in scope.
+ */
+export function squareOrderSkipReason(
+    order: Square.Order,
+): SquareOrderSkipReason | null {
+    if (!order.id) {
+        return 'missing_id';
+    }
+    if (order.state === 'DRAFT') {
+        return 'draft';
+    }
+    // Auto-cancel of imported orders comes in task 17.
+    if (order.state === 'CANCELED') {
+        return 'cancelled';
+    }
+    if (!findImportedFulfillment(order)) {
+        return 'no_pickup_or_delivery';
+    }
+    return null;
+}
+
+/**
  * Square order → a plan of Petsi order fields, lines and unresolved lines.
  * Pure: everything it needs (variation links, timezone) is passed in.
  * A whole-order problem (no recipient, no due time, a bad quantity) throws a
@@ -129,19 +152,10 @@ export function mapSquareOrder(
     input: SquareOrderMappingInput,
 ): SquareOrderMapping {
     const { order } = input;
-    if (!order.id) {
-        return { kind: 'skip', reason: 'missing_id' };
-    }
-    if (order.state === 'DRAFT') {
-        return { kind: 'skip', reason: 'draft' };
-    }
-    // Auto-cancel of imported orders comes in task 17.
-    if (order.state === 'CANCELED') {
-        return { kind: 'skip', reason: 'cancelled' };
-    }
+    const skipReason = squareOrderSkipReason(order);
     const fulfillment = findImportedFulfillment(order);
-    if (!fulfillment) {
-        return { kind: 'skip', reason: 'no_pickup_or_delivery' };
+    if (skipReason || !order.id || !fulfillment) {
+        return { kind: 'skip', reason: skipReason ?? 'no_pickup_or_delivery' };
     }
 
     const errors = new ValidationErrorMap(order.id);

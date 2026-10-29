@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WebhooksHelper } from 'square';
 import { Repository } from 'typeorm';
-import { ValidationException } from '../../../common/validation/validation-exception';
 import { TenantFeatureService } from '../../feature-flags/services/tenant-feature.service';
 import { FEATURE_REGISTRY } from '../../feature-flags/utils/feature.registry';
 import {
@@ -140,16 +139,12 @@ export class SquareWebhookService {
         if (!order) {
             return 'unprocessable';
         }
-        try {
-            const result = await this.ingest.ingest(connection, order);
-            return result.outcome === 'stale' ? 'stale' : 'processed';
-        } catch (err) {
-            // The order issue for this is recorded by a later slice (task 14)
-            if (err instanceof ValidationException) {
-                return 'rejected';
-            }
-            throw err;
+        // A rejected order is recorded as an order issue and still acknowledged
+        const result = await this.ingest.ingest(connection, order);
+        if (result.outcome === 'stale' || result.outcome === 'rejected') {
+            return result.outcome;
         }
+        return 'processed';
     }
 
     private verify(body: string, signature: string): Promise<boolean> {
