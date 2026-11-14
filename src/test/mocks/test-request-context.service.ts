@@ -15,6 +15,22 @@ export class TestRequestContextService implements RequestContextService {
         callback();
     }
 
+    /** Layers `context` over the current values for `fn`, then restores them. */
+    async runWithContext<T>(
+        context: RequestContextValues,
+        fn: () => Promise<T>,
+    ): Promise<T> {
+        const previous = new Map(this.context);
+        for (const key in context) {
+            this.context.set(key, (context as Record<string, any>)[key]);
+        }
+        try {
+            return await fn();
+        } finally {
+            this.context = previous;
+        }
+    }
+
     get<T = any>(key: string): T | undefined {
         return this.context.get(key) as T | undefined;
     }

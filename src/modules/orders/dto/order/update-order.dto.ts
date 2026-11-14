@@ -18,6 +18,7 @@ import {
     OCCURRENCE_TYPES,
 } from '../../utils/occurence-types';
 import { FULFILLMENT_TYPES } from '../../utils/fulfillment-types';
+import { ORDER_STATUSES } from '../../utils/order-statuses';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
@@ -220,6 +221,19 @@ export class UpdateOrderDto {
     @IsOptional()
     @IsIn(Object.values(OCCURRENCE_STATES))
     readonly occurrenceState?: string | null;
+
+    @ApiProperty({
+        enum: Object.values(ORDER_STATUSES),
+        example: 'ACTIVE',
+        description:
+            'The status of the order. Cancelled orders are not included in reports or default order lists. Defaults to ACTIVE.',
+        type: 'string',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    @IsIn(Object.values(ORDER_STATUSES))
+    readonly status?: string;
 
     @ApiProperty({
         example: {

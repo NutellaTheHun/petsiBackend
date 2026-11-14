@@ -1,3 +1,4 @@
+import { plainToInstance } from 'class-transformer';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { OrderCategory } from '../../entities/order-category.entity';
@@ -111,5 +112,16 @@ describe('OrderChangeDetector', () => {
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
         expect(result.patch.recurrenceSchedule).toEqual(nested);
+    });
+
+    it('treats fields left out of a partial dto as unchanged', () => {
+        const entity = { ...baseOrder(), note: 'Call ahead', status: 'ACTIVE' };
+        // Partial, the way Square ingest builds it
+        const dto = plainToInstance(UpdateOrderDto, {
+            recipient: entity.recipient,
+        });
+        const result = detector.detect(entity as Order, dto);
+        expect(result.hasChanges).toBe(false);
+        expect(result.patch).toEqual({});
     });
 });

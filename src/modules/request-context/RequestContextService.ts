@@ -18,6 +18,17 @@ export interface RequestContextValues {
     tenantId?: number;
     isTenantAdmin?: boolean;
     locations?: { locationId: number; roles: string[] }[];
+    /**
+     * Set by system writers acting on Square's behalf (the webhook path), so
+     * `getRevisionActor` records `square_webhook` instead of `system`.
+     */
+    revisionActorType?: 'square_webhook';
+    /**
+     * Set by Square ingest and line conversion, which write Square-owned order
+     * fields and lines; staff writes to those are rejected while the order is
+     * linked (`OrderValidator`).
+     */
+    squareSystemWriter?: boolean;
 }
 
 @Injectable()
@@ -29,6 +40,25 @@ export class RequestContextService {
                 ns.set(key, (context as Record<string, unknown>)[key]);
             }
             callback();
+        });
+    }
+
+    /**
+     * Runs `fn` in a child context with `context` layered over the current
+     * one, for system writers (e.g. Square ingest) that call request-scoped
+     * services outside a request, or as someone other than the caller. A key
+     * set to `undefined` hides the outer value.
+     */
+    runWithContext<T>(
+        context: RequestContextValues,
+        fn: () => Promise<T>,
+    ): Promise<T> {
+        const ns = getRequestNamespace();
+        return ns.runPromise(() => {
+            for (const key in context) {
+                ns.set(key, (context as Record<string, unknown>)[key]);
+            }
+            return fn();
         });
     }
 

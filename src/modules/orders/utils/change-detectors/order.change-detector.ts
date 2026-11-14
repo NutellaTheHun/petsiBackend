@@ -44,7 +44,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
         const patch: MutablePartial<UpdateOrderDto> = {};
         const changes: ChangeDetectorChange[] = [];
 
-        if (!this.unchanged(entity.recipient, dto.recipient)) {
+        if (this.sentAndChanged(entity.recipient, dto.recipient)) {
             patch.recipient = dto.recipient;
             changes.push({
                 op: 'scalar',
@@ -54,7 +54,10 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.sameDate(entity.fulfillmentDate, dto.fulfillmentDate)) {
+        if (
+            dto.fulfillmentDate !== undefined &&
+            !this.sameDate(entity.fulfillmentDate, dto.fulfillmentDate)
+        ) {
             patch.fulfillmentDate = dto.fulfillmentDate;
             changes.push({
                 op: 'scalar',
@@ -64,7 +67,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.fulfillmentType, dto.fulfillmentType)) {
+        if (this.sentAndChanged(entity.fulfillmentType, dto.fulfillmentType)) {
             patch.fulfillmentType = dto.fulfillmentType;
             changes.push({
                 op: 'scalar',
@@ -75,7 +78,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
         }
 
         if (
-            !this.unchanged(
+            this.sentAndChanged(
                 entity.fulfillmentContactName,
                 dto.fulfillmentContactName,
             )
@@ -89,7 +92,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.deliveryAddress, dto.deliveryAddress)) {
+        if (this.sentAndChanged(entity.deliveryAddress, dto.deliveryAddress)) {
             patch.deliveryAddress = dto.deliveryAddress;
             changes.push({
                 op: 'scalar',
@@ -99,7 +102,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.phoneNumber, dto.phoneNumber)) {
+        if (this.sentAndChanged(entity.phoneNumber, dto.phoneNumber)) {
             patch.phoneNumber = dto.phoneNumber;
             changes.push({
                 op: 'scalar',
@@ -109,7 +112,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.email, dto.email)) {
+        if (this.sentAndChanged(entity.email, dto.email)) {
             patch.email = dto.email;
             changes.push({
                 op: 'scalar',
@@ -119,7 +122,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.note, dto.note)) {
+        if (this.sentAndChanged(entity.note, dto.note)) {
             patch.note = dto.note;
             changes.push({
                 op: 'scalar',
@@ -129,7 +132,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.isFrozen, dto.isFrozen)) {
+        if (this.sentAndChanged(entity.isFrozen, dto.isFrozen)) {
             patch.isFrozen = dto.isFrozen;
             changes.push({
                 op: 'scalar',
@@ -139,7 +142,17 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             });
         }
 
-        if (!this.unchanged(entity.category?.id, dto.categoryId)) {
+        if (this.sentAndChanged(entity.status, dto.status)) {
+            patch.status = dto.status;
+            changes.push({
+                op: 'scalar',
+                path: 'status',
+                previousValue: entity.status,
+                nextValue: dto.status,
+            });
+        }
+
+        if (this.sentAndChanged(entity.category?.id ?? null, dto.categoryId)) {
             patch.categoryId = dto.categoryId;
             changes.push({
                 op: 'reference',
@@ -213,6 +226,14 @@ export class OrderChangeDetector extends ChangeDetectorBase<
             changes,
             hasChanges: changes.length > 0,
         };
+    }
+
+    /**
+     * `undefined` means "not sent": `updateEntity` leaves the field alone, so
+     * a partial DTO (e.g. Square ingest's) isn't a change.
+     */
+    private sentAndChanged(current: unknown, incoming: unknown): boolean {
+        return incoming !== undefined && !this.unchanged(current, incoming);
     }
 
     /**

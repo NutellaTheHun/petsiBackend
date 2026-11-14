@@ -5358,7 +5358,7 @@
             "name": "filters",
             "required": false,
             "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **orderCategory** (e.g., `orderCategory=5`) \n\n          - **isFrozen** (e.g., `isFrozen=true`) \n\n          - **fulfillmentType** (e.g., `fulfillmentType=pickup`)",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **orderCategory** (e.g., `orderCategory=5`) \n\n          - **isFrozen** (e.g., `isFrozen=true`) \n\n          - **status** (e.g., `status=CANCELLED`; defaults to `status=ACTIVE` when omitted) \n\n          - **fulfillmentType** (e.g., `fulfillmentType=pickup`)",
             "schema": {
               "type": "array",
               "items": {
@@ -8041,6 +8041,1367 @@
           "Settings"
         ]
       }
+    },
+    "/square/connection": {
+      "get": {
+        "operationId": "SquareConnectionController_getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareConnectionStatusDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Returns the tenant's Square connection status (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      },
+      "delete": {
+        "operationId": "SquareConnectionController_disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareConnectionStatusDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          },
+          "409": {
+            "description": "SQUARE_NOT_CONNECTED"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Disconnects Square: revokes access and keeps all mappings for a later reconnect (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/connection/authorize": {
+      "post": {
+        "operationId": "SquareConnectionController_authorize",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareAuthorizeUrlDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Starts connecting Square: returns the Square authorize URL to navigate to (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/connection/default-category": {
+      "patch": {
+        "operationId": "SquareConnectionController_setDefaultCategory",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareDefaultCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareConnectionStatusDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the category does not exist"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          },
+          "409": {
+            "description": "SQUARE_NOT_CONNECTED"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Sets or clears the order category stamped on imported orders (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/location-links": {
+      "get": {
+        "operationId": "SquareLocationLinkController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SquareLocationLinkDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Lists the tenant's Square locations and their mapping (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/location-links/{id}/location": {
+      "patch": {
+        "operationId": "SquareLocationLinkController_setLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareLocationLinkLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareLocationLinkDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the Petsi location does not exist"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          },
+          "404": {
+            "description": "No such location link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Maps a Square location to a Petsi location, or unmaps and disables it with null (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/location-links/{id}/create-location": {
+      "post": {
+        "operationId": "SquareLocationLinkController_createLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareLocationLinkDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          },
+          "404": {
+            "description": "No such location link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Petsi location named after the Square location and maps the link to it (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/location-links/{id}/enabled": {
+      "patch": {
+        "operationId": "SquareLocationLinkController_setEnabled",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareLocationLinkEnabledDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareLocationLinkDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR (MISSING_PROPERTY on locationId): enabling an unmapped link"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          },
+          "404": {
+            "description": "No such location link"
+          },
+          "409": {
+            "description": "SQUARE_NOT_CONNECTED / SQUARE_REAUTH_REQUIRED (enabling)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Enables or disables importing a Square location's orders; enabling runs the initial import (tenant admins)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/location-links/{id}/resync": {
+      "post": {
+        "operationId": "SquareLocationLinkController_resync",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareLocationImportResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR (INCONSISTENT_STATE on enabled): the link is disabled"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not a tenant admin"
+          },
+          "404": {
+            "description": "No such location link"
+          },
+          "409": {
+            "description": "SQUARE_NOT_CONNECTED / SQUARE_REAUTH_REQUIRED"
+          },
+          "429": {
+            "description": "Re-sync rate limit reached"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Re-imports an enabled Square location's upcoming orders, e.g. after an outage; safe to repeat (tenant admins, rate-limited)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog": {
+      "get": {
+        "operationId": "SquareCatalogController_findCatalog",
+        "parameters": [
+          {
+            "name": "view",
+            "required": false,
+            "in": "query",
+            "description": "active (default): live rows; archived: archived or deleted rows only; all",
+            "schema": {
+              "enum": [
+                "active",
+                "archived",
+                "all"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareCatalogDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Lists the tenant's Square items, their variations and how they map to Petsi (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/size-alias-suggestions": {
+      "get": {
+        "operationId": "SquareCatalogController_findSizeAliasSuggestions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SquareSizeAliasSuggestionDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Groups size aliases whose names differ only in their \"serves N\" text (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/items/{id}/menu-item": {
+      "patch": {
+        "operationId": "SquareCatalogController_setItemHint",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareItemHintDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SquareVariationLinkDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the menu item does not exist"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such item hint"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Sets or clears a Square item's hint and re-derives its non-manual variation links; returns the item's links (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/size-aliases/{id}": {
+      "patch": {
+        "operationId": "SquareCatalogController_setSizeAlias",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareSizeAliasDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareSizeAliasDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the size does not exist"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such size alias"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Sets or clears a size alias and re-derives every non-manual variation link with that name (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/variations/{id}": {
+      "patch": {
+        "operationId": "SquareCatalogController_overrideVariation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareVariationLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareVariationLinkDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: unknown menu item, a size the item is not offered in, or container_contents on a non-variable-container item"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such variation link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Manually overrides a variation link (mapping, modifier mode, enabled); it becomes manual and reviewed (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/variations/{id}/reset": {
+      "post": {
+        "operationId": "SquareCatalogController_resetVariation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareVariationLinkDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such variation link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Resets a manual variation link to derived and re-derives it (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/modifiers/{id}/mapping": {
+      "patch": {
+        "operationId": "SquareCatalogController_setModifierMapping",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareModifierLinkMappingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SquareModifierLinkDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: unknown or non-SINGLE menu item, a size the item is not offered in, a missing size, or a menu item on an ignored modifier"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such modifier link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Maps a modifier to a menu item and size, ignores it, or clears it; the link becomes manual and reviewed, and same-named non-manual modifiers on the same Square item follow. Returns the link, then the siblings it changed (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/modifiers/{id}/enabled": {
+      "patch": {
+        "operationId": "SquareCatalogController_setModifierEnabled",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareModifierLinkEnabledDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareModifierLinkDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such modifier link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Enables or disables one modifier link; it becomes manual and reviewed (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/categories/{id}/enabled": {
+      "patch": {
+        "operationId": "SquareCatalogController_setCategoryEnabled",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSquareCategoryLinkEnabledDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareCategoryLinkDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          },
+          "404": {
+            "description": "No such category link"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Enables or disables a Square category and its non-manual variation and modifier links (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/catalog/review": {
+      "post": {
+        "operationId": "SquareCatalogController_markReviewed",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkSquareLinksReviewedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at any location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Marks variation and modifier links as reviewed (admins and managers)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/order-issues": {
+      "get": {
+        "operationId": "SquareOrderIssueController_findAll",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "open (default), resolved or dismissed",
+            "schema": {
+              "enum": [
+                "open",
+                "resolved",
+                "dismissed"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SquareOrderIssueDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Lists the location's Square orders Petsi couldn't import (admins and managers at the location)",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/order-issues/{id}/retry": {
+      "post": {
+        "operationId": "SquareOrderIssueController_retry",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareOrderIssueDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the issue is not open, or its reason cannot be retried"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No such issue at this location, or SQUARE_NOT_FOUND"
+          },
+          "409": {
+            "description": "SQUARE_NOT_CONNECTED or SQUARE_REAUTH_REQUIRED"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Re-fetches the order from Square and imports it again; success resolves the issue",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/order-issues/{id}/dismiss": {
+      "post": {
+        "operationId": "SquareOrderIssueController_dismiss",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareOrderIssueDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the issue is already resolved"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No such issue at this location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Dismisses an issue staff have dealt with outside Petsi",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/unresolved-lines": {
+      "get": {
+        "operationId": "SquareUnresolvedLineController_findGroups",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SquareUnresolvedLineGroupDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Lists the location's pending Square lines, grouped by the Square product that resolves them",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/unresolved-lines/{id}/map": {
+      "post": {
+        "operationId": "SquareUnresolvedLineController_mapAdHoc",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapSquareAdHocLineDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareUnresolvedLineDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the line is not a pending ad-hoc line, or the menu item or size is invalid"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No such line at this location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Maps one ad-hoc line to a menu item and size and adds it to its order",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/unresolved-lines/{id}/retry": {
+      "post": {
+        "operationId": "SquareUnresolvedLineController_retry",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareUnresolvedLineDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the line is not pending"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No such line at this location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Places the line again with the current mapping and menu; it stays pending if it still cannot be placed",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/unresolved-lines/{id}/dismiss": {
+      "post": {
+        "operationId": "SquareUnresolvedLineController_dismiss",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareUnresolvedLineDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the line is already resolved"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No such line at this location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Dismisses a line staff have dealt with",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/unresolved-lines/{id}/disable-variation": {
+      "post": {
+        "operationId": "SquareUnresolvedLineController_disableVariation",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareUnresolvedLineDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR: the line is not pending, or has no known variation"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No such line at this location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Disables the line's Square variation: future lines are skipped and its pending lines dismissed",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/attention": {
+      "get": {
+        "operationId": "SquareAttentionController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SquareAttentionDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Counts of pending Square lines and open issues per location, and of unmapped and unreviewed links",
+        "tags": [
+          "Square"
+        ]
+      }
+    },
+    "/square/locations/{locationId}/orders/{orderId}/detach": {
+      "post": {
+        "operationId": "SquareOrderController_detach",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Detached (or already detached)"
+          },
+          "403": {
+            "description": "Tenant lacks SQUARE_INTEGRATION, or caller is not an admin or manager at the location"
+          },
+          "404": {
+            "description": "No order imported from Square with this id at this location"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Detaches an imported order from Square: its fields and lines become editable, its pending Square lines are dismissed, and later Square updates are ignored",
+        "tags": [
+          "Square"
+        ]
+      }
     }
   },
   "info": {
@@ -8357,7 +9718,8 @@
               "ORDER_MANAGEMENT",
               "INVENTORY_MANAGEMENT",
               "RECIPE_MANAGEMENT",
-              "LABEL_PRINTING"
+              "LABEL_PRINTING",
+              "SQUARE_INTEGRATION"
             ]
           }
         },
@@ -8434,8 +9796,8 @@
           "user": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.115Z",
-              "updatedAt": "2026-10-16T23:36:06.115Z",
+              "createdAt": "2026-11-14T19:03:08.774Z",
+              "updatedAt": "2026-11-14T19:03:08.774Z",
               "name": "jim",
               "email": "jim@email.com"
             },
@@ -8714,7 +10076,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2026-10-16T23:36:06.253Z",
+              "countDate": "2026-11-14T19:03:09.311Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -9059,7 +10421,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2026-10-16T23:36:06.252Z",
+              "countDate": "2026-11-14T19:03:09.310Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -9787,8 +11149,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-10-16T23:36:06.169Z",
-                "updatedAt": "2026-10-16T23:36:06.169Z",
+                "createdAt": "2026-11-14T19:03:09.152Z",
+                "updatedAt": "2026-11-14T19:03:09.152Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -9979,8 +11341,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.323Z",
-              "updatedAt": "2026-10-16T23:36:06.323Z",
+              "createdAt": "2026-11-14T19:03:09.384Z",
+              "updatedAt": "2026-11-14T19:03:09.384Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10463,8 +11825,12 @@
           },
           "type": {
             "type": "string",
-            "description": "Can be single, fixed_container, or variable_container",
-            "example": "fixed_container",
+            "enum": [
+              "single",
+              "container"
+            ],
+            "description": "Either single or container",
+            "example": "single",
             "nullable": true
           },
           "categoryId": {
@@ -10558,8 +11924,12 @@
           },
           "type": {
             "type": "string",
-            "description": "Can be single, fixed_container, or variable_container",
-            "example": "fixed_container"
+            "enum": [
+              "single",
+              "container"
+            ],
+            "description": "Either single or container",
+            "example": "single"
           },
           "categoryId": {
             "type": "number",
@@ -10645,8 +12015,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.169Z",
-              "updatedAt": "2026-10-16T23:36:06.169Z",
+              "createdAt": "2026-11-14T19:03:09.150Z",
+              "updatedAt": "2026-11-14T19:03:09.150Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10688,8 +12058,8 @@
           "parentMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.169Z",
-              "updatedAt": "2026-10-16T23:36:06.169Z",
+              "createdAt": "2026-11-14T19:03:09.151Z",
+              "updatedAt": "2026-11-14T19:03:09.151Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10956,8 +12326,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.281Z",
-              "updatedAt": "2026-10-16T23:36:06.281Z",
+              "createdAt": "2026-11-14T19:03:09.338Z",
+              "updatedAt": "2026-11-14T19:03:09.338Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -11002,8 +12372,8 @@
               "parentOrder": {},
               "menuItem": {
                 "id": 1,
-                "createdAt": "2026-10-16T23:36:06.281Z",
-                "updatedAt": "2026-10-16T23:36:06.281Z",
+                "createdAt": "2026-11-14T19:03:09.338Z",
+                "updatedAt": "2026-11-14T19:03:09.338Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -11066,8 +12436,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.282Z",
-              "updatedAt": "2026-10-16T23:36:06.282Z",
+              "createdAt": "2026-11-14T19:03:09.339Z",
+              "updatedAt": "2026-11-14T19:03:09.339Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -11113,8 +12483,8 @@
                 "parentOrderMenuItem": {},
                 "containedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.282Z",
-                  "updatedAt": "2026-10-16T23:36:06.282Z",
+                  "createdAt": "2026-11-14T19:03:09.339Z",
+                  "updatedAt": "2026-11-14T19:03:09.339Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -11147,9 +12517,9 @@
               "id": 1,
               "category": {},
               "recipient": "alberto",
-              "createdAt": "2026-10-16T23:36:06.282Z",
-              "updatedAt": "2026-10-16T23:36:06.282Z",
-              "fulfillmentDate": "2026-10-16T23:36:06.282Z",
+              "createdAt": "2026-11-14T19:03:09.339Z",
+              "updatedAt": "2026-11-14T19:03:09.339Z",
+              "fulfillmentDate": "2026-11-14T19:03:09.339Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -11157,6 +12527,7 @@
               "email": "email@email.com",
               "note": "instructions",
               "isFrozen": false,
+              "status": "ACTIVE",
               "isWeekly": true,
               "weeklyFulfillment": "monday",
               "orderedItems": [
@@ -11318,6 +12689,15 @@
             "example": true,
             "description": "A flag to 'pause' or 'freeze' an order, not included in DB queries for services like aggregates for Reports."
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists."
+          },
           "category": {
             "example": {
               "id": 1,
@@ -11340,8 +12720,8 @@
                 "parentOrder": {},
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.283Z",
-                  "updatedAt": "2026-10-16T23:36:06.283Z",
+                  "createdAt": "2026-11-14T19:03:09.341Z",
+                  "updatedAt": "2026-11-14T19:03:09.341Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -11367,8 +12747,8 @@
                     "parentOrderMenuItem": {},
                     "containedMenuItem": {
                       "id": 1,
-                      "createdAt": "2026-10-16T23:36:06.283Z",
-                      "updatedAt": "2026-10-16T23:36:06.283Z",
+                      "createdAt": "2026-11-14T19:03:09.341Z",
+                      "updatedAt": "2026-11-14T19:03:09.341Z",
                       "type": "container",
                       "name": "Classic Apple",
                       "category": {},
@@ -11403,8 +12783,8 @@
               "id": 1,
               "order": {},
               "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
-              "startDate": "2026-10-16T23:36:06.283Z",
-              "endDate": "2026-10-16T23:36:06.283Z"
+              "startDate": "2026-11-14T19:03:09.341Z",
+              "endDate": "2026-11-14T19:03:09.341Z"
             },
             "description": "The schedule of the recurring order",
             "nullable": true,
@@ -11450,6 +12830,7 @@
           "phoneNumber",
           "email",
           "isFrozen",
+          "status",
           "category",
           "orderedItems",
           "recurrenceSchedule",
@@ -11483,9 +12864,9 @@
                 "id": 1,
                 "category": {},
                 "recipient": "alberto",
-                "createdAt": "2026-10-16T23:36:06.284Z",
-                "updatedAt": "2026-10-16T23:36:06.284Z",
-                "fulfillmentDate": "2026-10-16T23:36:06.284Z",
+                "createdAt": "2026-11-14T19:03:09.342Z",
+                "updatedAt": "2026-11-14T19:03:09.342Z",
+                "fulfillmentDate": "2026-11-14T19:03:09.342Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -11493,6 +12874,7 @@
                 "email": "email@email.com",
                 "note": "instructions",
                 "isFrozen": false,
+                "status": "ACTIVE",
                 "isWeekly": true,
                 "weeklyFulfillment": "monday",
                 "orderedItems": [
@@ -11605,6 +12987,12 @@
         "properties": {
           "frequency": {
             "type": "string",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "YEARLY"
+            ],
             "description": "The frequency of the schedule",
             "example": "WEEKLY"
           },
@@ -11656,6 +13044,11 @@
           },
           "timezone": {
             "type": "string",
+            "enum": [
+              "America/New_York",
+              "Europe/London",
+              "Asia/Tokyo"
+            ],
             "description": "The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York",
             "example": "America/New_York",
             "nullable": true
@@ -11688,6 +13081,10 @@
           },
           "fulfillmentType": {
             "type": "string",
+            "enum": [
+              "pickup",
+              "delivery"
+            ],
             "description": "Method of Order's dispersal.",
             "example": "delivery"
           },
@@ -11785,15 +13182,33 @@
           },
           "occurrenceType": {
             "type": "string",
+            "enum": [
+              "TEMPLATE",
+              "OCCURRENCE"
+            ],
             "example": "TEMPLATE",
             "description": "The type of the occurence",
             "nullable": true
           },
           "occurrenceState": {
             "type": "string",
+            "enum": [
+              "GENERATED",
+              "MODIFIED",
+              "CANCELLED"
+            ],
             "example": "GENERATED",
             "description": "The state of the occurence",
             "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists. Defaults to ACTIVE."
           },
           "recurrenceDate": {
             "type": "object",
@@ -11912,6 +13327,95 @@
           "timezone"
         ]
       },
+      "OrderSquareModifierDto": {
+        "type": "object",
+        "properties": {
+          "squareModifierId": {
+            "type": "string",
+            "nullable": true,
+            "example": "GHJK4567"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Chocolate Chip"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "squareModifierId",
+          "name",
+          "quantity"
+        ]
+      },
+      "OrderSquareUnresolvedLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareLineUid": {
+            "type": "string",
+            "example": "8sD2kPq1"
+          },
+          "squareVariationId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for an ad-hoc line",
+            "example": "XYZ123"
+          },
+          "squareItemName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Apple Pie"
+          },
+          "squareVariationName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Large"
+          },
+          "squareModifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderSquareModifierDto"
+            }
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unmapped_variation",
+              "unmapped_modifier",
+              "ad_hoc",
+              "container_invalid"
+            ],
+            "example": "unmapped_variation"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "example": "no nuts"
+          }
+        },
+        "required": [
+          "id",
+          "squareLineUid",
+          "squareVariationId",
+          "squareItemName",
+          "squareVariationName",
+          "squareModifiers",
+          "reason",
+          "quantity",
+          "note"
+        ]
+      },
       "OrderResponseDto": {
         "type": "object",
         "properties": {
@@ -12016,6 +13520,15 @@
             "description": "The state of the occurence",
             "nullable": true
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists."
+          },
           "recurrenceSchedule": {
             "example": {
               "frequency": "WEEKLY",
@@ -12039,6 +13552,23 @@
                 "$ref": "#/components/schemas/RecurringOrderScheduleResponseDto"
               }
             ]
+          },
+          "squareLinked": {
+            "type": "boolean",
+            "description": "True while the order is linked to a Square order: its Square-owned fields are read-only.",
+            "example": false
+          },
+          "hasUnresolvedSquareLines": {
+            "type": "boolean",
+            "description": "True when the order has pending Square lines.",
+            "example": false
+          },
+          "unresolvedSquareLines": {
+            "description": "Pending Square lines Petsi could not place: placeholders shown next to the ordered items.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderSquareUnresolvedLineDto"
+            }
           },
           "createdAt": {
             "type": "string",
@@ -12066,7 +13596,11 @@
           "orderedItems",
           "occurrenceType",
           "occurrenceState",
+          "status",
           "recurrenceSchedule",
+          "squareLinked",
+          "hasUnresolvedSquareLines",
+          "unresolvedSquareLines",
           "createdAt",
           "updatedAt"
         ]
@@ -12168,6 +13702,10 @@
           },
           "fulfillmentType": {
             "type": "string",
+            "enum": [
+              "pickup",
+              "delivery"
+            ],
             "description": "Method of Order's dispersal.",
             "example": "delivery"
           },
@@ -12258,15 +13796,33 @@
           },
           "occurrenceType": {
             "type": "string",
+            "enum": [
+              "TEMPLATE",
+              "OCCURRENCE"
+            ],
             "example": "TEMPLATE",
             "description": "The type of the occurence",
             "nullable": true
           },
           "occurrenceState": {
             "type": "string",
+            "enum": [
+              "GENERATED",
+              "MODIFIED",
+              "CANCELLED"
+            ],
             "example": "GENERATED",
             "description": "The state of the occurence",
             "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELLED"
+            ],
+            "example": "ACTIVE",
+            "description": "The status of the order. Cancelled orders are not included in reports or default order lists. Defaults to ACTIVE."
           },
           "recurrenceSchedule": {
             "example": {
@@ -12587,8 +14143,8 @@
               "name": "Classic Apple Pie",
               "producedMenuItem": {
                 "id": 1,
-                "createdAt": "2026-10-16T23:36:06.393Z",
-                "updatedAt": "2026-10-16T23:36:06.393Z",
+                "createdAt": "2026-11-14T19:03:09.467Z",
+                "updatedAt": "2026-11-14T19:03:09.467Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -12654,8 +14210,8 @@
           "producedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.393Z",
-              "updatedAt": "2026-10-16T23:36:06.393Z",
+              "createdAt": "2026-11-14T19:03:09.467Z",
+              "updatedAt": "2026-11-14T19:03:09.467Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -12819,8 +14375,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.394Z",
-                  "updatedAt": "2026-10-16T23:36:06.394Z",
+                  "createdAt": "2026-11-14T19:03:09.468Z",
+                  "updatedAt": "2026-11-14T19:03:09.468Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -12923,8 +14479,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.395Z",
-                  "updatedAt": "2026-10-16T23:36:06.395Z",
+                  "createdAt": "2026-11-14T19:03:09.469Z",
+                  "updatedAt": "2026-11-14T19:03:09.469Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -13457,8 +15013,8 @@
                 "displayName": "CLAPPLE",
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-10-16T23:36:06.428Z",
-                  "updatedAt": "2026-10-16T23:36:06.428Z",
+                  "createdAt": "2026-11-14T19:03:09.512Z",
+                  "updatedAt": "2026-11-14T19:03:09.512Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -13517,8 +15073,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-10-16T23:36:06.428Z",
-              "updatedAt": "2026-10-16T23:36:06.428Z",
+              "createdAt": "2026-11-14T19:03:09.512Z",
+              "updatedAt": "2026-11-14T19:03:09.512Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -13829,6 +15385,11 @@
           },
           "name": {
             "type": "string",
+            "enum": [
+              "defaultTimezone",
+              "taxRate",
+              "orderNumberPrefix"
+            ],
             "description": "Setting key. Must be a name registered in the backend SettingKey registry.",
             "example": "taxRate"
           },
@@ -13889,6 +15450,1034 @@
           "isOverridden"
         ]
       },
+      "SquareConnectionStatus": {
+        "type": "string",
+        "enum": [
+          "not_connected",
+          "connected",
+          "needs_reauth",
+          "disconnected"
+        ],
+        "description": "'not_connected' when the tenant has never connected"
+      },
+      "SquareConnectionStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "example": "connected",
+            "description": "'not_connected' when the tenant has never connected",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SquareConnectionStatus"
+              }
+            ]
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Petsi's Pies",
+            "description": "The Square business name, or null when not connected"
+          },
+          "defaultOrderCategoryId": {
+            "type": "number",
+            "nullable": true,
+            "example": 3,
+            "description": "The order category stamped on orders imported from Square, or null"
+          }
+        },
+        "required": [
+          "status",
+          "businessName",
+          "defaultOrderCategoryId"
+        ]
+      },
+      "SquareAuthorizeUrlDto": {
+        "type": "object",
+        "properties": {
+          "authorizeUrl": {
+            "type": "string",
+            "example": "https://connect.squareupsandbox.com/oauth2/authorize?client_id=sandbox-sq0idb-…&state=…&scope=ORDERS_READ+ITEMS_READ+MERCHANT_PROFILE_READ",
+            "description": "Square authorize page; the frontend navigates the browser here"
+          }
+        },
+        "required": [
+          "authorizeUrl"
+        ]
+      },
+      "UpdateSquareDefaultCategoryDto": {
+        "type": "object",
+        "properties": {
+          "orderCategoryId": {
+            "type": "number",
+            "nullable": true,
+            "example": 3,
+            "description": "Order category for imported orders; null clears it"
+          }
+        },
+        "required": [
+          "orderCategoryId"
+        ]
+      },
+      "SquareLocationLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareLocationId": {
+            "type": "string",
+            "example": "L8ZJ1S4ABCDEF"
+          },
+          "squareName": {
+            "type": "string",
+            "example": "Petsi Pies Somerville"
+          },
+          "squareStatus": {
+            "type": "string",
+            "nullable": true,
+            "example": "ACTIVE",
+            "description": "Square's location status (ACTIVE / INACTIVE)"
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true,
+            "example": "America/New_York"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether this location's orders are imported"
+          },
+          "locationId": {
+            "type": "number",
+            "nullable": true,
+            "example": 3,
+            "description": "The Petsi location it maps to, or null when unmapped"
+          }
+        },
+        "required": [
+          "id",
+          "squareLocationId",
+          "squareName",
+          "squareStatus",
+          "timezone",
+          "enabled",
+          "locationId"
+        ]
+      },
+      "UpdateSquareLocationLinkLocationDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "number",
+            "nullable": true,
+            "example": 3,
+            "description": "Petsi location to map to; null unmaps (and disables) the link"
+          }
+        },
+        "required": [
+          "locationId"
+        ]
+      },
+      "UpdateSquareLocationLinkEnabledDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Enabling requires a mapped Petsi location"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "SquareLocationImportResultDto": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "number",
+            "example": 12,
+            "description": "Open/completed pickup and delivery orders Square returned for the location"
+          },
+          "pastDue": {
+            "type": "number",
+            "example": 4,
+            "description": "Left out because they were due before today (location time)"
+          },
+          "created": {
+            "type": "number",
+            "example": 6,
+            "description": "New Petsi orders"
+          },
+          "updated": {
+            "type": "number",
+            "example": 1,
+            "description": "Existing Petsi orders updated to a newer Square version"
+          },
+          "unchanged": {
+            "type": "number",
+            "example": 1,
+            "description": "Already imported at this Square version"
+          },
+          "skipped": {
+            "type": "number",
+            "example": 0,
+            "description": "Not imported by ingest (e.g. detached, draft, cancelled)"
+          },
+          "rejected": {
+            "type": "number",
+            "example": 0,
+            "description": "Rejected by Petsi order validation"
+          }
+        },
+        "required": [
+          "found",
+          "pastDue",
+          "created",
+          "updated",
+          "unchanged",
+          "skipped",
+          "rejected"
+        ]
+      },
+      "SquareCategoryLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareCategoryId": {
+            "type": "string",
+            "example": "V5CHBXHJKLMN4RZQ"
+          },
+          "squareName": {
+            "type": "string",
+            "example": "Pies"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "The starting `enabled` of new variation links in it"
+          }
+        },
+        "required": [
+          "id",
+          "squareCategoryId",
+          "squareName",
+          "enabled"
+        ]
+      },
+      "SquareSizeAliasDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareVariationName": {
+            "type": "string",
+            "example": "large 10\" serves 8-10",
+            "description": "The Square variation name, normalized"
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": 4
+          }
+        },
+        "required": [
+          "id",
+          "squareVariationName",
+          "menuItemSizeId"
+        ]
+      },
+      "SquareVariationLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareVariationId": {
+            "type": "string",
+            "example": "GUN7HNQBH7ZRARYZN52E7O4B"
+          },
+          "squareVariationName": {
+            "type": "string",
+            "example": "Large 10\" serves 8-10"
+          },
+          "squareVersion": {
+            "type": "string",
+            "nullable": true,
+            "example": "1761600000000",
+            "description": "Square's catalog version (a bigint, as a string)"
+          },
+          "isArchived": {
+            "type": "boolean",
+            "example": false
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Disabled variations are skipped on import"
+          },
+          "menuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": 12
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": 4
+          },
+          "modifierMode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "modifier_is_item",
+              "container_contents"
+            ],
+            "example": "none"
+          },
+          "mappingSource": {
+            "type": "string",
+            "enum": [
+              "derived",
+              "manual"
+            ],
+            "example": "derived"
+          },
+          "reviewedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Null while the link needs review"
+          }
+        },
+        "required": [
+          "id",
+          "squareVariationId",
+          "squareVariationName",
+          "squareVersion",
+          "isArchived",
+          "isDeleted",
+          "enabled",
+          "menuItemId",
+          "menuItemSizeId",
+          "modifierMode",
+          "mappingSource",
+          "reviewedAt"
+        ]
+      },
+      "SquareModifierLinkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareModifierId": {
+            "type": "string",
+            "example": "HOOM4RVJ2MC4GXDCZ5BNWKOT"
+          },
+          "squareModifierListId": {
+            "type": "string",
+            "example": "EKKPJMKTXNLXUBMJEZF6QFTM"
+          },
+          "squareModifierListName": {
+            "type": "string",
+            "example": "Cookie 1"
+          },
+          "squareModifierName": {
+            "type": "string",
+            "example": "Chocolate Chip"
+          },
+          "squareItemIds": {
+            "description": "The Square items the modifier list is attached to",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "item",
+              "ignore"
+            ],
+            "example": "item",
+            "description": "item: becomes menuItemId/menuItemSizeId (unmapped while null); ignore: skipped on import"
+          },
+          "menuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": 31
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": 2
+          },
+          "mappingSource": {
+            "type": "string",
+            "enum": [
+              "derived",
+              "manual"
+            ],
+            "example": "derived"
+          },
+          "reviewedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Null while the link needs review"
+          }
+        },
+        "required": [
+          "id",
+          "squareModifierId",
+          "squareModifierListId",
+          "squareModifierListName",
+          "squareModifierName",
+          "squareItemIds",
+          "isDeleted",
+          "enabled",
+          "kind",
+          "menuItemId",
+          "menuItemSizeId",
+          "mappingSource",
+          "reviewedAt"
+        ]
+      },
+      "SquareCatalogItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareItemId": {
+            "type": "string",
+            "example": "TNMEHPNTJRAWYKLFGHU6JQ3W"
+          },
+          "squareItemName": {
+            "type": "string",
+            "example": "Apple Crumb Pie"
+          },
+          "squareCategoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isArchived": {
+            "type": "boolean",
+            "example": false
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "menuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": 12,
+            "description": "The item hint: the menu item derived links take"
+          },
+          "variations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareVariationLinkDto"
+            }
+          },
+          "modifiers": {
+            "description": "Modifiers of the lists attached to this item; a list on several items is listed under each",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareModifierLinkDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "squareItemId",
+          "squareItemName",
+          "squareCategoryId",
+          "isArchived",
+          "isDeleted",
+          "menuItemId",
+          "variations",
+          "modifiers"
+        ]
+      },
+      "SquareCatalogDto": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareCategoryLinkDto"
+            }
+          },
+          "sizeAliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareSizeAliasDto"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareCatalogItemDto"
+            }
+          }
+        },
+        "required": [
+          "categories",
+          "sizeAliases",
+          "items"
+        ]
+      },
+      "SquareSizeAliasSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "baseName": {
+            "type": "string",
+            "example": "large 10\"",
+            "description": "The shared name, without the \"serves N\" text"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareSizeAliasDto"
+            }
+          }
+        },
+        "required": [
+          "baseName",
+          "aliases"
+        ]
+      },
+      "UpdateSquareItemHintDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": 12,
+            "description": "Menu item the item's derived variation links take; null clears the hint"
+          }
+        },
+        "required": [
+          "menuItemId"
+        ]
+      },
+      "UpdateSquareSizeAliasDto": {
+        "type": "object",
+        "properties": {
+          "menuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": 4,
+            "description": "Petsi size this Square variation name means; null clears the alias"
+          }
+        },
+        "required": [
+          "menuItemSizeId"
+        ]
+      },
+      "UpdateSquareVariationLinkDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": 12
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": 4
+          },
+          "modifierMode": {
+            "type": "string",
+            "enum": [
+              "none",
+              "modifier_is_item",
+              "container_contents"
+            ],
+            "example": "none"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "UpdateSquareModifierLinkMappingDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "item",
+              "ignore"
+            ],
+            "example": "item"
+          },
+          "menuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": 31,
+            "description": "A SINGLE menu item; omit or null to clear or ignore"
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": 2
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "UpdateSquareModifierLinkEnabledDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Disabled modifiers are skipped on import"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "UpdateSquareCategoryLinkEnabledDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "example": false,
+            "description": "Also sets `enabled` on the category's non-manual variation links, and the starting `enabled` of new ones"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "MarkSquareLinksReviewedDto": {
+        "type": "object",
+        "properties": {
+          "variationLinkIds": {
+            "example": [
+              1,
+              2
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "modifierLinkIds": {
+            "example": [
+              3
+            ],
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "SquareOrderIssueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareOrderId": {
+            "type": "string",
+            "example": "CAISEM9jK2T0rQKfT8jZ"
+          },
+          "squareLocationId": {
+            "type": "string",
+            "example": "L8ZJ1S4ABCDEF"
+          },
+          "locationId": {
+            "type": "number",
+            "nullable": true,
+            "example": 3,
+            "description": "The Petsi location the order belongs to"
+          },
+          "orderId": {
+            "type": "number",
+            "nullable": true,
+            "example": null,
+            "description": "The Petsi order, once one exists"
+          },
+          "squareVersion": {
+            "type": "string",
+            "example": "4",
+            "description": "The Square order version last attempted (a bigint)"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "validation_failed",
+              "location_unmapped",
+              "refund_received",
+              "cancelled_while_detached"
+            ]
+          },
+          "detail": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "example": {
+              "validationErrors": {
+                "errorPayload": [
+                  {
+                    "errorCode": "MISSING_PROPERTY",
+                    "fields": [
+                      "recipient"
+                    ]
+                  }
+                ]
+              }
+            },
+            "description": "For validation_failed, the order validator's error tree under validationErrors; for refund_received, the returned lines and amount under refund"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "resolved",
+              "dismissed"
+            ]
+          },
+          "lastAttemptAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "squareOrderId",
+          "squareLocationId",
+          "locationId",
+          "orderId",
+          "squareVersion",
+          "reason",
+          "detail",
+          "status",
+          "lastAttemptAt",
+          "createdAt"
+        ]
+      },
+      "SquareUnmappedModifierDto": {
+        "type": "object",
+        "properties": {
+          "squareModifierId": {
+            "type": "string",
+            "nullable": true,
+            "example": "GHJK4567"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Lemon Glaze"
+          },
+          "modifierLinkId": {
+            "type": "number",
+            "nullable": true,
+            "example": 7,
+            "description": "The modifier link to map; null when no catalog sync has seen the modifier yet"
+          }
+        },
+        "required": [
+          "squareModifierId",
+          "name",
+          "modifierLinkId"
+        ]
+      },
+      "SquareUnresolvedLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "squareLineUid": {
+            "type": "string",
+            "example": "8sD2kPq1"
+          },
+          "squareVariationId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for an ad-hoc line",
+            "example": "XYZ123"
+          },
+          "squareItemName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Apple Pie"
+          },
+          "squareVariationName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Large"
+          },
+          "squareModifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderSquareModifierDto"
+            }
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unmapped_variation",
+              "unmapped_modifier",
+              "ad_hoc",
+              "container_invalid"
+            ],
+            "example": "unmapped_variation"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "example": "no nuts"
+          },
+          "orderId": {
+            "type": "number",
+            "nullable": true,
+            "example": 41
+          },
+          "squareOrderId": {
+            "type": "string",
+            "example": "CAISEM9jK2T0rQKfT8jZ"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "resolved",
+              "dismissed"
+            ]
+          },
+          "adHocMenuItemId": {
+            "type": "number",
+            "nullable": true,
+            "example": null,
+            "description": "For an ad-hoc line, the menu item staff mapped it to"
+          },
+          "adHocMenuItemSizeId": {
+            "type": "number",
+            "nullable": true,
+            "example": null
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "squareLineUid",
+          "squareVariationId",
+          "squareItemName",
+          "squareVariationName",
+          "squareModifiers",
+          "reason",
+          "quantity",
+          "note",
+          "orderId",
+          "squareOrderId",
+          "status",
+          "adHocMenuItemId",
+          "adHocMenuItemSizeId",
+          "createdAt"
+        ]
+      },
+      "SquareUnresolvedLineGroupDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "unmapped_variation:XYZ123",
+            "description": "Stable key: `<reason>:<squareVariationId>`, or `ad_hoc:<line id>`"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unmapped_variation",
+              "unmapped_modifier",
+              "ad_hoc",
+              "container_invalid"
+            ]
+          },
+          "squareVariationId": {
+            "type": "string",
+            "nullable": true,
+            "example": "XYZ123"
+          },
+          "squareItemName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Apple Pie"
+          },
+          "squareVariationName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Large"
+          },
+          "variationLinkId": {
+            "type": "number",
+            "nullable": true,
+            "example": 12,
+            "description": "The variation link to map or disable; null for ad-hoc lines and variations no catalog sync has seen"
+          },
+          "unmappedModifiers": {
+            "description": "For unmapped_modifier: the modifiers still to map",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareUnmappedModifierDto"
+            }
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareUnresolvedLineDto"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "reason",
+          "squareVariationId",
+          "squareItemName",
+          "squareVariationName",
+          "variationLinkId",
+          "unmappedModifiers",
+          "lines"
+        ]
+      },
+      "MapSquareAdHocLineDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "number",
+            "example": 12
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "example": 4
+          }
+        },
+        "required": [
+          "menuItemId",
+          "menuItemSizeId"
+        ]
+      },
+      "SquareLocationAttentionDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "number",
+            "example": 3
+          },
+          "pendingLines": {
+            "type": "number",
+            "example": 2,
+            "description": "Pending unresolved Square lines on its orders"
+          },
+          "openIssues": {
+            "type": "number",
+            "example": 1,
+            "description": "Open Square order issues"
+          }
+        },
+        "required": [
+          "locationId",
+          "pendingLines",
+          "openIssues"
+        ]
+      },
+      "SquareLinkCountsDto": {
+        "type": "object",
+        "properties": {
+          "variations": {
+            "type": "number",
+            "example": 4
+          },
+          "modifiers": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "variations",
+          "modifiers"
+        ]
+      },
+      "SquareAttentionDto": {
+        "type": "object",
+        "properties": {
+          "locations": {
+            "description": "Only locations whose orders the caller can read",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SquareLocationAttentionDto"
+            }
+          },
+          "unmappedLinks": {
+            "description": "Tenant-wide: enabled, live links that have no Petsi mapping yet",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SquareLinkCountsDto"
+              }
+            ]
+          },
+          "unreviewedLinks": {
+            "description": "Tenant-wide: live links nobody has reviewed yet",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SquareLinkCountsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "locations",
+          "unmappedLinks",
+          "unreviewedLinks"
+        ]
+      },
       "ErrorResponseCode": {
         "type": "string",
         "enum": [
@@ -13897,7 +16486,10 @@
           "ALREADY_EXISTS",
           "REFERENCE_CONFLICT",
           "INTERNAL_ERROR",
-          "REFERENCE_NOT_FOUND"
+          "REFERENCE_NOT_FOUND",
+          "SQUARE_NOT_CONNECTED",
+          "SQUARE_REAUTH_REQUIRED",
+          "SQUARE_NOT_FOUND"
         ]
       },
       "ErrorResponseDto": {

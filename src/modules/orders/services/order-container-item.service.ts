@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { LocationScopedServiceBase } from '../../../common/base/location-scoped-service.base';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { OrderSquareStatusService } from './order-square-status.service';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import {
@@ -21,6 +22,7 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
         validator: OrderContainerItemValidator,
 
         private readonly containerItemComposer: OrderContainerItemComposer,
+        private readonly squareStatus: OrderSquareStatusService,
     ) {
         super(
             repo,
@@ -28,6 +30,19 @@ export class OrderContainerItemService extends LocationScopedServiceBase<OrderCo
             requestContextService,
             validator,
         );
+    }
+
+    /** A Square-derived item's contents can't change while its order is linked. */
+    async remove(id: number): Promise<boolean> {
+        const item = await this.findOne(id, [
+            'parentOrderMenuItem',
+            'parentOrderMenuItem.parentOrder',
+        ]);
+        await this.squareStatus.assertNotSquareOwned(
+            item.parentOrderMenuItem.parentOrder.id,
+            item.parentOrderMenuItem.id,
+        );
+        return super.remove(id);
     }
 
     protected async createEntity(

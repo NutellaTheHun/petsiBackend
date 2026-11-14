@@ -11,7 +11,12 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
+import { OrderSquareStatusService } from '../services/order-square-status.service';
 import { OCCURRENCE_TYPES } from '../utils/occurence-types';
+import {
+    squareOwnershipViolations,
+    SquareOwnershipViolations,
+} from '../utils/square-ownership';
 import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderValidatorIdentity } from './identities/order.validator.identity.interface';
 import { RecurringOrderScheduleValidatorIdentity } from './identities/recurring-order-schedule.identity.interface';
@@ -40,6 +45,8 @@ export class OrderValidator extends ValidatorBase<
         @InjectRepository(RecurringOrderSchedule)
         private readonly scheduleRepo: Repository<RecurringOrderSchedule>,
         requestContextService: RequestContextService,
+
+        private readonly squareStatus: OrderSquareStatusService,
     ) {
         super(repo, 'Order', requestContextService);
     }
@@ -57,7 +64,13 @@ export class OrderValidator extends ValidatorBase<
             errorMap,
         );
 
-        if (identity.categoryId !== undefined) {
+        this.enforceSquareOwnership(
+            identity.squareOwnershipViolations,
+            errorMap,
+        );
+
+        // null clears the category (or creates without one): nothing to look up
+        if (identity.categoryId != null) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.orderCategoryRepo,
@@ -189,6 +202,60 @@ export class OrderValidator extends ValidatorBase<
         return errorMap;
     }
 
+    /** The UI locks Square-owned data on a linked order, so a change is an anomaly. */
+    private enforceSquareOwnership(
+        violations: SquareOwnershipViolations | undefined,
+        errorMap: ValidationErrorMap,
+    ): void {
+        if (!violations) return;
+        if (violations.fields.length) {
+            errorMap.addError('IMMUTABLE_FIELD', undefined, violations.fields);
+        }
+        if (violations.removedLineIds.length) {
+            errorMap.addError('IMMUTABLE_FIELD', violations.removedLineIds, [
+                'orderedItems',
+            ]);
+        }
+        for (const line of violations.changedLines) {
+            const child = new ValidationErrorMap(line.id);
+            child.addError('IMMUTABLE_FIELD', undefined, line.fields);
+            errorMap.addChild('orderedItems', child);
+        }
+    }
+
+    /**
+     * On a staff update of a Square-linked order, what it changes of the
+     * Square-owned data. Square's own writers (ingest, line conversion) set
+     * `squareSystemWriter` and aren't checked.
+     */
+    private async resolveSquareOwnership(
+        dto: CreateOrderDto | UpdateOrderDto,
+        id: number | string,
+    ): Promise<SquareOwnershipViolations | undefined> {
+        if (
+            typeof id !== 'number' ||
+            this.requestContextService.get<boolean>('squareSystemWriter')
+        ) {
+            return undefined;
+        }
+        const squareLineIds = await this.squareStatus.squareLineIds(id);
+        if (!squareLineIds) return undefined;
+        const current = await this.repo.findOne({
+            where: { id },
+            relations: [
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.size',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
+            ],
+        });
+        return current
+            ? squareOwnershipViolations(current, squareLineIds, dto)
+            : undefined;
+    }
+
     public async resolveIdentity(
         dto: CreateOrderDto | UpdateOrderDto,
         id: number | string,
@@ -252,6 +319,10 @@ export class OrderValidator extends ValidatorBase<
             occurrenceType: dto.occurrenceType,
             occurrenceState: dto.occurrenceState,
             recurrenceSchedule,
+            squareOwnershipViolations: await this.resolveSquareOwnership(
+                dto,
+                id,
+            ),
         } as OrderValidatorIdentity;
     }
 }

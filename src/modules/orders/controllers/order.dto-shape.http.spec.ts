@@ -5,12 +5,7 @@ import {
     createHttpTestApp,
     RecordingLogger,
 } from '../../../test/http-test-app';
-import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import {
-    TestUser,
-    useTestUserAndRoleGuards,
-} from '../../../test/test-user-guard';
-import { RequestContextService } from '../../request-context/RequestContextService';
+import { TestUser } from '../../../test/test-user-guard';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 
@@ -51,10 +46,6 @@ describe('order DTO shape failures (HTTP)', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        const requestContext = module.get<
-            RequestContextService,
-            TestRequestContextService
-        >(RequestContextService);
         const testingUtil = module.get(OrderTestingUtil);
         const tenantId = await testingUtil.getDefaultTenantId();
         locationId = await testingUtil.getDefaultLocationId();
@@ -65,10 +56,7 @@ describe('order DTO shape failures (HTTP)', () => {
         };
 
         ({ app, logger } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(
-                () => currentUser,
-                requestContext,
-            ),
+            user: () => currentUser,
         }));
     });
 

@@ -10,6 +10,7 @@ import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { ORDER_STATUSES } from '../../orders/utils/order-statuses';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
 import { Tenant } from '../../tenants/entities/tenant.entity';
@@ -86,6 +87,7 @@ describe('ReportExecutionService', () => {
     let orderAlice: Order;
     let orderBob: Order;
     let orderFrozen: Order;
+    let orderCancelled: Order;
     let orderMenuItemAlice: OrderMenuItem;
     let orderMenuItemBob: OrderMenuItem;
 
@@ -158,6 +160,15 @@ describe('ReportExecutionService', () => {
             tenantId: tenant.id,
             locationId: FIXTURE_LOCATION_ID,
         });
+        orderCancelled = await orderRepo.save({
+            recipient: `${P}-cancelled`,
+            fulfillmentDate: DATE_1,
+            fulfillmentType: 'pickup',
+            isFrozen: false,
+            status: ORDER_STATUSES.CANCELLED,
+            tenantId: tenant.id,
+            locationId: FIXTURE_LOCATION_ID,
+        });
 
         orderMenuItemAlice = await orderMenuItemRepo.save({
             menuItem,
@@ -184,7 +195,12 @@ describe('ReportExecutionService', () => {
             orderMenuItemAlice.id,
             orderMenuItemBob.id,
         ]);
-        await orderRepo.delete([orderAlice.id, orderBob.id, orderFrozen.id]);
+        await orderRepo.delete([
+            orderAlice.id,
+            orderBob.id,
+            orderFrozen.id,
+            orderCancelled.id,
+        ]);
         await menuItemRepo.delete([menuItem.id, menuItem2.id]);
         await menuItemSizeRepo.delete(menuItemSize.id);
         await menuItemCategoryRepo.delete(menuItemCategory.id);
@@ -334,6 +350,26 @@ describe('ReportExecutionService', () => {
             const section = tableSection(result);
             const recipients = section.rows.map((r) => r.recipient);
             expect(recipients).not.toContain(`${P}-frozen`);
+        });
+
+        it('cancelled orders are absent from execution results while active ones are present', async () => {
+            const defn = await createDefinition([
+                {
+                    type: 'table',
+                    order: 1,
+                    title: 'Orders',
+                    entity: 'orders',
+                    columns: [{ fieldKey: 'recipient' }],
+                    filters: [],
+                },
+            ]);
+
+            const result = await service.execute(defn.id, {});
+
+            const section = tableSection(result);
+            const recipients = section.rows.map((r) => r.recipient);
+            expect(recipients).toContain(`${P}-alice`);
+            expect(recipients).not.toContain(`${P}-cancelled`);
         });
 
         it('unknown field key throws AppHttpException', async () => {

@@ -49,6 +49,9 @@ import { UserLocationValidator } from './validators/user-location.validator';
         UserLocationService,
         UserLocationTestUtil,
         TypeOrmModule,
+        // So a module creating locations through LocationService can
+        // invalidate LocationController's findAll cache
+        CacheModule,
     ],
 })
 export class LocationsModule {}

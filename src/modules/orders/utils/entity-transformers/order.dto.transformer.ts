@@ -2,6 +2,10 @@ import { plainToInstance } from 'class-transformer';
 import { OrderResponseDto } from '../../dto/order/order-response.dto';
 import { UpdateOrderDto } from '../../dto/order/update-order.dto';
 import { Order } from '../../entities/order.entity';
+import {
+    NO_SQUARE_STATUS,
+    OrderSquareStatus,
+} from '../../services/order-square-status.service';
 import { orderMenuItemToNestedUpdateDto } from './order-menu-item.dto.transformer';
 import {
     recurringOrderScheduleToResponseDto,
@@ -36,6 +40,7 @@ export function orderToUpdateDto(
         email: order.email ?? undefined,
         note: order.note ?? undefined,
         isFrozen: order.isFrozen ?? undefined,
+        status: order.status ?? undefined,
         categoryId: order.category?.id ?? null,
         locationId: order.locationId,
         occurrenceType: order.occurrenceType ?? undefined,
@@ -48,9 +53,15 @@ export function orderToUpdateDto(
     });
 }
 
-export function orderToResponseDto(order: Order): OrderResponseDto {
+export function orderToResponseDto(
+    order: Order,
+    square: OrderSquareStatus = NO_SQUARE_STATUS,
+): OrderResponseDto {
     return plainToInstance(OrderResponseDto, {
         ...order,
+        squareLinked: square.squareLinked,
+        hasUnresolvedSquareLines: square.unresolvedSquareLines.length > 0,
+        unresolvedSquareLines: square.unresolvedSquareLines,
         recurrenceSchedule: order.recurrenceSchedule
             ? recurringOrderScheduleToResponseDto(order.recurrenceSchedule)
             : undefined,

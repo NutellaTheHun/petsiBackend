@@ -13,16 +13,11 @@ import {
     createHttpTestApp,
     RecordingLogger,
 } from '../../../test/http-test-app';
-import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import {
-    TestUser,
-    useTestUserAndRoleGuards,
-} from '../../../test/test-user-guard';
+import { TestUser } from '../../../test/test-user-guard';
 import { Location } from '../../locations/entities/location.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
@@ -168,10 +163,6 @@ describe('order nested id ownership (HTTP)', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        const requestContext = module.get<
-            RequestContextService,
-            TestRequestContextService
-        >(RequestContextService);
         const testingUtil = module.get(OrderTestingUtil);
 
         orderRepo = module.get(getRepositoryToken(Order));
@@ -199,10 +190,7 @@ describe('order nested id ownership (HTTP)', () => {
 
         currentUser = userFor(home);
         ({ app, logger } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(
-                () => currentUser,
-                requestContext,
-            ),
+            user: () => currentUser,
         }));
     });
 

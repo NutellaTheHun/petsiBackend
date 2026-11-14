@@ -36,6 +36,8 @@ export interface OrderSnapshotV1 {
     email: string | null;
     note: string | null;
     isFrozen: boolean;
+    /** Optional: snapshots written before the status existed lack it (treated as ACTIVE). */
+    status?: string;
     categoryId: number | null;
     orderedItems: OrderMenuItemSnapshotLineV1[];
     recurrenceSchedule: OrderRecurrenceScheduleSnapshotV1 | null;
@@ -68,6 +70,7 @@ export function orderToSnapshotV1(order: Order): OrderSnapshotV1 {
         email: order.email ?? null,
         note: order.note ?? null,
         isFrozen: order.isFrozen,
+        status: order.status,
         categoryId: order.category?.id ?? null,
         orderedItems: (order.orderedItems ?? []).map((line) => ({
             menuItemId: line.menuItem.id,

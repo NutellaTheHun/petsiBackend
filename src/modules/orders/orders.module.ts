@@ -6,6 +6,8 @@ import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { LocationsModule } from '../locations/locations.module';
+import { SquareOrderLink } from '../square/entities/square-order-link.entity';
+import { SquareUnresolvedLine } from '../square/entities/square-unresolved-line.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { RevisionHistoryModule } from '../revision-history/revision-history.module';
 import { TenantsModule } from '../tenants/tenants.module';
@@ -28,6 +30,8 @@ import { OrderContainerItemService } from './services/order-container-item.servi
 import { OrderMenuItemService } from './services/order-menu-item.service';
 import { OrderRecurrenceService } from './services/order-recurrence.service';
 import { OrderService } from './services/order.service';
+import { OrderSquareStatusService } from './services/order-square-status.service';
+import { OrderWriteHooks } from './services/order-write-hooks.service';
 import { RecurringOrderScheduleService } from './services/recurring-order-schedule.service';
 import { OrderContainerItemComposer } from './utils/composers/order-container-item.composer';
 import { OrderMenuItemComposer } from './utils/composers/order-menu-item.composer';
@@ -54,6 +58,9 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
             MenuItem,
             MenuItemSize,
             MenuItemContainerItem,
+            // Read-only, for the Square flags on OrderResponseDto
+            SquareOrderLink,
+            SquareUnresolvedLine,
         ]),
         MenuItemsModule,
         RevisionHistoryModule,
@@ -76,6 +83,8 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
         RecurringOrderScheduleService,
 
         OrderRecurrenceService,
+        OrderSquareStatusService,
+        OrderWriteHooks,
 
         OrderBuilder,
         OrderCategoryBuilder,
@@ -101,6 +110,8 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
     ],
     exports: [
         OrderService,
+        OrderSquareStatusService,
+        OrderWriteHooks,
         OrderCategoryService,
         OrderMenuItemService,
         OrderContainerItemService,

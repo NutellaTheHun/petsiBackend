@@ -25,6 +25,7 @@ import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
@@ -41,8 +42,11 @@ import {
     OccurrenceState,
     OccurrenceType,
 } from '../utils/occurence-types';
+import { ORDER_STATUSES, OrderStatus } from '../utils/order-statuses';
 import { OrderValidator } from '../validators/order.validator';
 import { OrderRecurrenceService } from './order-recurrence.service';
+import { OrderSquareStatusService } from './order-square-status.service';
+import { OrderWriteHooks } from './order-write-hooks.service';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 
@@ -61,6 +65,8 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         private readonly orderRecurrenceService: OrderRecurrenceService,
         private readonly orderChangeDetector: OrderChangeDetector,
         private readonly revisionHistoryService: RevisionHistoryService,
+        private readonly orderWriteHooks: OrderWriteHooks,
+        private readonly squareStatus: OrderSquareStatusService,
     ) {
         super(repo, 'OrderService', requestContextService, validator);
     }
@@ -77,9 +83,14 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
                 ? dto.fulfillmentDate
                 : null);
 
-        const categoryRow = await manager.findOne(OrderCategory, {
-            where: { id: dto.categoryId },
-        });
+        // A null id in `where` matches any row, so an absent category is
+        // checked before the lookup (system writers may create without one).
+        const categoryRow =
+            dto.categoryId != null
+                ? await manager.findOne(OrderCategory, {
+                      where: { id: dto.categoryId },
+                  })
+                : null;
         const result = manager.create(Order, {
             category: categoryRow
                 ? manager.create(OrderCategory, { id: dto.categoryId })
@@ -93,6 +104,9 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             email: dto.email ?? null,
             note: dto.note ?? null,
             isFrozen: dto.isFrozen ?? false,
+            status:
+                (dto.status as OrderStatus | undefined) ??
+                ORDER_STATUSES.ACTIVE,
             occurrenceType,
             occurrenceState: dto.occurrenceState as OccurrenceState | null,
             recurrenceDate,
@@ -182,6 +196,10 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             entity.isFrozen = dto.isFrozen;
         }
 
+        if (dto.status !== undefined) {
+            entity.status = dto.status as OrderStatus;
+        }
+
         if (dto.categoryId !== undefined) {
             if (dto.categoryId === null) {
                 entity.category = null;
@@ -217,13 +235,19 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
                         locationId: entity.locationId,
                     },
                 );
-            const newIds = new Set(newItems.map((x) => x.id));
-            for (const old of previous) {
-                if (!newIds.has(old.id)) {
-                    await manager.remove(old);
-                }
+            // The composer returns every existing child too, so the kept ones
+            // are those the DTO still names; the rest are removed. Filter
+            // before removing: `manager.remove` clears the removed entity's id.
+            const keptIds = new Set(
+                dto.orderedItems.flatMap((item) =>
+                    'createId' in item ? [] : [item.id],
+                ),
+            );
+            const removed = previous.filter((x) => !keptIds.has(x.id));
+            entity.orderedItems = newItems.filter((x) => !removed.includes(x));
+            for (const old of removed) {
+                await manager.remove(old);
             }
-            entity.orderedItems = newItems;
         }
 
         if (dto.recurrenceSchedule !== undefined) {
@@ -319,6 +343,7 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
             detectionResult?: ChangeDetectionResult<UpdateOrderDto>;
         },
     ): Promise<void> {
+        await this.orderWriteHooks.runInTransaction(manager, entity);
         if (!ctx.detectionResult?.hasChanges) {
             return;
         }
@@ -343,6 +368,18 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         });
     }
 
+    /** Unfreezing an order lets other modules act on it (e.g. Square line conversion). */
+    protected async afterUpdateCommitted(
+        entity: Order,
+        ctx: {
+            detectionResult?: ChangeDetectionResult<UpdateOrderDto>;
+        },
+    ): Promise<void> {
+        if (ctx.detectionResult?.patch.isFrozen === false) {
+            await this.orderWriteHooks.emitUnfrozen(entity);
+        }
+    }
+
     private getSnapshotRelations(): string[] {
         return this.getUpdateDiffRelations();
     }
@@ -364,6 +401,8 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         order.email = snap.email;
         order.note = snap.note;
         order.isFrozen = snap.isFrozen;
+        order.status =
+            (snap.status as OrderStatus | undefined) ?? ORDER_STATUSES.ACTIVE;
 
         if (snap.categoryId != null) {
             const exists = await manager.findOne(OrderCategory, {
@@ -463,6 +502,9 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         // tenant/location authorization is enforced. RevisionHistoryService
         // has no tenant/location awareness of its own.
         await this.findOne(orderId);
+        // A revert replaces every line (new ids), which would orphan the
+        // Square line map: a linked order must be detached first.
+        await this.squareStatus.assertNotSquareOwned(orderId);
 
         const row = await this.revisionHistoryService.getRevisionRow(
             REVISION_ENTITY_TYPES.ORDER,
@@ -551,6 +593,25 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         ];
     }
 
+    /**
+     * Cancelled orders are left out of the default list: unless the caller
+     * filters on `status` explicitly, only `ACTIVE` orders are returned.
+     */
+    async findAll(
+        options?: Parameters<
+            LocationScopedServiceBase<OrderEntity>['findAll']
+        >[0],
+    ): Promise<PaginatedResult<Order>> {
+        const filters = options?.filters ?? [];
+        const hasStatusFilter = filters.some((f) => f.startsWith('status='));
+        return super.findAll({
+            ...options,
+            filters: hasStatusFilter
+                ? filters
+                : [...filters, `status=${ORDER_STATUSES.ACTIVE}`],
+        });
+    }
+
     protected applySearch(
         query: SelectQueryBuilder<Order>,
         search: string,
@@ -577,6 +638,12 @@ export class OrderService extends LocationScopedServiceBase<OrderEntity> {
         if (filters.isFrozen && filters.isFrozen.length > 0) {
             query.andWhere('entity.isFrozen IN (:...isFrozen)', {
                 isFrozen: filters.isFrozen,
+            });
+        }
+
+        if (filters.status && filters.status.length > 0) {
+            query.andWhere('entity.status IN (:...status)', {
+                status: filters.status,
             });
         }
 

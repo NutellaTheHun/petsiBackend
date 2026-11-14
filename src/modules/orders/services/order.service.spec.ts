@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -26,6 +26,7 @@ import {
     recurringOrderScheduleToUpdateDto,
 } from '../utils/entity-transformers/recurring-order-schedule.dto.transformer';
 import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
+import { ORDER_STATUSES } from '../utils/order-statuses';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderService } from './order.service';
@@ -322,6 +323,56 @@ describe('order service', () => {
             (x) => x.id === itemToUpdate.id,
         );
         expect(updated?.quantity).toEqual(newQuantity);
+    });
+
+    it('update removes ordered items left out of orderedItems', async () => {
+        const [kept, dropped] = singleItems;
+        const created = await orderService.create(
+            plainToInstance(CreateOrderDto, {
+                recipient: `${P}-remove-line`,
+                fulfillmentDate: new Date('2026-02-01'),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                locationId: fixtureLocationId,
+                orderedItems: [kept, dropped].map((item, i) =>
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: `r${i}`,
+                        menuItemId: item.id,
+                        sizeId: item.sizes[0].id,
+                        quantity: 1,
+                    }),
+                ),
+            }),
+        );
+        testCtx.addCleanupFunction(async () => {
+            await orderRepo.delete(created.id);
+        });
+        const order = await orderRepo.findOneOrFail({
+            where: { id: created.id },
+            relations: ['orderedItems', 'orderedItems.menuItem'],
+        });
+        const keptLine = order.orderedItems.find(
+            (line) => line.menuItem.id === kept.id,
+        )!;
+
+        await orderService.update(
+            created.id,
+            plainToInstance(UpdateOrderDto, {
+                orderedItems: [
+                    {
+                        id: keptLine.id,
+                        menuItemId: kept.id,
+                        sizeId: kept.sizes[0].id,
+                        quantity: 1,
+                    },
+                ],
+            }),
+        );
+
+        const remaining = await orderMenuItemRepo.find({
+            where: { parentOrder: { id: created.id } },
+        });
+        expect(remaining.map((line) => line.id)).toEqual([keptLine.id]);
     });
 
     it('promotes OCCURRENCE GENERATED to MODIFIED on update', async () => {
@@ -803,6 +854,100 @@ describe('order service', () => {
                 where: { id: order.id },
             });
             expect(row.recipient).toEqual(newRecipient);
+        });
+    });
+
+    describe('order status', () => {
+        let active: Order;
+        let cancelled: Order;
+
+        const snapshotRelations = [
+            'orderedItems',
+            'orderedItems.menuItem',
+            'orderedItems.size',
+            'category',
+            'orderedItems.containerOrderMenuItems',
+            'orderedItems.containerOrderMenuItems.containedMenuItem',
+            'orderedItems.containerOrderMenuItems.containedItemSize',
+        ];
+
+        const createOrder = async (recipient: string): Promise<Order> => {
+            const dto = plainToInstance(CreateOrderDto, {
+                recipient,
+                fulfillmentDate: new Date('2026-03-01'),
+                fulfillmentType: 'pickup',
+                categoryId: categories[0].id,
+                locationId: fixtureLocationId,
+                orderedItems: [
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
+                        createId: 'o1',
+                        menuItemId: singleItems[0].id,
+                        sizeId: singleItems[0].sizes[0].id,
+                        quantity: 1,
+                    }),
+                ],
+            });
+            let order!: Order;
+            await dataSource.transaction(async (manager) => {
+                order = await orderService.createEntityForTest(dto, manager);
+            });
+            return order;
+        };
+
+        afterAll(async () => {
+            const ids = [active, cancelled].filter(Boolean).map((o) => o.id);
+            if (ids.length) {
+                await orderMenuItemRepo.delete({
+                    parentOrder: { id: In(ids) },
+                });
+                await orderRepo.delete(ids);
+            }
+        });
+
+        it('defaults new orders to ACTIVE', async () => {
+            active = await createOrder(`${P}-status-active`);
+            cancelled = await createOrder(`${P}-status-cancelled`);
+            const row = await orderRepo.findOneOrFail({
+                where: { id: active.id },
+            });
+            expect(row.status).toEqual(ORDER_STATUSES.ACTIVE);
+        });
+
+        it('update sets status to CANCELLED', async () => {
+            const order = await orderRepo.findOneOrFail({
+                where: { id: cancelled.id },
+                relations: snapshotRelations,
+            });
+            const dto = orderToUpdateDto(order, {
+                status: ORDER_STATUSES.CANCELLED,
+            });
+            const result = await orderService.update(order.id, dto);
+            expect(result.status).toEqual(ORDER_STATUSES.CANCELLED);
+            const row = await orderRepo.findOneOrFail({
+                where: { id: cancelled.id },
+            });
+            expect(row.status).toEqual(ORDER_STATUSES.CANCELLED);
+        });
+
+        it('default findAll excludes cancelled orders and includes active ones', async () => {
+            const result = await orderService.findAll({
+                search: `${P}-status-`,
+                limit: 100,
+            });
+            const ids = result.items.map((o) => o.id);
+            expect(ids).toContain(active.id);
+            expect(ids).not.toContain(cancelled.id);
+        });
+
+        it('findAll with a status filter returns cancelled orders', async () => {
+            const result = await orderService.findAll({
+                search: `${P}-status-`,
+                filters: [`status=${ORDER_STATUSES.CANCELLED}`],
+                limit: 100,
+            });
+            const ids = result.items.map((o) => o.id);
+            expect(ids).toContain(cancelled.id);
+            expect(ids).not.toContain(active.id);
         });
     });
 

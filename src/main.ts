@@ -4,14 +4,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import { AppModule } from './app.module';
-import { setupApp } from './app.setup';
+import { APP_CREATE_OPTIONS, setupApp } from './app.setup';
 import { ERROR_RESPONSE_MODELS } from './common/exceptions/error-response.dto';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(
         AppModule,
         /*{ logger: ['error', 'warn', 'log', 'debug'] }*/
-        { bufferLogs: true }, // hold startup logs until setupApp installs the pino logger
+        APP_CREATE_OPTIONS,
     );
 
     // Recommended when docker containerization

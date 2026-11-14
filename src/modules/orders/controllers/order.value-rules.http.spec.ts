@@ -13,15 +13,10 @@ import {
     createHttpTestApp,
     RecordingLogger,
 } from '../../../test/http-test-app';
-import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
-import {
-    TestUser,
-    useTestUserAndRoleGuards,
-} from '../../../test/test-user-guard';
+import { TestUser } from '../../../test/test-user-guard';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
-import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderCategory } from '../entities/order-category.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
@@ -67,10 +62,6 @@ describe('order value rules vs DTO shape (HTTP)', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        const requestContext = module.get<
-            RequestContextService,
-            TestRequestContextService
-        >(RequestContextService);
         const testingUtil = module.get(OrderTestingUtil);
         const tenantId = await testingUtil.getDefaultTenantId();
         locationId = await testingUtil.getDefaultLocationId();
@@ -97,10 +88,7 @@ describe('order value rules vs DTO shape (HTTP)', () => {
             locations: [{ locationId, roles: ['staff'] }],
         };
         ({ app, logger } = await createHttpTestApp(module, {
-            beforeInit: useTestUserAndRoleGuards(
-                () => currentUser,
-                requestContext,
-            ),
+            user: () => currentUser,
         }));
     });
 

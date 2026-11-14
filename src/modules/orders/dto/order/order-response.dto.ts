@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { OrderMenuItem } from '../../entities/order-menu-item.entity';
+import { ORDER_STATUSES } from '../../utils/order-statuses';
+import { OrderSquareUnresolvedLineDto } from './order-square-unresolved-line.dto';
 import { RecurringOrderScheduleResponseDto } from '../recurring-order-schedule/recurring-order-schedule-response.dto';
 
 export class OrderResponseDto {
@@ -132,6 +134,15 @@ export class OrderResponseDto {
     readonly occurrenceState?: string | null;
 
     @ApiProperty({
+        enum: Object.values(ORDER_STATUSES),
+        example: 'ACTIVE',
+        description:
+            'The status of the order. Cancelled orders are not included in reports or default order lists.',
+        type: 'string',
+    })
+    readonly status: string;
+
+    @ApiProperty({
         example: {
             frequency: 'WEEKLY',
             interval: 1,
@@ -146,6 +157,28 @@ export class OrderResponseDto {
         type: () => RecurringOrderScheduleResponseDto,
     })
     readonly recurrenceSchedule?: RecurringOrderScheduleResponseDto;
+
+    @ApiProperty({
+        description:
+            'True while the order is linked to a Square order: its Square-owned fields are read-only.',
+        example: false,
+        type: 'boolean',
+    })
+    readonly squareLinked: boolean;
+
+    @ApiProperty({
+        description: 'True when the order has pending Square lines.',
+        example: false,
+        type: 'boolean',
+    })
+    readonly hasUnresolvedSquareLines: boolean;
+
+    @ApiProperty({
+        description:
+            'Pending Square lines Petsi could not place: placeholders shown next to the ordered items.',
+        type: [OrderSquareUnresolvedLineDto],
+    })
+    readonly unresolvedSquareLines: OrderSquareUnresolvedLineDto[];
 
     @ApiProperty({
         description: 'The date the order was created in the DB',

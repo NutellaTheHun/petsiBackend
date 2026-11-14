@@ -131,7 +131,13 @@ await categoryRepo.delete(category.id);
 ```
 
 #### HTTP tests
-For assertions on status, body, headers or logged output, build the app with `createHttpTestApp(await get<Domain>TestingModule())` from `src/test/http-test-app.ts`. It applies the production `setupApp` and injects a `RecordingLogger` into the exception filter (`logger.logs`). Use `beforeInit` to add global guards.
+For assertions on status, body, headers or logged output, build the app with `createHttpTestApp(await get<Domain>TestingModule(), opts?)` from `src/test/http-test-app.ts`. It mirrors production through the shared definitions in `src/app.setup.ts`:
+
+- `APP_CREATE_OPTIONS`: the Nest create options (`rawBody: true`, so `req.rawBody` holds the exact request bytes; `bufferLogs`). `main.ts` passes the same object to `NestFactory.create`.
+- `setupApp`: pipe, filter, request-id middleware. The harness injects a `RecordingLogger` into the exception filter (`logger.logs`).
+- `GLOBAL_GUARDS`: the global guards in run order (auth, role, feature, throttler). `AppModule` registers them as `APP_GUARD`s through `globalGuardProviders()`. The harness applies a test instance for each key. `AuthGuard` is replaced by `TestUserGuard`, which uses `opts.user` (`() => TestUser`, read per request) instead of a JWT. The other guards are the real ones. Adding a guard to `GLOBAL_GUARDS` won't compile until the harness covers it.
+
+The guards run by default. `opts.user` omitted means unauthenticated (401 except on `@Public()` routes). A `TestUser` without `features` gets every registered feature. `opts.guards: false` opts out of all guards, for specs that aren't about access control. `opts.beforeInit` runs just before `app.init()`.
 
 #### What to test and what to skip
 
@@ -154,9 +160,10 @@ For assertions on status, body, headers or logged output, build the app with `cr
 
 ### Auth and roles
 
-- Global `AuthGuard` (JWT) and `RoleGuard` are applied via `APP_GUARD` in `AppModule`.
+- Global guards (`AuthGuard` (JWT), `RoleGuard`, `FeatureGuard`, `ThrottlerGuard`) are listed once in `GLOBAL_GUARDS` (`src/app.setup.ts`) and registered as `APP_GUARD`s in `AppModule`.
 - Use `@PublicLogin()` on routes that should skip JWT verification.
 - Use `@Roles(...roles)` on routes/controllers that require specific roles.
+- `@Roles(ROLE_ADMIN)` passes an admin at *any* location. For tenant-admin-only routes use `@UseGuards(TenantAdminGuard)` (`src/modules/square/guards/tenant-admin.guard.ts`, checks `isTenantAdmin === true`). Move it to `src/common/` if a second module needs it.
 
 ### Caching
 

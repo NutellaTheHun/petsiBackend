@@ -31,6 +31,8 @@ export function orderExample(fnSet: Set<string>, shallow: boolean) {
 
         isFrozen: false,
 
+        status: 'ACTIVE',
+
         isWeekly: true,
 
         weeklyFulfillment: 'monday',

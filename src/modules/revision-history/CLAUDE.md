@@ -1,6 +1,6 @@
 ---
 module: src/modules/revision-history
-last_reviewed: 2026-07-04
+last_reviewed: 2026-10-29
 ---
 
 ## Overview
@@ -13,7 +13,7 @@ Three services divide responsibilities:
 - **`RevisionHistoryPrunerService`** (`services/revision-history-pruner.service.ts`) — nightly cron (`@Cron('0 3 * * *')`) that deletes old rows per policy. Exposed via `runOnce()` for tests/manual runs.
 - **`RevisionHistoryRetentionPolicyService`** (`services/revision-history-retention-policy.service.ts`) — reads global env-var defaults plus optional per-entity-type overrides and returns an effective `RevisionHistoryRetentionPolicy`.
 
-`change-log-builder.ts` maps `ChangeDetectorBase` output (`ChangeDetectorChange[]`, from `src/common/base/change-detector.base.ts` — see `src/common/base/CLAUDE.md`) into the persisted, versioned `changeLog` JSON shape (`buildCreatedChangeLog`, `buildUpdatedChangeLog`, `buildRevertedChangeLog`, `persistedChangeLogToDto`). `revision-actor.util.ts`'s `getRevisionActor` derives the `ActorDto` (`{ type: 'user', id }` or `{ type: 'system' }`) from `RequestContextService`.
+`change-log-builder.ts` maps `ChangeDetectorBase` output (`ChangeDetectorChange[]`, from `src/common/base/change-detector.base.ts` — see `src/common/base/CLAUDE.md`) into the persisted, versioned `changeLog` JSON shape (`buildCreatedChangeLog`, `buildUpdatedChangeLog`, `buildRevertedChangeLog`, `persistedChangeLogToDto`). `revision-actor.util.ts`'s `getRevisionActor` derives the `ActorDto` from `RequestContextService`: `{ type: 'square_webhook' }` when the context has `revisionActorType: 'square_webhook'`, else `{ type: 'user', id }` when `userId` is set, else `{ type: 'system' }`.
 
 ## Enforced Patterns
 
