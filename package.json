@@ -21,7 +21,8 @@
     "seedTestDb": "NODE_ENV=development ts-node src/scripts/db/seedTestDb.ts",
     "clearTestDb": "NODE_ENV=development ts-node src/scripts/db/clearTestDb.ts",
     "provisionTenant": "NODE_ENV=development ts-node src/scripts/db/provisionTenant.ts",
-    "generate:types": "openapi-typescript http://localhost:3000/docs-json --o ../petsi-frontend/src/api-types.ts"
+    "generate:types": "openapi-typescript http://localhost:3000/docs-json --o ../petsi-frontend/src/api-types.ts",
+    "test:square-sandbox": "jest --runInBand --config ./test/jest-e2e.json test/square-sandbox.e2e-spec.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
